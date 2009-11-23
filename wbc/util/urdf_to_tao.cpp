@@ -26,12 +26,13 @@
 #include "urdf_to_tao.hpp"
 
 #ifndef HAVE_URDF
-namespace wbc {
-  taoNodeRoot * urdf_to_tao(urdf::Model const & urdf_model,
-			    std::string const & tao_root_name,
-			    std::vector<std::string> * tao_id_to_link_name_map) throw(std::runtime_error)
+namespace urdf_to_tao {
+  taoNodeRoot * convert(urdf::Model const & urdf_model,
+			std::string const & tao_root_name,
+			LinkFilter const & link_filter,
+			std::vector<std::string> * tao_id_to_link_name_map) throw(std::runtime_error)
   {
-    throw std::runtime_error("wbc::urdf_to_tao(): support for URDF not built in");
+    throw std::runtime_error("urdf_to_tao::convert(): support for URDF not built in");
   }
 }
 // rest of the file...
@@ -53,91 +54,36 @@ static wbcnet::logger_t logger(wbcnet::get_logger("urdf_to_tao"));
 using wbc::inertia_matrix_to_string;
 
 
-namespace {
+namespace urdf_to_tao {
   
-  struct element;
+  
+  bool DefaultLinkFilter::
+  isFixed(urdf::Link const & urdf_link) const
+  {
+    if ( ! urdf_link.parent_joint)
+      return false;
+    return urdf::Joint::FIXED == urdf_link.parent_joint->type;
+  }
+  
+  
+  class element;
+  
   typedef std::set<element *> forest_t;
   
-  /** Very crude memory management: just stuff all created elements in
-      here, so that we can later iterate over all the elements and
-      delete them. As this is a static instance, there are funky cases
-      where this'll break... but we only use it for initialization of
-      single-threaded processes. */
-  static forest_t all_elements;
-  
-  
-  struct element {
-    element(element * _parent,
-	    boost::shared_ptr<urdf::Link const> _urdf_link)
-      : parent(_parent),
-	urdf_link(_urdf_link)
-    {
-      all_elements.insert(this);
-      
-      if (parent)
-	parent->children.insert(this);
-      
-      deFloat mass;
-      deVector3 com;
-      deMatrix3 inertia;
-      urdf::Inertial const * urdf_inertia(_urdf_link->inertial.get());
-      if ( ! urdf_inertia) {
-	mass = 0;
-	com.zero();		// redundant
-	inertia.zero();		// redundant
-      }
-      else {
-	mass = urdf_inertia->mass;
-	com.set(urdf_inertia->origin.position.x,
-		urdf_inertia->origin.position.y,
-		urdf_inertia->origin.position.z);
-	inertia.set(urdf_inertia->ixx, urdf_inertia->ixy, urdf_inertia->ixz,
-		    urdf_inertia->ixy, urdf_inertia->iyy, urdf_inertia->iyz,
-		    urdf_inertia->ixz, urdf_inertia->iyz, urdf_inertia->izz);
-      }
-      tao_mass_prop.set(&mass, &com, &inertia);
-      
-      urdf::Joint const * urdf_joint(_urdf_link->parent_joint.get());
-      if ( ! urdf_joint) {
-	tao_home_frame.identity(); // redundant
-      }
-      else {
-	urdf::Pose const & urdf_home(urdf_joint->parent_to_joint_origin_transform);
-	deVector3 const trans(urdf_home.position.x,
-			      urdf_home.position.y,
-			      urdf_home.position.z);
-	deQuaternion const rot(urdf_home.rotation.x,
-			       urdf_home.rotation.y,
-			       urdf_home.rotation.z,
-			       urdf_home.rotation.w);
-	tao_home_frame.set(rot, trans);
-      }
-    }
+  class element
+  {
+    friend class Converter;
     
+    element(element * parent, boost::shared_ptr<urdf::Link const> urdf_link, bool is_fixed);
+    element(element * parent, element const & original);
     
-    inline element(element * _parent,
-		   element const & original)
-      : parent(_parent),
-	urdf_link(original.urdf_link),
-	tao_mass_prop(original.tao_mass_prop),
-	tao_home_frame(original.tao_home_frame)
-    {
-      all_elements.insert(this);
-      if (parent)
-	parent->children.insert(this);
-    }
-    
-    
-    bool isFixed() const {
-      if ( ! urdf_link->parent_joint)
-	return false;
-      return urdf::Joint::FIXED == urdf_link->parent_joint->type;
-    }
-    
-    std::string const & getName() const { return urdf_link->name; }
+  public:
+    bool isFixed() const;
+    std::string const & getName() const;
     
     element * parent;
     forest_t children;
+    bool is_fixed;
     
     boost::shared_ptr<urdf::Link const> const urdf_link;
     
@@ -148,6 +94,117 @@ namespace {
     deMassProp tao_mass_prop;
     deFrame tao_home_frame;
   };
+  
+  
+  class Converter {
+  public:
+    explicit Converter(LinkFilter const & _link_filter)
+      : link_filter(_link_filter) {}
+    
+    ~Converter() {
+      for (forest_t::iterator ii(all_elements.begin()); ii != all_elements.end(); ++ii)
+	delete *ii;
+    }
+    
+    element * create_element(element * parent, boost::shared_ptr<urdf::Link const> urdf_link)
+    {
+      element * ee(new element(parent, urdf_link, link_filter.isFixed(*urdf_link)));
+      all_elements.insert(ee);
+      return ee;
+    }
+    
+    element * clone_element(element * parent, element const & original)
+    {
+      element * ee(new element(parent, original));
+      all_elements.insert(ee);
+      return ee;
+    }
+    
+    element * read_urdf_tree(element * parent, boost::shared_ptr<urdf::Link const> urdf_child);
+    
+    element * copy_fuse_fixed(element * parent, element * original);
+    
+  protected:
+    forest_t all_elements;
+    LinkFilter const & link_filter;
+  };
+  
+  
+  element::
+  element(element * _parent,
+	  boost::shared_ptr<urdf::Link const> _urdf_link,
+	  bool _is_fixed)
+    : parent(_parent),
+      is_fixed(_is_fixed),
+      urdf_link(_urdf_link)
+  {
+    if (parent)
+      parent->children.insert(this);
+    
+    deFloat mass;
+    deVector3 com;
+    deMatrix3 inertia;
+    urdf::Inertial const * urdf_inertia(_urdf_link->inertial.get());
+    if ( ! urdf_inertia) {
+      mass = 0;
+      com.zero();		// redundant
+      inertia.zero();		// redundant
+    }
+    else {
+      mass = urdf_inertia->mass;
+      com.set(urdf_inertia->origin.position.x,
+	      urdf_inertia->origin.position.y,
+	      urdf_inertia->origin.position.z);
+      inertia.set(urdf_inertia->ixx, urdf_inertia->ixy, urdf_inertia->ixz,
+		  urdf_inertia->ixy, urdf_inertia->iyy, urdf_inertia->iyz,
+		  urdf_inertia->ixz, urdf_inertia->iyz, urdf_inertia->izz);
+    }
+    tao_mass_prop.set(&mass, &com, &inertia);
+    
+    urdf::Joint const * urdf_joint(_urdf_link->parent_joint.get());
+    if ( ! urdf_joint) {
+      tao_home_frame.identity(); // redundant
+    }
+    else {
+      urdf::Pose const & urdf_home(urdf_joint->parent_to_joint_origin_transform);
+      deVector3 const trans(urdf_home.position.x,
+			    urdf_home.position.y,
+			    urdf_home.position.z);
+      deQuaternion const rot(urdf_home.rotation.x,
+			     urdf_home.rotation.y,
+			     urdf_home.rotation.z,
+			     urdf_home.rotation.w);
+      tao_home_frame.set(rot, trans);
+    }
+  }
+  
+  
+  element::
+  element(element * _parent,
+	  element const & original)
+    : parent(_parent),
+      is_fixed(original.is_fixed),
+      urdf_link(original.urdf_link),
+      tao_mass_prop(original.tao_mass_prop),
+      tao_home_frame(original.tao_home_frame)
+    {
+      if (parent)
+	parent->children.insert(this);
+    }
+  
+  
+  bool element::
+  isFixed() const
+  {
+    return is_fixed;
+  }
+  
+  
+  std::string const & element::
+  getName() const
+  {
+    return urdf_link->name;
+  }
   
   
   void dump_tree(std::ostream & os, element const * root, std::string prefix, bool detailed)
@@ -190,10 +247,11 @@ namespace {
   }
   
   
-  element * read_urdf_tree(element * parent,
-			   boost::shared_ptr<urdf::Link const> urdf_child)
+  element * Converter::
+  read_urdf_tree(element * parent,
+		 boost::shared_ptr<urdf::Link const> urdf_child)
   {
-    element * child(new element(parent, urdf_child));
+    element * child(create_element(parent, urdf_child));
     for (size_t ii(0); ii < urdf_child->child_links.size(); ++ii) {
       read_urdf_tree(child, urdf_child->child_links[ii]);
     }
@@ -403,7 +461,8 @@ namespace {
   
   
   /** inertias are expressed wrt COM */
-  element * copy_fuse_fixed(element * parent, element * original)
+  element * Converter::
+  copy_fuse_fixed(element * parent, element * original)
   {
     // Find all child subtrees that must be fused into the base. Create
     // a new subtree for each one, because in turn they will recursively
@@ -416,7 +475,7 @@ namespace {
       }
     }
     
-    element * fused_duplicate(new element(parent, *original));
+    element * fused_duplicate(clone_element(parent, *original));
     {
       //       // XXXX start computing and using urdf_aux_frames
       //       element::urdf_aux_frames_t & urdf_fused_aux(fused_duplicate->urdf_aux_frames);
@@ -658,27 +717,23 @@ namespace {
     }
   }
   
-}
-
-
-namespace wbc {
-
-taoNodeRoot * urdf_to_tao(urdf::Model const & urdf_model,
-			  std::string const & tao_root_name,
-			  std::vector<std::string> * tao_id_to_link_name_map) throw(std::runtime_error)
-{
-  all_elements.clear();
   
-  try {
+  taoNodeRoot * convert(urdf::Model const & urdf_model,
+			std::string const & tao_root_name,
+			LinkFilter const & link_filter,
+			std::vector<std::string> * tao_id_to_link_name_map) throw(std::runtime_error)
+  {
+    Converter converter(link_filter);
+    
     ////  dump_urdf_tree(*urdf_model.getRoot(), "dbg input: ");
-    element * unfused_root(read_urdf_tree(0, urdf_model.getRoot()));
+    element * unfused_root(converter.read_urdf_tree(0, urdf_model.getRoot()));
     ////  dump_tree(unfused_root, "dbg unfused: ");
-    element * fused_root(copy_fuse_fixed(0, unfused_root));
+    element * fused_root(converter.copy_fuse_fixed(0, unfused_root));
     ////  dump_tree(fused_root, "dbg fused: ");
     
     element * conversion_root(find_element_by_name(fused_root, tao_root_name));
     if ( ! conversion_root) {
-      throw runtime_error("create_tao_from_urdf(): no link called `" + tao_root_name + "' in the URDF model");
+      throw runtime_error("urdf_to_tao::convert(): no link called `" + tao_root_name + "' in the URDF model");
     }
     
     deFrame global_frame;
@@ -703,21 +758,9 @@ taoNodeRoot * urdf_to_tao(urdf::Model const & urdf_model,
       }
     ////  dump_tao_tree(cout, tao_root, "TAO tree rooted at " + tao_root_name + ": ");
     
-    for (forest_t::iterator ii(all_elements.begin()); ii != all_elements.end(); ++ii)
-      delete *ii;
-    
     return tao_root;
   }
   
-  catch (std::runtime_error const & ee) {
-    for (forest_t::iterator ii(all_elements.begin()); ii != all_elements.end(); ++ii)
-      delete *ii;
-    throw ee;
-  }
-  
-  return 0;			// "never" happens, we throw instead
-}
-
 }
 
 #endif // HAVE_URDF
