@@ -1,0 +1,624 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="414.39093"
+   height="480.98114"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="0.44.1"
+   sodipodi:docbase="/home/rolo/soft/svn-vyasa/branches/rolo-split-progs/apps"
+   sodipodi:docname="multirate-dataflow.svg"
+   version="1.0"
+   inkscape:export-filename="/home/rolo/soft/svn-vyasa/trunk/pumamodules/multirate-dataflow.png"
+   inkscape:export-xdpi="122.16"
+   inkscape:export-ydpi="122.16">
+  <defs
+     id="defs4">
+    <linearGradient
+       id="linearGradient3609">
+      <stop
+         style="stop-color:#fac06b;stop-opacity:1;"
+         offset="0"
+         id="stop3611" />
+      <stop
+         style="stop-color:#d2ff47;stop-opacity:1;"
+         offset="1"
+         id="stop3613" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient3210">
+      <stop
+         id="stop3212"
+         offset="0"
+         style="stop-color:#fac06b;stop-opacity:1;" />
+      <stop
+         id="stop3214"
+         offset="1"
+         style="stop-color:#d2ff47;stop-opacity:1;" />
+    </linearGradient>
+    <marker
+       inkscape:stockid="Arrow2Mend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow2Mend"
+       style="overflow:visible">
+      <path
+         id="path3164"
+         style="font-size:12px;fill-rule:evenodd;stroke-width:0.625;stroke-linejoin:round"
+         d="M 8.7185878,4.0337352 L -2.2072895,0.016013256 L 8.7185884,-4.0017078 C 6.97309,-1.6296469 6.9831476,1.6157441 8.7185878,4.0337352 z "
+         transform="scale(-0.6,-0.6)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow1Lend"
+       style="overflow:visible">
+      <path
+         id="path2974"
+         d="M 0,0 L 5,-5 L -12.5,0 L 5,5 L 0,0 z "
+         style="fill-rule:evenodd;stroke:black;stroke-width:1pt;marker-start:none"
+         transform="matrix(-0.8,0,0,-0.8,-10,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow2Lstart"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow2Lstart"
+       style="overflow:visible">
+      <path
+         id="path2959"
+         style="font-size:12px;fill-rule:evenodd;stroke-width:0.625;stroke-linejoin:round"
+         d="M 8.7185878,4.0337352 L -2.2072895,0.016013256 L 8.7185884,-4.0017078 C 6.97309,-1.6296469 6.9831476,1.6157441 8.7185878,4.0337352 z "
+         transform="matrix(1.1,0,0,1.1,1.1,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lstart"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow1Lstart"
+       style="overflow:visible">
+      <path
+         id="path2977"
+         d="M 0,0 L 5,-5 L -12.5,0 L 5,5 L 0,0 z "
+         style="fill-rule:evenodd;stroke:black;stroke-width:1pt;marker-start:none"
+         transform="matrix(0.8,0,0,0.8,10,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow2Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow2Lend"
+       style="overflow:visible">
+      <path
+         id="path2956"
+         style="font-size:12px;fill-rule:evenodd;stroke-width:0.625;stroke-linejoin:round"
+         d="M 8.7185878,4.0337352 L -2.2072895,0.016013256 L 8.7185884,-4.0017078 C 6.97309,-1.6296469 6.9831476,1.6157441 8.7185878,4.0337352 z "
+         transform="matrix(-1.1,0,0,-1.1,-1.1,0)" />
+    </marker>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3210"
+       id="linearGradient3204"
+       x1="389.74326"
+       y1="244.38638"
+       x2="365.40131"
+       y2="245.15331"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-1.357538e-5,-1.457922)" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3210"
+       id="linearGradient3206"
+       x1="381.77307"
+       y1="238.41635"
+       x2="381.77307"
+       y2="459.37946"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-2.262564e-5,-1.45787)" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     gridtolerance="10000"
+     guidetolerance="10"
+     objecttolerance="10"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.8075791"
+     inkscape:cx="192.32197"
+     inkscape:cy="233.45222"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     inkscape:window-width="902"
+     inkscape:window-height="1152"
+     inkscape:window-x="8"
+     inkscape:window-y="8" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-39.50404,-124.2563)">
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:bold;text-align:center;text-anchor:middle;opacity:1;fill:black;fill-opacity:1;stroke:none;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;font-family:FreeSans"
+       x="111.49518"
+       y="134.46233"
+       id="text1872"><tspan
+         sodipodi:role="line"
+         id="tspan1874"
+         x="111.49518"
+         y="134.46233"
+         style="font-size:14px">behavior</tspan><tspan
+         sodipodi:role="line"
+         x="111.49518"
+         y="151.96233"
+         id="tspan1876"
+         style="font-size:14px">servo</tspan><tspan
+         sodipodi:role="line"
+         x="111.49518"
+         y="167.62746"
+         id="tspan1878">(1ms)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:bold;text-align:center;text-anchor:middle;opacity:1;fill:black;fill-opacity:1;stroke:none;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;font-family:FreeSans"
+       x="381.82697"
+       y="134.46233"
+       id="text2766"><tspan
+         sodipodi:role="line"
+         id="tspan2768"
+         x="381.82697"
+         y="134.46233"
+         style="font-size:14px">task</tspan><tspan
+         sodipodi:role="line"
+         x="381.82697"
+         y="151.96233"
+         id="tspan2770"
+         style="font-size:14px">model</tspan><tspan
+         sodipodi:role="line"
+         x="381.82697"
+         y="167.62746"
+         id="tspan2772">(20-100ms)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:14px;font-style:normal;font-weight:normal;text-align:start;text-anchor:start;opacity:1;fill:black;fill-opacity:1;stroke:none;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;font-family:FreeSans"
+       x="119.74516"
+       y="198.34911"
+       id="text2792"><tspan
+         sodipodi:role="line"
+         id="tspan2794"
+         x="119.74516"
+         y="198.34911"><tspan
+   style="font-weight:bold"
+   id="tspan2248">state</tspan> (q, dq) and <tspan
+   style="font-weight:bold"
+   id="tspan2250">task spec</tspan> list</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:14px;font-style:normal;font-weight:normal;text-align:center;text-anchor:middle;opacity:1;fill:black;fill-opacity:1;stroke:none;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;font-family:FreeSans"
+       x="318.02087"
+       y="444.50354"
+       id="text2796"><tspan
+         sodipodi:role="line"
+         id="tspan2798"
+         x="318.02087"
+         y="444.50354"><tspan
+   style="font-weight:bold"
+   id="tspan2256">task model</tspan> list</tspan></text>
+    <path
+       style="opacity:1;fill:none;fill-opacity:1;stroke:black;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 111.73715,177.80143 L 111.73715,527.84798"
+       id="path2800"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="opacity:1;fill:none;fill-opacity:1;stroke:black;stroke-width:1;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 381.77306,175.57891 L 381.77306,511.1791"
+       id="path2802"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="opacity:1;fill:#baff47;fill-opacity:1;stroke:black;stroke-width:2;marker-end:url(#Arrow2Mend);stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 112.23715,207.80542 L 382.27306,207.80542"
+       id="path2988" />
+    <path
+       style="opacity:1;fill:#baff47;fill-opacity:1;stroke:black;stroke-width:2;marker-end:url(#Arrow2Mend);stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 382.27306,451.17112 L 112.23715,451.17112"
+       id="path2992" />
+    <g
+       id="g3043"
+       transform="translate(-57.78546,42.22784)">
+      <text
+         id="text2784"
+         y="228.97993"
+         x="484.83673"
+         style="font-size:12px;font-style:normal;font-weight:bold;text-align:center;text-anchor:middle;opacity:1;fill:black;fill-opacity:1;stroke:none;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;font-family:FreeSans"
+         xml:space="preserve"><tspan
+           y="228.97993"
+           x="484.83673"
+           id="tspan2786"
+           sodipodi:role="line">x J</tspan></text>
+      <g
+         id="g3016">
+        <path
+           sodipodi:type="arc"
+           style="opacity:1;fill:none;fill-opacity:1;stroke:black;stroke-width:1;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+           id="path2994"
+           sodipodi:cx="484.50888"
+           sodipodi:cy="224.4743"
+           sodipodi:rx="26.670214"
+           sodipodi:ry="26.670214"
+           d="M 497.84399,201.37722 A 26.670214,26.670214 0 1 1 471.17379,201.37722"
+           sodipodi:start="5.2359878"
+           sodipodi:end="10.471976"
+           sodipodi:open="true" />
+        <path
+           sodipodi:type="star"
+           style="opacity:1;fill:black;fill-opacity:1;stroke:black;stroke-width:0.79056942;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+           id="path3014"
+           sodipodi:sides="3"
+           sodipodi:cx="529.61157"
+           sodipodi:cy="157.67348"
+           sodipodi:r1="5.2566905"
+           sodipodi:r2="2.6283453"
+           sodipodi:arg1="1.0471976"
+           sodipodi:arg2="2.0943951"
+           inkscape:flatsided="true"
+           inkscape:rounded="0"
+           inkscape:randomized="0"
+           d="M 532.23992,162.2259 L 524.35488,157.67348 L 532.23992,153.12105 L 532.23992,162.2259 z "
+           transform="matrix(1.507357,0.536539,-0.335337,0.942098,-247.7533,-231.4805)" />
+      </g>
+    </g>
+    <g
+       id="g3038"
+       transform="translate(-44.11806,76.23798)">
+      <text
+         id="text2788"
+         y="328.73843"
+         x="471.10745"
+         style="font-size:12px;font-style:normal;font-weight:bold;text-align:center;text-anchor:middle;opacity:1;fill:black;fill-opacity:1;stroke:none;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;font-family:FreeSans"
+         xml:space="preserve"><tspan
+           y="328.73843"
+           x="471.10745"
+           id="tspan2790"
+           sodipodi:role="line">A b g</tspan></text>
+      <use
+         height="1052.3622"
+         width="744.09448"
+         transform="translate(-13.6674,100.9285)"
+         id="use3020"
+         xlink:href="#g3016"
+         y="0"
+         x="0" />
+    </g>
+    <g
+       id="g3056"
+       transform="translate(45.894,-63.34176)">
+      <text
+         id="text2778"
+         y="330.18723"
+         x="20.809616"
+         style="font-size:12px;font-style:normal;font-weight:bold;text-align:center;text-anchor:middle;opacity:1;fill:black;fill-opacity:1;stroke:none;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;font-family:FreeSans"
+         xml:space="preserve"><tspan
+           y="330.18723"
+           x="20.809616"
+           id="tspan2780"
+           sodipodi:role="line">task</tspan><tspan
+           id="tspan2782"
+           y="345.18723"
+           x="20.809616"
+           sodipodi:role="line">vector</tspan></text>
+      <g
+         transform="translate(-463.7273,108.7073)"
+         id="use3024">
+        <path
+           sodipodi:type="arc"
+           style="opacity:1;fill:none;fill-opacity:1;stroke:black;stroke-width:1;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+           id="path3052"
+           sodipodi:cx="484.50888"
+           sodipodi:cy="224.4743"
+           sodipodi:rx="26.670214"
+           sodipodi:ry="26.670214"
+           d="M 497.84399,201.37722 A 26.670214,26.670214 0 1 1 471.17379,201.37722"
+           sodipodi:start="5.2359878"
+           sodipodi:end="10.471976"
+           sodipodi:open="true" />
+        <path
+           sodipodi:type="star"
+           style="opacity:1;fill:black;fill-opacity:1;stroke:black;stroke-width:0.79056942;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+           id="path3054"
+           sodipodi:sides="3"
+           sodipodi:cx="529.61157"
+           sodipodi:cy="157.67348"
+           sodipodi:r1="5.2566905"
+           sodipodi:r2="2.6283453"
+           sodipodi:arg1="1.0471976"
+           sodipodi:arg2="2.0943951"
+           inkscape:flatsided="true"
+           inkscape:rounded="0"
+           inkscape:randomized="0"
+           d="M 532.23992,162.2259 L 524.35488,157.67348 L 532.23992,153.12105 L 532.23992,162.2259 z "
+           transform="matrix(1.507357,0.536539,-0.335337,0.942098,-247.7533,-231.4805)" />
+      </g>
+    </g>
+    <rect
+       style="opacity:1;fill:#fac06b;fill-opacity:1;stroke:black;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect3026"
+       width="9.6377201"
+       height="38.125996"
+       x="106.91829"
+       y="198.91539" />
+    <rect
+       y="264.59097"
+       x="106.91829"
+       height="38.125996"
+       width="9.6377201"
+       id="use3028"
+       style="fill:white;fill-opacity:1;stroke:black;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    <rect
+       y="461.61777"
+       x="106.91829"
+       height="38.125996"
+       width="9.6377201"
+       id="use3030"
+       style="fill:#d2ff47;fill-opacity:1;stroke:black;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    <rect
+       style="fill:white;fill-opacity:1;stroke:black;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="use3032"
+       width="9.6377201"
+       height="38.125996"
+       x="106.91829"
+       y="395.94217" />
+    <rect
+       style="fill:white;fill-opacity:1;stroke:black;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="use3034"
+       width="9.6377201"
+       height="38.125996"
+       x="106.91829"
+       y="330.26657" />
+    <rect
+       y="237.95844"
+       x="376.95419"
+       height="218.96309"
+       width="9.6377201"
+       id="use3036"
+       style="fill:url(#linearGradient3206);fill-opacity:1;stroke:black;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    <use
+       x="0"
+       y="0"
+       xlink:href="#g3043"
+       id="use3064"
+       transform="translate(-360.0478,-62.2305)"
+       width="744.09448"
+       height="1052.3622" />
+    <text
+       xml:space="preserve"
+       style="font-size:10px;font-style:normal;font-weight:normal;text-align:start;text-anchor:start;opacity:1;fill:black;fill-opacity:1;stroke:none;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;font-family:FreeSans"
+       x="120.15115"
+       y="220.02927"
+       id="text3086"><tspan
+         sodipodi:role="line"
+         x="120.15115"
+         y="220.02927"
+         style="font-size:10px;font-weight:normal"
+         id="tspan3434">A <tspan
+   style="font-size:10px;font-weight:bold"
+   id="tspan2214">state message</tspan> is sent each time the model requires</tspan><tspan
+         sodipodi:role="line"
+         x="120.15115"
+         y="232.52927"
+         style="font-size:10px;font-weight:normal"
+         id="tspan3586">fresh data. It contains:</tspan><tspan
+         sodipodi:role="line"
+         x="120.15115"
+         y="245.02927"
+         style="font-size:10px;font-weight:normal"
+         id="tspan2208">   int: n_dof</tspan><tspan
+         sodipodi:role="line"
+         x="120.15115"
+         y="257.52927"
+         style="font-size:10px;font-weight:normal"
+         id="tspan2156">   timestamp: acquisition_time</tspan><tspan
+         sodipodi:role="line"
+         x="120.15115"
+         y="270.02927"
+         style="font-size:10px;font-weight:normal"
+         id="tspan2210">   double[]: joint positions</tspan><tspan
+         sodipodi:role="line"
+         x="120.15115"
+         y="282.52927"
+         style="font-size:10px;font-weight:normal"
+         id="tspan2224">   double[]: joint velocities</tspan><tspan
+         sodipodi:role="line"
+         x="120.15115"
+         y="295.02927"
+         style="font-size:10px;font-weight:normal"
+         id="tspan3428" /><tspan
+         sodipodi:role="line"
+         x="120.15115"
+         y="307.52927"
+         style="font-size:10px;font-weight:normal"
+         id="tspan3442">Each time the behavior state changes, and when the</tspan><tspan
+         sodipodi:role="line"
+         x="120.15115"
+         y="320.02927"
+         style="font-size:10px;font-weight:normal"
+         id="tspan3232">model requires fresh data, we send a <tspan
+   style="font-size:10px;font-weight:bold"
+   id="tspan2216">task spec</tspan></tspan><tspan
+         sodipodi:role="line"
+         x="120.15115"
+         y="332.52927"
+         style="font-size:10px;font-weight:normal"
+         id="tspan3578"><tspan
+   style="font-size:10px;font-weight:bold"
+   id="tspan3580">message</tspan>, containing:</tspan><tspan
+         sodipodi:role="line"
+         x="120.15115"
+         y="345.02927"
+         style="font-size:10px;font-style:italic;font-weight:normal"
+         id="tspan3422">  header:</tspan><tspan
+         sodipodi:role="line"
+         x="120.15115"
+         y="357.52927"
+         style="font-size:10px;font-weight:normal"
+         id="tspan3130">    int: request ID</tspan><tspan
+         sodipodi:role="line"
+         x="120.15115"
+         y="370.02927"
+         id="tspan3090"
+         style="font-size:10px;font-weight:normal">    int: behavior ID</tspan><tspan
+         sodipodi:role="line"
+         x="120.15115"
+         y="382.52927"
+         id="tspan3094"
+         style="font-size:10px;font-weight:normal">    int: state ID</tspan><tspan
+         sodipodi:role="line"
+         x="120.15115"
+         y="395.02927"
+         id="tspan3096"
+         style="font-size:10px;font-weight:normal">    int: parameter type tag <tspan
+   style="font-size:10px;font-style:italic;font-weight:normal"
+   id="tspan3134">(LINK, JOINT, ...)</tspan></tspan><tspan
+         sodipodi:role="line"
+         x="120.15115"
+         y="407.52927"
+         style="font-size:10px;font-weight:normal"
+         id="tspan3570">    int: parameter length</tspan><tspan
+         sodipodi:role="line"
+         x="120.15115"
+         y="420.02927"
+         style="font-size:10px;font-style:italic;font-weight:normal"
+         id="tspan3424">  payload:</tspan><tspan
+         sodipodi:role="line"
+         x="120.15115"
+         y="432.52927"
+         id="tspan3098"
+         style="font-size:10px;font-weight:normal">    parameter type: parameter</tspan><tspan
+         sodipodi:role="line"
+         x="120.15115"
+         y="445.02927"
+         style="font-size:10px;font-weight:normal"
+         id="tspan2121" /></text>
+    <text
+       xml:space="preserve"
+       style="font-size:10px;font-style:normal;font-weight:normal;text-align:start;text-anchor:start;opacity:1;fill:black;fill-opacity:1;stroke:none;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;font-family:FreeSans"
+       x="125.72823"
+       y="465.61746"
+       id="text3102"><tspan
+         sodipodi:role="line"
+         x="125.72823"
+         y="465.61746"
+         style="font-size:10px;font-weight:normal"
+         id="tspan3255">After the model has been updated, we send three <tspan
+   style="font-size:10px;font-weight:bold"
+   id="tspan3271">task</tspan></tspan><tspan
+         sodipodi:role="line"
+         x="125.72823"
+         y="478.11746"
+         style="font-size:10px;font-weight:normal"
+         id="tspan3268"><tspan
+   style="font-size:10px;font-weight:bold"
+   id="tspan3592">model messages</tspan> for each task in the task vector. Each</tspan><tspan
+         sodipodi:role="line"
+         x="125.72823"
+         y="490.61746"
+         style="font-size:10px;font-weight:normal"
+         id="tspan3598">message contains:</tspan><tspan
+         sodipodi:role="line"
+         x="125.72823"
+         y="503.11746"
+         style="font-size:10px;font-style:italic;font-weight:normal"
+         id="tspan2099">  header:</tspan><tspan
+         sodipodi:role="line"
+         x="125.72823"
+         y="515.61746"
+         id="tspan2196">    int: request ID</tspan><tspan
+         sodipodi:role="line"
+         x="125.72823"
+         y="528.11746"
+         id="tspan2097">    timestamp: acquisition_time <tspan
+   style="font-style:italic"
+   id="tspan2160">(from state message)</tspan></tspan><tspan
+         sodipodi:role="line"
+         x="125.72823"
+         y="540.61746"
+         id="tspan2158">    int: task vector index    </tspan><tspan
+         sodipodi:role="line"
+         x="125.72823"
+         y="553.11746"
+         id="tspan2200">    int: matrix ID tag <tspan
+   style="font-size:10px;font-style:italic;font-weight:normal"
+   id="tspan2202">(JACOBIAN, LAMBDA, ...)</tspan></tspan><tspan
+         sodipodi:role="line"
+         x="125.72823"
+         y="565.61746"
+         id="tspan3108">    int: n_rows</tspan><tspan
+         sodipodi:role="line"
+         x="125.72823"
+         y="578.11746"
+         id="tspan3112">    int: n_columns</tspan><tspan
+         sodipodi:role="line"
+         x="125.72823"
+         y="590.61746"
+         id="tspan2103"
+         style="font-size:10px;font-style:italic">  payload:</tspan><tspan
+         sodipodi:role="line"
+         x="125.72823"
+         y="603.11746"
+         id="tspan2262">   double[]: matrix values</tspan></text>
+    <g
+       id="g1960"
+       transform="translate(0,-65.88264)">
+      <text
+         xml:space="preserve"
+         style="font-size:12px;font-style:normal;font-weight:bold;text-align:center;text-anchor:middle;fill:black;fill-opacity:1;stroke:none;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;font-family:FreeSans"
+         x="426.78549"
+         y="397.05972"
+         id="text1948"><tspan
+           sodipodi:role="line"
+           id="tspan1950"
+           x="426.78549"
+           y="397.05972">task</tspan><tspan
+           sodipodi:role="line"
+           x="426.78549"
+           y="412.05972"
+           id="tspan1954">vector</tspan></text>
+      <use
+         x="0"
+         y="0"
+         xlink:href="#g3016"
+         id="use1952"
+         transform="translate(-57.78546,175.5798)"
+         width="744.09448"
+         height="1052.3622" />
+    </g>
+  </g>
+</svg>

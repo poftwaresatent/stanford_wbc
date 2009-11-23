@@ -1,0 +1,63 @@
+/**
+   \mainpage Documentation: Networking Mechanisms for Whole-Body Control
+   
+   - Wbcnet is a networking framework for whole-body control, possibly
+     catering to more general needs as it attempts to implement a
+     mechanisms rather than a policy. It is written in C++ and
+     released under the BSD license.
+   - It was developed as part of the research efforts at the <a
+     href="http://ai.stanford.edu/groups/manips/">Stanford AI and
+     Robotics Lab</a>
+   - It is hosted on Sourceforge as part of the <a
+     href="http://stanford-wbc.sourceforge.net/">Stanford Whole-Body
+     Control Framework</a> project
+   - Questions and comments are very welcome on the <a
+     href="mailto:stanford-wbc-devel at lists dot sourceforge dot
+     net">mailing list</a>.
+
+   \section foo Getting Started
+   
+   The objective of wbcnet is to make it easy for whole-body
+   controller code to use multiple processes, possibly running on more
+   than one machine. Whole-body control can require quite a bit of
+   number-crunching to produce the task-consistent dynamic model, so
+   it is a good idea to implement multirate model updates. This is
+   where wbcnet provides the glue:
+   
+   - You define what sort of data has to be synchronized between the
+     servo and model processes (possibly others, of course). For
+     example, the wbcnet::ServoData proxy lets everyone know the
+     current generalized positions and speeds (typically joint angles
+     and velocities of robot arms).
+   - You set up a wbcnet::Proxy subclass, and in its constructor call
+     wbcnet::Packer::AddFixedField() and similar methods to define the
+     contents of the message that serves to synchronize all involved
+     copies of a given data structure.
+   - You set up a communication channel using one of the wbcnet::Sink
+     and wbcnet::Source subclasses.
+   - In your servo and model loops, you can use a wbcnet::Muldex to
+     actually pack, send, receive, and unpack messages. Probably
+     you're directly going to use a wbcnet::MdxDispatcher for this
+     though.
+   
+   Have a look at the test programs to see how the wbcnet classes are
+   used: testMQWrap.cpp, testProxy.cpp, testTaskAtomizer.cpp,
+   testPack.cpp, and testSockWrapMuldex.cpp.
+
+   \subsection bar High-Level Entry Points for Browsing the Documentation
+   
+   - wbcnet::Muldex is the high-level "mutliplexer" of messages
+   - wbcnet::Proxy represents data that can be synchronized using messages
+   - wbcnet::TaskAtomizer lets you track the progress of model computations
+
+   \subsection bar Low-Level Entry Points for Browsing the Documentation
+   
+   - wbcnet::Sink and wbcnet::Source define the basic communication API
+   - wbcnet::Packable and wbcnet::Packer underly data marshalling
+   - wbcnet::SockWrap, wbcnet::SoClient, and wbcnet::SoServer implement socket communication
+   
+   \section README
+   
+   \verbinclude README
+   
+*/

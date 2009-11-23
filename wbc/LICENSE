@@ -1,0 +1,13 @@
+3rd party and subprojects:
+ * tao/LICENSE (MIT license)
+ * saimatrix/LICENSE (LPGLv3)
+ * wbcnet/README (new BSD license)
+ * wbcrun/README (new BSD license)
+
+--------------------------------------------------
+
+Stanford Whole-Body Control Framework http://stanford-wbc.sourceforge.net/
+
+This library is released under the LGPL, which is a set of additional
+permissions on top of the GPL. See the files gpl-3.0.txt and
+lgpl-3.0.txt for more information.

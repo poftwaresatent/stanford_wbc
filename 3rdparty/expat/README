@@ -1,0 +1,36 @@
+The Expat XML Parser http://expat.sourceforge.net/
+Copyright (c) 1998, 1999, 2000 Thai Open Source Software Center Ltd
+                               and Clark Cooper
+Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006 Expat maintainers.
+Released under the new MIT license.
+
+--------------------------------------------------
+
+You're probably better off installing expat from your distro's
+packaging system, e.g.:
+
+ $ sudo apt-get install libexpat1-dev
+
+Otherwise, read on...
+
+--------------------------------------------------
+
+This directory contains a tarball of expat-2.0.1 with a little build
+script.
+
+Use the enclosed buildme.sh script for building and installing
+on your system. For a staged installation under the current working
+directory, just type:
+
+ $ ./buildme.sh
+
+Which ends up installing into include/ and lib/. In order
+to install elsewhere, just give the prefix as command line
+argument. For example, to install into /usr/local/gtest do
+the following:
+
+ $ ./buildme.sh /usr/local/gtest
+
+The build script will attempt to install there, and if that fails it
+will retry using sudo. So you do not have to run th e entire build as
+root.

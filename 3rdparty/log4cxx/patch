@@ -1,0 +1,33 @@
+diff -ur --exclude=.deps --exclude='*.o' apache-log4cxx-0.10.0.DIST/src/examples/cpp/console.cpp apache-log4cxx-0.10.0/src/examples/cpp/console.cpp
+--- apache-log4cxx-0.10.0.DIST/src/examples/cpp/console.cpp	2008-03-31 15:34:52.000000000 -0700
++++ apache-log4cxx-0.10.0/src/examples/cpp/console.cpp	2009-10-20 13:40:02.000000000 -0700
+@@ -22,6 +22,7 @@
+ #include <log4cxx/logmanager.h>
+ #include <iostream>
+ #include <locale.h>
++#include <cstring>
+ 
+ using namespace log4cxx;
+ using namespace log4cxx::helpers;
+diff -ur --exclude=.deps --exclude='*.o' apache-log4cxx-0.10.0.DIST/src/main/cpp/inputstreamreader.cpp apache-log4cxx-0.10.0/src/main/cpp/inputstreamreader.cpp
+--- apache-log4cxx-0.10.0.DIST/src/main/cpp/inputstreamreader.cpp	2008-03-31 15:34:09.000000000 -0700
++++ apache-log4cxx-0.10.0/src/main/cpp/inputstreamreader.cpp	2009-10-20 13:37:30.000000000 -0700
+@@ -20,6 +20,7 @@
+ #include <log4cxx/helpers/exception.h>
+ #include <log4cxx/helpers/pool.h>
+ #include <log4cxx/helpers/bytebuffer.h>
++#include <cstring>
+ 
+ using namespace log4cxx;
+ using namespace log4cxx::helpers;
+diff -ur --exclude=.deps --exclude='*.o' apache-log4cxx-0.10.0.DIST/src/main/cpp/socketoutputstream.cpp apache-log4cxx-0.10.0/src/main/cpp/socketoutputstream.cpp
+--- apache-log4cxx-0.10.0.DIST/src/main/cpp/socketoutputstream.cpp	2008-03-31 15:34:09.000000000 -0700
++++ apache-log4cxx-0.10.0/src/main/cpp/socketoutputstream.cpp	2009-10-20 13:38:56.000000000 -0700
+@@ -19,6 +19,7 @@
+ #include <log4cxx/helpers/socketoutputstream.h>
+ #include <log4cxx/helpers/socket.h>
+ #include <log4cxx/helpers/bytebuffer.h>
++#include <cstring>
+ 
+ using namespace log4cxx;
+ using namespace log4cxx::helpers;

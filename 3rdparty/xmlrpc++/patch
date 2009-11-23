@@ -1,0 +1,183 @@
+? gcc433.patch
+? libxmlrpc++.so.0.8
+? test/HelloClient
+? test/HelloServer
+? test/TestBase64Client
+? test/TestBase64Server
+? test/TestValues
+? test/TestXml
+? test/Validator
+Index: Makefile
+===================================================================
+RCS file: /cvsroot/xmlrpcpp/xmlrpc++/Makefile,v
+retrieving revision 1.6
+diff -u -r1.6 Makefile
+--- Makefile	19 Apr 2004 13:53:00 -0000	1.6
++++ Makefile	29 Apr 2009 01:21:47 -0000
+@@ -2,10 +2,10 @@
+ CXX		= g++
+ SRC		= ./src
+ SHARED		= -shared
+-CPPFLAGS	= -I$(SRC)
++CPPFLAGS	= -I$(SRC) -fPIC
+ DEBUG		= -g
+ OPTIMIZE	= -O2
+-GCCWARN		= -Wall -Wstrict-prototypes
++GCCWARN		= -Wall
+ CXXFLAGS	= $(DEBUG) $(GCCWARN) $(OPTIMIZE) $(INCLUDES)
+ VERSION		= 0.8
+ 
+Index: src/XmlRpcClient.cpp
+===================================================================
+RCS file: /cvsroot/xmlrpcpp/xmlrpc++/src/XmlRpcClient.cpp,v
+retrieving revision 1.15
+diff -u -r1.15 XmlRpcClient.cpp
+--- src/XmlRpcClient.cpp	3 Jun 2008 02:29:11 -0000	1.15
++++ src/XmlRpcClient.cpp	29 Apr 2009 01:21:47 -0000
+@@ -12,6 +12,7 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string>
++#include <cstring>
+ 
+ using namespace XmlRpc;
+ using namespace std;
+@@ -315,7 +316,7 @@
+ 
+   header += "Content-Type: text/xml\r\nContent-length: ";
+ 
+-  sprintf(buff,"%d\r\n\r\n", body.size());
++  sprintf(buff,"%zu\r\n\r\n", body.size());
+ 
+   return header + buff;
+ }
+Index: src/XmlRpcServer.cpp
+===================================================================
+RCS file: /cvsroot/xmlrpcpp/xmlrpc++/src/XmlRpcServer.cpp,v
+retrieving revision 1.13
+diff -u -r1.13 XmlRpcServer.cpp
+--- src/XmlRpcServer.cpp	3 Jun 2008 01:40:27 -0000	1.13
++++ src/XmlRpcServer.cpp	29 Apr 2009 01:21:47 -0000
+@@ -479,7 +479,7 @@
+     "Content-length: ";
+ 
+   char buffLen[40];
+-  sprintf(buffLen,"%d\r\n\r\n", body.size());
++  sprintf(buffLen,"%zu\r\n\r\n", body.size());
+ 
+   return header + buffLen;
+ }
+Index: src/XmlRpcServerConnection.cpp
+===================================================================
+RCS file: /cvsroot/xmlrpcpp/xmlrpc++/src/XmlRpcServerConnection.cpp,v
+retrieving revision 1.13
+diff -u -r1.13 XmlRpcServerConnection.cpp
+--- src/XmlRpcServerConnection.cpp	3 Jun 2008 01:40:27 -0000	1.13
++++ src/XmlRpcServerConnection.cpp	29 Apr 2009 01:21:47 -0000
+@@ -9,6 +9,7 @@
+ #include "XmlRpcSocket.h"
+ #include "XmlRpcUtil.h"
+ 
++#include <cstring>
+ #include <stdio.h>
+ #include <stdlib.h>
+ 
+Index: src/XmlRpcSocket.cpp
+===================================================================
+RCS file: /cvsroot/xmlrpcpp/xmlrpc++/src/XmlRpcSocket.cpp,v
+retrieving revision 1.9
+diff -u -r1.9 XmlRpcSocket.cpp
+--- src/XmlRpcSocket.cpp	3 Jun 2008 01:40:27 -0000	1.9
++++ src/XmlRpcSocket.cpp	29 Apr 2009 01:21:47 -0000
+@@ -27,6 +27,8 @@
+ # include <netdb.h>
+ # include <errno.h>
+ # include <fcntl.h>
++# include <signal.h>
++# include <string.h>
+ }
+ #endif  // _WINDOWS
+ 
+Index: test/HelloClient.cpp
+===================================================================
+RCS file: /cvsroot/xmlrpcpp/xmlrpc++/test/HelloClient.cpp,v
+retrieving revision 1.9
+diff -u -r1.9 HelloClient.cpp
+--- test/HelloClient.cpp	17 May 2008 03:45:10 -0000	1.9
++++ test/HelloClient.cpp	29 Apr 2009 01:21:47 -0000
+@@ -3,6 +3,7 @@
+ // on windows)
+ #include "XmlRpc.h"
+ #include <iostream>
++#include <stdlib.h>
+ using namespace XmlRpc;
+ 
+ int main(int argc, char* argv[])
+Index: test/Makefile
+===================================================================
+RCS file: /cvsroot/xmlrpcpp/xmlrpc++/test/Makefile,v
+retrieving revision 1.3
+diff -u -r1.3 Makefile
+--- test/Makefile	13 Apr 2004 15:22:00 -0000	1.3
++++ test/Makefile	29 Apr 2009 01:21:47 -0000
+@@ -15,7 +15,9 @@
+ 
+ LDLIBS		= $(SYSTEMLIBS) $(LIB)
+ 
+-TESTS		= HelloClient HelloServer TestBase64Client TestBase64Server TestValues TestXml Validator TestEGroupwareSSLClient
++# TestEGroupwareSSLClient seems to use a constructor of XmlRpcClient
++# with a parameter 'bool ssl' (or so) that does not exist (anymore)
++TESTS		= HelloClient HelloServer TestBase64Client TestBase64Server TestValues TestXml Validator
+ 
+ all:		$(TESTS)
+ 
+Index: test/TestBase64Server.cpp
+===================================================================
+RCS file: /cvsroot/xmlrpcpp/xmlrpc++/test/TestBase64Server.cpp,v
+retrieving revision 1.3
+diff -u -r1.3 TestBase64Server.cpp
+--- test/TestBase64Server.cpp	3 Jun 2008 01:36:35 -0000	1.3
++++ test/TestBase64Server.cpp	29 Apr 2009 01:21:47 -0000
+@@ -9,7 +9,12 @@
+ #include <fstream>
+ #include <algorithm>
+ #include <stdlib.h>
+-#include <direct.h> // getcwd
++
++#if defined(_WINDOWS)
++# include <direct.h> // getcwd
++#else
++# include <unistd.h>
++#endif  // _WINDOWS
+ 
+ #if defined(_MSC_VER)
+ # define getcwd _getcwd
+Index: test/TestEGroupwareSSLClient.cpp
+===================================================================
+RCS file: /cvsroot/xmlrpcpp/xmlrpc++/test/TestEGroupwareSSLClient.cpp,v
+retrieving revision 1.1
+diff -u -r1.1 TestEGroupwareSSLClient.cpp
+--- test/TestEGroupwareSSLClient.cpp	13 Apr 2004 15:22:00 -0000	1.1
++++ test/TestEGroupwareSSLClient.cpp	29 Apr 2009 01:21:47 -0000
+@@ -1,5 +1,6 @@
+ #include "XmlRpc.h"
+ #include <iostream>
++#include <stdlib.h>
+ 
+ using namespace XmlRpc;
+ using namespace std;
+Index: test/Validator.cpp
+===================================================================
+RCS file: /cvsroot/xmlrpcpp/xmlrpc++/test/Validator.cpp,v
+retrieving revision 1.4
+diff -u -r1.4 Validator.cpp
+--- test/Validator.cpp	24 May 2008 01:15:58 -0000	1.4
++++ test/Validator.cpp	29 Apr 2009 01:21:47 -0000
+@@ -4,6 +4,7 @@
+ using namespace XmlRpc;
+ 
+ #include <iostream>
++#include <stdlib.h>
+ 
+ 
+ XmlRpcServer s;

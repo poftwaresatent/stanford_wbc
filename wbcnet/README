@@ -1,0 +1,100 @@
+----------------------------------------------------------------
+                      README for wbcnet
+         Networking Mechanisms for Whole-Body Control
+             http://stanford-wbc.sourceforge.net/
+           stanford-wbc-devel@lists.sourceforge.net
+----------------------------------------------------------------
+
+Wbcnet is a networking framework for whole-body control, possibly
+catering to more general needs as it attempts to implement a
+mechanisms rather than a policy. It is written in C++ and released
+under the BSD license. See the copyright and license information at
+the end of this README for more information.
+
+PREREQUISITES:
+
+ * CMake http://www.cmake.org/
+   (There also is a minimalist Makefile and an almost-working Automake
+   setup available, so if you do not have CMake you could try one of
+   those.)
+
+ * log4cxx http://logging.apache.org/log4cxx/
+   (Optional but highly recommended. If you are using ROS, you should
+   make sure that wbcnet picks up log4cxx from the ROS bindeps. The
+   CMake build setup tries to do that, otherwise set the LOG4CXX_DIR
+   environment variable before running cmake.)
+
+PROJECT LAYOUT
+
+ * wbcnet/ contains the sources and headers for the library
+ * test/ contains sources for unit tests and configure-time checks
+ * doc/ contains some documentation and the Doxygen description file
+
+COMPILING:
+
+  $ tar xfvz wbcnet-X.Y.tar.gz
+  $ cd wbcnet-X.Y
+  $ mkdir build
+  $ cd build
+  $ cmake ..
+  $ make
+
+TESTING:
+
+There are some "almost unit" test programs called testXYZ which are
+built by default. Except for testSockWrapMuldex, you can simply run
+them and should see "ALL TESTS PASSED" at the end of their output. The
+testSockWrapMuldex program needs to be run first as server (passing
+the -s option) and then, in another terminal, as client (passing no
+option).
+
+You can run all uni-process tests from the build directory like this:
+
+ $ /path/to/wbncet/test/runtests.sh
+
+DOCUMENTATION:
+
+Wbcnet uses Doxygen (http://www.doxygen.org/) to generate
+documentation from comments in the source code. You can either
+download a wbcnet tarball that includes the documentation, or generate
+it like this in the top-level source directory:
+
+  $ doxygen Doxyfile
+
+This will create an html directory containing an index.html file,
+which you can use as starting point to browse the documentation. Note
+that you need to have the dot tool (http://www.graphviz.org/)
+installed, or tweak the Doxyfile if you do not have it.
+
+
+----------------------------------------------------------------
+                    COPYRIGHT AND LICENSE
+----------------------------------------------------------------
+Copyright (c) 2008 Roland Philippsen <roland DOT philippsen AT gmx DOT net>
+
+BSD license:
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+3. Neither the name of the copyright holder nor the names of
+   contributors to this software may be used to endorse or promote
+   products derived from this software without specific prior written
+   permission.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHORS AND CONTRIBUTORS ``AS IS''
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT
+HOLDER OR THE CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.

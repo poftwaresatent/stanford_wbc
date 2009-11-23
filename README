@@ -1,0 +1,259 @@
+				README
+		Stanford Whole-Body Control Framework
+		 http://stanford-wbc.sourceforge.net/
+
+----------------------------------------------------------------------
+Copyright (c) 1997-2009 Stanford University. All rights reserved.
+
+This program is free software: you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public License
+as published by the Free Software Foundation, either version 3 of
+the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this program.  If not, see
+<http://www.gnu.org/licenses/>
+----------------------------------------------------------------------
+
+
+= PREREQUISITES =
+
+The CMake checks will signal any missing prerequisites and warn about
+missing optional or recommended 3rd party libraries.
+
+== Non-bundled ==
+
+Install these from your package manager or directly from the original
+source:
+
+ * '''A C++ compiler:'''
+   The WBC code is developed with GCC http://gcc.gnu.org/ ... other
+   compilers should work as well but are not currently tested.
+   
+ * '''CMake 2.6 or higher:'''
+   Widely available from package managers. You can also get it from
+   http://www.cmake.org/ (especially if your distro provides an older
+   version such as CMake-2.4)
+
+ * '''GNU ncurses''' (version 5 seems to work fine):
+   Widely available from package managers.
+   http://www.gnu.org/software/ncurses/
+
+ * '''LAPACK''' (and thus, BLAS):
+   Widely available as packages.
+
+== Bundled ==
+
+We provide snaphsots, patches, and build scripts (mostly) in the 3rdparty
+subdirectory, of the following external open source projects.
+
+Given that log4cxx, gtest, and XmlRpc++ are somewhat likely to need
+custom installation on your machine, you can tell CMake where to find
+them by using the environment (or CMake) variables LOG4CXX_DIR,
+GTEST_DIR, and XMLRPC_DIR. You can also summarily install them into
+one directory and provide its location using the WBC_BINDEPS_PATH
+environment variable.
+
+ * Required:
+   * '''tinyxml'''
+     We provide a (fairly old) snapshot directly with a CMakeLists.txt
+     that ties it directly into the WBC build system. Actually, we
+     stuffed all of the tinyxml code into a separate namespace and
+     renamed the file by adding the {{{wbc_}}} prefix, in order to
+     allow Stanford-WBC to live side-by-side with other libraries
+     which might use a different version of tinyxml.
+     http://www.grinninglizard.com/tinyxml/
+   * '''expat version 1 or 2'''
+     Also available as package on pretty much any distro.
+     http://expat.sourceforge.net/
+
+ * Highly recommended:
+   * '''log4cxx version 0.10.0''' (higher versions might be supported, too).
+     Without log4cxx, you will not be able to control the verbosity of
+     programs, they will simply print any warnings and errors to the
+     console. It is fairly common that distros provide version 0.9.x,
+     which unfortunately is not compatible with WBC, in which case
+     you'll have to use the one provided here.
+     http://logging.apache.org/log4cxx/
+
+ * Optional:
+   * '''!XmlRpc++''' for easier integration with higher levels and GUIs.
+     We provide a CVS snapshot (from early 2009) plus some local
+     patches.
+     http://xmlrpcpp.sourceforge.net/
+   * '''Google testing framework version 1.3.0''' (other version might work, too)
+     http://code.google.com/p/googletest/
+
+
+= INSTALLATION =
+
+'''NOTE:''' If you do not need to install any 3rd bundled party
+packages from source and want to have a development setup which avoids
+(some of the) CAVEATS described below, you can use the provided
+bootstrap-devkit.sh script. Just choose a location where you want to
+(fake-) install, and pass it to the script. The default is to use
+~/wbc as WBC_ROOT, so you might choose to run the bootstrap-devkit.sh
+script without arguments.
+
+
+== Setup your environment ==
+
+Choose a directory to install WBC. In the following, it is assumed
+that you use a somewhat canonical directory layout underneath
+${HOME}/wbc, but you can easily adjust this to your needs.
+
+ 1. Create base directory
+   {{{
+    $ mkdir ~/wbc
+    $ cd ~/wbc
+   }}}
+
+ 2. Check out the sources. You can follow the stable
+    (branches/wbc-stable) or unstable (trunk) code. Suppose we follow
+    the stable branch:
+   {{{
+    $ svn co https://stanford-wbc.svn.sourceforge.net/svnroot/stanford-wbc/branches/wbc-stable src
+   }}}
+
+ 3. Set the WBC environment variables. Assuming your are using bash, these are the commands:
+   {{{
+    $ export WBC_ROOT=~/wbc
+    $ export WBC_PLUGIN_PATH=${WBC_ROOT}/plugins
+    $ export WBC_BINDEPS_PATH=${WBC_ROOT}/bindeps
+    $ export PATH=${WBC_ROOT}/bin:${PATH}
+   }}}
+    For csh or tcsh users, these would look something like "{{{setenv WBC_ROOT ~/wbc}}}" or so.
+
+    '''NOTE:''' you can source the '''bash-env-wbc script''' in order to get these
+    values into your environment. It takes an optional argument
+    specifying your WBC_ROOT. The default is to use ~/wbc.
+   {{{
+    $ source ~/wbc/src/bash-env-wbc
+   }}}
+
+    It might be a good idea to copy-paste ~/wbc/src/bash-env-wbc into
+    your ~/.bashrc or ~/.bash_profile, or to source it from there, in
+    order to automatically load your WBC environment setup in each
+    shell that gets started. However, this might interfere with WBC
+    development in case you expect to change the WBC framework code
+    itself (see CAVEATS below).
+
+
+== Install 3rd party libraries ==
+
+Install required 3rdparty libraries into ~/wbc/bindeps
+(Let's assume you installed expat as a system package and you only
+need log4cxx and gtest, leaving aside xmlrpc++ because you don't
+want to do any GUI development)
+{{{
+ $ cd ~/wbc/src/3rdparty/log4cxx
+ $ ./buildme.sh ~/wbc/bindeps
+ $ cd ~/wbc/src/3rdparty/gtest
+ $ ./buildme.sh ~/wbc/bindeps
+}}}
+
+'''NOTE:''' your mileage will vary. Many Linux distributions provide
+log4cxx development packages at a sufficiently recent version, and
+gtest is not absolutely required (although it's a good idea to use it,
+especially if you are likely to change framework code).
+
+
+== Install the WBC framework ==
+
+Configure, build, and install WBC. The recommended way is to build it
+in a separate directory so that it becomes very easy to clean it
+out. Also note that CMake has a kind of convoluted way of specifying
+the installation directory... don't forget the
+'''{{{-DCMAKE_INSTALL_PREFIX=~/wbc}}}''' command line argument.
+{{{
+ $ mkdir ~/wbc/build
+ $ cd ~/wbc/build
+ $ cmake ~/wbc/src -DCMAKE_INSTALL_PREFIX=~/wbc
+ $ make
+ $ make install
+}}}
+
+
+= UPGRADING =
+
+In order to upgrade WBC, usually all you have to do is "svn update"
+your checked-out copy, recompile on top of your existing build, and
+re-install (see first subsection).
+
+However, in case some major changes were introduced, it might be
+better to clean out your previous installation and build directories
+(see second subsection). But then, you can at least reuse the 3rdparty
+packages that were installed in the ~/wbc/bindeps directory (or some
+other cutsom location).
+
+
+== Upgrade on top of an existing installation ==
+
+{{{
+ $ cd ~/wbc/src
+ $ svn up
+ $ cd ~/wbc/build
+ $ make install
+}}}
+
+
+== Wipe and re-install from scratch ==
+
+{{{
+ $ cd ~/wbc
+ $ rm -r build include lib bin share
+ $ cd ~/wbc/src
+ $ svn up
+ $ mkdir ~/wbc/build
+ $ cd ~/wbc/build
+ $ cmake ~/wbc/src
+ $ make
+ $ make install
+}}}
+
+
+= CAVEATS =
+
+== Developing the WBC framework code ==
+
+'''NOTE:''' use the {{{bootstrap-devkit.sh}}} script to set up a
+"staged" install that avoids this caveat.
+
+The problem when changing and recompiling the WBC source code is that
+the build system has a tendency to pick up the installed headers
+instead of the ones in the working copy. This means that you might end
+up changing an installed header, so the changes will not show up in
+your working copy, and thus won't get committed... worse, once you're
+happy with the changes and decide to install, they will get wiped
+away.
+
+The '''workaround''' for this is to '''not install WBC''' when you
+expect to change it. Note that you can always point the WBC_ROOT and
+related environment variables to the build and source directories, as
+appropriate (note that we do not create symbolic links from the build
+into the sources anymore, but the CMake files take care of adding the
+appropriate compiler flags).
+
+Note that the '''bash-env-wbc''' script makes this fairly
+straightforward to accomplish, because it allows you to switch between
+WBC "installations" on the fly: just give the desired WBC_ROOT on the
+command line. For example, you want to use a development version of
+WBC, without installing it. You would do the following:
+
+{{{
+ $ cd /where/ever
+ $ svn co https://stanford-wbc.svn.sourceforge.net/svnroot/stanford-wbc/trunk/wbc
+ $ mkdir wbc/build
+ $ cd wbc/build
+ $ source ../bash-env-wbc `pwd`
+ $ cmake ..
+ $ make
+}}}
+
+From this point on, you can hack away at WBC and your changes will
+appear after each "make". Don't call "make install".
