@@ -48,6 +48,7 @@ namespace urdf_to_tao {
 #include <set>
 #include <map>
 #include <iostream>
+#include <fstream>
 
 static wbcnet::logger_t logger(wbcnet::get_logger("urdf_to_tao"));
 
@@ -764,6 +765,52 @@ namespace urdf_to_tao {
     ////  dump_tao_tree(cout, tao_root, "TAO tree rooted at " + tao_root_name + ": ");
     
     return tao_root;
+  }
+  
+  
+  void FlatFileLinkFilter::
+  Load(std::string const & filename) throw(std::runtime_error)
+  {
+    ifstream config(filename.c_str());
+    if ( ! config) {
+      throw runtime_error("urdf_to_tao::FlatFileLinkFilter::Load(" + filename + "): could not open file");
+    }
+    
+    string token;
+    while (config >> token) {
+      if (token[0] == '#'){
+	config.ignore(numeric_limits<streamsize>::max(), '\n');
+	continue;
+      }
+      if (m_root_name.empty()) {
+	m_root_name = token;
+      }
+      m_nonfixed.insert(token);
+    }
+    
+    if (m_root_name.empty()) {
+      throw runtime_error("FlatFileLinkFilter::Load(" + filename + "): no specs in file?");
+    }
+  }
+  
+  
+  std::string const & FlatFileLinkFilter::
+  GetRootName() const
+  {
+    return m_root_name;
+  }
+  
+  
+  bool FlatFileLinkFilter::
+  isFixed(urdf::Link const & urdf_link) const
+  {
+    if (urdf_to_tao::DefaultLinkFilter::isFixed(urdf_link)) {
+      return true;
+    }
+    if (m_nonfixed.find(urdf_link.name) != m_nonfixed.end()) {
+      return false;
+    }
+    return true;
   }
   
 }

@@ -28,6 +28,7 @@
 
 #include <stdexcept>
 #include <vector>
+#include <set>
 
 
 class taoNodeRoot;
@@ -50,6 +51,18 @@ namespace urdf_to_tao {
   class DefaultLinkFilter: public LinkFilter {
   public:
     virtual bool isFixed(urdf::Link const & urdf_link) const;
+  };
+  
+  
+  class FlatFileLinkFilter: public DefaultLinkFilter {
+  public:
+    void Load(std::string const & filename) throw(std::runtime_error);
+    std::string const & GetRootName() const;
+    virtual bool isFixed(urdf::Link const & urdf_link) const;
+    
+  protected:
+    std::string m_root_name;
+    std::set<std::string> m_nonfixed;
   };
   
   
