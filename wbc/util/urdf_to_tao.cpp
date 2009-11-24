@@ -733,7 +733,12 @@ namespace urdf_to_tao {
     
     element * conversion_root(find_element_by_name(fused_root, tao_root_name));
     if ( ! conversion_root) {
-      throw runtime_error("urdf_to_tao::convert(): no link called `" + tao_root_name + "' in the URDF model");
+      ostringstream msg;
+      msg << "urdf_to_tao::convert(): no link called `" << tao_root_name << "' in the fused URDF model\n"
+	  << "  Note that custom link filters might remove links during the fusion process\n"
+	  << "  Here's the fused tree:\n";
+      dump_tree(msg, fused_root, "  ", false);
+      throw runtime_error(msg.str());
     }
     
     deFrame global_frame;
