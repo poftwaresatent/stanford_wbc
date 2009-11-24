@@ -54,15 +54,21 @@ namespace urdf_to_tao {
   };
   
   
-  class FlatFileLinkFilter: public DefaultLinkFilter {
+  class ActiveLinkFilter: public DefaultLinkFilter {
+  public:
+    void AddLink(std::string const & link_name);
+    virtual bool isFixed(urdf::Link const & urdf_link) const;
+  protected:
+    std::set<std::string> m_active;
+  };
+  
+  
+  class FlatFileLinkFilter: public ActiveLinkFilter {
   public:
     void Load(std::string const & filename) throw(std::runtime_error);
     std::string const & GetRootName() const;
-    virtual bool isFixed(urdf::Link const & urdf_link) const;
-    
   protected:
     std::string m_root_name;
-    std::set<std::string> m_nonfixed;
   };
   
   

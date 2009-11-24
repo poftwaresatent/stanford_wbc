@@ -768,6 +768,13 @@ namespace urdf_to_tao {
   }
   
   
+  void ActiveLinkFilter::
+  AddLink(std::string const & link_name)
+  {
+    m_active.insert(link_name);
+  }
+  
+  
   void FlatFileLinkFilter::
   Load(std::string const & filename) throw(std::runtime_error)
   {
@@ -785,7 +792,7 @@ namespace urdf_to_tao {
       if (m_root_name.empty()) {
 	m_root_name = token;
       }
-      m_nonfixed.insert(token);
+      AddLink(token);
     }
     
     if (m_root_name.empty()) {
@@ -801,13 +808,13 @@ namespace urdf_to_tao {
   }
   
   
-  bool FlatFileLinkFilter::
+  bool ActiveLinkFilter::
   isFixed(urdf::Link const & urdf_link) const
   {
     if (urdf_to_tao::DefaultLinkFilter::isFixed(urdf_link)) {
       return true;
     }
-    if (m_nonfixed.find(urdf_link.name) != m_nonfixed.end()) {
+    if (m_active.find(urdf_link.name) != m_active.end()) {
       return false;
     }
     return true;
