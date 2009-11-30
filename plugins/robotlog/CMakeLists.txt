@@ -28,8 +28,7 @@ endif (WBC_ROOT)
 
 list (APPEND LIBS expat Stanford_WBC)
 
-#wbc_add_plugin (robotlog plugin.cpp readlog.cpp writelog.cpp)
-wbc_add_plugin (robotlog plugin.cpp writelog.cpp)
+wbc_add_plugin (robotlog plugin.cpp readlog.cpp writelog.cpp)
 target_link_libraries (robotlog ${LIBS})
 
 include (CheckIncludeFileCXX)
