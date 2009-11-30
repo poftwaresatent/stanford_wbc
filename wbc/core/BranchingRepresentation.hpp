@@ -89,10 +89,10 @@ namespace wbc {
     // Attributes 
     taoNodeRoot* rootNode_; 
     idToNodeMap_t idToNodeMap_; 
-    std::map<std::string, taoDNode*> linkTagToNodeMap_; // XXXX to do: rename
-    std::map<std::string, taoDNode*> jointTagToNodeMap_; // XXXX to do: rename
-    std::map<taoDNode const *, SAIVector> linkTagToSensorMap_; // XXXX to do: rename
-    std::map<taoDNode const *, double> linkTagToSurfaceDepthMap_; // XXXX to do: rename
+    std::map<std::string, taoDNode*> linkNameToNodeMap_;
+    std::map<std::string, taoDNode*> jointNameToNodeMap_;
+    std::map<taoDNode const *, SAIVector> linkToSensorMap_;
+    std::map<taoDNode const *, double> linkToSurfaceDepthMap_;
     int numJoints_;
     double totalMass_;
     SAIVector grav_;

@@ -117,12 +117,12 @@ namespace wbc {
       ret_brRep_p->upperJointLimitVec_[id] = (*ii)->joint_limit_upper;
       ret_brRep_p->lowerJointLimitVec_[id] = (*ii)->joint_limit_lower;
   	
-      ret_brRep_p->linkTagToNodeMap_[(*ii)->linkName_] = node;
-      ret_brRep_p->linkTagToNodeMap_[linktag] = node;
+      ret_brRep_p->linkNameToNodeMap_[(*ii)->linkName_] = node;
+      ret_brRep_p->linkNameToNodeMap_[linktag] = node;
       //       ret_brRep_p->linkTagToIDMap_[linktag] = id;
       //       ret_brRep_p->IDToLinkTagMap_[id] = linktag;
-      ret_brRep_p->jointTagToNodeMap_[(*ii)->jointName_] = node;
-      ret_brRep_p->jointTagToNodeMap_[jointtag] = node;
+      ret_brRep_p->jointNameToNodeMap_[(*ii)->jointName_] = node;
+      ret_brRep_p->jointNameToNodeMap_[jointtag] = node;
       //      ret_brRep_p->jointTagToIDMap_[jointtag] = id;
       // XXXX maybe add something for "forceSensor" and "surfaceDepth"
       

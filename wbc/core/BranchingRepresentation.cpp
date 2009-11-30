@@ -56,8 +56,8 @@ namespace wbc {
     const
   {
     std::map<taoDNode const *, SAIVector>::const_iterator
-      ii(linkTagToSensorMap_.find(node));
-    if (ii == linkTagToSensorMap_.end())
+      ii(linkToSensorMap_.find(node));
+    if (ii == linkToSensorMap_.end())
       return zero3;
     return ii->second;
   }
@@ -68,8 +68,8 @@ namespace wbc {
     const
   {
     std::map<taoDNode const *, double>::const_iterator
-      ii(linkTagToSurfaceDepthMap_.find(node));
-    if (ii == linkTagToSurfaceDepthMap_.end())
+      ii(linkToSurfaceDepthMap_.find(node));
+    if (ii == linkToSurfaceDepthMap_.end())
       return 0;
     return ii->second;
   }
@@ -144,8 +144,8 @@ namespace wbc {
   taoDNode * BranchingRepresentation::
   findLink( std::string const & name )
   {
-    std::map<std::string, taoDNode*>::iterator ii(linkTagToNodeMap_.find(name));
-    if (ii == linkTagToNodeMap_.end())
+    std::map<std::string, taoDNode*>::iterator ii(linkNameToNodeMap_.find(name));
+    if (ii == linkNameToNodeMap_.end())
       return 0;
     return ii->second;
   }
@@ -154,8 +154,8 @@ namespace wbc {
   taoDNode * BranchingRepresentation::
   findJoint( std::string const & name )
   {
-    std::map<std::string, taoDNode*>::iterator ii(jointTagToNodeMap_.find(name));
-    if (ii == jointTagToNodeMap_.end())
+    std::map<std::string, taoDNode*>::iterator ii(jointNameToNodeMap_.find(name));
+    if (ii == jointNameToNodeMap_.end())
       return 0;
     return ii->second;
   }

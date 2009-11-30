@@ -220,10 +220,10 @@ namespace wbc {
       string const joint_name(joint_name_[id]);
       string const joint_tag(br->canonicalJointName(joint_name));
       
-      br->linkTagToNodeMap_[node_name] = node;
-      br->linkTagToNodeMap_[node_tag] = node;
-      br->jointTagToNodeMap_[joint_name] = node;
-      br->jointTagToNodeMap_[joint_tag] = node;
+      br->linkNameToNodeMap_[node_name] = node;
+      br->linkNameToNodeMap_[node_tag] = node;
+      br->jointNameToNodeMap_[joint_name] = node;
+      br->jointNameToNodeMap_[joint_tag] = node;
       
       br->totalMass_ += *node->mass();
     }
