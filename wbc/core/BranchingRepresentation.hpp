@@ -57,6 +57,30 @@ namespace wbc {
     BranchingRepresentation();
 
   public:
+    /**
+       Create a BranchingRepresentation from an existing TAO
+       tree. Given that, in some sense, BranchingRepresentation just
+       adds a little frosting on top of TAO, this is actually a fairly
+       easy way to create one, as long as you do not need some of the
+       fancier features like defaultJointPositions() or
+       surfaceDepth().
+    */
+    static BranchingRepresentation *
+    create(/** root of a valid and fully populated TAO tree */
+	   taoNodeRoot * tao_root,
+	   /** optional gravity vector (if NULL, we fall to Earth along negative Z) */
+	   SAIVector const * opt_gravity,
+	   /** optional un-actuation matrix (if NULL, we construct an identity matrix for it) */
+	   SAIMatrix const * opt_unactuation_matrix,
+	   /** optional name for the root link (if empty, we set it to "root") */
+	   std::string const & opt_root_name,
+	   /** optional array of link names (if non-NULL, we pass it to setLinkNames()) */
+	   std::vector<std::string> const * opt_link_names,
+	   /** optional array of link names (if non-NULL, we pass it to setJointNames()) */
+	   std::vector<std::string> const * opt_joint_names)
+      throw(std::runtime_error);
+    
+    
     ~BranchingRepresentation();
     
     /** Set the name of the TAO root node, simply overriding any

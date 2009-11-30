@@ -38,4 +38,32 @@ namespace wbc {
       mapNodesToIDs(idToNodeMap, p);
   }
   
+  
+  int countNumberOfLinks(taoDNode * root)
+  {
+    int count(0);
+    for (taoDNode * child(root->getDChild()); child != NULL; child = child->getDSibling()) {
+      ++count;
+      count += countNumberOfLinks(child);
+    }
+    return count;
+  }
+  
+  
+  double computeTotalMass(taoDNode * node)
+  {
+    double mass(0);
+    if (node->mass()) {
+      // I guess TAO nodes always have a mass, but the interface
+      // returns a pointer, so maybe there are cases where there is
+      // not even a zero mass? Whatever, just be paranoid and check
+      // for non-NULL pointers.
+      mass = *node->mass();
+    }
+    for (taoDNode * child(node->getDChild()); child != NULL; child = child->getDSibling()) {
+      mass += computeTotalMass(child);
+    }
+    return mass;
+  }
+
 }

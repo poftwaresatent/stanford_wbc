@@ -32,6 +32,10 @@
 #include <tao/utility/TaoDeMassProp.h>
 #include <iostream>
 #include <sstream>
+#include <limits>
+
+using namespace std;
+
 
 namespace wbc {
 
@@ -50,8 +54,92 @@ namespace wbc {
   ~BranchingRepresentation()
   {
   }
-
-
+  
+  
+  BranchingRepresentation * BranchingRepresentation::
+  create(taoNodeRoot * tao_root,
+	 SAIVector const * opt_gravity,
+	 SAIMatrix const * opt_unactuation_matrix,
+	 std::string const & opt_root_name,
+	 std::vector<std::string> const * opt_link_names,
+	 std::vector<std::string> const * opt_joint_names)
+  throw(std::runtime_error)
+  {
+    BranchingRepresentation * robot(new BranchingRepresentation());
+    
+    try {
+      robot->rootNode_ = tao_root;
+      robot->numJoints_ = countNumberOfLinks(tao_root);
+      robot->totalMass_ = computeTotalMass(tao_root);
+      
+      if (opt_gravity) {
+	robot->grav_ = *opt_gravity;
+      }
+      else {
+	robot->grav_[0] = 0;
+	robot->grav_[1] = 0;
+	robot->grav_[2] = -9.81;
+      }
+      
+      if (opt_unactuation_matrix) {
+	if (opt_unactuation_matrix->row() > opt_unactuation_matrix->column()) {
+	  ostringstream msg;
+	  msg << "wbc::BranchingRepresentation::create(): invalid " << opt_unactuation_matrix->row()
+	      << "x" << opt_unactuation_matrix->column() << " unactuation matrix (more rows than columns)";
+	  throw runtime_error(msg.str());
+	}
+	if (opt_unactuation_matrix->column() > robot->numJoints_) {
+	  ostringstream msg;
+	  msg << "wbc::BranchingRepresentation::create(): invalid " << opt_unactuation_matrix->row()
+	      << "x" << opt_unactuation_matrix->column() << " unactuation matrix (robot has only " << robot->numJoints_
+	      << " joints)";
+	  throw runtime_error(msg.str());
+	}
+	robot->unactuationMatrix_ = *opt_unactuation_matrix;
+      }
+      else {
+	robot->unactuationMatrix_.identity(robot->numJoints_);
+      }
+      
+      mapNodesToIDs(robot->idToNodeMap_, tao_root);
+      
+      if (opt_root_name.empty()) {
+	robot->setRootName("root");
+      }
+      else {
+	robot->setRootName(opt_root_name);
+      }
+      
+      if (opt_link_names) {
+	robot->setLinkNames(*opt_link_names);
+      }
+      
+      if (opt_joint_names) {
+	robot->setJointNames(*opt_joint_names);
+      }
+      
+      robot->defaultJointPosVec_.setSize(robot->numJoints_);
+      robot->upperJointLimitVec_.setSize(robot->numJoints_);
+      robot->lowerJointLimitVec_.setSize(robot->numJoints_);
+      for (int count(0); count < robot->numJoints_; ++count) {
+	// XXXX to do: take default, upper, lower joint angles from (optional) args
+	robot->defaultJointPosVec_[count] = 0;
+	robot->upperJointLimitVec_[count] = std::numeric_limits<double>::max();
+	robot->lowerJointLimitVec_[count] = std::numeric_limits<double>::min();
+      }
+      
+      taoDynamics::initialize(tao_root); // Does this break in case someone already called this earlier?
+    }
+    
+    catch (std::runtime_error const & ee) {
+      delete robot;
+      throw ee;
+    }
+    
+    return robot;
+  }
+  
+  
   const SAIVector& 
   BranchingRepresentation::forceSensorWRTJointFrame( taoDNode const * node )
     const

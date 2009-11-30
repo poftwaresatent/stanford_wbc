@@ -41,6 +41,22 @@ namespace wbc {
 		     taoDNode * node)
     throw(std::runtime_error);
   
+  
+  /**
+     Count the total number of links connected to the given node,
+     following all children in to the leaf nodes. This number does NOT
+     include the given link (because usually you will call this on the
+     TAO root node in order to figure out how many degrees of freedom
+     the robot has, in which case you do not count the root itself).
+  */
+  int countNumberOfLinks(taoDNode * root);
+  
+  
+  /**
+     Sum up the mass of the given node plus all its descendants.
+  */
+  double computeTotalMass(taoDNode * node);
+  
 }
 
 #endif // WBC_TAO_UTIL_H
