@@ -167,6 +167,7 @@ subdirs (
   wbc
   plugins/fake
   plugins/robotlog
+  plugins/nwrobot
   tests
   applications
   )
