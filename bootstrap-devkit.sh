@@ -1,7 +1,7 @@
 #!/bin/bash
 
 BASE_DIR=`pwd`
-WBC_ROOT="~/wbc"
+WBC_ROOT="${HOME}/wbc"
 WBC_SOURCE="${BASE_DIR}"
 
 if [ ! -z $1 ]; then
