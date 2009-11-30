@@ -25,8 +25,97 @@
 
 #include "urdf_to_tao.hpp"
 
-#ifndef HAVE_URDF
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//
+// stuff that does *not* depend on HAVE_URDF
+//
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+
+#include <fstream>
+#include <limits>
+
+using namespace std;
+
+
 namespace urdf_to_tao {
+
+
+
+
+  void ActiveLinkFilter::
+  AddLink(std::string const & link_name)
+  {
+    m_active.insert(link_name);
+  }
+  
+  
+  void FlatFileLinkFilter::
+  Load(std::string const & filename) throw(std::runtime_error)
+  {
+    ifstream config(filename.c_str());
+    if ( ! config) {
+      throw runtime_error("urdf_to_tao::FlatFileLinkFilter::Load(" + filename + "): could not open file");
+    }
+    
+    string token;
+    while (config >> token) {
+      if (token[0] == '#'){
+	config.ignore(numeric_limits<streamsize>::max(), '\n');
+	continue;
+      }
+      if (m_root_name.empty()) {
+	m_root_name = token;
+      }
+      AddLink(token);
+    }
+    
+    if (m_root_name.empty()) {
+      throw runtime_error("FlatFileLinkFilter::Load(" + filename + "): no specs in file?");
+    }
+  }
+  
+  
+  std::string const & FlatFileLinkFilter::
+  GetRootName() const
+  {
+    return m_root_name;
+  }
+  
+}
+
+
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//
+// stuff that *does* depend on HAVE_URDF
+//
+//////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+
+#ifndef HAVE_URDF
+
+namespace urdf_to_tao {
+  
+  
+  bool DefaultLinkFilter::
+  isFixed(urdf::Link const & urdf_link) const
+  {
+    return false; // we do not HAVE_URDF, so we treat all joints as non-fixed
+  }
+  
+  
+  bool ActiveLinkFilter::
+  isFixed(urdf::Link const & urdf_link) const
+  {
+    return false; // we do not HAVE_URDF, so we treat all joints as non-fixed
+  }
+  
+  
   taoNodeRoot * convert(urdf::Model const & urdf_model,
 			std::string const & tao_root_name,
 			LinkFilter const & link_filter,
@@ -35,9 +124,16 @@ namespace urdf_to_tao {
   {
     throw std::runtime_error("urdf_to_tao::convert(): support for URDF not built in");
   }
+  
+  
 }
+
+
+//////////////////////////////////////////////////
 // rest of the file...
+
 #else // HAVE_URDF
+
 
 #include "dump.hpp"
 #include <wbc/core/BranchingRepresentation.hpp>
@@ -49,7 +145,6 @@ namespace urdf_to_tao {
 #include <set>
 #include <map>
 #include <iostream>
-#include <fstream>
 
 static wbcnet::logger_t logger(wbcnet::get_logger("urdf_to_tao"));
 
@@ -65,6 +160,19 @@ namespace urdf_to_tao {
     if ( ! urdf_link.parent_joint)
       return false;
     return urdf::Joint::FIXED == urdf_link.parent_joint->type;
+  }
+  
+  
+  bool ActiveLinkFilter::
+  isFixed(urdf::Link const & urdf_link) const
+  {
+    if (urdf_to_tao::DefaultLinkFilter::isFixed(urdf_link)) {
+      return true;
+    }
+    if (m_active.find(urdf_link.name) != m_active.end()) {
+      return false;
+    }
+    return true;
   }
   
   
@@ -771,59 +879,6 @@ namespace urdf_to_tao {
     ////  dump_tao_tree(cout, tao_root, "TAO tree rooted at " + tao_root_name + ": ");
     
     return tao_root;
-  }
-  
-  
-  void ActiveLinkFilter::
-  AddLink(std::string const & link_name)
-  {
-    m_active.insert(link_name);
-  }
-  
-  
-  void FlatFileLinkFilter::
-  Load(std::string const & filename) throw(std::runtime_error)
-  {
-    ifstream config(filename.c_str());
-    if ( ! config) {
-      throw runtime_error("urdf_to_tao::FlatFileLinkFilter::Load(" + filename + "): could not open file");
-    }
-    
-    string token;
-    while (config >> token) {
-      if (token[0] == '#'){
-	config.ignore(numeric_limits<streamsize>::max(), '\n');
-	continue;
-      }
-      if (m_root_name.empty()) {
-	m_root_name = token;
-      }
-      AddLink(token);
-    }
-    
-    if (m_root_name.empty()) {
-      throw runtime_error("FlatFileLinkFilter::Load(" + filename + "): no specs in file?");
-    }
-  }
-  
-  
-  std::string const & FlatFileLinkFilter::
-  GetRootName() const
-  {
-    return m_root_name;
-  }
-  
-  
-  bool ActiveLinkFilter::
-  isFixed(urdf::Link const & urdf_link) const
-  {
-    if (urdf_to_tao::DefaultLinkFilter::isFixed(urdf_link)) {
-      return true;
-    }
-    if (m_active.find(urdf_link.name) != m_active.end()) {
-      return false;
-    }
-    return true;
   }
   
 }
