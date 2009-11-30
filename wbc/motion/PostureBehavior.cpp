@@ -26,105 +26,77 @@
 //=========================================================================
 
 #include <wbc/motion/PostureBehavior.hpp>
-#include <wbc/core/TaskSet.hpp>
-#include <wbc/motion/WholeBodyPosture.hpp>
 #include <wbc/core/Kinematics.hpp>
-#include <wbc/util/Recorder.hpp>
-#include <saimatrix/SAIVector.h>
 #include <wbcrun/service.hpp>
+#include <wbcnet/log.hpp>
+
+static wbcnet::logger_t logger(wbcnet::get_logger("wbc"));
+
 
 namespace wbc {
-
-  enum {
-    FLOAT,
-    ACTIVE
-  } ;
-
-  void
-  PostureBehavior::onUpdate() {
-
+  
+  
+  PostureBehavior::
+  PostureBehavior()
+    : BehaviorDescription("PostureBehavior"),
+      float_key_(0),
+      freeze_key_(0),
+      whole_body_posture_("whole_body_posture"),
+      friction_posture_("friction_posture")
+  {
+  }
+  
+  
+  void PostureBehavior::
+  onUpdate()
+  {
     whole_body_posture_.onUpdate();
     friction_posture_.onUpdate();
-
-    SAIVector defaultPosture = robModel()->branching()->defaultJointPositions();
-    //defaultPosture.display("desired posture");
-    //robModel()->kinematics()->jointPositions().display("actual posture");
-
-
-    //==============
-    // state machine
-    //==============
-
-    switch( currentState_ ) {
-
-      // Move hands to position
-    case ACTIVE:
-      whole_body_posture_.goalPostureConfig(goalPosture_);
-      activeTaskSet_ = &taskSetOperational_;
-      break;
-    case FLOAT:
-      activeTaskSet_ = &taskSetFloat_;
-      break;
-
-    default:
-      break;
-    }
   }
 
 
-  void
-  PostureBehavior::loadMovementPrimitives( RobotControlModel* robmodel )
+  void PostureBehavior::
+  loadMovementPrimitives(RobotControlModel * robmodel)
     throw(std::runtime_error)
   {
-    // pass robot model to task primitives 
-    whole_body_posture_.robotControlModel( robmodel );
-    friction_posture_.robotControlModel( robmodel );
-
-    // Reset task set.
     taskSetOperational_.removeAll();
-    taskSetFloat_.removeAll();
-    taskSetFloat_.addTask(&friction_posture_);
-    friction_posture_.diffGain(1.0);
-    //=============================================//
-    // BEGIN LOAD TASK SET MOVE HAND TO POSITION
-    //=============================================//
-    taskSetOperational_.addTask( &whole_body_posture_ );
-
-
-    //==================//
-    // REGISTER TASK SETS WITH BASE CLASS
-    //==================//
-    registerTaskSet(&taskSetOperational_);
-    registerTaskSet(&taskSetFloat_);
-    //==================//
-    // INITIALIZATIONS
-    //==================//
-
-    // whole-body posture
-    SAIVector defaultPosture = robModel()->branching()->defaultJointPositions();
-    goalPosture_ = defaultPosture;
-    whole_body_posture_.goalPostureConfig(goalPosture_);
+    
+    whole_body_posture_.robotControlModel(robmodel);
+    whole_body_posture_.goalPostureConfig(robModel()->branching()->defaultJointPositions());
     whole_body_posture_.propGain(400.0);
     whole_body_posture_.diffGain(15.0);
     whole_body_posture_.maxVel(0.85);//rad/s
-
-    // activate task set
+    taskSetOperational_.addTask(&whole_body_posture_);
+    registerTaskSet(&taskSetOperational_);
+    
+    friction_posture_.robotControlModel(robmodel);
+    friction_posture_.diffGain(1.0);
+    taskSetFloat_.removeAll();
+    taskSetFloat_.addTask(&friction_posture_);
+    registerTaskSet(&taskSetFloat_);
+    
     activeTaskSet_ = &taskSetOperational_;
   }
-
-
-  PostureBehavior::PostureBehavior()
-    : BehaviorDescription("PostureBehavior"),
-      whole_body_posture_("whole_body_posture"),
-      friction_posture_("friction_posture"),
-      currentState_(0) {} 
-
+  
+  
   int32_t PostureBehavior::
   handleCommand(int32_t const * codeVector,
 		size_t nCodes,
 		SAIMatrix const & matrix)
   {
+    // handleStdCommand() will dispatch e.g. to handleKey() as
+    // appropriate by looking at the codeVector
+    
+    int32_t const std_result(handleStdCommand(codeVector, nCodes, matrix));
+    if (wbcrun::srv::NOT_IMPLEMENTED != std_result) {
+      return std_result;
+    }
+    
+    // handleStdCommand() did not understand the command, let's see
+    // what we can do with it...
+    
     switch (codeVector[0]) {      
+    
     case wbcrun::srv::SET_GOAL:
       cout << "recieved SET_GOAL command" << endl;
       if (matrix.column()!=1 || matrix.row()!=robModel()->branching()->numJoints()){
@@ -132,31 +104,81 @@ namespace wbc {
 	return wbcrun::srv::INVALID_DIMENSION;
       }
       else {
+	SAIVector goalPosture(robModel()->branching()->numJoints());
 	for (int i = 0; i< robModel()->branching()->numJoints(); i++)
-	  goalPosture_[i] = matrix[0][i];
+	  goalPosture[i] = matrix[0][i];
+	whole_body_posture_.goalPostureConfig(goalPosture);
+	activeTaskSet_ = &taskSetOperational_;
 	return wbcrun::srv::SUCCESS;
-	break;
       }
-
+      
     case wbcrun::srv::FLOAT:
       cout << "recieved FLOAT command" << endl;
-      currentState_ = FLOAT;
+      activeTaskSet_ = &taskSetFloat_;
       return wbcrun::srv::SUCCESS;
-      break;
-  
-
+      
     case wbcrun::srv::ACTIVATE:
-      cout << "recieved FLOAT command" << endl;
-      goalPosture_ = robModel()->kinematics()->jointPositions();
-      currentState_ = ACTIVE;
+      cout << "recieved ACTIVATE command" << endl;
+      whole_body_posture_.goalPostureConfig(robModel()->kinematics()->jointPositions());
+      activeTaskSet_ = &taskSetOperational_;
       return wbcrun::srv::SUCCESS;
-      break;
-
-
-    default:
+    }
+    
+    return wbcrun::srv::NOT_IMPLEMENTED;
+  }
+  
+  
+  int32_t PostureBehavior::
+  handleKey(int32_t keycode)
+  {
+    if ((0 != float_key_) && (keycode == float_key_)) {
+      activeTaskSet_ = &taskSetFloat_;
+      return wbcrun::srv::SUCCESS;
+    }
+    
+    if ((0 != freeze_key_) && (keycode == freeze_key_)) {
+      whole_body_posture_.goalPostureConfig(robModel()->kinematics()->jointPositions());
+      activeTaskSet_ = &taskSetOperational_;
+      return wbcrun::srv::SUCCESS;
+    }
+    
+    key_posture_t::const_iterator iposture(key_posture_.find(keycode));
+    if (key_posture_.end() == iposture) {
       return wbcrun::srv::NOT_IMPLEMENTED;
     }
-
+    
+    if (iposture->second.size() != robModel()->branching()->numActuatedJoints()) {
+      LOG_ERROR (logger,
+		 "wbc::PostureBehavior::handleKey(): posture for key code " << keycode
+		 << " has invalid size " << iposture->second.size()
+		 << " (should be " << robModel()->branching()->numActuatedJoints() << ")");
+      return wbcrun::srv::INVALID_DIMENSION;
+    }
+    
+    whole_body_posture_.goalPostureConfig(iposture->second);
+    activeTaskSet_ = &taskSetOperational_;
+    return wbcrun::srv::SUCCESS;
   }
-
+  
+  
+  void PostureBehavior::
+  setFloatKey(int32_t keycode)
+  {
+    float_key_ = keycode;
+  }
+  
+  
+  void PostureBehavior::
+  setFreezeKey(int32_t keycode)
+  {
+    freeze_key_ = keycode;
+  }
+  
+  
+  void PostureBehavior::
+  addPostureKey(int32_t keycode, SAIVector const & posture)
+  {
+    key_posture_[keycode] = posture;
+  }
+  
 }

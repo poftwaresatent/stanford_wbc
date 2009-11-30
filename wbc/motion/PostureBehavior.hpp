@@ -45,33 +45,36 @@ namespace wbc {
     : public BehaviorDescription
   {
   public:
-
     PostureBehavior();
-
+    
+    void setFloatKey(int32_t keycode);
+    void setFreezeKey(int32_t keycode);
+    void addPostureKey(int32_t keycode, SAIVector const & posture);
+    
     virtual TaskSet* activeTaskSet() { return activeTaskSet_; }
     virtual void onUpdate();
 
     virtual int32_t handleCommand(int32_t const * codeVector,
 				  size_t nCodes,
 				  SAIMatrix const & matrix);
-
+    
+    virtual int32_t handleKey(int32_t keycode);
+    
   protected:
     virtual void loadMovementPrimitives( RobotControlModel* ) throw(std::runtime_error);
-
-  private:
-
-    // General attributes
+    
+    typedef std::map<int32_t, SAIVector> key_posture_t;
+    key_posture_t key_posture_;
+    int32_t float_key_;
+    int32_t freeze_key_;
+    
     TaskSet taskSetOperational_;
     TaskSet taskSetFloat_;
     TaskSet* activeTaskSet_;
     WholeBodyPosture whole_body_posture_;
     FrictionPosture friction_posture_;
-    unsigned int currentState_;
-    SAIVector goalPosture_;
-    //SAIVector recType_;
-    SAIMatrix recType_;
   };
-
+  
 }
 
 #endif
