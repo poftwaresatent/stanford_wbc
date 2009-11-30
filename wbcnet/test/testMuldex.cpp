@@ -55,7 +55,7 @@ namespace {
   {
   public:
     explicit Listener(ostream & _os)
-      : servo_proxy(idl::GetID("RobotState"), 3, 4, 4, 2),
+      : servo_proxy(idl::GetID("RobotState"), false, 3, 4, 4, 2),
 	os(_os)
     {
     }
@@ -127,7 +127,7 @@ static void init_task_spec(msg::TaskSpec & tsd)
 
 static bool mux_servo(SPQueue & queue, Muldex & mdx, ostream & os)
 {
-  RobotState servo_proxy(idl::GetID("RobotState"), 3, 4, 4, 2);
+  RobotState servo_proxy(idl::GetID("RobotState"), false, 3, 4, 4, 2);
   init_servo(servo_proxy);
   muldex_status const ms(mdx.Mux(&queue, servo_proxy));
   if (muldex_status::SUCCESS != ms.muldex) {

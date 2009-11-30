@@ -40,12 +40,20 @@ namespace wbcnet {
 
     /**
        A Proxy for sending and receiving a robot state.
+       
+       The workings of CheckHeader() and UnpackHeader(): If
+       auto_resize is true, CheckHeader() always succeeds and
+       UnpackHeader() resizes the payload fields. Otherwise,
+       CheckHeader() fails if the incoming message mismatches the
+       dimensions given at construction time (and thus UnpackHeader()
+       never needs to resize anything).
     */
     class RobotStateWrap
       : public Proxy
     {
     public:
       RobotStateWrap(unique_id_t id,
+		     bool auto_resize,
 		     uint8_t npos,
 		     uint8_t nvel,
 		     uint8_t forces_nrows,
@@ -54,15 +62,19 @@ namespace wbcnet {
 		     VectorStorageAPI * jointVelocitiesPtr,
 		     MatrixStorageAPI * forcesPtr);
     
-      /** Yell if check_npos != npos or check_nvel != nvel. */
+      /** Checks are only active if auto_resize is false. Yell if
+	  check_npos != npos or check_nvel != nvel. */
       virtual proxy_status CheckHeader() const;
+      
+      /** Resizing is active only if auto_resize is true. */
+      virtual proxy_status UnpackHeader(BufferAPI const & buffer, endian_mode_t endian_mode);
       
       bool Copy(timestamp const & tstamp,
 		VectorStorageAPI const & joint_angles,
 		VectorStorageAPI const & joint_velocities,
 		MatrixStorageAPI const & contact_forces);
       
-      // for CheckHeader()
+      bool const auto_resize;
       uint8_t const check_npos;
       uint8_t const check_nvel;
       uint8_t const check_forces_nrows;
@@ -95,11 +107,12 @@ namespace wbcnet {
       typedef matrix_t matrix_type;
       
       RobotState(unique_id_t id,
+		 bool auto_resize,
 		 uint8_t npos,
 		 uint8_t nvel,
 		 uint8_t forces_nrows,
 		 uint8_t forces_ncolumns)
-	: RobotStateWrap(id, npos, nvel, forces_nrows, forces_ncolumns,
+	: RobotStateWrap(id, auto_resize, npos, nvel, forces_nrows, forces_ncolumns,
 			 &jointAngles, &jointVelocities, &forces),
 	  jointAngles(npos),
 	  jointVelocities(nvel),
@@ -123,6 +136,7 @@ namespace wbcnet {
       void display(ostream_t & os, char const * prefix) const
       {
 	os << prefix << "requestID:       " << (int) requestID << "\n"
+	   << prefix << "auto_resize:     " << (auto_resize ? "true\n" : "false\n")
 	   << prefix << "npos:            " << (int) npos << "\n"
 	   << prefix << "nvel:            " << (int) nvel << "\n"
 	   << prefix << "forces_nrows:    " << (int) forces_nrows << "\n"

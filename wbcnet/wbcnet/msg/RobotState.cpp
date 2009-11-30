@@ -40,6 +40,7 @@ namespace wbcnet {
 
     RobotStateWrap::
     RobotStateWrap(unique_id_t id,
+		   bool _auto_resize,
 		   uint8_t _npos,
 		   uint8_t _nvel,
 		   uint8_t _forces_nrows,
@@ -48,6 +49,7 @@ namespace wbcnet {
 		   VectorStorageAPI * _jointVelocitiesPtr,
 		   MatrixStorageAPI * _forcesPtr)
       : Proxy(id),
+	auto_resize(_auto_resize),
 	check_npos(_npos),
 	check_nvel(_nvel),
 	check_forces_nrows(_forces_nrows),
@@ -76,9 +78,13 @@ namespace wbcnet {
     proxy_status RobotStateWrap::
     CheckHeader() const
     {
-      if ((check_npos == npos) && (check_nvel == nvel)
-	  && (check_forces_nrows == forces_nrows) && (check_forces_ncolumns == forces_ncolumns))
+      if (auto_resize) {
 	return PROXY_OK;
+      }
+      if ((check_npos == npos) && (check_nvel == nvel)
+	  && (check_forces_nrows == forces_nrows) && (check_forces_ncolumns == forces_ncolumns)) {
+	return PROXY_OK;
+      }
       LOG_ERROR (logger,
 		     "wbcnet::RobotStateWrap::CheckHeader(): size check failed:\n"
 		     << "  npos is " << static_cast<unsigned int>(npos) << " (should be "
@@ -92,6 +98,41 @@ namespace wbcnet {
 		     << " (should be "
 		     << static_cast<unsigned int>(check_forces_ncolumns) << ")");
       return PROXY_DIMENSION_MISMATCH;
+    }
+    
+    
+    proxy_status RobotStateWrap::
+    UnpackHeader(BufferAPI const & buffer, endian_mode_t endian_mode)
+    {
+      // This ends up calling CheckHeader() through the
+      // superclass... which ends up checking auto_resize and saying
+      // PROXY_OK if auto_resize is true. So there is no need for
+      // explicit checking of auto_resize here.
+      proxy_status ps(Proxy::UnpackHeader(buffer, endian_mode));
+      if (PROXY_OK != ps) {
+	return ps;
+      }
+      
+      if ( ! jointAnglesPtr->SetNElements(npos)) {
+	LOG_ERROR (logger,
+		   "wbcnet::RobotStateWrap::UnpackHeader(): failed to resize joint angles to " << (int) npos);
+	return PROXY_RESIZE_ERROR;
+      }
+      
+      if ( ! jointVelocitiesPtr->SetNElements(nvel)) {
+	LOG_ERROR (logger,
+		   "wbcnet::RobotStateWrap::UnpackHeader(): failed to resize joint velocities to " << (int) nvel);
+	return PROXY_RESIZE_ERROR;
+      }
+      
+      if ( ! forcesPtr->SetSize(forces_nrows, forces_ncolumns)) {
+	LOG_ERROR (logger,
+		   "wbcnet::RobotStateWrap::UnpackHeader(): failed to resize forces to "
+		   << (int) forces_nrows << "x" << (int) forces_ncolumns);
+	return PROXY_RESIZE_ERROR;
+      }
+      
+      return PROXY_OK;
     }
     
     

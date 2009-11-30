@@ -158,8 +158,8 @@ static bool test_servo(uint8_t npos, uint8_t nvel,
 		       ostream & os)
 {
   unique_id_t const servo_id(idl::Assign("RobotState"));
-  RobotState foo(servo_id, npos, nvel, forces_nrows, forces_ncolumns);
-  RobotState bar(servo_id, npos, nvel, forces_nrows, forces_ncolumns);
+  RobotState foo(servo_id, false, npos, nvel, forces_nrows, forces_ncolumns);
+  RobotState bar(servo_id, false, npos, nvel, forces_nrows, forces_ncolumns);
   init_servo(foo);
   init_servo(bar);
   
@@ -470,8 +470,8 @@ static bool test_status(ostream & os)
 static bool test_cmd(uint8_t ncommands, ostream & os)
 {
   idl::Assign("ServoCommand");
-  ServoCommand foo(idl::GetID("ServoCommand"), ncommands);
-  ServoCommand bar(idl::GetID("ServoCommand"), ncommands);
+  ServoCommand foo(idl::GetID("ServoCommand"), false, ncommands);
+  ServoCommand bar(idl::GetID("ServoCommand"), false, ncommands);
   init_cmd(foo);
   init_cmd(bar);
   

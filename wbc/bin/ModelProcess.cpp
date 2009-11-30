@@ -252,7 +252,7 @@ namespace wbc {
     AddSource(m_channel, 100);
     
     m_servo_status.status = wbcrun::msg::VOID_STATUS;
-    m_robot_state = new wbcrun::msg::RobotState(npos, nvel, force_nrows, force_ncols);
+    m_robot_state = new wbcrun::msg::RobotState(false, npos, nvel, force_nrows, force_ncols);
     
     CreateHandler(wbcrun::msg::STATUS, "servo_status", &m_servo_status);
     CreateHandler(wbcrun::msg::ROBOT_STATE, "robot_state", m_robot_state);

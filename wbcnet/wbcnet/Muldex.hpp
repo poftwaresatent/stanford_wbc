@@ -278,7 +278,7 @@ namespace wbcnet {
        
        \return 0 on success. Note that MdxDispatcher::Handle() returns
        -1 if there is no handler for a given msg_id, so maybe you
-       should avoid returning -1 from your operator() in order to
+       should avoid returning -1 from your DoHandleMessageHeader() in order to
        avoid confusion.
     */
     virtual int DoHandleMessageHeader(unique_id_t msg_id, BufferAPI const & buf,
@@ -294,7 +294,7 @@ namespace wbcnet {
        
        \return 0 on success. Note that MdxDispatcher::Handle() returns
        -1 if there is no handler for a given msg_id, so maybe you
-       should avoid returning -1 from your operator() in order to
+       should avoid returning -1 from your DoHandleMessagePayload() in order to
        avoid confusion.
     */    
     virtual int DoHandleMessagePayload(unique_id_t msg_id, BufferAPI const & buf,
@@ -367,7 +367,7 @@ namespace wbcnet {
 		 std::string const & name,
 		 /** The proxy that this handler fills in for you. */
 		 Proxy & proxy,
-		 /** Wether this instance should be automatically
+		 /** Whether this instance should be automatically
 		     deleted by the MdxMuldex destructor. */
 		 bool dispatcher_owned,
 		 /** The interested party, if any (probably the owner
@@ -378,9 +378,7 @@ namespace wbcnet {
     
   protected:
     /**
-       Unpack the header from the buffer into the registered proxy. If
-       something goes wrong and you passed a non-null erros to the
-       constructor, it will write a little message there.
+       Unpack the header from the buffer into the registered proxy.
        
        \return 0 on success, -2 if Proxy::UnpackHeader() failed. We do
        not return -1 because that is used by MdxDispatcher::Handle()
@@ -391,9 +389,7 @@ namespace wbcnet {
 				      endian_mode_t endian_mode);
     
     /**
-       Unpack the payload from the buffer into the registered
-       proxy. If something goes wrong and you passed a non-null erros
-       to the constructor, it will write a little message there.
+       Unpack the payload from the buffer into the registered proxy.
        
        \return 0 on success, -3 if Proxy::UnpackPayload() failed. We
        do not return -1 because that is used by

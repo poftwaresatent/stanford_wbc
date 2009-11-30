@@ -29,39 +29,26 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WBCRUN_MSG_ROBOT_STATE_HPP
-#define WBCRUN_MSG_ROBOT_STATE_HPP
+#ifndef WBCRUN_MSG_SERVO_COMMAND_HPP
+#define WBCRUN_MSG_SERVO_COMMAND_HPP
 
-#include <wbcnet/msg/RobotState.hpp>
+#include <wbcnet/msg/ServoCommand.hpp>
 #include <wbc/core/SAIVectorAPI.hpp>
-#include <wbc/core/SAIMatrixAPI.hpp>
-
-// We really should find a better way than having a global header for
-// this... maybe a checksum on the names of registered header and
-// payload fields?
-#include <wbcrun/message_id.hpp>
 
 namespace wbcrun {
   
   namespace msg {
     
-    class RobotState
-      : public wbcnet::msg::RobotState<wbc::SAIVectorAPI,
-				       wbc::SAIMatrixAPI>
+    class ServoCommand
+      : public wbcnet::msg::ServoCommand<wbc::SAIVectorAPI>
     {
     public:
-      inline RobotState(bool auto_resize,
-			uint8_t npos,
-			uint8_t nvel,
-			uint8_t forces_nrows,
-			uint8_t forces_ncolumns)
-	: wbcnet::msg::RobotState<wbc::SAIVectorAPI,
-				  wbc::SAIMatrixAPI>(ROBOT_STATE, auto_resize, npos, nvel,
-						     forces_nrows, forces_ncolumns) {}
+      inline ServoCommand(bool auto_resize, uint8_t ncommands)
+	: wbcnet::msg::ServoCommand<wbc::SAIVectorAPI>(SERVO_COMMAND, auto_resize, ncommands) {}
     };
     
   }
   
 }
 
-#endif // WBCRUN_MSG_ROBOT_STATE_HPP
+#endif // WBCRUN_MSG_SERVO_COMMAND_HPP
