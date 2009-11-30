@@ -116,12 +116,27 @@ fi
 
 if [ -e include ]; then
     echo "INFO: There already is an include"
-    echo "      It should be a symnlink to the sources, or maybe a directory of symlinks..."
+    echo "      It should be a directory of symlinks..."
 else
-    ln -s ${WBC_SOURCE} include
+    mkdir include
     if [ $? -ne 0 ]; then
 	cd ${BASE_DIR}
-	echo "failed to create symlink include -> ${WBC_SOURCE}"
+	echo "failed to create include directory (for containing symlinks to the headers)"
+	exit 42
+    fi
+    for foo in saimatrix tao wbc wbc_tinyxml wbcrun
+    do
+	ln -s ${WBC_SOURCE}/${foo} include/${foo}
+	if [ $? -ne 0 ]; then
+	    cd ${BASE_DIR}
+	    echo "failed to create symlink include/${foo} --> ${WBC_SOURCE}/${foo}"
+	    exit 42
+	fi
+    done
+    ln -s ${WBC_SOURCE}/wbcnet/wbcnet include/wbcnet
+    if [ $? -ne 0 ]; then
+	cd ${BASE_DIR}
+	echo "failed to create symlink include/wbcnet --> ${WBC_SOURCE}/wbcnet/wbcnet"
 	exit 42
     fi
 fi
