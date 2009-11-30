@@ -152,7 +152,7 @@ namespace wbc {
                 << status);
             return false;
           }
-          NStar = (SAIMatrix::identity(ndof) - (*invMassInertia) * JStarT * LambdaStar_ * JStar_) * NStar;
+          NStar = (SAIMatrix::createIdentity(ndof) - (*invMassInertia) * JStarT * LambdaStar_ * JStar_) * NStar;
 
           *(*muStar)[ttitask] = LambdaStar_ * JStar_ * (*invMassInertia) * (*coriolisCentrifugalForce);
           *(*pStar)[ttitask] = LambdaStar_ * JStar_ * (*invMassInertia) * (*gravityForce);

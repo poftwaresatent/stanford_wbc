@@ -1398,6 +1398,17 @@ void SAIMatrix::resize( int row, int col )
     }
 }
 
+
+void SAIMatrix::identity(int dimension)
+{
+  resize(dimension, dimension);
+  zero();
+  for (int ii(0); ii < dimension; ii++) {
+    elementAt(ii, ii) = 1;
+  }
+}
+
+
 // ===================================================================
 // fIdentity(): test if it is an identity matrix
 // ===================================================================

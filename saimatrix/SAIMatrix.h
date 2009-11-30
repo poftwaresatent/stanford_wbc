@@ -96,7 +96,12 @@ public:
   // Zeroing elements and construct identity matrix.
   void zero();
   void identity();
-  static inline SAIMatrix const identity(int dimension);
+  
+  /** Set this matrix to identity, resizing it first if necessary. */
+  void identity(int dimension);
+  
+  /** Create an identity matrix of desired dimension. */
+  static inline SAIMatrix const createIdentity(int dimension);
   
   /** \todo Ask Luis what this one is all about, it was unused in
       wbc/model/Contact and had a verbatim copy in
@@ -325,7 +330,7 @@ inline void SAIMatrix::identity()
   }
 }
 
-inline SAIMatrix const SAIMatrix::identity(int dimension)
+inline SAIMatrix const SAIMatrix::createIdentity(int dimension)
 {
   SAIMatrix ii(dimension, dimension);
   ii.identity();
