@@ -79,7 +79,8 @@ std::string inertia_matrix_to_string(deMatrix3 const & mx)
   
   void dump_tao_tree(std::ostream & os, taoDNode * root, std::string prefix,
 		     bool detailed,
-		     std::vector<std::string> * id_to_link_name)
+		     std::vector<std::string> * id_to_link_name,
+		     std::vector<std::string> * id_to_joint_name)
   {
     if ((0 <= root->getID()) && id_to_link_name && (id_to_link_name->size() > root->getID())) {
       os << prefix << "* " << (*id_to_link_name)[root->getID()]
@@ -93,6 +94,9 @@ std::string inertia_matrix_to_string(deMatrix3 const & mx)
        << prefix << "    center:       " << *root->center() << "\n"
        << prefix << "    mass:         " << *root->mass() << "\n"
        << prefix << "    inertia:      " << inertia_matrix_to_string(*root->inertia()) << "\n";
+    if (id_to_joint_name && (id_to_joint_name->size() > root->getID())) {
+      os << prefix << "    joint name:   " << (*id_to_joint_name)[root->getID()] << "\n";
+    }
     for (taoJoint /*const*/ * jlist(root->getJointList()); jlist != 0; jlist = jlist->getNext()) {
       os << prefix << "    joint:        " << *jlist << "\n";
     }
@@ -107,7 +111,7 @@ std::string inertia_matrix_to_string(deMatrix3 const & mx)
     
     prefix += "  ";
     for (taoDNode * child(root->getDChild()); child != 0; child = child->getDSibling())
-      dump_tao_tree(os, child, prefix, detailed, id_to_link_name);
+      dump_tao_tree(os, child, prefix, detailed, id_to_link_name, id_to_joint_name);
   }
   
   

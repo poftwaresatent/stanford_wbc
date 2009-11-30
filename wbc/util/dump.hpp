@@ -61,14 +61,17 @@ namespace wbc {
      by the given \c prefix, and each level of the tree is indented
      two spaces with respect to the previous level. If the \c detailed
      flag is specified, then a lot more information is given for each
-     node. Optionally, you can pass a pointer to a vector containing
-     the node names, which will then be output along with the ID (if
-     there is an entry for that ID in the given \c
-     id_to_link_name).
+     node. Optionally, you can pass pointers to vectors containing the
+     node and joint names, which will then be output along with the ID
+     (if there is an entry for that ID in the given \c
+     id_to_link_name). Use \c NULL for \c id_to_link_name and/or \c
+     id_to_link_name if you do not have that information, or don't
+     care to have it printed.
   */
   void dump_tao_tree(std::ostream & os, taoDNode * root, std::string prefix,
 		     bool detailed,
-		     std::vector<std::string> * id_to_link_name);
+		     std::vector<std::string> * id_to_link_name,
+		     std::vector<std::string> * id_to_joint_name);
   
 #ifdef HAVE_URDF
   void dump_urdf_tree(std::ostream & os, urdf::Link const & urdf_root, std::string prefix, bool detailed);
