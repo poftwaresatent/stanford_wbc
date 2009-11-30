@@ -86,7 +86,7 @@ namespace wbc {
       m_ndof_actuated(ndof_actuated),
       m_dhist(dhist),
       m_pskip(pskip),
-      m_robot_state(ndof, nvel, contact_nrows, contact_ncols),
+      m_robot_state(false, ndof, nvel, contact_nrows, contact_ncols),
       m_robmodel(robmodel),
       m_end_effector(robmodel->branching()->findLink("End_Effector"))
   {
@@ -636,7 +636,7 @@ namespace wbc {
     AddSink(m_user_channel, 100);
     AddSource(m_user_channel, 1); // limit the max rate of user requests to one per cycle
     
-    m_robot_state = new wbcrun::msg::RobotState(npos, nvel, force_nrows, force_ncols);
+    m_robot_state = new wbcrun::msg::RobotState(false, npos, nvel, force_nrows, force_ncols);
     m_model_status.status = wbcrun::msg::VOID_STATUS;
     
     CreateHandler(wbcrun::msg::STATUS, "model_status", & m_model_status);

@@ -153,7 +153,7 @@ namespace wbc {
     AddSink(m_user_channel, 100);
     AddSource(m_user_channel, 1); // limit the max rate of user requests to one per cycle
     
-    m_robot_state = new wbcrun::msg::RobotState(npos, nvel, force_nrows, force_ncols);
+    m_robot_state = new wbcrun::msg::RobotState(false, npos, nvel, force_nrows, force_ncols);
     
     CreateHandler(wbcrun::msg::TASK_SPEC, "user_task_spec", & m_user_task_spec);
     CreateHandler(wbcrun::msg::USER_REQUEST, "user_request", & m_user_request);

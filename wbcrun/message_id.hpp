@@ -42,7 +42,7 @@ namespace wbcrun {
       ROBOT_STATE,
       TASK_SPEC,
       TASK_MATRIX,
-      TORQUES,
+      SERVO_COMMAND,
       USER_REQUEST,
       USER_REPLY
     } id_t;

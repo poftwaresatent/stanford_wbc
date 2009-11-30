@@ -414,7 +414,7 @@ void handle(int signum)
 MDX::
 MDX(ostream * dbgos)
   : Muldex(0, -1, endian_mode),
-    sdata(servo_id, 1, 1, 1, 1),
+    sdata(servo_id, false, 1, 1, 1, 1),
     mdata(matrix_id, 1, 1, 1, 1)
 {
   sdata.jointAngles[0] = 0;

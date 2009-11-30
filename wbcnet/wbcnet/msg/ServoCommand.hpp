@@ -46,16 +46,21 @@ namespace wbcnet {
     {
     public:
       ServoCommandWrap(unique_id_t id,
+		       bool auto_resize,
 		       uint8_t ncommands,
 		       VectorStorageAPI * commandPtr);
     
-      /** Yell if check_ncommands != ncommands. hipCoordinates are always
-	  supposed to be 6 DOF, but this is not verified. */
+      /** In non-auto_resize mode: Yell if check_ncommands !=
+	  ncommands. hipCoordinates are always supposed to be 6 DOF,
+	  but this is not verified. */
       virtual proxy_status CheckHeader() const;
-    
-      // for CheckHeader()
+      
+      /** Resizing is active only if auto_resize is true. */
+      virtual proxy_status UnpackHeader(BufferAPI const & buffer, endian_mode_t endian_mode);
+      
+      bool const auto_resize;
       uint8_t const check_ncommands;
-    
+      
       // header
       uint8_t ncommands;
       timestamp acquisitionTime;
@@ -76,8 +81,9 @@ namespace wbcnet {
       typedef vector_t vector_type;
       
       ServoCommand(unique_id_t id,
+		   bool auto_resize,
 		   uint8_t ncommands)
-	: ServoCommandWrap(id, ncommands, &command),
+	: ServoCommandWrap(id, auto_resize, ncommands, &command),
 	  command(ncommands)
       {
       }
@@ -95,7 +101,8 @@ namespace wbcnet {
       template<typename ostream_t>
       void display(ostream_t & os, char const * prefix) const
       {
-	os << prefix << "ncommands: " << ncommands << "\n"
+	os << prefix << "auto_resize: " << (auto_resize ? "true\n" : "false\n")
+	   << prefix << "ncommands: " << ncommands << "\n"
 	   << prefix << "time: " << acquisitionTime.tv_sec << "s "
 	   << acquisitionTime.tv_usec << "usec\n";
 	for (int ii(0); ii < ncommands; ++ii)

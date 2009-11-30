@@ -40,9 +40,11 @@ namespace wbcnet {
 
     ServoCommandWrap::
     ServoCommandWrap(unique_id_t id,
+		     bool _auto_resize,
 		     uint8_t _ncommands,
 		     VectorStorageAPI * _commandPtr)
       : Proxy(id),
+	auto_resize(_auto_resize),
 	check_ncommands(_ncommands),
 	ncommands(_ncommands),
 	commandPtr(_commandPtr)
@@ -61,6 +63,9 @@ namespace wbcnet {
     proxy_status ServoCommandWrap::
     CheckHeader() const
     {
+      if (auto_resize) {
+	return PROXY_OK;
+      }
       if (check_ncommands == ncommands)
 	return PROXY_OK;
       LOG_ERROR (logger,
@@ -68,6 +73,28 @@ namespace wbcnet {
 		     << static_cast<unsigned int>(ncommands)
 		     << " but should be " << static_cast<unsigned int>(check_ncommands));
       return PROXY_DIMENSION_MISMATCH;
+    }
+    
+    
+    proxy_status ServoCommandWrap::
+    UnpackHeader(BufferAPI const & buffer, endian_mode_t endian_mode)
+    {
+      // This ends up calling CheckHeader() through the
+      // superclass... which ends up checking auto_resize and saying
+      // PROXY_OK if auto_resize is true. So there is no need for
+      // explicit checking of auto_resize here.
+      proxy_status ps(Proxy::UnpackHeader(buffer, endian_mode));
+      if (PROXY_OK != ps) {
+	return ps;
+      }
+      
+      if ( ! commandPtr->SetNElements(ncommands)) {
+	LOG_ERROR (logger,
+		   "wbcnet::ServoCommandWrap::UnpackHeader(): failed to resize command to " << (int) ncommands);
+	return PROXY_RESIZE_ERROR;
+      }
+      
+      return PROXY_OK;
     }
     
   }

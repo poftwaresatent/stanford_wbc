@@ -94,8 +94,8 @@ int main(int argc, char ** argv)
   static const int forces_nrows(4);
   static const int forces_ncolumns(4);
   unique_id_t const servo_id(idl::Assign("RobotState"));
-  RobotState foo(servo_id, npos, nvel, forces_nrows, forces_ncolumns);
-  RobotState bar(servo_id, npos, nvel, forces_nrows, forces_ncolumns);
+  RobotState foo(servo_id, false, npos, nvel, forces_nrows, forces_ncolumns);
+  RobotState bar(servo_id, false, npos, nvel, forces_nrows, forces_ncolumns);
   ostringstream os;
   bool ok(true);
   
