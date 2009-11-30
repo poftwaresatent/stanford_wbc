@@ -33,8 +33,8 @@
 #include <saimatrix/SAIMatrix.h>
 #include <tao/matrix/TaoDeMath.h>	
 #include <map>
-#include <list>
 #include <string>
+#include <vector>
 
 class taoDNode;
 class taoNode;	
@@ -58,6 +58,29 @@ namespace wbc {
 
   public:
     ~BranchingRepresentation();
+    
+    /** Set the name of the TAO root node, simply overriding any
+	previously existing one. It also asks canonicalLinkName() for
+	a string, and adds that as well. */
+    void setRootName(std::string const & root_name) throw(std::runtime_error);
+    
+    /** Set the names of the non-root links, by using a table that
+	relates node IDs to strings. It also asks canonicalLinkName()
+	for a string, and adds that as well, simply overriding any
+	previously existing link names. */
+    void setLinkNames(std::vector<std::string> const & link_names) throw(std::runtime_error);
+    
+    /** Set the names of the joints, by using a table that relates the
+	IDs of the nodes for which the joint is the parent to
+	strings. It also asks canonicalJointName() for a string, and
+	adds that as well, simply overriding any previously existing
+	joint names.
+	
+	\note TAO supports multiple joints per link, but WBC never
+	used that feature. So, in our context, it actually makes sense
+	to use a \c std::vector and treat the index as node ID.
+    */
+    void setJointNames(std::vector<std::string> const & joint_names) throw(std::runtime_error);
     
     inline taoNodeRoot* rootNode() {return rootNode_; };  
   

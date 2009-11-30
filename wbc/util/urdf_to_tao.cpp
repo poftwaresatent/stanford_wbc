@@ -30,7 +30,8 @@ namespace urdf_to_tao {
   taoNodeRoot * convert(urdf::Model const & urdf_model,
 			std::string const & tao_root_name,
 			LinkFilter const & link_filter,
-			std::vector<std::string> * tao_id_to_link_name_map) throw(std::runtime_error)
+			std::vector<std::string> * tao_id_to_link_name_map,
+			std::vector<std::string> * tao_id_to_joint_name_map) throw(std::runtime_error)
   {
     throw std::runtime_error("urdf_to_tao::convert(): support for URDF not built in");
   }
@@ -551,7 +552,8 @@ namespace urdf_to_tao {
       wants them wrt link origin (after the joint). */
   void create_tao_tree(taoDNode * tao_parent,
 		       element const * child,
-		       std::vector<std::string> & id_to_name) throw(std::runtime_error)
+		       std::vector<std::string> & id_to_link_name,
+		       std::vector<std::string> * id_to_joint_name) throw(std::runtime_error)
   {
     std::string const & name(child->urdf_link->name);
     urdf::Joint const * urdf_joint(child->urdf_link->parent_joint.get());
@@ -666,10 +668,13 @@ namespace urdf_to_tao {
     // also is the reason why this function need not return the
     // freshly created instance).
     taoNode * tao_node(new taoNode(tao_parent, &(child->tao_home_frame)));
-    tao_node->setID(id_to_name.size());
-    id_to_name.push_back(name);
+    tao_node->setID(id_to_link_name.size());
+    id_to_link_name.push_back(name);
     tao_node->addJoint(tao_joint); 
     tao_node->addABNode();
+    if (id_to_joint_name) {
+      id_to_joint_name->push_back(urdf_joint->name);
+    }
     
     // Yes, this looks weird, doesn't it? Don't worry, it's just TAO's
     // way of copying mass properties.
@@ -685,7 +690,7 @@ namespace urdf_to_tao {
 	 grandchild != child->children.end();
 	 ++grandchild)
       {
-	create_tao_tree(tao_node, *grandchild, id_to_name);
+	create_tao_tree(tao_node, *grandchild, id_to_link_name, id_to_joint_name);
       }
   }
   
@@ -722,7 +727,8 @@ namespace urdf_to_tao {
   taoNodeRoot * convert(urdf::Model const & urdf_model,
 			std::string const & tao_root_name,
 			LinkFilter const & link_filter,
-			std::vector<std::string> * tao_id_to_link_name_map) throw(std::runtime_error)
+			std::vector<std::string> * tao_id_to_link_name_map,
+			std::vector<std::string> * tao_id_to_joint_name_map) throw(std::runtime_error)
   {
     Converter converter(link_filter);
     
@@ -747,9 +753,9 @@ namespace urdf_to_tao {
     taoNodeRoot * tao_root(new taoNodeRoot(&global_frame));
     tao_root->setID(-1);
     
-    std::vector<std::string> id_to_name; // we need this anyway for assigning IDs
+    std::vector<std::string> id_to_link_name; // we need this anyway for assigning IDs
     if (0 == tao_id_to_link_name_map)
-      tao_id_to_link_name_map = &id_to_name;
+      tao_id_to_link_name_map = &id_to_link_name;
     
     // We do not want the conversion_root itself to be descendend of the
     // TAO root, we want all its children to descend from it. Otherwise,
@@ -760,7 +766,7 @@ namespace urdf_to_tao {
 	 child != conversion_root->children.end();
 	 ++child)
       {
-	create_tao_tree(tao_root, *child, *tao_id_to_link_name_map);
+	create_tao_tree(tao_root, *child, *tao_id_to_link_name_map, tao_id_to_joint_name_map);
       }
     ////  dump_tao_tree(cout, tao_root, "TAO tree rooted at " + tao_root_name + ": ");
     

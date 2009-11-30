@@ -93,6 +93,14 @@ namespace urdf_to_tao {
      given TAO node IDs, which are numbered from 0 onward. The TAO
      root node has an ID of -1 and is not included in this map
      (because you provided it as the \c tao_root_name anyway).
+     
+     Similarly to \c tao_id_to_link_name_map, the optional \c
+     tao_id_to_joint_name_map, if non-NULL, is filled in with the
+     names of the URDF joints that reside at given TAO node IDs. Note
+     that TAO supports multiple joints per link, but WBC never used
+     that feature, and URDF seems to require that a joint alsways sits
+     between two links, so the point is moot and we can treat joint
+     names just as link names by stuffing them into a \c std::vector.
        
      \return The root of the freshly created TAO tree. An exception is
      thrown in case of errors. Typical errors are about invalid joint
@@ -104,7 +112,8 @@ namespace urdf_to_tao {
   taoNodeRoot * convert(urdf::Model const & urdf_model,
 			std::string const & tao_root_name,
 			LinkFilter const & link_filter,
-			std::vector<std::string> * tao_id_to_link_name_map) throw(std::runtime_error);
+			std::vector<std::string> * tao_id_to_link_name_map,
+			std::vector<std::string> * tao_id_to_joint_name_map) throw(std::runtime_error);
   
 }
 

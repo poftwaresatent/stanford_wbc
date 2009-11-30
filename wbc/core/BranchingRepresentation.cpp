@@ -31,6 +31,7 @@
 #include <tao/dynamics/taoJoint.h> 
 #include <tao/utility/TaoDeMassProp.h>
 #include <iostream>
+#include <sstream>
 
 namespace wbc {
 
@@ -158,6 +159,53 @@ namespace wbc {
     if (ii == jointNameToNodeMap_.end())
       return 0;
     return ii->second;
+  }
+  
+  
+  void BranchingRepresentation::
+  setRootName(std::string const & root_name)
+    throw(std::runtime_error)
+  {
+    idToNodeMap_t::const_iterator node(idToNodeMap_.find(-1));
+    if (idToNodeMap_.end() == node) {
+      throw runtime_error("wbc::BranchingRepresentation::setRootName(" + root_name + "): no root node");
+    }
+    linkNameToNodeMap_[root_name] = node->second;
+    linkNameToNodeMap_[canonicalLinkName(root_name)] = node->second;
+  }
+  
+  
+  void BranchingRepresentation::
+  setLinkNames(std::vector<std::string> const & link_names)
+    throw(std::runtime_error)
+  {
+    for (size_t ii(0); ii < link_names.size(); ++ii) {
+      idToNodeMap_t::const_iterator node(idToNodeMap_.find(ii));
+      if (idToNodeMap_.end() == node) {
+	ostringstream msg;
+	msg << "wbc::BranchingRepresentation::setLinkNames(): no node with ID " << ii;
+	throw runtime_error(msg.str());
+      }
+      linkNameToNodeMap_[link_names[ii]] = node->second;
+      linkNameToNodeMap_[canonicalLinkName(link_names[ii])] = node->second;
+    }
+  }
+  
+  
+  void BranchingRepresentation::
+  setJointNames(std::vector<std::string> const & joint_names)
+    throw(std::runtime_error)
+  {
+    for (size_t ii(0); ii < joint_names.size(); ++ii) {
+      idToNodeMap_t::const_iterator node(idToNodeMap_.find(ii));
+      if (idToNodeMap_.end() == node) {
+	ostringstream msg;
+	msg << "wbc::BranchingRepresentation::setJointNames(): no node with ID " << ii;
+	throw runtime_error(msg.str());
+      }
+      jointNameToNodeMap_[joint_names[ii]] = node->second;
+      jointNameToNodeMap_[canonicalJointName(joint_names[ii])] = node->second;
+    }
   }
   
 }
