@@ -18,14 +18,11 @@
  * <http://www.gnu.org/licenses/>
  */
 
-//========================================================================= 
-/*!
-  \author     Luis Sentis
-  \file       PostureBehavior.hpp
+/**
+  \file PostureBehavior.hpp
+  \author Luis Sentis and Roland Philippsen
 */
-//
-//=========================================================================
- 
+
 #ifndef	WBC_POSTURE_BEHAVIOR_HPP
 #define WBC_POSTURE_BEHAVIOR_HPP
 

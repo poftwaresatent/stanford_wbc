@@ -18,12 +18,10 @@
  * <http://www.gnu.org/licenses/>
  */
 
-//=========================================================================
-/*!
-  \author     Luis Sentis
-  \file       PostureBehavior.cpp
+/**
+  \file PostureBehavior.cpp
+  \author Luis Sentis and Roland Philippsen
 */
-//=========================================================================
 
 #include <wbc/motion/PostureBehavior.hpp>
 #include <wbc/core/Kinematics.hpp>
