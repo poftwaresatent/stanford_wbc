@@ -255,6 +255,9 @@ INSTALL (FILES ${headers} DESTINATION include/wbcnet)
 FILE (GLOB msg_headers "wbcnet/msg/*.hpp")
 INSTALL (FILES ${msg_headers} DESTINATION include/wbcnet/msg)
 
+FILE (GLOB imp_headers "wbcnet/imp/*.hpp")
+INSTALL (FILES ${imp_headers} DESTINATION include/wbcnet/imp)
+
 ### use e.g. "cmake -DCMAKE_INSTALL_PREFIX=`pwd`/stage" to specify an
 ### installation directory other than /usr/local
 

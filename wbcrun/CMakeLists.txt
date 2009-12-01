@@ -203,6 +203,9 @@ add_dependencies (wbcrun symlink-wbcrun)
 file (GLOB headers "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
 install (FILES ${headers} DESTINATION include/wbcrun)
 
+file (GLOB headers "${CMAKE_CURRENT_SOURCE_DIR}/msg/*.hpp")
+install (FILES ${headers} DESTINATION include/wbcrun/msg)
+
 install (TARGETS wbcrun
          RUNTIME DESTINATION bin
          LIBRARY DESTINATION lib
