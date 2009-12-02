@@ -54,7 +54,7 @@ namespace wbc {
 				SAIVector const & joint_angles,
 				SAIVector const & joint_velocities,
 				timeval const & acquisition_time,
-				SAIMatrix const contact_forces,
+				SAIMatrix const & contact_forces,
 				SAIVector & command_torques) = 0;
   };
   
