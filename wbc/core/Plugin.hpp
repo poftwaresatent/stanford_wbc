@@ -31,11 +31,16 @@ namespace wbc {
   class BehaviorFactoryAPI;
   class TaskModelFactoryAPI;
   class ServoBehaviorsAPI;
+  class RawControllerAPI;
+  
   class RobotFactoryRegistry;
   class BehaviorFactoryRegistry;
   class TaskModelFactoryRegistry;
   class ServoBehaviorsFactoryRegistry;
+  class RawControllerFactoryRegistry;
+  
   class RobotControlModel;
+  
   
   /**
      Collection of the various entities that people can hook into the
@@ -88,10 +93,15 @@ namespace wbc {
 			   wbcrun::FactoryAPI<ServoBehaviorsAPI> * factory)
       throw(std::runtime_error);
     
+    void AddRawController(std::string const & name,
+			  wbcrun::FactoryAPI<RawControllerAPI> * factory)
+      throw(std::runtime_error);
+    
     RobotFactoryRegistry * robot_registry;
     BehaviorFactoryRegistry * behavior_registry;
     TaskModelFactoryRegistry * task_model_registry;
     ServoBehaviorsFactoryRegistry * servo_behaviors_registry;
+    RawControllerFactoryRegistry * raw_controller_registry;
   };
   
   
