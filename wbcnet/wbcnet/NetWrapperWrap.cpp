@@ -55,6 +55,7 @@ namespace wbcnet {
     : m_port(0),
       m_address(""),
       m_server_mode(false),
+      m_nonblocking(true),
       m_reconnect_usec_sleep(-1),
       m_socket(0)
   {
@@ -74,6 +75,7 @@ namespace wbcnet {
   Open(in_port_t port,
        std::string const & address,
        bool server_mode,
+       bool nonblocking,
        long reconnect_usec_sleep)
   {
     if (m_socket) {
@@ -82,8 +84,9 @@ namespace wbcnet {
     }
     
     if (server_mode) {
-      if (0 != m_net_wrapper.Listen(port)) {
-	LOG_ERROR (logger, "wbcnet::TCPNetWrapper::Open(): NetWrapper::TCPSocket::Listen(" << (int) port << ") failed");
+      if (0 != m_net_wrapper.Listen(port, ! nonblocking)) {
+	LOG_ERROR (logger, "wbcnet::TCPNetWrapper::Open(): NetWrapper::TCPSocket::Listen(" << (int) port
+		   << ", " << (nonblocking ? "nonblocking" : "blocking") << ") failed");
 	return false;
       }
     }	
@@ -91,6 +94,7 @@ namespace wbcnet {
     m_port = port;
     m_address = address;
     m_server_mode = server_mode;
+    m_nonblocking = nonblocking;
     m_reconnect_usec_sleep = reconnect_usec_sleep;
     
     return true;
@@ -127,13 +131,14 @@ namespace wbcnet {
     if ( ! silent) {
       LOG_INFO (logger,
 		"wbcnet::TCPNetWrapper::LazyReconnect(): client mode: connecting to "
-		<< m_address << " on port " << (int) m_port);
+		<< m_address << " on port " << (int) m_port
+		<< (m_nonblocking ? " in non-blocking mode" : "in blocking mode"));
     }
-    static const bool blocking(true); // blocking seems to be the only way this works for wbcnet
-    if (0 != m_net_wrapper.Connect(m_address.c_str(), m_port, blocking)) {
+    if (0 != m_net_wrapper.Connect(m_address.c_str(), m_port, ! m_nonblocking)) {
       if ( ! silent) {
 	LOG_ERROR (logger, "wbcnet::TCPNetWrapper::LazyReconnect(): client mode: failed to reconnect to port "
-		   << (int) m_port << " on server `" << m_address << "'");
+		   << (int) m_port << " on server `" << m_address << "'"
+		   << (m_nonblocking ? " in non-blocking mode" : "in blocking mode"));
       }
       return false;
     }
