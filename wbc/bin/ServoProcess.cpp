@@ -331,7 +331,9 @@ namespace wbc {
   
   
   bool ServoImplementation::
-  UpdateTorqueCommand(wbc::TaskModelBase const * model, uint8_t current_behaviorID)
+  UpdateTorqueCommand(wbc::TaskModelBase const * model,
+		      uint8_t current_behaviorID,
+		      bool skip_behavior_update)
   {
     LOG_DEBUG (logger, "wbc::ServoImplementation::UpdateTorqueCommand()");
     
@@ -386,9 +388,11 @@ namespace wbc {
 			    gravity,
 			    coriolis);
     
-    // Update the currently running behavior, which will take into
-    // account all the models we updated above.
-    m_current_behavior->onUpdate();
+    if ( ! skip_behavior_update) {
+      // Update the currently running behavior, which will take into
+      // account all the models we updated above.
+      m_current_behavior->onUpdate();
+    }
     
     bool const emergency( ! m_servoBehaviors->updateTorques(m_current_behavior,
 							    m_robmodel,
@@ -564,7 +568,8 @@ namespace wbc {
     else { //if (RUNNING == m_state) {
       LOG_TRACE (logger, "wbc::ServoProcess::Step(): RUNNING: update torque");
       if ( ! m_imp->UpdateTorqueCommand(m_model_listener->GetLastUpdatedModel(),
-					m_current_behaviorID)) {
+					m_current_behaviorID,
+					false)) {
 	LOG_ERROR (logger,
 		       "wbc::ServoProcess::Step(): UpdateTorqueCommand(..., "
 		       << (int) m_current_behaviorID << ") failed");

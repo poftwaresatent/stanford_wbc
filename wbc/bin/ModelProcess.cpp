@@ -80,7 +80,7 @@ namespace wbc {
 	LOG_TRACE (logger, msg.str());
       }
       
-      if (m_imp->ComputeModel(*m_robot_state, m_task_spec)) {
+      if (m_imp->ComputeModel(*m_robot_state, m_task_spec, false)) {
 	LOG_TRACE (logger, "wbc::ModelProcess::Step(): computed model");
 	m_state = SEND_SUCCESS;
       }
@@ -326,7 +326,8 @@ namespace wbc {
   
   bool ModelImplementation::
   ComputeModel(wbcrun::msg::RobotState const & robot_state,
-	       wbcrun::msg::TaskSpec const & task_spec)
+	       wbcrun::msg::TaskSpec const & task_spec,
+	       bool skip_behavior_update)
   {
     LOG_DEBUG (logger,
 	       "wbc::ModelImplementation::ComputeModel()\n  robot_state:\n"
@@ -364,10 +365,11 @@ namespace wbc {
     m_robmodel->kinematics()->onUpdate(jointAngles, jointVelocities);
     m_robmodel->dynamics()->onUpdate(jointAngles, jointVelocities); 
     
-    LOG_TRACE (logger, "ModelImplementation::ComputeModel(): updating behavior");
-      
-    m_current_behavior->onUpdate();
-      
+    if ( ! skip_behavior_update) {
+      LOG_TRACE (logger, "ModelImplementation::ComputeModel(): updating behavior");
+      m_current_behavior->onUpdate();
+    }
+    
     LOG_TRACE (logger, "ModelImplementation::ComputeModel(): updating task model");
     
     if ( ! m_task_model->Update(*m_current_behavior, *m_robmodel)) {
