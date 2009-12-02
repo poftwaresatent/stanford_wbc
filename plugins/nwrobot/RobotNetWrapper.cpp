@@ -307,7 +307,7 @@ parse(std::string const & spec, wbc::ServoInspector * servo_inspector)
   
   LOG_INFO (logger,
 	    "FactoryNetWrapper::parse(): creating RobotNetWrapper\n"
-	    << "  server_mode: " << (server_mode ? : "true\n" : "false\n")
+	    << "  server_mode: " << (server_mode ? "true\n" : "false\n")
 	    << "  port: " << (int) port << "\n"
 	    << "  address: " << address);
   return new RobotNetWrapper(server_mode, port, address);
