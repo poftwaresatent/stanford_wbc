@@ -19,50 +19,28 @@
  */
 
 /**
-   \file RawControllerAPI.hpp
    \author Roland Philippsen
 */
 
-#ifndef WBC_RAW_CONTROLLER_API_HPP
-#define WBC_RAW_CONTROLLER_API_HPP
+#ifndef FAKE_RAW_CONTROLLER_HPP
+#define FAKE_RAW_CONTROLLER_HPP
 
-#include <wbcrun/Factory.hpp>
+#include <wbc/core/RawControllerAPI.hpp>
 
-class SAIVector;
-class SAIMatrix;
-struct timeval;
-
-namespace wbc {
+namespace fake {
   
-  
-  class RobotControlModel;
-  
-  
-  class RawControllerAPI
+  class RawController
+    : public wbc::RawControllerAPI
   {
   public:
-    virtual ~RawControllerAPI() {}
-    
-    virtual bool computeTorques(RobotControlModel const & robot_model,
+    virtual bool computeTorques(wbc::RobotControlModel const & robot_model,
 				SAIVector const & joint_angles,
 				SAIVector const & joint_velocities,
 				timeval const & acquisition_time,
 				SAIMatrix const & contact_forces,
-				SAIVector & command_torques) = 0;
+				SAIVector & command_torques);
   };
-  
-  
-  template<class RawControllerSubclass>
-  class RawControllerFactory
-    : public wbcrun::Factory<RawControllerSubclass, RawControllerAPI>
-  {};
-  
-  
-  class RawControllerFactoryRegistry
-    : public wbcrun::FactoryRegistry<RawControllerAPI>
-  {};
-  
   
 }
 
-#endif // WBC_RAW_CONTROLLER_API_HPP
+#endif // FAKE_RAW_CONTROLLER_HPP
