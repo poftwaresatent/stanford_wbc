@@ -221,12 +221,6 @@ namespace wbc {
   }
   
   
-  /**
-     \todo
-     - NetConfig should be passed as parameter.
-     - Need a way to pass in ndof and nvel, without needing a tao branching model.
-     - Might need a way to get at behaviors, without needing WBC code.
-  */
   void ModelProcess::
   Init(ModelImplementation * imp,
        bool own_imp,
