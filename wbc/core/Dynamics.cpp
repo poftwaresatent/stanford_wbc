@@ -46,9 +46,34 @@ namespace wbc {
   {
     curQ_ = jointAngles;
     curDQ_ = jointVelocities;
-
+    
+    // XXXX weirdness: this supposedly takes all joint angles and uses
+    // them to compute the global translations and rotations of all
+    // links. However, this is already done in Kinematics::onUpdate(),
+    // which also first copies the joint state from the supplied
+    // SAIVector instances into the TAO tree. So, probably we can just
+    // delete this line.
+    //
+    // *EXCEPT THAT* inside computeCoriolisCentrifugalGravityForce(),
+    // the joint positions are copied into the model AGAIN, but this
+    // time setting the velocities to zero, and then it calls
+    // taoDynamics::computeB() and taoDynamics::computeG(). Then, for
+    // computeInvMassInertia(), it copies the full state again and
+    // calls taoDynamics::fwdDynamics() and
+    // taoDynamics::computeAinv(). Afterwards, inside
+    // computeMassInertia(), it copies the same state yet again, and
+    // calls taoDynamics::invDynamics() and taoDynamics::computeA().
+    //
+    // So, whatever. This looks like a ton of historic weirdness that
+    // needs to be cleaned up from scratch, but should "only" hurt
+    // performance (as opposed to the correctness of the
+    // computations). I am leaving it all in place because it might
+    // have some side-effects that are not apparent to me and that
+    // make it work somehow.
+    //
+    // See http://sourceforge.net/apps/trac/stanford-wbc/ticket/44
     taoDynamics::updateTransformation(dynamicEvaluationModel2_->rootNode());
-
+    
     computeCoriolisCentrifugalGravityForce();
     computeInvMassInertia();
     computeMassInertia();
@@ -80,7 +105,7 @@ namespace wbc {
     }
 
     taoDynamics::invDynamics(dynamicEvaluationModel2_->rootNode(),&gravityAccel_);
-    deFloat *A =	(deFloat *)malloc(sizeof(deFloat)*noj_*noj_);
+    deFloat A[noj_*noj_];
     taoDynamics::computeA(dynamicEvaluationModel2_->rootNode(),noj_,A);
 
     for(int i = 0; i < noj_; i++)
@@ -102,7 +127,7 @@ namespace wbc {
     }
 
     taoDynamics::fwdDynamics(dynamicEvaluationModel2_->rootNode(),&gravityAccel_);
-    deFloat *Ainv =	(deFloat *)malloc(sizeof(deFloat)*noj_*noj_);
+    deFloat Ainv[noj_*noj_];
     taoDynamics::computeAinv(dynamicEvaluationModel2_->rootNode(),noj_,Ainv);
 
     for(int i = 0; i < noj_; i++)
@@ -124,13 +149,12 @@ namespace wbc {
       node->getJointList()[0].zeroTau();
     }
 
-    deFloat *b = (deFloat*)malloc(sizeof(deFloat)*noj_);
-    taoDynamics::computeB(dynamicEvaluationModel2_->rootNode(),noj_,b);
-    for(int i = 0; i < noj_; i++) coriolisCentrifugalForce_[i] = b[i];
+    deFloat tmp[noj_];
+    taoDynamics::computeB(dynamicEvaluationModel2_->rootNode(),noj_,tmp);
+    for(int i = 0; i < noj_; i++) coriolisCentrifugalForce_[i] = tmp[i];
 
-    deFloat *g = (deFloat*)malloc(sizeof(deFloat)*noj_);
-    taoDynamics::computeG(dynamicEvaluationModel2_->rootNode(),&gravityAccel_,noj_,g);
-    for(int i = 0; i < noj_; i++) gravityForce_[i] = g[i];
+    taoDynamics::computeG(dynamicEvaluationModel2_->rootNode(),&gravityAccel_,noj_,tmp);
+    for(int i = 0; i < noj_; i++) gravityForce_[i] = tmp[i];
   }
 
 

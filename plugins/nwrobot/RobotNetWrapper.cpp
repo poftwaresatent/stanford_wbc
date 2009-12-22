@@ -74,9 +74,11 @@ defaultPort()
 
 RobotNetWrapper::
 RobotNetWrapper(bool server_mode,
+		bool nonblocking,
 		uint16_t port,
 		std::string const & address)
   : m_server_mode(server_mode),
+    m_nonblocking(nonblocking),
     m_port(port),
     m_address(address),
     m_robot_state(0),
@@ -106,12 +108,13 @@ lazyCreateChannel()
   }
   
   m_channel = new wbcnet::TCPNetWrapper();
-  if ( ! m_channel->Open(m_port, m_address, m_server_mode, 250000)) {
+  if ( ! m_channel->Open(m_port, m_address, m_server_mode, m_nonblocking, 250000)) {
     LOG_ERROR (logger,
 	       "RobotNetWrapper::lazyCreateChannel(): TCPNetWrapper::Open() failed.\n"
 	       << "  port: " << (int) m_port << "\n"
 	       << "  address: " << m_address << "\n"
-	       << "  server_mode: " << (m_server_mode ? "true\n" : "false\n"));
+	       << "  server_mode: " << (m_server_mode ? "true\n" : "false\n")
+	       << "  nonblocking: " << (m_nonblocking ? "true\n" : "false\n"));
     delete m_channel;
     m_channel = 0;
     return false;
@@ -294,11 +297,22 @@ parse(std::string const & spec, wbc::ServoInspector * servo_inspector)
   sfl::token_to(token, 2, port);
   
   bool server_mode;
+  bool nonblocking;
   if (("s" == mode_str) || ("S" == mode_str)) {
     server_mode = true;
+    nonblocking = true;
+  }
+  else if (("bs" == mode_str) || ("BS" == mode_str)) {
+    server_mode = true;
+    nonblocking = false;
   }
   else if (("c" == mode_str) || ("C" == mode_str)) {
     server_mode = false;
+    nonblocking = true;
+  }
+  else if (("bc" == mode_str) || ("BC" == mode_str)) {
+    server_mode = false;
+    nonblocking = false;
   }
   else {
     LOG_ERROR (logger, "FactoryNetWrapper::parse(): invalid mode string `" << mode_str << "' in spec `" << spec << "'");
@@ -307,10 +321,10 @@ parse(std::string const & spec, wbc::ServoInspector * servo_inspector)
   
   LOG_INFO (logger,
 	    "FactoryNetWrapper::parse(): creating RobotNetWrapper\n"
-	    << "  server_mode: " << (server_mode ? : "true\n" : "false\n")
+	    << "  server_mode: " << (server_mode ? "true\n" : "false\n")
 	    << "  port: " << (int) port << "\n"
 	    << "  address: " << address);
-  return new RobotNetWrapper(server_mode, port, address);
+  return new RobotNetWrapper(server_mode, nonblocking, port, address);
 }
 
   
@@ -319,7 +333,8 @@ dumpHelp(std::string const & prefix, std::ostream & os) const
 {
   os << prefix << "spec = [ mode [ : address [ : port ] ] ]\n"
      << prefix << "  default = s::" << (int) RobotNetWrapper::defaultPort() << "\n"
-     << prefix << "  address is only relevant in client mode `c'\n";
+     << prefix << "  address is only relevant in client mode `c'\n"
+     << prefix << "  you can say `bs' or `bc' for blocking mode\n";
 }
 
 

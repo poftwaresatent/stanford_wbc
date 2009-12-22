@@ -28,10 +28,8 @@
 #endif 
 
 #include "COsimArchitect.hpp"
-#ifndef ROBARCH_IS_WINDOWS_
-  #include <wbcnet/log.hpp>
-  static wbcnet::logger_t logger(wbcnet::get_logger("robotarchitect"));
-#endif
+#include <wbcnet/log.hpp>
+static wbcnet::logger_t logger(wbcnet::get_logger("robotarchitect"));
 
 namespace robotarchitect {
 

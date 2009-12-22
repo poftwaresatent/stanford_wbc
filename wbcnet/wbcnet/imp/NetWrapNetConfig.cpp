@@ -41,11 +41,7 @@
 # include "../win32_compat.hpp"
 #endif
 
-// #include <wbcnet/log.hpp>
-
 using namespace std;
-
-//static wbcnet::logger_t logger(wbcnet::get_logger("wbcnet"));
 
 
 namespace wbcnet {
@@ -86,9 +82,6 @@ namespace wbcnet {
 	return 6789;
       throw runtime_error("get_tcp_port(USER, " + sfl::to_string(to_process)
 			  + "): invalid to_process");
-      
-      ////case NetConfig::DISTANCE:
-      ////case NetConfig::MOTOR:
     }
     
     throw runtime_error("get_tcp_port(" + sfl::to_string(from_process)
@@ -103,17 +96,10 @@ namespace wbcnet {
 		process_t to_process) const
     throw(runtime_error)
   {
-
-//#ifndef HAVE_NETWRAP
-//
-//    throw runtime_error("wbcnet::NetWrapNetConfig::CreateChannel(): no support for libnetwrapper");
-//    return 0;
-//
-//#else // HAVE_NETWRAP
-
     in_port_t const port(get_tcp_port(from_process, to_process));
     TCPNetWrapper * channel(new TCPNetWrapper());
-    if ( ! channel->Open(port, address, server_mode, 250000)) {
+    static bool const nonblocking(true);
+    if ( ! channel->Open(port, address, server_mode, nonblocking, 250000)) {
       delete channel;
       ostringstream os;
       os << "wbcnet::NetWrapNetConfig::CreateChannel(): TCPNetWrapper::Open() failed.\n"
@@ -121,13 +107,11 @@ namespace wbcnet {
 	 << "  to_process: " << to_process << "\n"
 	 << "  port: " << (int) port << "\n"
 	 << "  address: " << address << "\n"
-	 << "  server_mode: " << (server_mode ? "true" : "false");
+	 << "  server_mode: " << (server_mode ? "true" : "false")
+	 << "  nonblocking: " << (nonblocking ? "true" : "false");
       throw runtime_error(os.str());
     }
     return channel;
-
-//#endif // HAVE_NETWRAP
-
   }
   
 
@@ -135,41 +119,40 @@ namespace wbcnet {
   CreateChannel(std::string const & connection_spec) const
     throw(std::runtime_error)
   {
-
-//#ifndef HAVE_NETWRAP
-//
-//    throw runtime_error("wbcnet::NetWrapNetConfig::CreateChannel(): no support for libnetwrapper");
-//    return 0;
-//
-//#else // HAVE_NETWRAP
-
     vector<string> token;
     sfl::tokenize(connection_spec, ':', token);
     string keyword;
     sfl::token_to(token, 0, keyword);
-    if ("port" != keyword) {
-      throw runtime_error("wbcnet::NetWrapNetConfig::CreateChannel(): the only valid keyword is `port' as in `port:8081'");
+    bool nonblocking;
+    if ("block" == keyword) {
+      nonblocking = false;
+    }
+    else if (("port" == keyword) || ("nonblocking" == keyword)){
+      nonblocking = true;
+    }
+    else {
+      throw runtime_error("wbcnet::NetWrapNetConfig::CreateChannel(): invalid spec `" + connection_spec
+			  + "' -- use e.g. `port:8765' or `block:7654'");
     }
     in_port_t port;
     if ( ! sfl::token_to(token, 1, port)) {
-      throw runtime_error("wbcnet::NetWrapNetConfig::CreateChannel(): missing or invalid port number in spec `" + connection_spec + "'");
+      throw runtime_error("wbcnet::NetWrapNetConfig::CreateChannel(): missing or invalid port number in spec `"
+			  + connection_spec + "'");
     }
-
+    
     TCPNetWrapper * channel(new TCPNetWrapper());
-    if ( ! channel->Open(port, address, server_mode, 250000)) {
+    if ( ! channel->Open(port, address, server_mode, nonblocking, 250000)) {
       delete channel;
       ostringstream os;
       os << "wbcnet::NetWrapNetConfig::CreateChannel(): TCPNetWrapper::Open() failed.\n"
-      << "  connection_spec: " << connection_spec << "\n"
-      << "  port: " << (int) port << "\n"
-      << "  address: " << address << "\n"
-      << "  server_mode: " << (server_mode ? "true" : "false");
+	 << "  connection_spec: " << connection_spec << "\n"
+	 << "  port: " << (int) port << "\n"
+	 << "  address: " << address << "\n"
+	 << "  server_mode: " << (server_mode ? "true" : "false")
+	 << "  nonblocking: " << (nonblocking ? "true" : "false");
       throw runtime_error(os.str());
     }
     return channel;
-
-//#endif // HAVE_NETWRAP
-
   }
 
 }

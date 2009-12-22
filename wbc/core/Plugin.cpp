@@ -21,6 +21,7 @@
 #include "Plugin.hpp"
 #include "RobotFactory.hpp"
 #include "TaskModelFactory.hpp"
+#include "RawControllerAPI.hpp"
 #include <wbc/core/BehaviorFactory.hpp>
 #include <wbc/core/ServoBehaviorsAPI.hpp>
 #include <wbcnet/strutil.hpp>
@@ -172,7 +173,8 @@ namespace wbc {
     : robot_registry(new RobotFactoryRegistry()),
       behavior_registry(new BehaviorFactoryRegistry(robmodel)),
       task_model_registry(new TaskModelFactoryRegistry()),
-      servo_behaviors_registry(new ServoBehaviorsFactoryRegistry())
+      servo_behaviors_registry(new ServoBehaviorsFactoryRegistry()),
+      raw_controller_registry(new RawControllerFactoryRegistry())
   {
   }
   
@@ -223,5 +225,15 @@ namespace wbc {
     LOG_DEBUG (logger, "wbc::Extensions::AddServoBehaviors(): " << name);
     servo_behaviors_registry->Add(name, factory);
   }
-
+  
+  
+  void Extensions::
+  AddRawController(std::string const & name,
+		   wbcrun::FactoryAPI<RawControllerAPI> * factory)
+    throw(std::runtime_error)
+  {
+    LOG_DEBUG (logger, "wbc::Extensions::AddRawController(): " << name);
+    raw_controller_registry->Add(name, factory);
+  }
+  
 }

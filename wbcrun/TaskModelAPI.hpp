@@ -73,7 +73,7 @@ namespace wbcrun {
 						 size_t matrixID) const = 0;
     
     /**
-       See the table explaining the matric selection in GetMatrix().
+       See the table explaining the matrix selection in GetMatrix().
        
        \return the name of the matching matrix, or "(no such matrix)"
        if it does not exist.

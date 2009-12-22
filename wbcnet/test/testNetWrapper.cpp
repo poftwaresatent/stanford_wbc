@@ -99,7 +99,7 @@ static void (*run)() = run_client;
 
 static vector<int> signums;
 static in_port_t port(9999);
-static bool nonblocking(false);
+static bool nonblocking(true);
 static string address("127.0.0.1");
 static int backlog(0);
 static int nmsg(-1);
@@ -135,11 +135,12 @@ int main(int argc, char ** argv)
 void run_client()
 {
   net_wrapper = new TCPNetWrapper();
-  if ( ! net_wrapper->Open(port, address, false, reconnect_usec_sleep)) {
+  if ( ! net_wrapper->Open(port, address, false, nonblocking, reconnect_usec_sleep)) {
     errx(EXIT_FAILURE,
-	 "run_client(): net_wrapper->Open(%d, %s, false, %ld) failed",
+	 "run_client(): net_wrapper->Open(%d, %s, false, %s, %ld) failed",
 	 (int) port,
 	 address.c_str(),
+	 nonblocking ? "nonblocking" : "blocking",
 	 reconnect_usec_sleep);
   }
   
@@ -207,11 +208,12 @@ void run_client()
 void run_server()
 {
   net_wrapper = new TCPNetWrapper();
-  if ( ! net_wrapper->Open(port, address, true, reconnect_usec_sleep)) {
+  if ( ! net_wrapper->Open(port, address, true, nonblocking, reconnect_usec_sleep)) {
     errx(EXIT_FAILURE,
-	 "run_server(): net_wrapper->Open(%d, %s, true, %ld) failed",
+	 "run_server(): net_wrapper->Open(%d, %s, true, %s, %ld) failed",
 	 (int) port,
 	 address.c_str(),
+	 nonblocking ? "nonblocking" : "blocking",
 	 reconnect_usec_sleep);
   }
   
@@ -291,6 +293,7 @@ void usage(ostream & os)
      << "   -h        help (this message)\n"
      << "   -v        verbose mode (debug messages)\n"
      << "   -s        run as server (by default we run as client)\n"
+     << "   -b        use blocking socket (by default, use non-blocking mode)\n"
      << "   -n <nmsg> quit after processing nmsg iterations (0 means loop forever)\n"
      << "   -p <port> specify a port (default 9999)\n"
      << "   -a <addr> specify a network address (default 127.0.0.1)\n";
@@ -319,6 +322,10 @@ void parse_options(int argc, char ** argv)
 	
       case 's':
 	run = run_server;
+	break;
+	
+      case 'b':
+	nonblocking = false;
 	break;
 	
       case 'n':

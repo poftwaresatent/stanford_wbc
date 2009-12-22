@@ -63,6 +63,8 @@ namespace wbc {
      * to the desired point. Anecdotically, this function took me three
      * days to debug :) (Luis Sentis, lsentis@cs.stanford.edu).
      *
+     * (Unfortunately we had to debug it some more : Samir and Marco!)
+     *
      * If no global point is passed, this function will return the
      * Jacobian at the node's joint.
      */

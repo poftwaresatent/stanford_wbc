@@ -44,6 +44,7 @@ public:
   static uint16_t defaultPort();
   
   RobotNetWrapper(bool server_mode,
+		  bool nonblocking,
 		  uint16_t port,
 		  /** only used for client mode */
 		  std::string const & address);
@@ -67,6 +68,7 @@ public:
   bool lazyCreateChannel();
   
   bool m_server_mode;
+  bool m_nonblocking;
   uint16_t m_port;
   std::string m_address;
   wbcrun::msg::RobotState * m_robot_state;

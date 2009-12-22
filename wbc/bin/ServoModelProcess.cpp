@@ -57,6 +57,7 @@ namespace wbc {
     
     if ( ! m_servo_imp->UpdateRobotState(*m_robot_state)) {
       LOG_TRACE (logger, "wbc::ServoModelProcess::Step(): UpdateRobotState() failed");
+      m_state = ERROR_STATE;
       return false;
     }
     
@@ -86,14 +87,19 @@ namespace wbc {
       LOG_TRACE (logger, "wbc::ServoModelProcess::Step(): RUNNING");
       
       LOG_TRACE (logger, "  update model");
-      if ( ! m_model_imp->ComputeModel(*m_robot_state, m_user_task_spec)) {
+      // This is a bit obscure: the model implementation gets called
+      // first, so we tell it to go ahead and update the current
+      // behavior for us. Further down, when we update the servo
+      // implementation, we tell it to skip that update. Otherwise it
+      // would get called twice.
+      if ( ! m_model_imp->ComputeModel(*m_robot_state, m_user_task_spec, false)) {
 	LOG_ERROR (logger, "wbc::ServoModelProcess::Step(): ComputeModel() FAILED");
 	m_state = ERROR_STATE;
 	return false;
       }
       
       LOG_TRACE (logger, "wbc::ServoModelProcess::Step(): RUNNING: update torque");
-      if ( ! m_servo_imp->UpdateTorqueCommand(m_model_imp->GetTaskModel(), m_user_task_spec.behaviorID)) {
+      if ( ! m_servo_imp->UpdateTorqueCommand(m_model_imp->GetTaskModel(), m_user_task_spec.behaviorID, true)) {
 	LOG_ERROR (logger,
 		       "wbc::ServoModelProcess::Step(): UpdateTorqueCommand(..., "
 		       << (int) m_user_task_spec.behaviorID << ") failed");

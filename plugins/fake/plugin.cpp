@@ -24,6 +24,7 @@
 
 #include "RobotFake.hpp"
 #include "DebugBehavior.hpp"
+#include "RawController.hpp"
 #include <wbc/core/Plugin.hpp>
 #include <wbc/core/BehaviorFactory.hpp>
 #include <wbcnet/log.hpp>
@@ -44,6 +45,7 @@ public:
       LOG_DEBUG (logger, "FakePlugin::Init(): fake robot was already taken, no big deal...");
     }
     extensions.AddBehavior("DebugBehavior", new wbc::BehaviorFactory<DebugBehavior>());
+    extensions.AddRawController("fake", new wbc::RawControllerFactory<fake::RawController>());
   }
 };
 

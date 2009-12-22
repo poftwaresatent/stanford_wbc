@@ -25,4 +25,4 @@ else (WBC_ROOT)
   message (FATAL_ERROR "WBC_ROOT must be set either in the environment or as a CMake variable. Follow the instructions in the README and have a look at the installation instructions on http://stanford-wbc.sourceforge.net/")
 endif (WBC_ROOT)
 
-wbc_add_plugin (fake plugin.cpp RobotFake.cpp DebugBehavior.cpp)
+wbc_add_plugin (fake plugin.cpp RobotFake.cpp DebugBehavior.cpp RawController.cpp)

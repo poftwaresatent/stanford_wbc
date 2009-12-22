@@ -93,7 +93,17 @@ namespace wbc {
     /** Subclasses must compute the torque command based on the given
 	model and behavior. The calling process must garantee that the
 	model corresponds to the behavior and is up to date. */
-    virtual bool UpdateTorqueCommand(TaskModelBase const * model, uint8_t behaviorID);
+    virtual bool UpdateTorqueCommand(TaskModelBase const * model,
+				     uint8_t behaviorID,
+				     /** Set this to true to AVOID
+					 calling
+					 BehaviorDescription::onUpdate()
+					 of the current behavior
+					 inside this method. This is
+					 useful e.g. in case the
+					 behavior already got updated
+					 elsewhere. */
+				     bool skip_behavior_update);
 
     /** Work in progress... requires subclasses to reset the
 	next_task_model with the provided requestID and the nlayers of

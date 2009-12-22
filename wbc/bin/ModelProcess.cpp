@@ -80,7 +80,7 @@ namespace wbc {
 	LOG_TRACE (logger, msg.str());
       }
       
-      if (m_imp->ComputeModel(*m_robot_state, m_task_spec)) {
+      if (m_imp->ComputeModel(*m_robot_state, m_task_spec, false)) {
 	LOG_TRACE (logger, "wbc::ModelProcess::Step(): computed model");
 	m_state = SEND_SUCCESS;
       }
@@ -145,7 +145,7 @@ namespace wbc {
 	SendWait(1000);
       }
       
-      // send over the task-independent matrices
+      // send over the set-dependent matrices
       m_task_matrix.taskID = -1; // redundant
       for (int iset(0); iset < nsets; ++iset) {
 	m_task_matrix.setID = iset;
@@ -159,7 +159,7 @@ namespace wbc {
 	  m_task_matrix.nRows = m_task_matrix.dataptr->NRows();
 	  m_task_matrix.nColumns = m_task_matrix.dataptr->NColumns();
 	  LOG_TRACE (logger,
-		     "wbc::ModelProcess::Step(): sending task-independent matrix "
+		     "wbc::ModelProcess::Step(): sending set-dependent matrix "
 		     << model->GetName(iset, -1, isetmx) << "[" << iset << "]");
 	  EnqueueMessage(m_channel, &m_task_matrix, false, false);
 	  SendWait(1000);
@@ -221,12 +221,6 @@ namespace wbc {
   }
   
   
-  /**
-     \todo
-     - NetConfig should be passed as parameter.
-     - Need a way to pass in ndof and nvel, without needing a tao branching model.
-     - Might need a way to get at behaviors, without needing WBC code.
-  */
   void ModelProcess::
   Init(ModelImplementation * imp,
        bool own_imp,
@@ -326,7 +320,8 @@ namespace wbc {
   
   bool ModelImplementation::
   ComputeModel(wbcrun::msg::RobotState const & robot_state,
-	       wbcrun::msg::TaskSpec const & task_spec)
+	       wbcrun::msg::TaskSpec const & task_spec,
+	       bool skip_behavior_update)
   {
     LOG_DEBUG (logger,
 	       "wbc::ModelImplementation::ComputeModel()\n  robot_state:\n"
@@ -364,10 +359,11 @@ namespace wbc {
     m_robmodel->kinematics()->onUpdate(jointAngles, jointVelocities);
     m_robmodel->dynamics()->onUpdate(jointAngles, jointVelocities); 
     
-    LOG_TRACE (logger, "ModelImplementation::ComputeModel(): updating behavior");
-      
-    m_current_behavior->onUpdate();
-      
+    if ( ! skip_behavior_update) {
+      LOG_TRACE (logger, "ModelImplementation::ComputeModel(): updating behavior");
+      m_current_behavior->onUpdate();
+    }
+    
     LOG_TRACE (logger, "ModelImplementation::ComputeModel(): updating task model");
     
     if ( ! m_task_model->Update(*m_current_behavior, *m_robmodel)) {

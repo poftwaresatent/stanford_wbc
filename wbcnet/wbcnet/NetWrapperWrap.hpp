@@ -43,12 +43,15 @@
 # include <netinet/in.h>
 #else
 # include "win32_compat.hpp"
-// this undef has to be above NetWrapper.h, because Windows seems to have a preprocessor symbols SendMessage which expands to SendMessageA
+// This undef has to be above NetWrapper.h, because Windows (or one of
+// the headers included via win32_compat.hpp) defines a preprocessor
+// symbol "SendMessage" which expands to "SendMessageA" and thus mucks
+// with our code.
 # undef SendMessage
 #endif
 
-// Forcedimension's NetWrapper.h -- if you don't have it, then don't include this file
-// under Windows, make sure to undef SendMessage (see above)
+// Forcedimension's NetWrapper.h -- if you don't have it, then don't include this file.
+// Also, under Windows, make sure to undef SendMessage (see above) before including this.
 #include <NetWrapper.h>
 
 
@@ -65,9 +68,16 @@ namespace wbcnet {
     bool Open(in_port_t port,
 	      std::string const & address,
 	      bool server_mode,
+	      /** Whether to use blocking sockets or not. It might
+		  seem weird to set nonblocking to false in order to
+		  get blocking, but the default operation of wbcnet is
+		  nonblocking... that's what it has been designed for,
+		  in order to allow single-threaded processes to
+		  handle asynchronous messaging. */
+	      bool nonblocking,
 	      /** If <0 then do not attempt reconnecting (treat
 		  connection failures as errors). Otherwise, after a
-		  connection failure the Send() and Receive methods
+		  connection failure the Send() and Receive() methods
 		  will sleep for the given number of microseconds and
 		  then return COM_TRY_AGAIN. If you specify 0
 		  microseconds, then these methods immediately return
@@ -83,6 +93,7 @@ namespace wbcnet {
     in_port_t m_port;
     std::string m_address;
     bool m_server_mode;
+    bool m_nonblocking;
     long m_reconnect_usec_sleep;
     
     NetWrapper::TCPSocket m_net_wrapper;

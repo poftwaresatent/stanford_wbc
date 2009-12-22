@@ -63,7 +63,13 @@ namespace wbc {
        msg::MODEL_ERROR as status.
      */
     bool ComputeModel(wbcrun::msg::RobotState const & robot_state,
-		      wbcrun::msg::TaskSpec const & task_spec);
+		      wbcrun::msg::TaskSpec const & task_spec,
+		      /** Set this to true to AVOID calling
+			  BehaviorDescription::onUpdate() of the
+			  current behavior inside this method. This is
+			  useful e.g. in case the behavior already got
+			  updated elsewhere. */
+		      bool skip_behavior_update);
     
     /** \todo ...work in progress... needed for serialization, should
 	not concern the model implementation */
