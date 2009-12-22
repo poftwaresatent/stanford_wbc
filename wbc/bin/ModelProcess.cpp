@@ -145,7 +145,7 @@ namespace wbc {
 	SendWait(1000);
       }
       
-      // send over the task-independent matrices
+      // send over the set-dependent matrices
       m_task_matrix.taskID = -1; // redundant
       for (int iset(0); iset < nsets; ++iset) {
 	m_task_matrix.setID = iset;
@@ -159,7 +159,7 @@ namespace wbc {
 	  m_task_matrix.nRows = m_task_matrix.dataptr->NRows();
 	  m_task_matrix.nColumns = m_task_matrix.dataptr->NColumns();
 	  LOG_TRACE (logger,
-		     "wbc::ModelProcess::Step(): sending task-independent matrix "
+		     "wbc::ModelProcess::Step(): sending set-dependent matrix "
 		     << model->GetName(iset, -1, isetmx) << "[" << iset << "]");
 	  EnqueueMessage(m_channel, &m_task_matrix, false, false);
 	  SendWait(1000);
