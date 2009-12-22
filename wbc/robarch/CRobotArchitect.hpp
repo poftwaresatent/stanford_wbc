@@ -72,9 +72,17 @@ using namespace std;
 		 * Returns false if it can't find the file, or if both flags are false.
 		 * 
 		 * This function should be implemented by parsers who inherit from
-		 * CRobotArchitect */
+		 * CRobotArchitect 
+		 * DEPRACATED...
+		 */
 		virtual bool readRobotDefinition(const string arg_file, const bool buildControllerRobot, 
-								 const bool buildGraphicsRobot)=0;
+			const bool buildGraphicsRobot){ return false;}
+		//These functions will replace the legacy readRobotDefinition() function. They must be implemented by
+		//the subclass.
+		virtual bool readRobotDefinition(const string arg_file, CRobotDefinition<SControllerRobotLink> & arg_cr_robdef)
+    {return false;}
+		virtual bool readRobotDefinition(const string arg_file, CRobotDefinition<SGraphicsRobotLink> & arg_gr_robdef)
+    {return false;}
 								 
 		/**Adds a link to the Controller robot definition	 */
 		bool addLink(const SControllerRobotLink &arg_link2add);

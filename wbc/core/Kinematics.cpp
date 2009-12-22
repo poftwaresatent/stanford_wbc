@@ -169,69 +169,56 @@ namespace wbc {
 
   SAIMatrix
   Kinematics::JacobianAtPoint( taoDNode* node, const SAIVector & globalPointOnLink ) {
-
     SAIMatrix J(6,noj_);
-    SAIVector node_trans(3); 
-    SAIMatrix id3(3,3); 
-    id3.identity();
+    SAIVector node_trans(3);
 
     // find displacement from desired node to global frame
     if( 0 == globalPointOnLink.size() )
       for( int ii(0); ii < 3; ++ii )
-	node_trans.elementAt(ii) = 
-	  node->frameGlobal()->translation().elementAt(ii);// this is the frame at the joint
+        node_trans.elementAt(ii) =
+            node->frameGlobal()->translation().elementAt(ii);// this is the frame at the joint
     else
       node_trans = globalPointOnLink;
 
-    // cross product operator
-    SAIMatrix phat(3,3);
-    phat.zero();
-    phat.elementAt(0,1) = - node_trans.elementAt(2);
-    phat.elementAt(0,2) = node_trans.elementAt(1);
-    phat.elementAt(1,0) = node_trans.elementAt(2);
-    phat.elementAt(1,2) = -node_trans.elementAt(0);
-    phat.elementAt(2,0) = -node_trans.elementAt(1);
-    phat.elementAt(2,1) = node_trans.elementAt(0);
-
-    // create a position displacement matrix - 
+    // create a position displacement matrix -
     // similar to spatial operator but with rotations equal to identity
-    SAIMatrix disp_matrix(6,6);
-    for( int ii(0); ii < 3; ++ii )
-      for( int jj(0); jj < 3; ++jj ) {
-	disp_matrix.elementAt(ii,jj) = id3.elementAt(ii,jj);
-	disp_matrix.elementAt(ii+3,jj+3) = id3.elementAt(ii,jj);
-      }
-    for( int ii(0); ii < 3; ++ii )
-      for( int jj(0); jj < 3; ++jj ) {
-	disp_matrix.elementAt(ii,jj+3) = -phat.elementAt(ii,jj);
-      }
+    SAIMatrix translate_j_angular_to_vel_at_op_pt(6,6);
+    translate_j_angular_to_vel_at_op_pt.identity();
+    // Set the disp matrix's quadrant 1 set to the negative of
+    // cross product operator of the translation vector
+    translate_j_angular_to_vel_at_op_pt.elementAt(0,4) = node_trans.elementAt(2);
+    translate_j_angular_to_vel_at_op_pt.elementAt(0,5) = - node_trans.elementAt(1);
+    translate_j_angular_to_vel_at_op_pt.elementAt(1,3) = - node_trans.elementAt(2);
+    translate_j_angular_to_vel_at_op_pt.elementAt(1,5) = node_trans.elementAt(0);
+    translate_j_angular_to_vel_at_op_pt.elementAt(2,3) = node_trans.elementAt(1);
+    translate_j_angular_to_vel_at_op_pt.elementAt(2,4) = - node_trans.elementAt(0);
 
-    // compute Jacobian wrt the global frame with zero displacement. 
+    // compute Jacobian wrt the global frame with zero displacement.
     while( node->getDParent() != NULL ) {
 
       taoJoint* joint = node->getJointList();
       taoJointType jointType = joint->getType();
 
       if (( jointType == TAO_JOINT_REVOLUTE ) || ( jointType == TAO_JOINT_PRISMATIC )) {
+        // Obtain the jacobian of the velocity at the op point wrt the global ref frame
+        deVector6 deVector = (static_cast<taoJointDOF1*>(joint))->getJg();
 
-	deVector6 deVector = (static_cast<taoJointDOF1*>(joint))->getJg();
-      
-	int id = node->getID();
+        int id = node->getID();
 
-	for( int i(0); i < 6; ++i )
-	  J.elementAt(i,id) = deVector.elementAt(i);
-      
+        // Set a collumn (del_x/del_qi) of the jacobian
+        for( int i(0); i < 6; ++i )
+          J.elementAt(i,id) = deVector.elementAt(i);
       }
       else {
-	cerr << "WARNING\n"
-	     << "WARNING: Kinematics::JacobianAtPoint(): jointType " << jointType
-	     << "not handled\n";
+        cerr << "WARNING: Kinematics::JacobianAtPoint(): jointType " << jointType
+        << "not handled\n";
       }
       node = node->getDParent();
     }
 
-    // add displacement of node (at the joint) or desired global coordinate
-    J = disp_matrix * J;
+    // add tranlational velocity component of the rotation about the op point frame
+    // to the op point velocity terms in the jacobian (v = r*del_euler_angle/del_qi)
+    J = translate_j_angular_to_vel_at_op_pt * J;
 
     return J;
   }

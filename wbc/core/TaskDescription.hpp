@@ -43,6 +43,7 @@ namespace wbc {
   class TaskDescription {
   public:
   
+    TaskDescription(){}
     TaskDescription(std::string const & _name,
 		    double propGain, double diffGain,
 		    double maxVel, double maxAccel);

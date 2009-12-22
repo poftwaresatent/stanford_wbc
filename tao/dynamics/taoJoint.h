@@ -135,9 +135,22 @@ public:
 	virtual void integrate(const deFloat dt);
 	virtual void updateFrameLocal(deFrame* local) { local->rotation() = getVarSpherical()->_Q; }
 
-	// notice that in spherical joints the position components of the Jacobian are zero
-	// therefore, to build a 6x3 matrix the upper 3x3 needs to be set to zero and the lower
-	// needs to be set the return of this function
+	/** The "documentation" used to say this (whatever that
+	    means exactly): "notice that in spherical joints the
+	    position components of the Jacobian are zero therefore, to
+	    build a 6x3 matrix the upper 3x3 needs to be set to zero
+	    and the lower needs to be set the return of this function".
+
+	    Looking at the taoJointDOF1 version, by analogy this
+	    method probably returns the Jacobian contribution of this
+	    joint, expressed in the global frame. But it beats my why
+	    this method returns a pointer to a 3x3 matrix whereas the
+	    1-DOF version returns a 6D vector (the latter should work
+	    in both cases, no?).
+	    
+	    Also: why is this method virtual? That's completely
+	    counter-intuitive...
+	*/
 	virtual deMatrix3* getJg();
 };
 
@@ -183,6 +196,16 @@ public:
 	virtual void clampDQ();
 	virtual void integrate(const deFloat dt);
 
+	/** It looks like this method returns the Jacobian
+	    contribution of this joint, expressed in the global frame,
+	    and with rotations expressed as components around the
+	    global coordinate axes.
+	    
+	    \todo Why is this method virtual? That's completely
+	    counter-intuitive, especially given that the spherical
+	    joint version returns a pointer to a 3x3
+	    matrix... whatever that is supposed to mean.
+	*/
 	virtual deVector6& getJg();
 
 private:

@@ -101,26 +101,55 @@ bootstrap-devkit.sh script. Just choose a location where you want to
 script without arguments.
 
 
+== Check out the Sources ==
+
+You can follow the stable (branches/wbc-stable) or unstable (trunk)
+code. Currently, the trunk is much more likely to work for you, so
+let's suppose we follow that. Let's also assume you check out the code
+into ~/svn-wbc (you can place it anywhere you like of course).
+
+{{{
+ $ svn co https://stanford-wbc.svn.sourceforge.net/svnroot/stanford-wbc/trunk/wbc ~/svn-wbc
+}}}
+
+
+== Install 3rd party libraries ==
+
+Install required 3rdparty libraries, for example into ~/wbc/bindeps
+(Let's assume you installed expat as a system package and you only
+need log4cxx and gtest, leaving aside xmlrpc++ because you don't
+want to do any GUI development)
+{{{
+ $ cd ~/svn-wbc/src/3rdparty/log4cxx
+ $ ./buildme.sh ~/wbc/bindeps
+ $ cd ~/svn-wbc/src/3rdparty/gtest
+ $ ./buildme.sh ~/wbc/bindeps
+}}}
+
+'''NOTES:'''
+
+ * Many Linux distributions provide log4cxx development packages at a
+   sufficiently recent version, and gtest is not absolutely required
+   (although it's a good idea to use it, especially if you are likely
+   to change framework code).
+ * You can very easily install these dependencies elsewhere on your
+   system. This is actually recommended if you are using them for
+   other projects as well. See the notes about {{{GTEST_DIR}}},
+   {{{XMLRPC_DIR}}}, and {{{LOG4CXX_DIR}}} in the next section.
+
+
 == Setup your environment ==
 
 Choose a directory to install WBC. In the following, it is assumed
 that you use a somewhat canonical directory layout underneath
 ${HOME}/wbc, but you can easily adjust this to your needs.
 
- 1. Create base directory
-   {{{
-    $ mkdir ~/wbc
-    $ cd ~/wbc
-   }}}
-
- 2. Check out the sources. You can follow the stable
-    (branches/wbc-stable) or unstable (trunk) code. Suppose we follow
-    the stable branch:
-   {{{
-    $ svn co https://stanford-wbc.svn.sourceforge.net/svnroot/stanford-wbc/branches/wbc-stable src
-   }}}
-
- 3. Set the WBC environment variables. Assuming your are using bash, these are the commands:
+ 1. Set the WBC environment variables. The "standard" setup is to use
+   {{{~/wbc}}} as the installation directory. You can (and should)
+   keep the sources somewhere else though, as illustrated
+   above. Assuming your are using bash, these are the commands for
+   setting the environment variables (but see NOTE below for an
+   automated way of doing this):
    {{{
     $ export WBC_ROOT=~/wbc
     $ export WBC_PLUGIN_PATH=${WBC_ROOT}/plugins
@@ -133,34 +162,39 @@ ${HOME}/wbc, but you can easily adjust this to your needs.
     values into your environment. It takes an optional argument
     specifying your WBC_ROOT. The default is to use ~/wbc.
    {{{
-    $ source ~/wbc/src/bash-env-wbc
+    $ source ~/svn-wbc/bash-env-wbc
    }}}
 
-    It might be a good idea to copy-paste ~/wbc/src/bash-env-wbc into
+    It might be a good idea to copy-paste ~/svn-wbc/bash-env-wbc into
     your ~/.bashrc or ~/.bash_profile, or to source it from there, in
     order to automatically load your WBC environment setup in each
     shell that gets started. However, this might interfere with WBC
     development in case you expect to change the WBC framework code
     itself (see CAVEATS below).
 
-
-== Install 3rd party libraries ==
-
-Install required 3rdparty libraries into ~/wbc/bindeps
-(Let's assume you installed expat as a system package and you only
-need log4cxx and gtest, leaving aside xmlrpc++ because you don't
-want to do any GUI development)
-{{{
- $ cd ~/wbc/src/3rdparty/log4cxx
- $ ./buildme.sh ~/wbc/bindeps
- $ cd ~/wbc/src/3rdparty/gtest
- $ ./buildme.sh ~/wbc/bindeps
-}}}
-
-'''NOTE:''' your mileage will vary. Many Linux distributions provide
-log4cxx development packages at a sufficiently recent version, and
-gtest is not absolutely required (although it's a good idea to use it,
-especially if you are likely to change framework code).
+ 3. If you want to keep some of the 3rdparty dependencies elsewhere on
+    your system (for example in order to use them in other projects as
+    well), you can optionally use the following environment variables
+    to point to more specific directories:
+    * {{{GTEST_DIR}}}
+    * {{{XMLRPC_DIR}}}
+    * {{{LOG4CXX_DIR}}}
+    
+    For details on how these variables get used, read the
+    {{{wbc_getvars()}}} macro in the top-level {{{wbc.cmake}}}
+    file.
+    
+    A typical use case is to have log4cxx underneath
+    {{{/usr/local/log4cxx}}}, in which case you want set
+    {{{LOG4CXX_DIR}}} in addition to {{{WBC_BINDEPS_PATH}}}:
+   {{{
+    $ export LOG4CXX_DIR=/usr/local/log4cxx
+   }}}
+    
+    BTW: You do not really need {{{WBC_BINDEPS_PATH}}} at all, either
+    if all the dependencies are installed in default locations anyway
+    (e.g. you installed them using a package manager) or if you do not
+    care about the optional features they provide.
 
 
 == Install the WBC framework ==
@@ -169,11 +203,11 @@ Configure, build, and install WBC. The recommended way is to build it
 in a separate directory so that it becomes very easy to clean it
 out. Also note that CMake has a kind of convoluted way of specifying
 the installation directory... don't forget the
-'''{{{-DCMAKE_INSTALL_PREFIX=~/wbc}}}''' command line argument.
+'''{{{-DCMAKE_INSTALL_PREFIX=~/wbc}}}''' command line argument!
 {{{
- $ mkdir ~/wbc/build
- $ cd ~/wbc/build
- $ cmake ~/wbc/src -DCMAKE_INSTALL_PREFIX=~/wbc
+ $ mkdir ~/svn-wbc/build
+ $ cd ~/svn-wbc/build
+ $ cmake ~/svn-wbc -DCMAKE_INSTALL_PREFIX=~/wbc
  $ make
  $ make install
 }}}
@@ -183,35 +217,34 @@ the installation directory... don't forget the
 
 In order to upgrade WBC, usually all you have to do is "svn update"
 your checked-out copy, recompile on top of your existing build, and
-re-install (see first subsection).
+re-install (see first subsection). That would lead to the following
+sequence of commands:
+
+{{{
+ $ cd ~/svn-wbc
+ $ svn up
+ $ cd build
+ $ make
+ $ make install
+}}}
 
 However, in case some major changes were introduced, it might be
 better to clean out your previous installation and build directories
 (see second subsection). But then, you can at least reuse the 3rdparty
 packages that were installed in the ~/wbc/bindeps directory (or some
-other cutsom location).
-
-
-== Upgrade on top of an existing installation ==
-
-{{{
- $ cd ~/wbc/src
- $ svn up
- $ cd ~/wbc/build
- $ make install
-}}}
-
-
-== Wipe and re-install from scratch ==
+other cutsom location)... which is another reason why you shouldn't
+install the dependencies underneath ~/wbc because then you can just
+blow away the entire installation. Anyway, the sequence of commands
+would look like this:
 
 {{{
  $ cd ~/wbc
- $ rm -r build include lib bin share
- $ cd ~/wbc/src
+ $ rm -r include lib bin share
+ $ cd ~/svn-wbc
  $ svn up
- $ mkdir ~/wbc/build
- $ cd ~/wbc/build
- $ cmake ~/wbc/src
+ $ rm -r build
+ $ mkdir build
+ $ cmake .. -DCMAKE_INSTALL_PREFIX=~/wbc
  $ make
  $ make install
 }}}
@@ -256,4 +289,4 @@ WBC, without installing it. You would do the following:
 }}}
 
 From this point on, you can hack away at WBC and your changes will
-appear after each "make". Don't call "make install".
+appear after each "make". But '''don't''' run "make install".
