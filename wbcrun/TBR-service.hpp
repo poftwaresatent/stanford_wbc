@@ -44,18 +44,18 @@
 namespace wbcrun {
   
   
-  class ServiceMessage
+  class wbcnet::msg::Service
     : public wbcnet::msg::UserCommand< wbcnet::Vector<int32_t>, wbcnet::Matrix<double> >
   {
   public:
-    explicit ServiceMessage(/** You will probably want to use
+    explicit wbcnet::msg::Service(/** You will probably want to use
 				msg::USER_REQUEST or msg::USER_REPLY
 				depending on whether this is a request
 				or a reply message. */
 		   wbcnet::unique_id_t id);
     
     /** Clears out everything and sets the code vector to one element
-	with the value srv::NOT_IMPLEMENTED (see srv::result_t below). */
+	with the value SRV_NOT_IMPLEMENTED (see wbcnet::srv_result_t below). */
     void Reset();
   };
   
@@ -64,14 +64,14 @@ namespace wbcrun {
 
   namespace srv {
     
-    typedef ServiceMessage::vector_type vector_t;
-    typedef ServiceMessage::matrix_type matrix_t;
+    typedef wbcnet::msg::Service::vector_type vector_t;
+    typedef wbcnet::msg::Service::matrix_type matrix_t;
     
     /**
        Application specific user command status IDs.
        
        \note If you add a status, do not forget to update the
-       implementation of result_to_string() and string_to_result().
+       implementation of srv_result_to_string() and string_to_result().
     */
     typedef enum {
       SUCCESS,
@@ -87,12 +87,12 @@ namespace wbcrun {
       OUT_OF_RANGE,
       OTHER_ERROR
       // If you add something to this enum, please *immediately* also
-      // update result_to_string() and string_to_result().
+      // update srv_result_to_string() and string_to_result().
     } result_t;
     
     /** \return The string representation according to the result_t
 	enum, or "(invalid result)" if it lies outside that range. */
-    char const * result_to_string(int result);
+    char const * srv_result_to_string(int result);
     
     /** \return -1 for invalid name */
     int string_to_result(std::string const & name);
@@ -105,7 +105,7 @@ namespace wbcrun {
        implementation of get_id_str().
        
        \note There is a bit of a redundance with
-       wbcrun::cmd::request_t (from directory.hpp) when the id is
+       wbcrun::SRV_request_t (from directory.hpp) when the id is
        BEHAVIOR_DIR or TASK_DIR.
        
        \todo Implement as many of these as possible in
@@ -132,22 +132,22 @@ namespace wbcrun {
     
     char const * get_id_str(int id);
     
-    void set_goal(ServiceMessage & request,
+    void set_goal(wbcnet::msg::Service & request,
 		  double const * goal_coordinates, size_t n_coordinates);
-    void set_closest_distance(ServiceMessage & request,
+    void set_closest_distance(wbcnet::msg::Service & request,
 			      int n_points, int * nodeids, double* point_coords);
-    void get_pos(ServiceMessage & request);
-    void change_state(ServiceMessage & request);
-    void get_vel(ServiceMessage & request);
-    void get_torques(ServiceMessage & request);
-    void get_end_pos(ServiceMessage & request);
-    void toggle_recorder(ServiceMessage & request);
-    void key_press(ServiceMessage & request, int32_t keycode);
-    void float_command(ServiceMessage & request);
-    void activate_command(ServiceMessage & request);
-    void set_gains(ServiceMessage & request, double const * gains, size_t n_gains);
+    void get_pos(wbcnet::msg::Service & request);
+    void change_state(wbcnet::msg::Service & request);
+    void get_vel(wbcnet::msg::Service & request);
+    void get_torques(wbcnet::msg::Service & request);
+    void get_end_pos(wbcnet::msg::Service & request);
+    void toggle_recorder(wbcnet::msg::Service & request);
+    void key_press(wbcnet::msg::Service & request, int32_t keycode);
+    void float_command(wbcnet::msg::Service & request);
+    void activate_command(wbcnet::msg::Service & request);
+    void set_gains(wbcnet::msg::Service & request, double const * gains, size_t n_gains);
     
-    //  void set_tol(ServiceMessage & request, double const * tolerances, size_t n_tolerances);
+    //  void set_tol(wbcnet::msg::Service & request, double const * tolerances, size_t n_tolerances);
   }
   
 }

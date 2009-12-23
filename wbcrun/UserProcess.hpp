@@ -33,7 +33,7 @@
 #define WBCRUN_USER_PROCESS_HPP
 
 #include <wbcrun/Process.hpp>
-#include <wbcrun/service.hpp>
+#include <wbcnet/msg/Service.hpp>
 #include <wbcrun/directory.hpp>
 #include <wbcnet/msg/TaskSpec.hpp>
 
@@ -67,8 +67,8 @@ namespace wbcrun {
     void XmlRpcLoop();
     
     wbcnet::Channel * m_channel;
-    ServiceMessage m_user_request;
-    ServiceMessage m_user_reply;
+    wbcnet::msg::Service m_user_request;
+    wbcnet::msg::Service m_user_reply;
     wbcnet::msg::TaskSpec m_task_spec;
     
   protected:

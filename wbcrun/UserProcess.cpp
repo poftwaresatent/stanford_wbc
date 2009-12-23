@@ -87,10 +87,10 @@ namespace {
     
     explicit MyServiceTransaction(wbcrun::UserProcess * user): m_user(user) {}
     
-    virtual wbcrun::ServiceMessage * GetRequest()
+    virtual wbcnet::msg::Service * GetRequest()
     { return &m_user->m_user_request; }
     
-    virtual wbcrun::ServiceMessage * GetReply()
+    virtual wbcnet::msg::Service * GetReply()
     { return &m_user->m_user_reply; }
     
     virtual void SendWaitReceive() {
@@ -131,7 +131,7 @@ namespace wbcrun {
     try {
 
       if ("pos" == token) {
-        wbcrun::srv::get_pos(m_user_request);
+	m_user_request.InitGetPos();
         EnqueueMessage(m_channel, &m_user_request, false, false);
         SendWait(10000);
         ReceiveWait(10000, 1);
@@ -139,23 +139,15 @@ namespace wbcrun {
       }
 
       if ("endpos" == token) {
-        wbcrun::srv::get_end_pos(m_user_request);
+	m_user_request.InitGetLinkTransform("End_Effector"); // would be nice to give custom name...
         EnqueueMessage(m_channel, &m_user_request, false, false);
         SendWait(10000);
         ReceiveWait(10000, 1);
         return true;
       }
-
-      if ("vel" == token) {
-        wbcrun::srv::get_vel(m_user_request);
-        EnqueueMessage(m_channel, &m_user_request, false, false);
-        SendWait(10000);
-        ReceiveWait(10000, 1);
-        return true;
-      }
-
+      
       if ("tau" == token) {
-        wbcrun::srv::get_torques(m_user_request);
+	m_user_request.InitGetTorques();
         EnqueueMessage(m_channel, &m_user_request, false, false);
         SendWait(10000);
         ReceiveWait(10000, 1);
@@ -164,22 +156,6 @@ namespace wbcrun {
 
       if ("go" == token) {
         InteractiveGoalRequest();
-        EnqueueMessage(m_channel, &m_user_request, false, false);
-        SendWait(10000);
-        ReceiveWait(10000, 1);
-        return true;
-      }
-
-      if ("float" == token) {
-        wbcrun::srv::float_command(m_user_request);
-        EnqueueMessage(m_channel, &m_user_request, false, false);
-        SendWait(10000);
-        ReceiveWait(10000, 1);
-        return true;
-      }
-
-      if ("activate" == token) {
-        wbcrun::srv::activate_command(m_user_request);
         EnqueueMessage(m_channel, &m_user_request, false, false);
         SendWait(10000);
         ReceiveWait(10000, 1);
@@ -223,23 +199,9 @@ namespace wbcrun {
         // do NOT ReceiveWait(), because task specs are fire-and-forget
         return true;
       }
-
-      if ("setgoal" == token) {
-        double goal[7];
-        line >> goal[0] >>goal[1] >>goal[2] >>goal[3] >>goal[4] >>goal[5] >>goal[6] ;
-        if ( ! line) {
-          cout << "SYNTAX ERROR reading goal pos and orientation\n";
-          return true;
-        }
-        wbcrun::srv::set_goal(m_user_request, goal, 7);
-        EnqueueMessage(m_channel, &m_user_request, false, false);
-        SendWait(10000);
-        ReceiveWait(10000, 1);
-        return true;
-      }	
-
+      
       if ("r" == token) {
-        wbcrun::srv::toggle_recorder(m_user_request);
+	m_user_request.InitToggleRecorder();
         SendWait(10000);
         ReceiveWait(10000, 1);
         return true;
@@ -254,38 +216,18 @@ namespace wbcrun {
         XmlRpcLoop();
         return true;
       }
-
-      if ("setgains" == token) {
-        double gains[4];
-        line >> gains[0] >>gains[1] >>gains[2] >>gains[3];
-        if ( ! line) {
-          cout << "SYNTAX ERROR reading gains\n";
-          return true;
-        }
-        wbcrun::srv::set_gains(m_user_request, gains, 4);
-        EnqueueMessage(m_channel, &m_user_request, false, false);
-        SendWait(10000);
-        ReceiveWait(10000, 1);
-        return true;
-      }	
-
       
       cout << "SYNTAX ERROR: unknown command \"" << token << "\"\n"
 	" known commands:\n"
 	"  pos      -  show position data\n"
-	"  endpos   -  show end effector position end orientation\n"	
-	"  vel      -  show velocity data\n"
+	"  endpos   -  show end effector position end orientation\n"
 	"  tau      -  show torque command\n"
 	"  go       -  enter and send goal\n"
-	"  float    -  send a FLOAT request (not understood by all behaviors)\n"
-	"  activate -  send an ACTIVATE request (not understood by all behaviors)\n"
-	"  setgoal  -  enter goal position (hardcoded 7-D vector -- x y z axis angle)\n"
 	"  b?       -  list available behaviors\n"
 	"  b   <N>  -  switch to behavior number <N>\n"
 	"  r        -  toggle recorder state (writes them to file after the 2nd time)\n"
 	"  k        -  enter interactive_key_press mode (use 'q' to leave it again)\n"
-	"  xmlrpc   -  spawn XMLRPC loop, runs until SIGTSTP (i.e. Ctrl-Z)\n"
-	"  setgains  -  enter control gains (type (1(x) or 2(y) or 3(yaw)) kp kd ki)\n";
+	"  xmlrpc   -  spawn XMLRPC loop, runs until SIGTSTP (i.e. Ctrl-Z)\n";
     }
     catch (exception const & ee) {
       cout << "EXCEPTION " << ee.what() << "\n";
@@ -342,7 +284,7 @@ namespace wbcrun {
       if (('q' == ch) || ('Q' == ch))
 	break;
       
-      wbcrun::srv::key_press(m_user_request, ch);
+      m_user_request.InitKeyPress(ch);
       EnqueueMessage(m_channel, &m_user_request, false, false);
       ostringstream os_status;
       try {
@@ -454,7 +396,7 @@ namespace wbcrun {
 	LOG_TRACE (logger,
 		       "wbcrun::UserProcess::HandleMessagePayload()\n"
 		       << "  user_reply status " << m_user_reply.code[0] << ": "
-		       << wbcrun::srv::result_to_string(m_user_reply.code[0]));
+		       << wbcnet::srv_result_to_string(m_user_reply.code[0]));
       }
     }
     
@@ -493,7 +435,7 @@ namespace wbcrun {
     for (size_t ii(3); ii < 6; ++ii)
       goal[ii] *= M_PI / 180;
     
-    wbcrun::srv::set_goal(m_user_request, goal, 6);
+    m_user_request.InitSetGoal(goal, 6);
   }
   
   
@@ -564,11 +506,11 @@ namespace wbcrun {
   GetBehaviorList() const throw(std::exception)
   {
     if (m_lazy_behavior_list.empty()) {
-      srv::result_t const stat(m_directory_client->ListBehaviors(m_lazy_behavior_list));
-      if (srv::SUCCESS != stat)
+      wbcnet::srv_result_t const stat(m_directory_client->ListBehaviors(m_lazy_behavior_list));
+      if (wbcnet::SRV_SUCCESS != stat)
 	throw runtime_error("wbcrun::UserProcess::GetBehaviorList():\n"
 			    "  m_directory_client->ListBehaviors() failed: "
-			    + string(srv::result_to_string(stat)));
+			    + string(wbcnet::srv_result_to_string(stat)));
     }
     return m_lazy_behavior_list;
   }

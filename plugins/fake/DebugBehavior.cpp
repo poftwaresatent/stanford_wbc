@@ -24,7 +24,7 @@
 
 #include "DebugBehavior.hpp"
 #include <wbc/core/TaskSet.hpp>
-#include <wbcrun/service.hpp>
+#include <wbcnet/msg/Service.hpp>
 
 
 DebugBehavior::
@@ -64,5 +64,5 @@ int32_t DebugBehavior::
 handleKey(int32_t keycode)
 {
   std::cout << "DebugBehavior::handleKey(" << keycode << ")\n";
-  return wbcrun::srv::SUCCESS;
+  return wbcnet::SRV_SUCCESS;
 }

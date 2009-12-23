@@ -26,7 +26,7 @@
 #define WBC_SERVO_PROCESS_HPP
 
 #include <wbcrun/Process.hpp>
-#include <wbcrun/service.hpp>
+#include <wbcnet/msg/Service.hpp>
 #include <wbcrun/msg/Status.hpp>
 #include <wbcrun/msg/TaskSpec.hpp>
 #include <wbc/core/SAIVectorAPI.hpp>
@@ -77,9 +77,9 @@ namespace wbc {
     virtual ~ServoImplementation();
     
     /** If you return false, this gets translated
-	into a reply containing srv::NOT_IMPLEMENTED */
-    virtual bool HandleServiceCall(wbcrun::ServiceMessage const & request,
-				   wbcrun::ServiceMessage & reply);
+	into a reply containing SRV_NOT_IMPLEMENTED */
+    virtual bool HandleServiceCall(wbcnet::msg::Service const & request,
+				   wbcnet::msg::Service & reply);
     
     virtual bool UpdateRobotState(wbcrun::msg::RobotState & state);
     
@@ -212,13 +212,13 @@ namespace wbc {
     // incoming messages
     wbcrun::msg::Status m_model_status;
     wbcrun::msg::TaskSpec m_user_task_spec;
-    wbcrun::ServiceMessage m_user_request;
+    wbcnet::msg::Service m_user_request;
     
     // outgoing messages
     wbcrun::msg::Status m_servo_status;
     wbcrun::msg::RobotState * m_robot_state;
     wbcrun::msg::TaskSpec m_model_task_spec;
-    wbcrun::ServiceMessage m_user_reply;
+    wbcnet::msg::Service m_user_reply;
   };
   
 }

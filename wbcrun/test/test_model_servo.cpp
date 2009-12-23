@@ -183,8 +183,8 @@ namespace wbcrun {
 	delete model_pool[ii];
     }
     
-    bool HandleServiceCall(ServiceMessage const & request,
-			   ServiceMessage & reply)
+    bool HandleServiceCall(wbcnet::msg::Service const & request,
+			   wbcnet::msg::Service & reply)
     { return false; }
 
     virtual TaskModelListener * GetTaskModelListener() { return model_listener; }

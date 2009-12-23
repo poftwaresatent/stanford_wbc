@@ -30,7 +30,7 @@
  */
 
 #include <wbcrun/Process.hpp>
-#include <wbcrun/service.hpp>
+#include <wbcnet/msg/Service.hpp>
 #include <wbcnet/data.hpp>
 #include <wbcnet/SPQueue.hpp>
 #include <wbcnet/log.hpp>
@@ -60,7 +60,7 @@ namespace wbcrun {
     
     static wbcnet::unique_id_t const message_id;
     
-    ServiceMessage message;
+    wbcnet::msg::Service message;
     
     virtual bool Step() throw(std::exception);
     

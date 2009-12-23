@@ -56,7 +56,7 @@ namespace wbcrun {
   
   namespace srv {
     
-    char const * result_to_string(int result)
+    char const * srv_result_to_string(int result)
     {
       if ((0 > result) || (OTHER_ERROR < result))
 	return "(invalid result)";
@@ -114,7 +114,7 @@ namespace wbcrun {
       nRows = 0;
       nColumns = 0;
       code.SetNElements(1);
-      code[0] = srv::NOT_IMPLEMENTED;
+      code[0] = SRV_NOT_IMPLEMENTED;
       matrix.SetSize(0, 0);
       matrix.SetZero();
     }

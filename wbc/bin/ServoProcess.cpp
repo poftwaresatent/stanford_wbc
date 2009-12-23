@@ -102,8 +102,8 @@ namespace wbc {
   
   
   bool ServoImplementation::
-  HandleServiceCall(wbcrun::ServiceMessage const & user_request,
-		    wbcrun::ServiceMessage & user_reply)
+  HandleServiceCall(wbcnet::msg::Service const & user_request,
+		    wbcnet::msg::Service & user_reply)
   {
     if (logger->isDebugEnabled()) {
       ostringstream msg;
@@ -126,10 +126,10 @@ namespace wbc {
     }
     LOG_DEBUG (logger, "wbc::ServoImplementation::HandleServiceCall(): dispatcher did not take care of it");
     
-    if (user_request.code.NElements() < 1) {
-      user_reply.code.SetNElements(1);
-      user_reply.matrix.SetSize(0, 0);
-      user_reply.code[0] = wbcrun::srv::MISSING_CODE;
+    user_reply.InitReply(user_request);
+    
+    if (user_request.code.NElements() < 2) {
+      user_reply.code[0] = wbcnet::SRV_MISSING_CODE;
       if (logger->isDebugEnabled()) {
 	ostringstream msg;
 	msg << "wbc::ServoImplementation::HandleServiceCall() MISSING_CODE\n";
@@ -139,79 +139,64 @@ namespace wbc {
       return true;
     }
     
-    switch (user_request.code[0]) {
+    if (user_request.code[0] != wbcnet::SRV_SERVO_DOMAIN) {
+      LOG_WARN (logger,
+		"wbc::ServoImplementation::HandleServiceCall(): invalid user request domain "
+		<< (int) user_request.code[0] << " " << wbcnet::srv_domain_to_string(user_request.code[0])
+		<< " (servo only explicitly handles SRV_SERVO_DOMAIN), replying with INVALID_COMMAND");
+      user_reply.code[0] = wbcnet::SRV_INVALID_COMMAND;
+      return true;
+    }
+    
+    switch (user_request.code[1]) {
       
-    case wbcrun::srv::GET_POS:
-      user_reply.code.SetNElements(1);
-      user_reply.matrix.Copy(m_joint_angles);
-      user_reply.code[0] = wbcrun::srv::SUCCESS;
+    case wbcnet::SRV_GET_ACTUAL:
+      SAIMatrixAPI data(m_joint_angles);
+      data.appendHorizontally(m_joint_velocities);
+      data.appendHorizontally(m_command_torques);
+      user_reply.matrix.Copy(data);
+      user_reply.code[0] = wbcnet::SRV_SUCCESS;
       if (logger->isDebugEnabled()) {
 	ostringstream msg;
-	msg << "wbc::ServoImplementation::HandleServiceCall() GET_POS SUCCESS\n";
+	msg << "wbc::ServoImplementation::HandleServiceCall() GET_ACTUAL SUCCESS\n";
 	user_reply.Dump(msg, "  ");
 	LOG_DEBUG (logger, msg.str());
       }
       return true;
       
-    case wbcrun::srv::GET_END_POS:
-      if ( ! m_end_effector) {
-	user_reply.code.SetNElements(1);
-	user_reply.matrix.SetSize(0, 0);
-	user_reply.code[0] = wbcrun::srv::OTHER_ERROR;
-	LOG_ERROR (logger, "wbc::ServoImplementation::HandleServiceCall(): GET_END_POS without end effector");
-	if (logger->isDebugEnabled()) {
-	  ostringstream msg;
-	  msg << "wbc::ServoImplementation::HandleServiceCall() OTHER_ERROR\n";
-	  user_reply.Dump(msg, "  ");
-	  LOG_DEBUG (logger, msg.str());
-	}
-	return true;
-      }
-      user_reply.code.SetNElements(1);
-      {
-	SAITransform const transform(m_kinematics->globalFrame(m_end_effector, nullVector));
-	SAIVectorAPI reply(transform.rotation().vecForm());
-	reply.append(transform.translation());
-	user_reply.matrix.Copy(reply);
-      }
-      user_reply.code[0] = wbcrun::srv::SUCCESS;
-      if (logger->isDebugEnabled()) {
-	ostringstream msg;
-	msg << "wbc::ServoImplementation::HandleServiceCall() GET_END_POS SUCCESS\n";
-	user_reply.Dump(msg, "  ");
-	LOG_DEBUG (logger, msg.str());
-      }
-      return true;
+      ////
+      //// XXXX to do: resurrect GET_END_POS command
+      ////
+      //     case wbcnet::SRV_GET_END_POS:
+      //       if ( ! m_end_effector) {
+      // 	user_reply.code[0] = wbcnet::SRV_OTHER_ERROR;
+      // 	LOG_ERROR (logger, "wbc::ServoImplementation::HandleServiceCall(): GET_END_POS without end effector");
+      // 	if (logger->isDebugEnabled()) {
+      // 	  ostringstream msg;
+      // 	  msg << "wbc::ServoImplementation::HandleServiceCall() OTHER_ERROR\n";
+      // 	  user_reply.Dump(msg, "  ");
+      // 	  LOG_DEBUG (logger, msg.str());
+      // 	}
+      // 	return true;
+      //       }
+      //       {
+      // 	SAITransform const transform(m_kinematics->globalFrame(m_end_effector, nullVector));
+      // 	SAIVectorAPI reply(transform.rotation().vecForm());
+      // 	reply.append(transform.translation());
+      // 	user_reply.matrix.Copy(reply);
+      //       }
+      //       user_reply.code[0] = wbcnet::SRV_SUCCESS;
+      //       if (logger->isDebugEnabled()) {
+      // 	ostringstream msg;
+      // 	msg << "wbc::ServoImplementation::HandleServiceCall() GET_END_POS SUCCESS\n";
+      // 	user_reply.Dump(msg, "  ");
+      // 	LOG_DEBUG (logger, msg.str());
+      //       }
+      //       return true;
       
-    case wbcrun::srv::GET_VEL:
-      user_reply.code.SetNElements(1);
-      user_reply.matrix.Copy(m_joint_velocities);
-      user_reply.code[0] = wbcrun::srv::SUCCESS;
-      if (logger->isDebugEnabled()) {
-	ostringstream msg;
-	msg << "wbc::ServoImplementation::HandleServiceCall() GET_VEL SUCCESS\n";
-	user_reply.Dump(msg, "  ");
-	LOG_DEBUG (logger, msg.str());
-      }
-      return true;
-      
-    case wbcrun::srv::GET_TORQUES:
-      user_reply.code.SetNElements(1);
-      user_reply.matrix.Copy(m_command_torques);
-      user_reply.code[0] = wbcrun::srv::SUCCESS;
-      if (logger->isDebugEnabled()) {
-	ostringstream msg;
-	msg << "wbc::ServoImplementation::HandleServiceCall() GET_TORQUES SUCCESS\n";
-	user_reply.Dump(msg, "  ");
-	LOG_DEBUG (logger, msg.str());
-      }
-      return true;
-      
-    case wbcrun::srv::TOGGLE_RECORDER:
+    case wbcnet::SRV_TOGGLE_RECORDER:
       Recorder::FlushAll();
-      user_reply.code.SetNElements(1);
-      user_reply.matrix.SetSize(0, 0);
-      user_reply.code[0] = wbcrun::srv::SUCCESS;
+      user_reply.code[0] = wbcnet::SRV_SUCCESS;
       if (logger->isDebugEnabled()) {
 	ostringstream msg;
 	msg << "wbc::ServoImplementation::HandleServiceCall() TOGGLE_RECORDER SUCCESS\n";
@@ -224,10 +209,13 @@ namespace wbc {
       if (m_current_behavior) {
 	LOG_DEBUG (logger,
 		   "wbc::ServoImplementation::HandleServiceCall(): forwarding " << (int) user_request.code[0]
-		   << " " << wbcrun::srv::get_id_str(user_request.code[0]) << " to behavior "
+		   << " " << wbcnet::SRV_get_id_str(user_request.code[0]) << " to behavior "
 		   << m_current_behavior->name);
 	user_reply.code.SetNElements(1);
 	user_reply.matrix.SetSize(0, 0);
+
+#error wtf
+
 	user_reply.code[0] = m_current_behavior->handleCommand(user_request.code.ElementPointer(),
 							       user_request.nCodes,
 							       SAIMatrixAPI(user_request.matrix));
@@ -235,10 +223,10 @@ namespace wbc {
       else {
 	LOG_WARN (logger,
 		  "wbc::ServoImplementation::HandleServiceCall(): cannot forward " << (int) user_request.code[0]
-		  << " " << wbcrun::srv::get_id_str(user_request.code[0]) << " (no current behavior)");
+		  << " " << wbcnet::SRV_get_id_str(user_request.code[0]) << " (no current behavior)");
 	user_reply.code.SetNElements(1);
 	user_reply.matrix.SetSize(0, 0);
-	user_reply.code[0] = wbcrun::srv::TRY_AGAIN;
+	user_reply.code[0] = wbcnet::SRV_TRY_AGAIN;
       }
       if (logger->isDebugEnabled()) {
 	ostringstream msg;
@@ -586,8 +574,8 @@ namespace wbc {
   
   
 //   bool ServoImplementationAPI::
-//   HandleServiceCall(ServiceMessage const & request,
-// 		    ServiceMessage & reply)
+//   HandleServiceCall(wbcnet::msg::Service const & request,
+// 		    wbcnet::msg::Service & reply)
 //   {
 //     return false;
 //   }
@@ -735,7 +723,7 @@ namespace wbc {
 	  return 888;
 	}
 	m_user_reply.matrix.SetSize(0, 0);
-	m_user_reply.code[0] = wbcrun::srv::NOT_IMPLEMENTED;
+	m_user_reply.code[0] = wbcnet::SRV_NOT_IMPLEMENTED;
       }
       EnqueueMessage(m_user_channel, &m_user_reply, true, false);
     }

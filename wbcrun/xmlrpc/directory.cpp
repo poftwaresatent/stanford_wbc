@@ -38,6 +38,7 @@
 #endif // WBCRUN_DIRECTORY_DEBUG
 
 using namespace XmlRpc;
+using namespace wbcnet;
 using namespace wbcrun;
 using namespace std;
 
@@ -45,7 +46,7 @@ using namespace std;
 namespace {
   
   
-  static bool xmlrpc_to_vector(XmlRpcValue /*const?*/ & from, srv::vector_t & to)
+  static bool xmlrpc_to_vector(XmlRpcValue /*const?*/ & from, srv_code_t & to)
   {
 
 #ifdef WBCRUN_DIRECTORY_DEBUG
@@ -71,7 +72,7 @@ namespace {
   }
   
   
-  static bool xmlrpc_to_matrix(XmlRpcValue /*const?*/ & from, srv::matrix_t & to)
+  static bool xmlrpc_to_matrix(XmlRpcValue /*const?*/ & from, srv_matrix_t & to)
   {
 #ifdef WBCRUN_DIRECTORY_DEBUG
     std::cout << "  xmlrpc_to_matrix():\n    from: ";
@@ -106,7 +107,7 @@ namespace {
   }
   
   
-  static void vector_to_xmlrpc(srv::vector_t const & from, XmlRpcValue & to)
+  static void vector_to_xmlrpc(srv_code_t const & from, XmlRpcValue & to)
   {
     int const nelem(from.NElements());
     to.clear();			// "probably" redundant
@@ -116,7 +117,7 @@ namespace {
   }
   
   
-  static void matrix_to_xmlrpc(srv::matrix_t const & from, XmlRpcValue & to)
+  static void matrix_to_xmlrpc(srv_matrix_t const & from, XmlRpcValue & to)
   {
     int const nrows(from.NRows());
     int const ncols(from.NColumns());
@@ -156,9 +157,9 @@ namespace {
       
       result.clear();		// "probably" redundant
       listing_t behaviors;
-      srv::result_t const retval(directory->ListBehaviors(behaviors));
-      result["retval"] = srv::result_to_string(retval);
-      if (srv::SUCCESS == retval) {
+      wbcnet::srv_result_t const retval(directory->ListBehaviors(behaviors));
+      result["retval"] = wbcnet::srv_result_to_string(retval);
+      if (SRV_SUCCESS == retval) {
 	XmlRpcValue listing;
 	size_t ii(0);
 	for (listing_t::const_iterator bb(behaviors.begin()); bb != behaviors.end(); ++bb, ++ii)
@@ -189,14 +190,14 @@ namespace {
       
       result.clear();		// "probably" redundant
       int const behaviorID(params[0]);
-      request_list_t requests;
-      srv::result_t const retval(directory->ListBehaviorCmds(behaviorID, requests));
-      result["retval"] = srv::result_to_string(retval);
-      if (srv::SUCCESS == retval) {
+      command_list_t requests;
+      wbcnet::srv_result_t const retval(directory->ListBehaviorCmds(behaviorID, requests));
+      result["retval"] = wbcnet::srv_result_to_string(retval);
+      if (SRV_SUCCESS == retval) {
 	XmlRpcValue listing;
 	size_t ii(0);
-	for (request_list_t::const_iterator rr(requests.begin()); rr != requests.end(); ++rr, ++ii)
-	  listing[ii] = cmd::request_to_string(*rr);
+	for (command_list_t::const_iterator rr(requests.begin()); rr != requests.end(); ++rr, ++ii)
+	  listing[ii] = srv_command_to_string(*rr);
 	result["requests"] = listing;
       }
       
@@ -213,12 +214,12 @@ namespace {
   public:
     HandleBehaviorCmd(XMLRPCDirectoryServer * dir): Method("HandleBehaviorCmd", dir) {}
     
-    // srv::result_t HandleBehaviorCmd(int behaviorID,
-    //                                 cmd::request_t request,
-    //                                 srv::vector_t const * code_in,
-    //                                 srv::matrix_t const * data_in,
-    //                                 srv::vector_t * code_out,
-    //                                 srv::matrix_t * data_out)
+    // wbcnet::srv_result_t HandleBehaviorCmd(int behaviorID,
+    //                                 SRV_request_t request,
+    //                                 srv_code_t const * code_in,
+    //                                 srv_matrix_t const * data_in,
+    //                                 srv_code_t * code_out,
+    //                                 srv_matrix_t * data_out)
     void execute(XmlRpcValue & params, XmlRpcValue & result) {
 #ifdef WBCRUN_DIRECTORY_DEBUG
       std::cout << "DBG\n" << name() << "():\n  params:\n    ";
@@ -228,25 +229,25 @@ namespace {
       
       result.clear();		// "probably" redundant
       int const behaviorID(params[0]);
-      int const request(cmd::string_to_request(params[1]));
+      int const request(string_to_srv_command(params[1]));
       if (0 > request) {
-	result["retval"] = srv::result_to_string(srv::INVALID_REQUEST);
+	result["retval"] = wbcnet::srv_result_to_string(SRV_INVALID_COMMAND);
 	return;
       }
-      srv::vector_t code_in(0);
-      srv::matrix_t data_in(0, 0);
+      srv_code_t code_in(0);
+      srv_matrix_t data_in(0, 0);
       if (params.size() >= 3) {
 	xmlrpc_to_vector(params[2]["code_in"], code_in);
 	xmlrpc_to_matrix(params[2]["data_in"], data_in);
       }
-      srv::vector_t code_out(0);
-      srv::matrix_t data_out(0, 0);
-      srv::result_t const retval(directory->HandleBehaviorCmd(behaviorID,
-							      static_cast<cmd::request_t>(request),
+      srv_code_t code_out(0);
+      srv_matrix_t data_out(0, 0);
+      wbcnet::srv_result_t const retval(directory->HandleBehaviorCmd(behaviorID,
+							      static_cast<srv_command_t>(request),
 							      &code_in, &data_in,
 							      &code_out, &data_out));
-      result["retval"] = srv::result_to_string(retval);
-      if (srv::SUCCESS == retval) {
+      result["retval"] = wbcnet::srv_result_to_string(retval);
+      if (SRV_SUCCESS == retval) {
 	vector_to_xmlrpc(code_out, result["code_out"]);
 	matrix_to_xmlrpc(data_out, result["data_out"]);
       }
@@ -264,11 +265,11 @@ namespace {
   public:
     HandleServoCmd(XMLRPCDirectoryServer * dir): Method("HandleServoCmd", dir) {}
     
-    // srv::result_t HandleServoCmd(cmd::request_t request,
-    //                                 srv::vector_t const * code_in,
-    //                                 srv::matrix_t const * data_in,
-    //                                 srv::vector_t * code_out,
-    //                                 srv::matrix_t * data_out)
+    // wbcnet::srv_result_t HandleServoCmd(srv_command_t request,
+    //                                 srv_code_t const * code_in,
+    //                                 srv_matrix_t const * data_in,
+    //                                 srv_code_t * code_out,
+    //                                 srv_matrix_t * data_out)
     void execute(XmlRpcValue & params, XmlRpcValue & result) {
 #ifdef WBCRUN_DIRECTORY_DEBUG
       std::cout << "DBG\n" << name() << "():\n  params:\n    ";
@@ -277,24 +278,24 @@ namespace {
 #endif // WBCRUN_DIRECTORY_DEBUG
       
       result.clear();		// "probably" redundant
-      int const request(cmd::string_to_request(params[0]));
+      int const request(string_to_srv_command(params[0]));
       if (0 > request) {
-	result["retval"] = srv::result_to_string(srv::INVALID_REQUEST);
+	result["retval"] = wbcnet::srv_result_to_string(SRV_INVALID_COMMAND);
 	return;
       }
-      srv::vector_t code_in(0);
-      srv::matrix_t data_in(0, 0);
+      srv_code_t code_in(0);
+      srv_matrix_t data_in(0, 0);
       if (params.size() >= 2) {
 	xmlrpc_to_vector(params[1]["code_in"], code_in);
 	xmlrpc_to_matrix(params[1]["data_in"], data_in);
       }
-      srv::vector_t code_out(0);
-      srv::matrix_t data_out(0, 0);
-      srv::result_t const retval(directory->HandleServoCmd(static_cast<cmd::request_t>(request),
+      srv_code_t code_out(0);
+      srv_matrix_t data_out(0, 0);
+      wbcnet::srv_result_t const retval(directory->HandleServoCmd(static_cast<srv_command_t>(request),
 							   &code_in, &data_in,
 							   &code_out, &data_out));
-      result["retval"] = srv::result_to_string(retval);
-      if (srv::SUCCESS == retval) {
+      result["retval"] = wbcnet::srv_result_to_string(retval);
+      if (SRV_SUCCESS == retval) {
 	vector_to_xmlrpc(code_out, result["code_out"]);
 	matrix_to_xmlrpc(data_out, result["data_out"]);
       }
@@ -323,9 +324,9 @@ namespace {
       result.clear();		// "probably" redundant
       int const behaviorID(params[0]);
       listing_t tasks;
-      srv::result_t const retval(directory->ListTasks(behaviorID, tasks));
-      result["retval"] = srv::result_to_string(retval);
-      if (srv::SUCCESS == retval) {
+      wbcnet::srv_result_t const retval(directory->ListTasks(behaviorID, tasks));
+      result["retval"] = wbcnet::srv_result_to_string(retval);
+      if (SRV_SUCCESS == retval) {
 	XmlRpcValue listing;
 	size_t ii(0);
 	for (listing_t::const_iterator tt(tasks.begin()); tt != tasks.end(); ++tt, ++ii)
@@ -346,7 +347,7 @@ namespace {
   public:
     ListTaskCmds(XMLRPCDirectoryServer * dir): Method("ListTaskCmds", dir) {}
     
-    // bool ListTaskCmds(int behaviorID, int taskID, request_list_t & requests)
+    // bool ListTaskCmds(int behaviorID, int taskID, command_list_t & requests)
     void execute(XmlRpcValue & params, XmlRpcValue & result) {
 #ifdef WBCRUN_DIRECTORY_DEBUG
       std::cout << "DBG\n" << name() << "():\n  params:\n    ";
@@ -357,14 +358,14 @@ namespace {
       result.clear();		// "probably" redundant
       int const behaviorID(params[0]);
       int const taskID(params[1]);
-      request_list_t requests;
-      srv::result_t const retval(directory->ListTaskCmds(behaviorID, taskID, requests));
-      result["retval"] = srv::result_to_string(retval);
-      if (srv::SUCCESS == retval) {
+      command_list_t requests;
+      wbcnet::srv_result_t const retval(directory->ListTaskCmds(behaviorID, taskID, requests));
+      result["retval"] = wbcnet::srv_result_to_string(retval);
+      if (SRV_SUCCESS == retval) {
 	XmlRpcValue listing;
 	size_t ii(0);
-	for (request_list_t::const_iterator rr(requests.begin()); rr != requests.end(); ++rr, ++ii)
-	  listing[ii] = cmd::request_to_string(*rr);
+	for (command_list_t::const_iterator rr(requests.begin()); rr != requests.end(); ++rr, ++ii)
+	  listing[ii] = srv_command_to_string(*rr);
 	result["requests"] = listing;
       }
       
@@ -381,13 +382,13 @@ namespace {
   public:
     HandleTaskCmd(XMLRPCDirectoryServer * dir): Method("HandleTaskCmd", dir) {}
     
-    // srv::result_t HandleTaskCmd(int behaviorID,
+    // wbcnet::srv_result_t HandleTaskCmd(int behaviorID,
     //                             int taskID,
-    //                             cmd::request_t request,
-    //                             srv::vector_t const * code_in,
-    //                             srv::matrix_t const * data_in,
-    //                             srv::vector_t * code_out,
-    //                             srv::matrix_t * data_out)
+    //                             srv_command_t request,
+    //                             srv_code_t const * code_in,
+    //                             srv_matrix_t const * data_in,
+    //                             srv_code_t * code_out,
+    //                             srv_matrix_t * data_out)
     void execute(XmlRpcValue & params, XmlRpcValue & result) {
 #ifdef WBCRUN_DIRECTORY_DEBUG
       std::cout << "DBG\n" << name() << "():\n  params:\n    ";
@@ -398,26 +399,26 @@ namespace {
       result.clear();		// "probably" redundant
       int const behaviorID(params[0]);
       int const taskID(params[1]);
-      int const request(cmd::string_to_request(params[2]));
+      int const request(string_to_srv_command(params[2]));
       if (0 > request) {
-	result["retval"] = srv::result_to_string(srv::INVALID_REQUEST);
+	result["retval"] = wbcnet::srv_result_to_string(SRV_INVALID_COMMAND);
 	return;
       }
-      srv::vector_t code_in(0);
-      srv::matrix_t data_in(0, 0);
+      srv_code_t code_in(0);
+      srv_matrix_t data_in(0, 0);
       if (params.size() >= 4) {
 	xmlrpc_to_vector(params[3]["code_in"], code_in);
 	xmlrpc_to_matrix(params[3]["data_in"], data_in);
       }
-      srv::vector_t code_out(0);
-      srv::matrix_t data_out(0, 0);
-      srv::result_t const retval(directory->HandleTaskCmd(behaviorID,
+      srv_code_t code_out(0);
+      srv_matrix_t data_out(0, 0);
+      wbcnet::srv_result_t const retval(directory->HandleTaskCmd(behaviorID,
 							  taskID,
-							  static_cast<cmd::request_t>(request),
+							  static_cast<srv_command_t>(request),
 							  &code_in, &data_in,
 							  &code_out, &data_out));
-      result["retval"] = srv::result_to_string(retval);
-      if (srv::SUCCESS == retval) {
+      result["retval"] = wbcnet::srv_result_to_string(retval);
+      if (SRV_SUCCESS == retval) {
 	vector_to_xmlrpc(code_out, result["code_out"]);
 	matrix_to_xmlrpc(data_out, result["data_out"]);
       }

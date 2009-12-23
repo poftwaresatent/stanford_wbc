@@ -24,7 +24,7 @@
  */
 
 #include <wbc/core/BehaviorDescription.hpp>
-#include <wbcrun/service.hpp>
+#include <wbcnet/msg/Service.hpp>
 #include <wbc/util/RecorderImpl.hpp>
 
 namespace wbc {
@@ -85,25 +85,25 @@ namespace wbc {
 		   SAIMatrix const & matrix)
   {
     if (nCodes < 1)
-      return wbcrun::srv::MISSING_CODE;
+      return wbcnet::SRV_MISSING_CODE;
   
     switch (codeVector[0]) {
     
-    case wbcrun::srv::KEY_PRESS:
+    case wbcnet::SRV_KEY_PRESS:
       if (nCodes < 2)
-	return wbcrun::srv::INVALID_DIMENSION;
+	return wbcnet::SRV_INVALID_DIMENSION;
       return handleKey(codeVector[1]);
     
     }
   
-    return wbcrun::srv::NOT_IMPLEMENTED;
+    return wbcnet::SRV_NOT_IMPLEMENTED;
   }
 
 
   int32_t BehaviorDescription::
   handleKey(int32_t keycode)
   {
-    return wbcrun::srv::NOT_IMPLEMENTED;
+    return wbcnet::SRV_NOT_IMPLEMENTED;
   }
 
 

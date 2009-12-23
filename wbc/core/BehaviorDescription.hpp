@@ -108,7 +108,7 @@ namespace wbc {
        gains.
      
        Command IDs and other codes are application-defined (see
-       e.g. wbcrun/service.hpp). The interpretation of the extra codes
+       e.g. wbcnet/msg/Service.hpp). The interpretation of the extra codes
        (beyond codeVector[0], if nCodes>1) and matrix parameters depends
        on the command ID. It is up to the imlementing subclass to check
        for correct sizes.
@@ -120,7 +120,7 @@ namespace wbc {
        within their implementation of handleCommand().
      
        \return An application-specific status (see
-       e.g. wbcrun/service.hpp).
+       e.g. wbcnet/msg/Service.hpp).
     */
     virtual int32_t handleCommand(int32_t const * codeVector,
 				  size_t nCodes,
@@ -130,13 +130,13 @@ namespace wbc {
        Attempts to interpret the codeVector according to some "standard"
        commands. If it finds a matching code, it will delegate to the
        corresponding specific method. If it does not find a match, it
-       will return wbcrun::srv::NOT_IMPLEMENTED. This can be used
+       will return wbcrun::SRV_NOT_IMPLEMENTED. This can be used
        e.g. by subclasses to attempt standard commands, and then refine
        the call in case it fail, like this:
        \code
        int32_t SomeBehaviorSubclass::handleCommand(...) {
        int32_t result(handleStdCommand(...));
-       if (wbcrun::srv::NOT_IMPLEMENTED != result)
+       if (wbcrun::SRV_NOT_IMPLEMENTED != result)
        return result;
        // do subclass specific handling here...
        return result;
@@ -173,7 +173,7 @@ namespace wbc {
        calls handleCommand(), which calls handleStdCommand(), which
        calls handleKey().
      
-       \note Default implementation returns wbcrun::srv::NOT_IMPLEMENTED.
+       \note Default implementation returns wbcrun::SRV_NOT_IMPLEMENTED.
      
        \note The CMake build setup (from \c wbc.cmake) detects whether curses are available
        on your system, and sets the HAVE_CURSES preprocessor symbol

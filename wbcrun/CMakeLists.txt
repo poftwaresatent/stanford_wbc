@@ -16,7 +16,6 @@ message ("configuring WBCRUN")
 list (APPEND WBCRUN_SRCS
       util.cpp
       message_id.cpp
-      service.cpp
       directory.cpp
       DLModule.cpp
       Process.cpp

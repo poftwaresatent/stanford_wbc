@@ -44,7 +44,7 @@ namespace wbcrun {
     
     /**
        \note If you add a status, do not forget to update the
-       implementation of result_to_string() and string_to_result().
+       implementation of srv_result_to_string() and string_to_result().
     */
     typedef enum {
       SUCCESS,
@@ -60,12 +60,12 @@ namespace wbcrun {
       OUT_OF_RANGE,
       OTHER_ERROR
       // If you add something to this enum, please *immediately* also
-      // update result_to_string() and string_to_result().
+      // update srv_result_to_string() and string_to_result().
     } result_t;
     
     /** \return The string representation according to the result_t
 	enum, or "(invalid result)" if it lies outside that range. */
-    char const * result_to_string(int result);
+    char const * srv_result_to_string(int result);
     
     /** \return -1 for invalid name */
     int string_to_result(std::string const & name);

@@ -176,16 +176,10 @@ namespace wbc {
     
     else if (wbcrun::msg::USER_REQUEST == msg_id) {
       LOG_TRACE (logger, "wbc::ServoModelProcess::HandleMessagePayload(): got USER_REQUEST");
-      m_user_reply.Reset();
+      m_user_reply.InitReply(m_user_request);
       if ( ! m_servo_imp->HandleServiceCall(m_user_request, m_user_reply)) {
-	if ( ! m_user_reply.code.SetNElements(1)) {
-	  LOG_ERROR (logger,
-			 "wbc::ServoModelProcess::HandleMessagePayload()\n"
-			 << "  weird, could not resize user reply code to one");
-	  return 888;
-	}
-	m_user_reply.matrix.SetSize(0, 0);
-	m_user_reply.code[0] = wbcrun::srv::NOT_IMPLEMENTED;
+	LOG_INFO (logger,
+		  "wbc::ServoModelProcess::HandleMessagePayload(): USER_REQUEST not handled by servo");
       }
       EnqueueMessage(m_user_channel, &m_user_reply, true, false);
     }

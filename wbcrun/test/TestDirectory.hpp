@@ -40,26 +40,26 @@ namespace wbcrun {
     : public Directory
   {
   public:
-    virtual srv::result_t HandleServoCmd(int requestID,
+    virtual wbcnet::srv_result_t HandleServoCmd(int requestID,
 					 srv::vector_t const * code_in,
 					 srv::matrix_t const * data_in,
 					 srv::vector_t * code_out,
 					 srv::matrix_t * data_out);
     
-    virtual srv::result_t ListBehaviors(listing_t & behaviors) const;
-    virtual srv::result_t ListBehaviorCmds(int behaviorID, request_list_t & requests) const;
+    virtual wbcnet::srv_result_t ListBehaviors(listing_t & behaviors) const;
+    virtual wbcnet::srv_result_t ListBehaviorCmds(int behaviorID, request_list_t & requests) const;
     
-    virtual srv::result_t HandleBehaviorCmd(int behaviorID,
+    virtual wbcnet::srv_result_t HandleBehaviorCmd(int behaviorID,
 					    int requestID,
 					    srv::vector_t const * code_in,
 					    srv::matrix_t const * data_in,
 					    srv::vector_t * code_out,
 					    srv::matrix_t * data_out);
     
-    virtual srv::result_t ListTasks(int behaviorID, listing_t & tasks) const;
-    virtual srv::result_t ListTaskCmds(int behaviorID, int taskID, request_list_t & requests) const;
+    virtual wbcnet::srv_result_t ListTasks(int behaviorID, listing_t & tasks) const;
+    virtual wbcnet::srv_result_t ListTaskCmds(int behaviorID, int taskID, request_list_t & requests) const;
     
-    virtual srv::result_t HandleTaskCmd(int behaviorID,
+    virtual wbcnet::srv_result_t HandleTaskCmd(int behaviorID,
 					int taskID,
 					int requestID,
 					srv::vector_t const * code_in,

@@ -33,62 +33,62 @@
 
 namespace wbcrun {
   
-  srv::result_t TestDirectory::
+  wbcnet::srv_result_t TestDirectory::
   ListBehaviors(listing_t & behaviors) const
   {
     behaviors.clear();
     behaviors.push_back("FloatBehavior");
     behaviors.push_back("PostureBehavior");
     behaviors.push_back("EndEffectorBehavior");
-    return srv::SUCCESS;
+    return SRV_SUCCESS;
   }
   
   
-  srv::result_t TestDirectory::
+  wbcnet::srv_result_t TestDirectory::
   ListBehaviorCmds(int behaviorID, request_list_t & requests) const
   {
     requests.clear();
     
     // what everyone understands:
-    requests.push_back(cmd::GET_DIMENSION);
+    requests.push_back(SRV_GET_DIMENSION);
     
     if (0 == behaviorID) {
       // FloatBehavior
       // no further commands...
-      return srv::SUCCESS;
+      return SRV_SUCCESS;
     }
     
     // suppose every other understands every thing
-    requests.push_back(cmd::SET_GOAL);
-    requests.push_back(cmd::GET_GOAL);
-    requests.push_back(cmd::GET_ACTUAL);
+    requests.push_back(SRV_SET_GOAL);
+    requests.push_back(SRV_GET_GOAL);
+    requests.push_back(SRV_GET_ACTUAL);
     
     if (1 == behaviorID) {
       // PostureBehavior
-      return srv::SUCCESS;
+      return SRV_SUCCESS;
     }
     
     if (2 == behaviorID) {
       // EndEffectorBehavior
-      return srv::SUCCESS;
+      return SRV_SUCCESS;
     }
     
-    return srv::INVALID_BEHAVIOR_ID;
+    return SRV_INVALID_BEHAVIOR_ID;
   }
   
   
-  srv::result_t TestDirectory::
+  wbcnet::srv_result_t TestDirectory::
   HandleServoCmd(int requestID,
 		 srv::vector_t const * code_in,
 		 srv::matrix_t const * data_in,
 		 srv::vector_t * code_out,
 		 srv::matrix_t * data_out)
   {
-    return srv::NOT_IMPLEMENTED;
+    return SRV_NOT_IMPLEMENTED;
   }
   
   
-  srv::result_t TestDirectory::
+  wbcnet::srv_result_t TestDirectory::
   HandleBehaviorCmd(int behaviorID,
 		    int requestID,
 		    srv::vector_t const * code_in,
@@ -97,15 +97,15 @@ namespace wbcrun {
 		    srv::matrix_t * data_out)
   {
     if ((0 > behaviorID) || (2 < behaviorID))
-      return srv::INVALID_BEHAVIOR_ID;
+      return SRV_INVALID_BEHAVIOR_ID;
     
     if (0 == behaviorID) {
       // FloatBehavior
-      if (cmd::GET_DIMENSION != requestID)
+      if (SRV_GET_DIMENSION != requestID)
 	return srv::INVALID_REQUEST;
       if (code_out && code_out->SetNElements(1))
 	(*code_out)[0] = 7;
-      return srv::SUCCESS;
+      return SRV_SUCCESS;
     }
     
     int dim;
@@ -114,53 +114,53 @@ namespace wbcrun {
     else // EndEffectorBehavior
       dim = 3;
     
-    if (cmd::GET_DIMENSION == requestID) {
+    if (SRV_GET_DIMENSION == requestID) {
       if (code_out && code_out->SetNElements(1))
 	(*code_out)[0] = dim;
-      return srv::SUCCESS;
+      return SRV_SUCCESS;
     }
     
-    if (cmd::SET_GOAL == requestID) {
+    if (SRV_SET_GOAL == requestID) {
       if (( ! data_in) || (data_in->NRows() != dim) || (data_in->NColumns() != 1))
-	return srv::INVALID_DATA;
-      // could also check e.g. workspace limits and return srv::OUT_OF_RANGE or whatever
-      return srv::SUCCESS;
+	return SRV_INVALID_DATA;
+      // could also check e.g. workspace limits and return SRV_OUT_OF_RANGE or whatever
+      return SRV_SUCCESS;
     }
     
-    if (cmd::GET_GOAL == requestID) {
+    if (SRV_GET_GOAL == requestID) {
       if (( ! data_out) || ( ! data_out->SetSize(dim, 1)))
-	return srv::INVALID_DATA;
+	return SRV_INVALID_DATA;
       for (int ii(0); ii < dim; ++ii)
 	data_out->GetElement(ii, 0) = ii;
-      return srv::SUCCESS;
+      return SRV_SUCCESS;
     }
     
-    if (cmd::GET_ACTUAL == requestID) {
+    if (SRV_GET_ACTUAL == requestID) {
       if (( ! data_out) || ( ! data_out->SetSize(dim, 1)))
-	return srv::INVALID_DATA;
+	return SRV_INVALID_DATA;
       for (int ii(0); ii < dim; ++ii)
 	data_out->GetElement(ii, 0) = ii - 0.1;
-      return srv::SUCCESS;
+      return SRV_SUCCESS;
     }
     
     return srv::INVALID_REQUEST;
   }
   
   
-  srv::result_t TestDirectory::
+  wbcnet::srv_result_t TestDirectory::
   ListTasks(int behaviorID, listing_t & tasks) const
   {
     if (0 == behaviorID) {
       // FloatBehavior
       tasks.push_back("GravityCompensationTask");
-      return srv::SUCCESS;
+      return SRV_SUCCESS;
     }
     
     if (1 == behaviorID) {
       // PostureBehavior
       tasks.push_back("PostureTask");
       tasks.push_back("FrictionTask");
-      return srv::SUCCESS;
+      return SRV_SUCCESS;
     }
     
     if (2 == behaviorID) {
@@ -169,103 +169,103 @@ namespace wbcrun {
       tasks.push_back("ObstacleAvoidanceTask");
       tasks.push_back("EndEffectorPositionTask");
       tasks.push_back("PostureTask");
-      return srv::SUCCESS;
+      return SRV_SUCCESS;
     }
     
-    return srv::INVALID_BEHAVIOR_ID;
+    return SRV_INVALID_BEHAVIOR_ID;
   }
   
   
-  srv::result_t TestDirectory::
+  wbcnet::srv_result_t TestDirectory::
   ListTaskCmds(int behaviorID, int taskID, request_list_t & requests) const
   {
     requests.clear();
-    requests.push_back(cmd::GET_TASK_TYPE);
-    requests.push_back(cmd::GET_DIMENSION);
+    requests.push_back(SRV_GET_TASK_TYPE);
+    requests.push_back(SRV_GET_DIMENSION);
     
     if (0 == behaviorID) {
       // FloatBehavior
       if (0 == taskID) {
 	// GravityCompensationTask
 	// ... but nothing more to add
-	return srv::SUCCESS;
+	return SRV_SUCCESS;
       }
-      return srv::INVALID_TASK_ID;
+      return SRV_INVALID_TASK_ID;
     }
     
     if (1 == behaviorID) {
       // PostureBehavior
       if (0 == taskID) {
 	// PostureTask
-	requests.push_back(cmd::SET_PROP_GAIN);
-	requests.push_back(cmd::GET_PROP_GAIN);
-	requests.push_back(cmd::SET_DIFF_GAIN);
-	requests.push_back(cmd::GET_DIFF_GAIN);
-	requests.push_back(cmd::SET_MAX_VEL);
-	requests.push_back(cmd::GET_MAX_VEL);
-	requests.push_back(cmd::SET_MAX_ACCEL);
-	requests.push_back(cmd::GET_MAX_ACCEL);
-	return srv::SUCCESS;
+	requests.push_back(SRV_SET_PROP_GAIN);
+	requests.push_back(SRV_GET_PROP_GAIN);
+	requests.push_back(SRV_SET_DIFF_GAIN);
+	requests.push_back(SRV_GET_DIFF_GAIN);
+	requests.push_back(SRV_SET_MAX_VEL);
+	requests.push_back(SRV_GET_MAX_VEL);
+	requests.push_back(SRV_SET_MAX_ACCEL);
+	requests.push_back(SRV_GET_MAX_ACCEL);
+	return SRV_SUCCESS;
       }
       if (1 == taskID) {
 	// FrictionTask
-	requests.push_back(cmd::SET_DIFF_GAIN);
-	requests.push_back(cmd::GET_DIFF_GAIN);
-	return srv::SUCCESS;
+	requests.push_back(SRV_SET_DIFF_GAIN);
+	requests.push_back(SRV_GET_DIFF_GAIN);
+	return SRV_SUCCESS;
       }
-      return srv::INVALID_TASK_ID;
+      return SRV_INVALID_TASK_ID;
     }
     
     if (2 == behaviorID) {
       // EndEffectorBehavior
       if (0 == taskID) {
 	// JointLimitTask
-	return srv::SUCCESS;
+	return SRV_SUCCESS;
       }
       if (1 == taskID) {
 	// ObstacleAvoidanceTask
-	requests.push_back(cmd::SET_PROP_GAIN);
-	requests.push_back(cmd::GET_PROP_GAIN);
-	requests.push_back(cmd::SET_DIFF_GAIN);
-	requests.push_back(cmd::GET_DIFF_GAIN);
-	requests.push_back(cmd::SET_MAX_VEL);
-	requests.push_back(cmd::GET_MAX_VEL);
-	requests.push_back(cmd::SET_MAX_ACCEL);
-	requests.push_back(cmd::GET_MAX_ACCEL);
-	return srv::SUCCESS;
+	requests.push_back(SRV_SET_PROP_GAIN);
+	requests.push_back(SRV_GET_PROP_GAIN);
+	requests.push_back(SRV_SET_DIFF_GAIN);
+	requests.push_back(SRV_GET_DIFF_GAIN);
+	requests.push_back(SRV_SET_MAX_VEL);
+	requests.push_back(SRV_GET_MAX_VEL);
+	requests.push_back(SRV_SET_MAX_ACCEL);
+	requests.push_back(SRV_GET_MAX_ACCEL);
+	return SRV_SUCCESS;
       }
       if (2 == taskID) {
 	// EndEffectorPositionTask
-	requests.push_back(cmd::SET_PROP_GAIN);
-	requests.push_back(cmd::GET_PROP_GAIN);
-	requests.push_back(cmd::SET_DIFF_GAIN);
-	requests.push_back(cmd::GET_DIFF_GAIN);
-	requests.push_back(cmd::SET_MAX_VEL);
-	requests.push_back(cmd::GET_MAX_VEL);
-	requests.push_back(cmd::SET_MAX_ACCEL);
-	requests.push_back(cmd::GET_MAX_ACCEL);
-	return srv::SUCCESS;
+	requests.push_back(SRV_SET_PROP_GAIN);
+	requests.push_back(SRV_GET_PROP_GAIN);
+	requests.push_back(SRV_SET_DIFF_GAIN);
+	requests.push_back(SRV_GET_DIFF_GAIN);
+	requests.push_back(SRV_SET_MAX_VEL);
+	requests.push_back(SRV_GET_MAX_VEL);
+	requests.push_back(SRV_SET_MAX_ACCEL);
+	requests.push_back(SRV_GET_MAX_ACCEL);
+	return SRV_SUCCESS;
       }
       if (3 == taskID) {
 	// PostureTask
-	requests.push_back(cmd::SET_PROP_GAIN);
-	requests.push_back(cmd::GET_PROP_GAIN);
-	requests.push_back(cmd::SET_DIFF_GAIN);
-	requests.push_back(cmd::GET_DIFF_GAIN);
-	requests.push_back(cmd::SET_MAX_VEL);
-	requests.push_back(cmd::GET_MAX_VEL);
-	requests.push_back(cmd::SET_MAX_ACCEL);
-	requests.push_back(cmd::GET_MAX_ACCEL);
-	return srv::SUCCESS;
+	requests.push_back(SRV_SET_PROP_GAIN);
+	requests.push_back(SRV_GET_PROP_GAIN);
+	requests.push_back(SRV_SET_DIFF_GAIN);
+	requests.push_back(SRV_GET_DIFF_GAIN);
+	requests.push_back(SRV_SET_MAX_VEL);
+	requests.push_back(SRV_GET_MAX_VEL);
+	requests.push_back(SRV_SET_MAX_ACCEL);
+	requests.push_back(SRV_GET_MAX_ACCEL);
+	return SRV_SUCCESS;
       }
-      return srv::INVALID_TASK_ID;
+      return SRV_INVALID_TASK_ID;
     }
     
-    return srv::INVALID_BEHAVIOR_ID;
+    return SRV_INVALID_BEHAVIOR_ID;
   }
   
   
-  srv::result_t TestDirectory::
+  wbcnet::srv_result_t TestDirectory::
   HandleTaskCmd(int behaviorID,
 		int taskID,
 		int requestID,
@@ -282,7 +282,7 @@ namespace wbcrun {
 	dim = 7;
       }
       else
-	return srv::INVALID_TASK_ID;
+	return SRV_INVALID_TASK_ID;
     }
     else if (1 == behaviorID) {
       // PostureBehavior
@@ -295,7 +295,7 @@ namespace wbcrun {
 	dim = 7;
       }
       else
-	return srv::INVALID_TASK_ID;
+	return SRV_INVALID_TASK_ID;
     }
     else if (2 == behaviorID) {
       // EndEffectorBehavior
@@ -316,95 +316,95 @@ namespace wbcrun {
 	dim = 7;
       }
       else
-	return srv::INVALID_TASK_ID;
+	return SRV_INVALID_TASK_ID;
     }
     else
-      return srv::INVALID_BEHAVIOR_ID;
+      return SRV_INVALID_BEHAVIOR_ID;
     
-    if (cmd::GET_TASK_TYPE == requestID) {
+    if (SRV_GET_TASK_TYPE == requestID) {
       if (( ! code_out) || ( ! code_out->SetNElements(1)))
-	return srv::INVALID_DATA;
+	return SRV_INVALID_DATA;
       (*code_out)[0] = 42;
-      return srv::SUCCESS;
+      return SRV_SUCCESS;
     }
     
-    if (cmd::GET_DIMENSION == requestID) {
+    if (SRV_GET_DIMENSION == requestID) {
       if (( ! code_out) || ( ! code_out->SetNElements(1)))
-	return srv::INVALID_DATA;
+	return SRV_INVALID_DATA;
       (*code_out)[0] = dim;
-      return srv::SUCCESS;
+      return SRV_SUCCESS;
     }
     
-    if (cmd::SET_PROP_GAIN == requestID) {
+    if (SRV_SET_PROP_GAIN == requestID) {
       // also permit 1x1 data
       if (( ! data_in)
 	  || ((data_in->NRows() != dim) && (data_in->NRows() != 1))
 	  || (data_in->NColumns() != 1))
-	return srv::INVALID_DATA;
-      // could also check limits and return srv::OUT_OF_RANGE or whatever
-      return srv::SUCCESS;
+	return SRV_INVALID_DATA;
+      // could also check limits and return SRV_OUT_OF_RANGE or whatever
+      return SRV_SUCCESS;
     }
     
-    if (cmd::GET_PROP_GAIN == requestID) {
+    if (SRV_GET_PROP_GAIN == requestID) {
       if (( ! data_out) || ( ! data_out->SetSize(dim, 1)))
-	return srv::INVALID_DATA;
+	return SRV_INVALID_DATA;
       for (int ii(0); ii < dim; ++ii)
 	data_out->GetElement(ii, 0) = 200 + 3.0 * ii;
-      return srv::SUCCESS;
+      return SRV_SUCCESS;
     }
 
-    if (cmd::SET_DIFF_GAIN == requestID) {
+    if (SRV_SET_DIFF_GAIN == requestID) {
       // also permit 1x1 data
       if (( ! data_in)
 	  || ((data_in->NRows() != dim) && (data_in->NRows() != 1))
 	  || (data_in->NColumns() != 1))
-	return srv::INVALID_DATA;
-      // could also check limits and return srv::OUT_OF_RANGE or whatever
-      return srv::SUCCESS;
+	return SRV_INVALID_DATA;
+      // could also check limits and return SRV_OUT_OF_RANGE or whatever
+      return SRV_SUCCESS;
     }
     
-    if (cmd::GET_DIFF_GAIN == requestID) {
+    if (SRV_GET_DIFF_GAIN == requestID) {
       if (( ! data_out) || ( ! data_out->SetSize(dim, 1)))
-	return srv::INVALID_DATA;
+	return SRV_INVALID_DATA;
       for (int ii(0); ii < dim; ++ii)
 	data_out->GetElement(ii, 0) = 50 - 2.0 * ii;
-      return srv::SUCCESS;
+      return SRV_SUCCESS;
     }
 
-    if (cmd::SET_MAX_VEL == requestID) {
+    if (SRV_SET_MAX_VEL == requestID) {
       // also permit 1x1 data
       if (( ! data_in)
 	  || ((data_in->NRows() != dim) && (data_in->NRows() != 1))
 	  || (data_in->NColumns() != 1))
-	return srv::INVALID_DATA;
-      // could also check limits and return srv::OUT_OF_RANGE or whatever
-      return srv::SUCCESS;
+	return SRV_INVALID_DATA;
+      // could also check limits and return SRV_OUT_OF_RANGE or whatever
+      return SRV_SUCCESS;
     }
     
-    if (cmd::GET_MAX_VEL == requestID) {
+    if (SRV_GET_MAX_VEL == requestID) {
       if (( ! data_out) || ( ! data_out->SetSize(dim, 1)))
-	return srv::INVALID_DATA;
+	return SRV_INVALID_DATA;
       for (int ii(0); ii < dim; ++ii)
 	data_out->GetElement(ii, 0) = 5 + 0.7 * ii;
-      return srv::SUCCESS;
+      return SRV_SUCCESS;
     }
 
-    if (cmd::SET_MAX_ACCEL == requestID) {
+    if (SRV_SET_MAX_ACCEL == requestID) {
       // also permit 1x1 data
       if (( ! data_in)
 	  || ((data_in->NRows() != dim) && (data_in->NRows() != 1))
 	  || (data_in->NColumns() != 1))
-	return srv::INVALID_DATA;
-      // could also check limits and return srv::OUT_OF_RANGE or whatever
-      return srv::SUCCESS;
+	return SRV_INVALID_DATA;
+      // could also check limits and return SRV_OUT_OF_RANGE or whatever
+      return SRV_SUCCESS;
     }
     
-    if (cmd::GET_MAX_ACCEL == requestID) {
+    if (SRV_GET_MAX_ACCEL == requestID) {
       if (( ! data_out) || ( ! data_out->SetSize(dim, 1)))
-	return srv::INVALID_DATA;
+	return SRV_INVALID_DATA;
       for (int ii(0); ii < dim; ++ii)
 	data_out->GetElement(ii, 0) = 17 - 0.42 * ii;
-      return srv::SUCCESS;
+      return SRV_SUCCESS;
     }
     
     return srv::INVALID_REQUEST;

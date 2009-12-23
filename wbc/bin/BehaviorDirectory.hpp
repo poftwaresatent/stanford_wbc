@@ -34,45 +34,45 @@ namespace wbc {
 		      /** can be NULL, but then HandleServoCmd() will always fail */
 		      ServoImplementation * servo);
   
-    virtual wbcrun::srv::result_t
-    HandleServoCmd(int requestID,
-		   wbcrun::ServiceMessage::vector_type const * code_in,
-		   wbcrun::ServiceMessage::matrix_type const * data_in,
-		   wbcrun::ServiceMessage::vector_type * code_out,
-		   wbcrun::ServiceMessage::matrix_type * data_out);
+    virtual wbcnet::srv_result_t
+    HandleServoCmd(int commandID,
+		   wbcnet::msg::Service::vector_type const * code_in,
+		   wbcnet::msg::Service::matrix_type const * data_in,
+		   wbcnet::msg::Service::vector_type * code_out,
+		   wbcnet::msg::Service::matrix_type * data_out);
     
-    virtual wbcrun::srv::result_t
+    virtual wbcnet::srv_result_t
     ListBehaviors(wbcrun::listing_t & behaviors) const;
   
-    virtual wbcrun::srv::result_t
+    virtual wbcnet::srv_result_t
     ListBehaviorCmds(int behaviorID,
-		     wbcrun::request_list_t & requests) const;
+		     wbcrun::command_list_t & commands) const;
   
-    virtual wbcrun::srv::result_t
+    virtual wbcnet::srv_result_t
     HandleBehaviorCmd(int behaviorID,
-		      int requestID,
-		      wbcrun::ServiceMessage::vector_type const * code_in,
-		      wbcrun::ServiceMessage::matrix_type const * data_in,
-		      wbcrun::ServiceMessage::vector_type * code_out,
-		      wbcrun::ServiceMessage::matrix_type * data_out);
+		      int commandID,
+		      wbcnet::msg::Service::vector_type const * code_in,
+		      wbcnet::msg::Service::matrix_type const * data_in,
+		      wbcnet::msg::Service::vector_type * code_out,
+		      wbcnet::msg::Service::matrix_type * data_out);
   
-    virtual wbcrun::srv::result_t
+    virtual wbcnet::srv_result_t
     ListTasks(int behaviorID,
 	      wbcrun::listing_t & tasks) const;
   
-    virtual wbcrun::srv::result_t
+    virtual wbcnet::srv_result_t
     ListTaskCmds(int behaviorID,
 		 int taskID,
-		 wbcrun::request_list_t & requests) const;
+		 wbcrun::command_list_t & commands) const;
   
-    virtual wbcrun::srv::result_t
+    virtual wbcnet::srv_result_t
     HandleTaskCmd(int behaviorID,
 		  int taskID,
-		  int requestID,
-		  wbcrun::ServiceMessage::vector_type const * code_in,
-		  wbcrun::ServiceMessage::matrix_type const * data_in,
-		  wbcrun::ServiceMessage::vector_type * code_out,
-		  wbcrun::ServiceMessage::matrix_type * data_out);
+		  int commandID,
+		  wbcnet::msg::Service::vector_type const * code_in,
+		  wbcnet::msg::Service::matrix_type const * data_in,
+		  wbcnet::msg::Service::vector_type * code_out,
+		  wbcnet::msg::Service::matrix_type * data_out);
   
   protected:
     std::vector<BehaviorDescription*> const & m_behavior;

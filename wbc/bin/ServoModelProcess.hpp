@@ -71,10 +71,10 @@ namespace wbc {
     
     // incoming messages
     wbcrun::msg::TaskSpec m_user_task_spec;
-    wbcrun::ServiceMessage m_user_request;
+    wbcnet::msg::Service m_user_request;
     
     // outgoing messages
-    wbcrun::ServiceMessage m_user_reply;
+    wbcnet::msg::Service m_user_reply;
   };
   
 }

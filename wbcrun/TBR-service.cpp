@@ -39,8 +39,8 @@ static uint8_t const msz(std::numeric_limits<uint8_t>::max());
 namespace wbcrun {
 
 
-  ServiceMessage::
-  ServiceMessage(wbcnet::unique_id_t id)
+  wbcnet::msg::Service::
+  wbcnet::msg::Service(wbcnet::unique_id_t id)
     : wbcnet::msg::
       UserCommand<wbcnet::Vector<int32_t>, wbcnet::Matrix<double> >(id,
 								    0, 0, 0, // initial sizes
@@ -68,7 +68,7 @@ namespace wbcrun {
     };
     
     
-    char const * result_to_string(int result)
+    char const * srv_result_to_string(int result)
     {
       if ((0 > result) || (OTHER_ERROR < result))
 	return "(invalid result)";
@@ -114,7 +114,7 @@ namespace wbcrun {
     }
   
   
-    void set_goal(ServiceMessage & request, double const * goal_coordinates, size_t n_coordinates)
+    void set_goal(wbcnet::msg::Service & request, double const * goal_coordinates, size_t n_coordinates)
     {
       ++request.requestID;
       request.code.SetNElements(1);
@@ -124,7 +124,7 @@ namespace wbcrun {
         request.matrix.GetElement(ii, 0) = goal_coordinates[ii];
     }
 
-    void set_closest_distance(ServiceMessage & request,
+    void set_closest_distance(wbcnet::msg::Service & request,
 			      int n_points,int * nodeids, double* point_coords){
     
       ++request.requestID;
@@ -139,7 +139,7 @@ namespace wbcrun {
       }      
     }  
   
-    void get_pos(ServiceMessage & request)
+    void get_pos(wbcnet::msg::Service & request)
     {
       ++request.requestID;
       request.code.SetNElements(1);
@@ -147,14 +147,14 @@ namespace wbcrun {
       request.matrix.SetSize(0, 0);
     }
   
-     void change_state(ServiceMessage & request)
+     void change_state(wbcnet::msg::Service & request)
     {
       ++request.requestID;
       request.code.SetNElements(1);
       request.code[0] = CHANGE_STATE;
       request.matrix.SetSize(0, 0);
     } 
-    void get_end_pos(ServiceMessage & request)
+    void get_end_pos(wbcnet::msg::Service & request)
     {
       ++request.requestID;
       request.code.SetNElements(1);
@@ -163,7 +163,7 @@ namespace wbcrun {
     }
   
   
-    void get_vel(ServiceMessage & request)
+    void get_vel(wbcnet::msg::Service & request)
     {
       ++request.requestID;
       request.code.SetNElements(1);
@@ -172,7 +172,7 @@ namespace wbcrun {
     }
   
   
-    void get_torques(ServiceMessage & request)
+    void get_torques(wbcnet::msg::Service & request)
     {
       ++request.requestID;
       request.code.SetNElements(1);
@@ -181,7 +181,7 @@ namespace wbcrun {
     }
   
   
-    void toggle_recorder(ServiceMessage & request)
+    void toggle_recorder(wbcnet::msg::Service & request)
     {
       ++request.requestID;
       request.code.SetNElements(1);
@@ -190,7 +190,7 @@ namespace wbcrun {
     }
   
   
-    void key_press(ServiceMessage & request, int32_t keycode)
+    void key_press(wbcnet::msg::Service & request, int32_t keycode)
     {
       ++request.requestID;
       request.code.SetNElements(2);
@@ -198,7 +198,7 @@ namespace wbcrun {
       request.code[1] = keycode;
       request.matrix.SetSize(0, 0);
     }
-    void float_command(ServiceMessage & request)
+    void float_command(wbcnet::msg::Service & request)
     {
       ++request.requestID;
       request.code.SetNElements(1);
@@ -207,7 +207,7 @@ namespace wbcrun {
     }
 
 
-    void activate_command(ServiceMessage & request)
+    void activate_command(wbcnet::msg::Service & request)
     {
       ++request.requestID;
       request.code.SetNElements(1);
@@ -216,7 +216,7 @@ namespace wbcrun {
     }
 
 
-    void set_gains(ServiceMessage & request, double const * gains, size_t sz)
+    void set_gains(wbcnet::msg::Service & request, double const * gains, size_t sz)
     {
       ++request.requestID;
       request.code.SetNElements(1);
@@ -230,7 +230,7 @@ namespace wbcrun {
   }
   
   
-  void ServiceMessage::
+  void wbcnet::msg::Service::
   Reset()
   {
     // somewhat redundant in most cases
@@ -240,7 +240,7 @@ namespace wbcrun {
     nColumns = 0;
     code.SetNElements(1);
     if (code.NElements() > 0)
-      code[0] = srv::NOT_IMPLEMENTED;
+      code[0] = SRV_NOT_IMPLEMENTED;
     matrixptr->SetSize(0, 0);
   }
   

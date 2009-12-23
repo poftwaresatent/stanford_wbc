@@ -32,52 +32,15 @@
 #ifndef WBCRUN_DIRECTORY_HPP
 #define WBCRUN_DIRECTORY_HPP
 
-#include <wbcrun/service.hpp>
+#include <wbcnet/msg/Service.hpp>
 #include <list>
 #include <string>
 
 namespace wbcrun {
   
-  namespace cmd {
-    
-    /**       
-       \note Partially redundant with wbcrun::srv::id_t, but only used
-       embedded within a DIRECTORY request.
-    */
-    typedef enum {
-      // also update request_to_string() and string_to_request() when changing this enum!
-      GET_TASK_TYPE,
-      GET_DIMENSION,
-      GET_LINK_ANGLE,
-      GET_LINK_TRANSFORM,
-      SET_BEHAVIOR,
-      SET_GOAL,
-      GET_GOAL,
-      GET_ACTUAL,
-      SET_PROP_GAIN,
-      GET_PROP_GAIN,
-      SET_DIFF_GAIN,
-      GET_DIFF_GAIN,
-      SET_MAX_VEL,
-      GET_MAX_VEL,
-      SET_MAX_ACCEL,
-      GET_MAX_ACCEL,
-      GET_BEHAVIOR_LIST,
-      GET_COMMAND_LIST,
-      GET_TASK_LIST
-      // also update request_to_string() and string_to_request() when changing this enum!
-    } request_t;
-    
-    /** \return NULL for invalid request */
-    char const * request_to_string(int request);
-    
-    /** \return -1 for invalid name */
-    int string_to_request(std::string const & name);
-    
-  }
   
   typedef std::list<std::string> listing_t;
-  typedef std::list<cmd::request_t> request_list_t;
+  typedef std::list<wbcnet::srv_command_t> command_list_t;
   
   
   class Directory
@@ -85,46 +48,46 @@ namespace wbcrun {
   public:
     virtual ~Directory() {}
     
-    virtual srv::result_t HandleServoCmd(int requestID,
-					 ServiceMessage::vector_type const * code_in,
-					 ServiceMessage::matrix_type const * data_in,
-					 ServiceMessage::vector_type * code_out,
-					 ServiceMessage::matrix_type * data_out) = 0;
+    virtual wbcnet::srv_result_t HandleServoCmd(int commandID,
+					 wbcnet::srv_code_t const * code_in,
+					 wbcnet::srv_matrix_t const * data_in,
+					 wbcnet::srv_code_t * code_out,
+					 wbcnet::srv_matrix_t * data_out) = 0;
     
-    virtual srv::result_t ListBehaviors(listing_t & behaviors) const = 0;
+    virtual wbcnet::srv_result_t ListBehaviors(listing_t & behaviors) const = 0;
     
-    virtual srv::result_t ListBehaviorCmds(int behaviorID,
-					   request_list_t & requests) const = 0;
+    virtual wbcnet::srv_result_t ListBehaviorCmds(int behaviorID,
+					   command_list_t & commands) const = 0;
     
-    virtual srv::result_t HandleBehaviorCmd(int behaviorID,
-					    int requestID,
-					    ServiceMessage::vector_type const * code_in,
-					    ServiceMessage::matrix_type const * data_in,
-					    ServiceMessage::vector_type * code_out,
-					    ServiceMessage::matrix_type * data_out) = 0;
+    virtual wbcnet::srv_result_t HandleBehaviorCmd(int behaviorID,
+					    int commandID,
+					    wbcnet::srv_code_t const * code_in,
+					    wbcnet::srv_matrix_t const * data_in,
+					    wbcnet::srv_code_t * code_out,
+					    wbcnet::srv_matrix_t * data_out) = 0;
     
-    virtual srv::result_t ListTasks(int behaviorID,
+    virtual wbcnet::srv_result_t ListTasks(int behaviorID,
 				    listing_t & tasks) const = 0;
     
-    virtual srv::result_t ListTaskCmds(int behaviorID,
+    virtual wbcnet::srv_result_t ListTaskCmds(int behaviorID,
 				       int taskID,
-				       request_list_t & requests) const = 0;
+				       command_list_t & commands) const = 0;
     
-    virtual srv::result_t HandleTaskCmd(int behaviorID,
+    virtual wbcnet::srv_result_t HandleTaskCmd(int behaviorID,
 					int taskID,
-					int requestID,
-					ServiceMessage::vector_type const * code_in,
-					ServiceMessage::matrix_type const * data_in,
-					ServiceMessage::vector_type * code_out,
-					ServiceMessage::matrix_type * data_out) = 0;
+					int commandID,
+					wbcnet::srv_code_t const * code_in,
+					wbcnet::srv_matrix_t const * data_in,
+					wbcnet::srv_code_t * code_out,
+					wbcnet::srv_matrix_t * data_out) = 0;
   };
   
   
   class ServiceTransaction {
   public:
     virtual ~ServiceTransaction() {}
-    virtual ServiceMessage * GetRequest() = 0;
-    virtual ServiceMessage * GetReply() = 0;
+    virtual wbcnet::msg::Service * GetRequest() = 0;
+    virtual wbcnet::msg::Service * GetReply() = 0;
     virtual void SendWaitReceive() = 0;
   };
   
@@ -137,77 +100,47 @@ namespace wbcrun {
 		       bool own_transaction);
     virtual ~DirectoryCmdClient();
     
-    virtual srv::result_t HandleServoCmd(int requestID,
-					 ServiceMessage::vector_type const * code_in,
-					 ServiceMessage::matrix_type const * data_in,
-					 ServiceMessage::vector_type * code_out,
-					 ServiceMessage::matrix_type * data_out);
+    virtual wbcnet::srv_result_t HandleServoCmd(int commandID,
+					 wbcnet::srv_code_t const * code_in,
+					 wbcnet::srv_matrix_t const * data_in,
+					 wbcnet::srv_code_t * code_out,
+					 wbcnet::srv_matrix_t * data_out);
     
-    virtual srv::result_t ListBehaviors(listing_t & behaviors) const;
+    virtual wbcnet::srv_result_t ListBehaviors(listing_t & behaviors) const;
     
-    virtual srv::result_t ListBehaviorCmds(int behaviorID,
-					   request_list_t & requests) const;
+    virtual wbcnet::srv_result_t ListBehaviorCmds(int behaviorID,
+					   command_list_t & commands) const;
     
-    srv::result_t ListBehaviorCmds(int behaviorID,
-				   request_list_t & requests,
-				   listing_t & request_names) const;
+    wbcnet::srv_result_t ListBehaviorCmds(int behaviorID,
+				   command_list_t & commands,
+				   listing_t & command_names) const;
     
-    virtual srv::result_t HandleBehaviorCmd(int behaviorID,
-					    int requestID,
-					    ServiceMessage::vector_type const * code_in,
-					    ServiceMessage::matrix_type const * data_in,
-					    ServiceMessage::vector_type * code_out,
-					    ServiceMessage::matrix_type * data_out);
+    virtual wbcnet::srv_result_t HandleBehaviorCmd(int behaviorID,
+					    int commandID,
+					    wbcnet::srv_code_t const * code_in,
+					    wbcnet::srv_matrix_t const * data_in,
+					    wbcnet::srv_code_t * code_out,
+					    wbcnet::srv_matrix_t * data_out);
     
-    virtual srv::result_t ListTasks(int behaviorID,
+    virtual wbcnet::srv_result_t ListTasks(int behaviorID,
 				    listing_t & tasks) const;
     
-    virtual srv::result_t ListTaskCmds(int behaviorID,
+    virtual wbcnet::srv_result_t ListTaskCmds(int behaviorID,
 				       int taskID,
-				       request_list_t & requests) const;
+				       command_list_t & commands) const;
     
-    srv::result_t ListTaskCmds(int behaviorID,
+    wbcnet::srv_result_t ListTaskCmds(int behaviorID,
 			       int taskID,
-			       request_list_t & requests,
-			       listing_t & request_names) const;
+			       command_list_t & commands,
+			       listing_t & command_names) const;
     
-    virtual srv::result_t HandleTaskCmd(int behaviorID,
+    virtual wbcnet::srv_result_t HandleTaskCmd(int behaviorID,
 					int taskID,
-					int requestID,
-					ServiceMessage::vector_type const * code_in,
-					ServiceMessage::matrix_type const * data_in,
-					ServiceMessage::vector_type * code_out,
-					ServiceMessage::matrix_type * data_out);
-    
-    static void CreateListBehaviorsRequest(ServiceMessage * msg);
-    
-    static void CreateListBehaviorCmdsRequest(int behaviorID,
-					      ServiceMessage * msg);
-    
-    static void CreateServoCmdRequest(int requestID,
-				      ServiceMessage::vector_type const * code_in,
-				      ServiceMessage::matrix_type const * data_in,
-				      ServiceMessage * request);
-    
-    static void CreateBehaviorCmdRequest(int behaviorID,
-					 int requestID,
-					 ServiceMessage::vector_type const * code_in,
-					 ServiceMessage::matrix_type const * data_in,
-					 ServiceMessage * request);
-    
-    static void CreateListTasksRequest(int behaviorID,
-				       ServiceMessage * msg);
-    
-    static void CreateListTaskCmdsRequest(int behaviorID,
-					  int taskID,
-					  ServiceMessage * msg);
-    
-    static void CreateTaskCmdRequest(int behaviorID,
-				     int taskID,
-				     int requestID,
-				     ServiceMessage::vector_type const * code_in,
-				     ServiceMessage::matrix_type const * data_in,
-				     ServiceMessage * request);
+					int commandID,
+					wbcnet::srv_code_t const * code_in,
+					wbcnet::srv_matrix_t const * data_in,
+					wbcnet::srv_code_t * code_out,
+					wbcnet::srv_matrix_t * data_out);
     
   protected:
     ServiceTransaction * m_transaction;
@@ -230,11 +163,11 @@ namespace wbcrun {
        command (or detected a protocol error). In case of re-routing,
        some processing is done first:
 
-       - BEHAVIOR_DIR eats up two elements of the request.code vector,
+       - BEHAVIOR_DIR eats up two elements of the message.code vector,
          code[0] being the BEHAVIOR_DIR tag and code[1] being the
          behavior ID passed to HandleBehaviorCmd().
 
-       - TASK_DIR eats up three elements of request.code, code[0]
+       - TASK_DIR eats up three elements of message.code, code[0]
          being the TASK_DIR tag, code[1] being the behavior ID, and
          code[2] being the task ID passed to HandleTaskCmd().
 
@@ -250,7 +183,7 @@ namespace wbcrun {
        bool MyDispatcher::Handle(...) {
          if (DirectoryDispatcher::Handle(...))
 	   return true;
-	 switch (request.code[0]) {
+	 switch (message.code[0]) {
 	   case 42:
 	     life_the_universe_and_everything();
 	     // should fill in reply accordingly...
@@ -262,7 +195,7 @@ namespace wbcrun {
        This way, further subclassing of MyDispatcher allows to chain
        handlers from general to specific.
        
-       \return false if the request.code[0] did not match any of the
+       \return false if the message.code[0] did not match any of the
        known tags, or true if it did or some other condition was
        handled by this implementation.
        
@@ -271,9 +204,9 @@ namespace wbcrun {
     */
     virtual bool Handle(Directory & directory,
 			/** the request sent by the user */
-			ServiceMessage const & request,
+			wbcnet::msg::Service const & message,
 			/** the reply to be filled in by the implementation */
-			ServiceMessage & reply);
+			wbcnet::msg::Service & reply);
   };
   
 }
