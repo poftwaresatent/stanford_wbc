@@ -38,6 +38,88 @@ namespace wbcnet {
   
   
   /**
+     List of domains for service requests and replies. The domain
+     specifies which part of the controller the command is directed
+     at. You can specify custom domains by using the values of
+     SRV_OTHER_DOMAIN and upwards.
+   */
+  typedef enum {
+    SRV_SERVO_DOMAIN,
+    SRV_BEHAVIOR_DOMAIN,
+    SRV_TASK_DOMAIN,
+    SRV_OTHER_DOMAIN
+  } srv_domain_t;
+  
+  
+  /**
+     \return A string representation according to the srv_domain_t
+     enum. If the domain is SRV_OTHER_DOMAIN or above, the value of
+     domain-SRV_OTHER_DOMAIN will be included in the string. If the
+     domain is negative, the returned string will simply include that
+     value.
+  */
+  std::string srv_domain_to_string(int domain);
+  
+  
+  /**
+     \return The inverse of srv_domain_to_string(), or -1 for an
+     invalid name. No attempt is made to invert the SRV_OTHER_DOMAIN
+     mechanism (except for an exact match). */
+  int string_to_srv_domain(std::string const & name);
+  
+  
+  /**
+     List of command codes for service requests and replies. After the
+     domain, the command specifies what exactly is asked of that
+     particular domain. You can specify custom commands by using the
+     values of SRV_OTHER_COMMAND and upwards.
+   */
+  typedef enum {
+    SRV_KEY_PRESS,
+    SRV_TOGGLE_RECORDER,
+    SRV_GET_TASK_TYPE,
+    SRV_GET_DIMENSION,
+    SRV_GET_LINK_ANGLE,
+    SRV_GET_LINK_TRANSFORM,
+    SRV_SET_BEHAVIOR,
+    SRV_GET_BEHAVIOR,
+    SRV_SET_GOAL,
+    SRV_GET_GOAL,
+    SRV_GET_ACTUAL,
+    SRV_GET_TORQUES,
+    SRV_SET_PROP_GAIN,
+    SRV_GET_PROP_GAIN,
+    SRV_SET_DIFF_GAIN,
+    SRV_GET_DIFF_GAIN,
+    SRV_SET_MAX_VEL,
+    SRV_GET_MAX_VEL,
+    SRV_SET_MAX_ACCEL,
+    SRV_GET_MAX_ACCEL,
+    SRV_GET_BEHAVIOR_LIST,
+    SRV_GET_COMMAND_LIST,
+    SRV_GET_TASK_LIST,
+    SRV_OTHER_COMMAND
+  } srv_command_t;
+  
+  
+  /**
+     \return A string representation according to the srv_command_t
+     enum. If the command is SRV_OTHER_COMMAND or above, the value of
+     command-SRV_OTHER_COMMAND will be included in the string. If the
+     command is negative, the returned string will simply include that
+     value.
+  */
+  std::string srv_command_to_string(int command);
+  
+  
+  /**
+     \return The inverse of srv_command_to_string(), or -1 for an
+     invalid name. No attempt is made to invert the SRV_OTHER_COMMAND
+     mechanism (except for an exact match). */
+  int string_to_srv_command(std::string const & name);
+  
+  
+  /**
      Application specific service result codes. Zero stands for
      success, and the small values are reserved for some standard
      error codes. You can send arbitrary codes, of course, but you can
@@ -51,14 +133,12 @@ namespace wbcnet {
     SRV_INVALID_DIMENSION,
     SRV_INVALID_BEHAVIOR_ID,
     SRV_INVALID_TASK_ID,
-    SRV_INVALID_REQUEST,
+    SRV_INVALID_COMMAND,
     SRV_INVALID_CODE,
     SRV_MISSING_CODE,
     SRV_INVALID_DATA,
     SRV_OUT_OF_RANGE,
     SRV_OTHER_ERROR
-    // If you add something to this enum, please *immediately* also
-    // update result_to_string() and string_to_result().
   } srv_result_t;
   
   
@@ -79,7 +159,12 @@ namespace wbcnet {
   int string_to_srv_result(std::string const & name);
   
   
+  typedef Vector<int32_t> srv_code_t;
+  typedef Matrix<double> srv_matrix_t;
+  
+  
   namespace msg {
+    
     
     /**
        A "service" message contains a request from a user to the
@@ -88,7 +173,7 @@ namespace wbcnet {
        (storage-only) implementation for the vector and matrix types.
     */
     class Service
-      : public UserCommand< wbcnet::Vector<int32_t>, wbcnet::Matrix<double> >
+      : public UserCommand< srv_code_t, srv_matrix_t >
     {
     public:
       explicit Service(/** You will probably want to use
@@ -97,10 +182,57 @@ namespace wbcnet {
 			   reply message. */
 		       unique_id_t id);
       
-      /** Clears out everything and sets the code vector to one
-	  element with the value SRV_NOT_IMPLEMENTED (see srv_result_t
-	  below). */
-      void Reset();
+      /** Copies the requestID from the given request (because replies
+	  should have the same request ID as the message that they are
+	  answering to), initializes the code size to one and sets it
+	  to NOT_IMPLEMENTED, clears the matrix and string list. */
+      void InitReply(Service const & request);
+      
+      /** Increments the requestID, initializes the sizes of the code
+	  vector and matrix, and if non-empty fills them with
+	  zeros. The string list is cleared out. */
+      void InitRequest(uint8_t nCodes, uint8_t nRows, uint8_t nColumns);
+      
+      void InitListBehaviors();
+      
+      void InitListBehaviorCmds(int behaviorID);
+      
+      void InitServoCmd(int commandID,
+			srv_code_t const * code_in,
+			srv_matrix_t const * data_in);
+      
+      void InitBehaviorCmd(int behaviorID,
+			   int commandID,
+			   srv_code_t const * code_in,
+			   srv_matrix_t const * data_in);
+      
+      void InitListTasks(int behaviorID);
+      
+      void InitListTaskCmds(int behaviorID,
+			    int taskID);
+      
+      void InitTaskCmd(int behaviorID,
+		       int taskID,
+		       int commandID,
+		       srv_code_t const * code_in,
+		       srv_matrix_t const * data_in);
+      
+      void InitSetBehavior(int behaviorID);
+      
+      void InitSetGoal(double const * goal_coordinates, size_t n_coordinates);
+  
+      void InitGetPos();
+      
+      void InitGetLinkTransform(int linkID);
+      void InitGetLinkTransform(std::string const & linkName);
+      
+      //       void InitGetVel();
+      
+      void InitGetTorques();
+      
+      void InitToggleRecorder();
+  
+      void InitKeyPress(int32_t keycode);
     };
     
   }
