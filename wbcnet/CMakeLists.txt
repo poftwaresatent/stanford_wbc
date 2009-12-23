@@ -46,6 +46,7 @@ LIST (APPEND WBCNET_SRCS
       wbcnet/msg/Matrix.cpp
       wbcnet/msg/TaskMatrix.cpp
       wbcnet/msg/TaskSpec.cpp
+      wbcnet/msg/Service.cpp
       wbcnet/msg/UserCommand.cpp)
 
 LIST (APPEND CMAKE_REQUIRED_INCLUDES /usr/local/include)
