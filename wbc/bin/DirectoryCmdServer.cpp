@@ -74,59 +74,65 @@ namespace wbc {
       data_in->Display(msg, "    ");
       LOG_DEBUG (logger, msg.str());
     }
-  
-    if ( ! m_servo)
-      return wbcnet::SRV_NOT_IMPLEMENTED;
-
-//#warning 'XXXX to do: implement servo command handling (after the relevant msgs have been cleaned up)'
-    // switch (commandID) {
-
-    // case wbcnet::SRV_SET_BEHAVIOR:
-    //   return wbcnet::SRV_NOT_IMPLEMENTED;
-
-    // // case wbcnet::SRV_GET_LINK_TRANSFORM:
-    //   // if (code_in->NElements() < 1)
-    //   // 	return wbcnet::SRV_MISSING_CODE;
-    //   // {
-    //   // 	int const nodeID((*code_in)[0]);
-    //   // 	taoDNode * node(m_servo_implementation->m_robmodel->branching()->node(nodeID));
-    //   // 	if ( ! node)
-    //   // 	  return wbcnet::SRV_INVALID_CODE;
-    //   // 	SAIVector zero(3);
-    //   // 	SAITransform const
-    //   // 	  transform(m_servo_implementation->m_kinematics->globalFrame(node, zero));
-    //   // 	SAIVectorAPI reply(transform.rotation().vecForm());
-    //   // 	reply.append(transform.translation());
-    //   // 	code_out->SetNElements(0);
-    //   // 	data_out->Copy(reply);
-    //   // }
-    //   // return wbcnet::SRV_SUCCESS;
-  
     
-    // // case wbcnet::SRV_GET_LINK_ANGLE:
-    //   // if (code_in->NElements() < 1)
-    //   // 	return wbcnet::SRV_MISSING_CODE;
-    //   // {
-    //   // 	int size = code_in->NElements() ;
-    //   // 	SAIVectorAPI alpha(size);
-    //   // 	for (int ii(0);ii<size;++ii){
-    //   // 	  int const nodeID((*code_in)[ii]);
-    //   // 	  LOG_DEBUG (logger, "DirectoryCmdServer::HandleServoCmd()\n" << "  GET_LINK_ANGLE, nodeID = " << nodeID);
-    //   // 	  if (nodeID >  m_servo_implementation->m_kinematics->jointPositions().size()){
-    //   // 	    LOG_WARN (logger,
-    //   // 		      "DirectoryCmdServer::HandleServoCmd(): GET_LINK_ANGLE: only "
-    //   // 		      << m_servo_implementation->m_kinematics->jointPositions().size() << " joints available");
-    //   // 	    return wbcnet::SRV_INVALID_CODE;
-    //   // 	  }
-    //   // 	  else
-    //   // 	    alpha.elementAt(ii) = m_servo_implementation->m_kinematics->jointPositions()[nodeID];
-    //   // 	}
-    //   // 	code_out->SetNElements(0);
-    //   // 	data_out->Copy(alpha);
-    //   // }
-    //   // return wbcnet::SRV_SUCCESS;  
-    // }
-  
+    if ( ! m_servo)
+      return (wbcnet::srv_result_t) (wbcnet::SRV_OTHER_ERROR + 1);
+
+    switch (commandID) {
+      
+    case wbcnet::SRV_SET_BEHAVIOR:
+      if (code_in->NElements() < 1) {
+	return wbcnet::SRV_MISSING_CODE;
+      }
+      return m_servo->BeginBehaviorTransition((*code_in)[0]);
+      
+    case wbcnet::SRV_GET_POSITIONS:
+      {
+	SAIVector const & jpos(m_servo->GetKinematics()->jointPositions());
+	if ( ! data_out->SetSize(jpos.size(), 1))
+	  return wbcnet::SRV_OTHER_ERROR;
+	for (int ii(0); ii < jpos.size(); ++ii)
+	  data_out->GetElement(ii, 0) = jpos[ii];
+      }
+      return wbcnet::SRV_SUCCESS;
+      
+    case wbcnet::SRV_GET_VELOCITIES:
+      {
+	SAIVector const & jvel(m_servo->GetKinematics()->jointVelocities());
+	if ( ! data_out->SetSize(jvel.size(), 1))
+	  return wbcnet::SRV_OTHER_ERROR;
+	for (int ii(0); ii < jvel.size(); ++ii)
+	  data_out->GetElement(ii, 0) = jvel[ii];
+      }
+      return wbcnet::SRV_SUCCESS;
+      
+    case wbcnet::SRV_GET_TORQUES:
+      {
+	SAIVector const & tau(m_servo->GetCommandTorques());
+	if ( ! data_out->SetSize(tau.size(), 1))
+	  return wbcnet::SRV_OTHER_ERROR;
+	for (int ii(0); ii < tau.size(); ++ii)
+	  data_out->GetElement(ii, 0) = tau[ii];
+      }
+      return wbcnet::SRV_SUCCESS;
+      
+    case wbcnet::SRV_GET_LINK_TRANSFORM:
+      if (code_in->NElements() < 1)
+ 	return wbcnet::SRV_MISSING_CODE;
+      {
+    	taoDNode * node(m_servo->GetBranching()->node((*code_in)[0]));
+    	if ( ! node)
+    	  return wbcnet::SRV_INVALID_CODE;
+    	SAIVector zero(3);
+    	SAITransform const transform(m_servo->GetKinematics()->globalFrame(node, zero));
+    	SAIVectorAPI reply(transform.rotation().vecForm());
+    	reply.append(transform.translation());
+    	data_out->Copy(reply);
+      }
+      return wbcnet::SRV_SUCCESS;
+      
+    }
+    
     return wbcnet::SRV_NOT_IMPLEMENTED;
   }
 

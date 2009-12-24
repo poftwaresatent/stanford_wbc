@@ -18,6 +18,7 @@
 
 #include "ServoModelProcess.hpp"
 #include "DirectoryCmdServer.hpp"
+#include <wbc/core/RobotControlModel.hpp>
 #include <wbcnet/NetConfig.hpp>
 #include <wbcrun/msg/RobotState.hpp>
 #include <wbcnet/log.hpp>
@@ -40,6 +41,7 @@ namespace wbc {
       m_model_imp(0),
       m_own_model_imp(false),
       m_state(READY_STATE),
+      m_behaviorID(-1),
       m_have_behaviorID(false),
       m_robot_state(0),
       m_user_channel(0),
@@ -101,10 +103,9 @@ namespace wbc {
       }
       
       LOG_TRACE (logger, "wbc::ServoModelProcess::Step(): RUNNING: update torque");
-      if ( ! m_servo_imp->UpdateTorqueCommand(m_model_imp->GetTaskModel(), m_user_task_spec.behaviorID, true)) {
+      if ( ! m_servo_imp->UpdateTorqueCommand(m_model_imp->GetTaskModel(), m_behaviorID, true)) {
 	LOG_ERROR (logger,
-		       "wbc::ServoModelProcess::Step(): UpdateTorqueCommand(..., "
-		       << (int) m_user_task_spec.behaviorID << ") failed");
+		       "wbc::ServoModelProcess::Step(): UpdateTorqueCommand(..., " << m_behaviorID << ") failed");
 	m_state = ERROR_STATE;
 	return false;
       }
@@ -172,13 +173,14 @@ namespace wbc {
   }
   
   
-  void ServoModelProcess::
-  BeginBehaviorTransition(uint8_t behaviorID)
+  wbcnet::srv_result_t ServoModelProcess::
+  BeginBehaviorTransition(int behaviorID)
   {
     // Kind of redundant: we can get task specs from fire-and-forget
     // TASK_SPEC messages, or through "proper" service requests.
-    m_user_task_spec.behaviorID = behaviorID;
+    m_behaviorID = behaviorID;
     m_have_behaviorID = true;
+    return wbcnet::SRV_SUCCESS;
   }
   
   
@@ -189,6 +191,7 @@ namespace wbc {
     // TASK_SPEC messages, or through "proper" service requests.
     if (wbcrun::msg::TASK_SPEC == msg_id) {
       LOG_TRACE (logger, "wbc::ServoModelProcess::HandleMessagePayload(): got TASK_SPEC");
+      m_behaviorID = m_user_task_spec.behaviorID;
       m_have_behaviorID = true;
     }
     
@@ -218,6 +221,27 @@ namespace wbc {
     }
     
     return 0;
+  }
+  
+  
+  BranchingRepresentation * ServoModelProcess::
+  GetBranching()
+  {
+    return m_servo_imp->m_robmodel->branching();
+  }
+  
+  
+  Kinematics * ServoModelProcess::
+  GetKinematics()
+  {
+    return m_servo_imp->m_kinematics;
+  }
+  
+  
+  SAIVector const & ServoModelProcess::
+  GetCommandTorques()
+  {
+    return m_servo_imp->m_command_torques;
   }
   
 }

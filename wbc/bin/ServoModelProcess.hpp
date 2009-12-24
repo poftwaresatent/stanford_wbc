@@ -48,13 +48,10 @@ namespace wbc {
 	      uint8_t npos, uint8_t nvel,
 	      uint8_t force_nrows, uint8_t force_ncols) throw(std::exception); 
     
-    /**
-       \todo This is the only method inherited and overridden from
-       ServoProcessAPI... see if that cannot be undone (but the
-       problem is that behavior transitions are not so trivial in
-       multi-rate updates).
-    */
-    virtual void BeginBehaviorTransition(uint8_t behaviorID);
+    virtual wbcnet::srv_result_t BeginBehaviorTransition(int behaviorID);
+    virtual BranchingRepresentation * GetBranching();
+    virtual Kinematics * GetKinematics();
+    virtual SAIVector const & GetCommandTorques();
     
   protected:
     friend class ModelServoTest;
@@ -73,6 +70,7 @@ namespace wbc {
     bool m_own_model_imp;
     
     state_t m_state;
+    int m_behaviorID;
     bool m_have_behaviorID;
     
     // not really messages anymore, just shared between model and servo

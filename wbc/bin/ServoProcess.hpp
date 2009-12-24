@@ -55,6 +55,7 @@ namespace wbc {
   class TaskModelListener;
   class BehaviorDescription;
   class RobotControlModel;
+  class BranchingRepresentation;
   
   
   /** \note Just for implementing DirectoryCmdServer in a way that is
@@ -65,7 +66,10 @@ namespace wbc {
   {
   public:
     virtual ~ServoProcessAPI() {}
-    virtual void BeginBehaviorTransition(uint8_t behaviorID) = 0;
+    virtual wbcnet::srv_result_t BeginBehaviorTransition(int behaviorID) = 0;
+    virtual BranchingRepresentation * GetBranching() = 0;
+    virtual Kinematics * GetKinematics() = 0;
+    virtual SAIVector const & GetCommandTorques() = 0;
   };
   
   
@@ -101,7 +105,7 @@ namespace wbc {
 	model and behavior. The calling process must garantee that the
 	model corresponds to the behavior and is up to date. */
     virtual bool UpdateTorqueCommand(TaskModelBase const * model,
-				     uint8_t behaviorID,
+				     int behaviorID,
 				     /** Set this to true to AVOID
 					 calling
 					 BehaviorDescription::onUpdate()
@@ -117,7 +121,7 @@ namespace wbc {
 	the given behaviorID. */
     virtual bool ResetBehavior(TaskModelBase * next_task_model,
 			       uint8_t requestID,
-			       uint8_t behaviorID);
+			       int behaviorID);
     
     /** \todo ...serialization stuff should not concern servo implementers... */
     virtual class TaskModelListener * GetTaskModelListener();
@@ -126,6 +130,15 @@ namespace wbc {
     
     
   protected:
+    // Should maybe fuse these two classes (they used to be one
+    // anyway, back in the days of innocence).
+    friend class ServoProcess;
+    
+    // ...but then this should be fused as well, and it's kinda nice
+    // to have the process and communication logic rather separate
+    // from the number crunching...
+    friend class ServoModelProcess;
+    
     timeval m_robot_state_tstamp;
     SAIVectorAPI m_joint_angles;
     SAIVectorAPI m_joint_velocities;
@@ -180,19 +193,18 @@ namespace wbc {
        notifies subclasses using ResetBehavior(), resets and prepares
        the next task model, and then prepares the model messages and
        enqueues it.
-       
-       \todo This is the only method inherited and overridden from
-       ServoProcessAPI... see if that cannot be undone (but the
-       problem is that behavior transitions are not so trivial in
-       multi-rate updates).
     */
-    virtual void BeginBehaviorTransition(uint8_t behaviorID);
+    virtual wbcnet::srv_result_t BeginBehaviorTransition(int behaviorID);
+    
+    virtual BranchingRepresentation * GetBranching();
+    virtual Kinematics * GetKinematics();
+    virtual SAIVector const & GetCommandTorques();
     
     /** Access internal data for testing and debugging. */
-    uint8_t GetCurrentBehaviorID() const { return m_current_behaviorID; }
+    int GetCurrentBehaviorID() const { return m_current_behaviorID; }
     
     /** Access internal data for testing and debugging. */
-    uint8_t GetNextBehaviorID() const { return m_next_behaviorID; }
+    int GetNextBehaviorID() const { return m_next_behaviorID; }
     
     /** Access internal data for testing and debugging. */
     uint8_t GetBehaviorTransitionRequestID() const { return m_behavior_transition_requestID; }
@@ -219,8 +231,8 @@ namespace wbc {
     wbcnet::Channel * m_user_channel;
     TaskModelListener * m_model_listener;
     
-    uint8_t m_current_behaviorID;
-    uint8_t m_next_behaviorID;
+    int m_current_behaviorID;
+    int m_next_behaviorID;
     uint8_t m_behavior_transition_requestID;
     bool m_init_behavior_transition;
     

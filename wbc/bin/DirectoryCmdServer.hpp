@@ -34,7 +34,7 @@ namespace wbc {
     DirectoryCmdServer(std::vector<BehaviorDescription*> const & behavior,
 		       /** can be NULL, but then several things will
 			   always fail and be flagged
-			   SRV_NOT_IMPLEMENTED */
+			   SRV_OTHER_ERROR+1 */
 		       ServoProcessAPI * servo);
     
     virtual wbcnet::srv_result_t
