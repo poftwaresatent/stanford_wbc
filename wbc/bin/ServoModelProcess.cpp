@@ -164,14 +164,29 @@ namespace wbc {
     
     m_robot_state = new wbcrun::msg::RobotState(false, npos, nvel, force_nrows, force_ncols);
     
+    // Kind of redundant: we can get task specs from fire-and-forget
+    // TASK_SPEC messages, or through "proper" service requests.
     CreateHandler(wbcrun::msg::TASK_SPEC, "user_task_spec", & m_user_task_spec);
+    
     CreateHandler(wbcrun::msg::USER_REQUEST, "user_request", & m_user_request);
+  }
+  
+  
+  void ServoModelProcess::
+  BeginBehaviorTransition(uint8_t behaviorID)
+  {
+    // Kind of redundant: we can get task specs from fire-and-forget
+    // TASK_SPEC messages, or through "proper" service requests.
+    m_user_task_spec.behaviorID = behaviorID;
+    m_have_behaviorID = true;
   }
   
   
   int ServoModelProcess::
   HandleMessagePayload(wbcnet::unique_id_t msg_id)
   {
+    // Kind of redundant: we can get task specs from fire-and-forget
+    // TASK_SPEC messages, or through "proper" service requests.
     if (wbcrun::msg::TASK_SPEC == msg_id) {
       LOG_TRACE (logger, "wbc::ServoModelProcess::HandleMessagePayload(): got TASK_SPEC");
       m_have_behaviorID = true;

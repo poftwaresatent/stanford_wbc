@@ -65,6 +65,7 @@ namespace wbc {
   {
   public:
     virtual ~ServoProcessAPI() {}
+    virtual void BeginBehaviorTransition(uint8_t behaviorID) = 0;
   };
   
   
@@ -179,8 +180,13 @@ namespace wbc {
        notifies subclasses using ResetBehavior(), resets and prepares
        the next task model, and then prepares the model messages and
        enqueues it.
+       
+       \todo This is the only method inherited and overridden from
+       ServoProcessAPI... see if that cannot be undone (but the
+       problem is that behavior transitions are not so trivial in
+       multi-rate updates).
     */
-    void BeginBehaviorTransition(uint8_t behaviorID);
+    virtual void BeginBehaviorTransition(uint8_t behaviorID);
     
     /** Access internal data for testing and debugging. */
     uint8_t GetCurrentBehaviorID() const { return m_current_behaviorID; }

@@ -641,101 +641,102 @@ namespace wbc {
   }
   
   
-// // //   int ServoProcess::
-// // //   HandleMessagePayload(wbcnet::unique_id_t msg_id)
-// // //   {
-// // //     if (wbcrun::msg::STATUS == msg_id) {
-// // //       LOG_TRACE (logger, "wbc::ServoProcess::HandleMessagePayload(): got STATUS");
+  int ServoProcess::
+  HandleMessagePayload(wbcnet::unique_id_t msg_id)
+  {
+    if (wbcrun::msg::STATUS == msg_id) {
+      LOG_TRACE (logger, "wbc::ServoProcess::HandleMessagePayload(): got STATUS");
       
-// // //       if (wbcrun::msg::MODEL_SUCCESS == m_model_status.status) {
-// // // 	LOG_TRACE (logger, "  MODEL_SUCCESS");
-// // // 	if (WAIT_MODEL_STATE == m_state) {
-// // // 	  LOG_TRACE (logger, "  transition state WAIT_MODEL to RUNNING");
-// // // 	  m_state = RUNNING_STATE;
-// // // 	}
-// // // 	wbc::TaskModelBase * task_model(m_model_listener->GetLastUpdatedModel());
-// // // 	if ( ! task_model) {
-// // // 	  LOG_ERROR (logger,
-// // // 			 "wbc::ServoProcess::HandleMessagePayload():\n"
-// // // 			 << "  BUG? m_model_listener->GetLastUpdatedModel() returned NULL\n"
-// // // 			 << "  but it should have received at least one matrix message before\n"
-// // // 			 << "  arriving here.");
-// // // 	  return 777;
-// // // 	}
-// // // 	uint8_t const requestID(task_model->GetRequestID());
-// // // 	if ((m_current_behaviorID != m_next_behaviorID)
-// // // 	    && (requestID == m_behavior_transition_requestID)) {
-// // // 	  LOG_TRACE (logger,
-// // // 			 "  finish behavior transition\n"
-// // // 			 << "    m_current_behaviorID = " << (int) m_current_behaviorID << "\n"
-// // // 			 << "    m_next_behaviorID = " << (int) m_next_behaviorID << "\n"
-// // // 			 << "    requestID = " << (int) requestID << "\n"
-// // // 			 << "    m_behavior_transition_requestID = "
-// // // 			 << (int) m_behavior_transition_requestID);
-// // // 	  m_current_behaviorID = m_next_behaviorID;
-// // // 	}
-// // // 	else
-// // // 	  if (logger->isTraceEnabled()) {
-// // // 	    if (m_current_behaviorID == m_next_behaviorID) {
-// // // 	      LOG_TRACE (logger,
-// // // 			     "  got a fresh model for the still running behavior "
-// // // 			     << (int) m_current_behaviorID);
-// // // 	    }
-// // // 	    else {
-// // // 	      LOG_TRACE (logger,
-// // // 			     "  cannot finish behavior transition:\n"
-// // // 			     << "   probably this means we got an update for the old behavior\n"
-// // // 			     << "   or maybe it's a bug in request ID handling\n"
-// // // 			     << "     m_current_behaviorID = " << (int) m_current_behaviorID << "\n"
-// // // 			     << "     m_next_behaviorID = " << (int) m_next_behaviorID << "\n"
-// // // 			     << "     requestID = " << (int) requestID << "\n"
-// // // 			     << "     m_behavior_transition_requestID = "
-// // // 			     << (int) m_behavior_transition_requestID);
-// // // 	    }
-// // // 	  }
-// // // 	////	UpdateTaskModel(task_model, m_current_behaviorID);
-// // //       }
+      if (wbcrun::msg::MODEL_SUCCESS == m_model_status.status) {
+	LOG_TRACE (logger, "  MODEL_SUCCESS");
+	if (WAIT_MODEL_STATE == m_state) {
+	  LOG_TRACE (logger, "  transition state WAIT_MODEL to RUNNING");
+	  m_state = RUNNING_STATE;
+	}
+	wbc::TaskModelBase * task_model(m_model_listener->GetLastUpdatedModel());
+	if ( ! task_model) {
+	  LOG_ERROR (logger,
+			 "wbc::ServoProcess::HandleMessagePayload():\n"
+			 << "  BUG? m_model_listener->GetLastUpdatedModel() returned NULL\n"
+			 << "  but it should have received at least one matrix message before\n"
+			 << "  arriving here.");
+	  return 777;
+	}
+	uint8_t const requestID(task_model->GetRequestID());
+	if ((m_current_behaviorID != m_next_behaviorID)
+	    && (requestID == m_behavior_transition_requestID)) {
+	  LOG_TRACE (logger,
+			 "  finish behavior transition\n"
+			 << "    m_current_behaviorID = " << (int) m_current_behaviorID << "\n"
+			 << "    m_next_behaviorID = " << (int) m_next_behaviorID << "\n"
+			 << "    requestID = " << (int) requestID << "\n"
+			 << "    m_behavior_transition_requestID = "
+			 << (int) m_behavior_transition_requestID);
+	  m_current_behaviorID = m_next_behaviorID;
+	}
+	else
+	  if (logger->isTraceEnabled()) {
+	    if (m_current_behaviorID == m_next_behaviorID) {
+	      LOG_TRACE (logger,
+			     "  got a fresh model for the still running behavior "
+			     << (int) m_current_behaviorID);
+	    }
+	    else {
+	      LOG_TRACE (logger,
+			     "  cannot finish behavior transition:\n"
+			     << "   probably this means we got an update for the old behavior\n"
+			     << "   or maybe it's a bug in request ID handling\n"
+			     << "     m_current_behaviorID = " << (int) m_current_behaviorID << "\n"
+			     << "     m_next_behaviorID = " << (int) m_next_behaviorID << "\n"
+			     << "     requestID = " << (int) requestID << "\n"
+			     << "     m_behavior_transition_requestID = "
+			     << (int) m_behavior_transition_requestID);
+	    }
+	  }
+	////	UpdateTaskModel(task_model, m_current_behaviorID);
+      }
       
-// // //       else if (wbcrun::msg::MODEL_ERROR == m_model_status.status) {
-// // // 	LOG_TRACE (logger, "  MODEL_ERROR --> just retry");
-// // // 	////maybe one day//// HandleModelFailure();
-// // //       }
+      else if (wbcrun::msg::MODEL_ERROR == m_model_status.status) {
+	LOG_TRACE (logger, "  MODEL_ERROR --> just retry");
+	////maybe one day//// HandleModelFailure();
+      }
       
-// // //       else
-// // // 	LOG_TRACE (logger, "  ignoring status " << (int) m_model_status.status << "");
-// // //     }
+      else
+	LOG_TRACE (logger, "  ignoring status " << (int) m_model_status.status << "");
+    }
 
-// // //     else if (wbcrun::msg::TASK_SPEC == msg_id) {
-// // //       LOG_TRACE (logger, "wbc::ServoProcess::HandleMessagePayload(): got TASK_SPEC");
-// // //       BeginBehaviorTransition(m_user_task_spec.behaviorID);
-// // //     }
-
-// // //     else if (wbcrun::msg::USER_REQUEST == msg_id) {
-// // //       LOG_TRACE (logger, "wbc::ServoProcess::HandleMessagePayload(): got USER_REQUEST");
-// // //       m_user_reply.Reset();
-// // //       if ( ! m_imp->HandleServiceCall(m_user_request, m_user_reply)) {
-// // // 	if ( ! m_user_reply.code.SetNElements(1)) {
-// // // 	  LOG_ERROR (logger,
-// // // 			 "wbc::ServoProcess::HandleMessagePayload()\n"
-// // // 			 << "  weird, could not resize user reply code to one");
-// // // 	  return 888;
-// // // 	}
-// // // 	m_user_reply.matrix.SetSize(0, 0);
-// // // 	m_user_reply.code[0] = wbcnet::SRV_NOT_IMPLEMENTED;
-// // //       }
-// // //       EnqueueMessage(m_user_channel, &m_user_reply, true, false);
-// // //     }
+    else if (wbcrun::msg::TASK_SPEC == msg_id) {
+      LOG_TRACE (logger, "wbc::ServoProcess::HandleMessagePayload(): got TASK_SPEC");
+      BeginBehaviorTransition(m_user_task_spec.behaviorID);
+    }
     
-// // //     else {
-// // //       LOG_TRACE (logger,
-// // // 		     "wbc::ServoProcess::HandleMessagePayload()\n"
-// // // 		     << "  unknown message ID " << (int) msg_id
-// // // 		     << " [" << wbcrun::msg::get_id_str(msg_id));
-// // //       return 999;
-// // //     }
+    else if (wbcrun::msg::USER_REQUEST == msg_id) {
+      LOG_TRACE (logger, "wbc::ServoProcess::HandleMessagePayload(): got USER_REQUEST");
+      if ( ! m_directory_cmd_server) {
+	m_directory_cmd_server = new DirectoryCmdServer(m_imp->GetBehaviorLibrary(), this);
+      }
+      if ( ! m_directory_cmd_server->Dispatch(m_user_request, m_user_reply)) {
+	if (logger->isWarnEnabled()) {
+	  ostringstream msg;
+	  msg << "wbc::ServoProcess::HandleMessagePayload(): DirectoryCmdServer::Dispatch() failed\n"
+	      << "  It did not seem like the user request:\n";
+	  m_user_request.Dump(msg, "    ");
+	  LOG_WARN (logger, msg.str());
+	}
+      }
+      EnqueueMessage(m_user_channel, &m_user_reply, true, false);
+    }
     
-// // //     return 0;
-// // //   }
+    else {
+      LOG_TRACE (logger,
+		     "wbc::ServoProcess::HandleMessagePayload()\n"
+		     << "  unknown message ID " << (int) msg_id
+		     << " [" << wbcrun::msg::get_id_str(msg_id));
+      return 999;
+    }
+    
+    return 0;
+  }
 
 
   void ServoProcess::

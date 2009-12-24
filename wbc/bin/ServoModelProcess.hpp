@@ -48,6 +48,14 @@ namespace wbc {
 	      uint8_t npos, uint8_t nvel,
 	      uint8_t force_nrows, uint8_t force_ncols) throw(std::exception); 
     
+    /**
+       \todo This is the only method inherited and overridden from
+       ServoProcessAPI... see if that cannot be undone (but the
+       problem is that behavior transitions are not so trivial in
+       multi-rate updates).
+    */
+    virtual void BeginBehaviorTransition(uint8_t behaviorID);
+    
   protected:
     friend class ModelServoTest;
     
