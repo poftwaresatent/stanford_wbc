@@ -572,14 +572,6 @@ namespace wbc {
   }
   
   
-//   bool ServoImplementationAPI::
-//   HandleServiceCall(wbcnet::msg::Service const & request,
-// 		    wbcnet::msg::Service & reply)
-//   {
-//     return false;
-//   }
-  
-  
   ServoProcess::
   ~ServoProcess()
   {
@@ -731,9 +723,9 @@ namespace wbc {
     
     else {
       LOG_TRACE (logger,
-		     "wbc::ServoProcess::HandleMessagePayload()\n"
-		     << "  unknown message ID " << (int) msg_id
-		     << " [" << wbcrun::msg::get_id_str(msg_id));
+		 "wbc::ServoProcess::HandleMessagePayload()\n"
+		 << "  unknown message ID " << (int) msg_id
+		 << " [" << wbcrun::msg::get_id_str(msg_id));
       return 999;
     }
     

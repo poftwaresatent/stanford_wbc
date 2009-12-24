@@ -128,7 +128,19 @@ namespace wbcrun {
     try {
 
       if ("pos" == token) {
-	m_user_request.InitGetPos();
+	m_user_request.InitGetPositions();
+	cout << "wbcrun::UserProcess::Step(): sending user request\n";
+	m_user_request.Dump(cout, "    ");
+        EnqueueMessage(m_channel, &m_user_request, false, false);
+        SendWait(10000);
+        ReceiveWait(10000, 1);
+        return true;
+      }
+
+      if ("vel" == token) {
+	m_user_request.InitGetVelocities();
+	cout << "wbcrun::UserProcess::Step(): sending user request\n";
+	m_user_request.Dump(cout, "    ");
         EnqueueMessage(m_channel, &m_user_request, false, false);
         SendWait(10000);
         ReceiveWait(10000, 1);
@@ -137,6 +149,8 @@ namespace wbcrun {
 
       if ("endpos" == token) {
 	m_user_request.InitGetLinkTransform("End_Effector"); // would be nice to give custom name...
+	cout << "wbcrun::UserProcess::Step(): sending user request\n";
+	m_user_request.Dump(cout, "    ");
         EnqueueMessage(m_channel, &m_user_request, false, false);
         SendWait(10000);
         ReceiveWait(10000, 1);
@@ -145,6 +159,8 @@ namespace wbcrun {
       
       if ("tau" == token) {
 	m_user_request.InitGetTorques();
+	cout << "wbcrun::UserProcess::Step(): sending user request\n";
+	m_user_request.Dump(cout, "    ");
         EnqueueMessage(m_channel, &m_user_request, false, false);
         SendWait(10000);
         ReceiveWait(10000, 1);
@@ -153,6 +169,8 @@ namespace wbcrun {
 
       if ("go" == token) {
         InteractiveGoalRequest();
+	cout << "wbcrun::UserProcess::Step(): sending user request\n";
+	m_user_request.Dump(cout, "    ");
         EnqueueMessage(m_channel, &m_user_request, false, false);
         SendWait(10000);
         ReceiveWait(10000, 1);
@@ -216,9 +234,10 @@ namespace wbcrun {
       
       cout << "SYNTAX ERROR: unknown command \"" << token << "\"\n"
 	" known commands:\n"
-	"  pos      -  show position data\n"
+	"  pos      -  request current joint positions\n"
+	"  vel      -  request current joint velocities\n"
+	"  tau      -  request current command torques\n"
 	"  endpos   -  show end effector position end orientation\n"
-	"  tau      -  show torque command\n"
 	"  go       -  enter and send goal\n"
 	"  b?       -  list available behaviors\n"
 	"  b   <N>  -  switch to behavior number <N>\n"

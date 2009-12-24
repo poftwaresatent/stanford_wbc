@@ -85,7 +85,8 @@ namespace wbcnet {
     SRV_GET_BEHAVIOR,
     SRV_SET_GOAL,
     SRV_GET_GOAL,
-    SRV_GET_ACTUAL,
+    SRV_GET_POSITIONS,
+    SRV_GET_VELOCITIES,
     SRV_GET_TORQUES,
     SRV_SET_PROP_GAIN,
     SRV_GET_PROP_GAIN,
@@ -221,14 +222,12 @@ namespace wbcnet {
       
       void InitSetGoal(double const * goal_coordinates, size_t n_coordinates);
   
-      void InitGetPos();
+      void InitGetPositions();
+      void InitGetVelocities();
+      void InitGetTorques();
       
       void InitGetLinkTransform(int linkID);
       void InitGetLinkTransform(std::string const & linkName);
-      
-      //       void InitGetVel();
-      
-      void InitGetTorques();
       
       void InitToggleRecorder();
   

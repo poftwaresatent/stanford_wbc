@@ -189,7 +189,8 @@ namespace wbc {
     commands.push_back(wbcnet::SRV_GET_DIMENSION);
     commands.push_back(wbcnet::SRV_SET_GOAL);
     commands.push_back(wbcnet::SRV_GET_GOAL);
-    commands.push_back(wbcnet::SRV_GET_ACTUAL);
+    commands.push_back(wbcnet::SRV_GET_POSITIONS);
+    commands.push_back(wbcnet::SRV_GET_VELOCITIES);
     commands.push_back(wbcnet::SRV_SET_PROP_GAIN);
     commands.push_back(wbcnet::SRV_GET_PROP_GAIN);
     commands.push_back(wbcnet::SRV_SET_DIFF_GAIN);
@@ -266,8 +267,14 @@ namespace wbc {
       return wbcnet::SRV_NOT_IMPLEMENTED;
       break;
     
-    case wbcnet::SRV_GET_ACTUAL:
-      LOG_DEBUG (logger,  "DirectoryCmdServer::HandleTaskCmd(): GET_ACTUAL NOT_IMPLEMENTED");
+    case wbcnet::SRV_GET_POSITIONS:
+      LOG_DEBUG (logger,  "DirectoryCmdServer::HandleTaskCmd(): GET_POSITIONS NOT_IMPLEMENTED");
+      // XXXX should unify TaskDescription state definition
+      return wbcnet::SRV_NOT_IMPLEMENTED;
+      break;
+    
+    case wbcnet::SRV_GET_VELOCITIES:
+      LOG_DEBUG (logger,  "DirectoryCmdServer::HandleTaskCmd(): GET_VELOCITIES NOT_IMPLEMENTED");
       // XXXX should unify TaskDescription state definition
       return wbcnet::SRV_NOT_IMPLEMENTED;
       break;

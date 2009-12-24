@@ -56,7 +56,8 @@ static char const * srv_command_name[] = {
   "SRV_GET_BEHAVIOR",
   "SRV_SET_GOAL",
   "SRV_GET_GOAL",
-  "SRV_GET_ACTUAL",
+  "SRV_GET_POSITIONS",
+  "SRV_GET_VELOCITIES",
   "SRV_GET_TORQUES",
   "SRV_SET_PROP_GAIN",
   "SRV_GET_PROP_GAIN",
@@ -332,11 +333,20 @@ namespace wbcnet {
     
     
     void Service::
-    InitGetPos()
+    InitGetPositions()
     {
       InitRequest(2, 0, 0);
       code[0] = SRV_SERVO_DOMAIN;
-      code[1] = SRV_GET_ACTUAL;
+      code[1] = SRV_GET_POSITIONS;
+    }
+    
+    
+    void Service::
+    InitGetVelocities()
+    {
+      InitRequest(2, 0, 0);
+      code[0] = SRV_SERVO_DOMAIN;
+      code[1] = SRV_GET_VELOCITIES;
     }
     
     
@@ -358,15 +368,6 @@ namespace wbcnet {
       code[1] = SRV_GET_LINK_TRANSFORM;
       append(linkName);
     }
-    
-    
-    //     void Service::
-    //     InitGetVel()
-    //     {
-    //       InitRequest(2, 0, 0);
-    //       code[0] = SRV_SERVO_DOMAIN;
-    //       code[1] = SRV_GET_VEL;
-    //     }
     
     
     void Service::
@@ -395,46 +396,6 @@ namespace wbcnet {
       code[1] = SRV_KEY_PRESS;
       code[2] = keycode;
     }
-    
-    
-    //// maybe resurrect as AD_HOC message?
-    //     void set_closest_distance(msg::Service & request,
-    // 			      int n_points,int * nodeids, double* point_coords)
-    //     {
-    //       request.InitRequest(1, n_points, 8);
-    //       request.code[0] = CLOSEST_DISTANCES;
-    //       for (size_t ii(0); ii < static_cast<size_t>(n_points); ++ii){
-    // 	request.matrix.GetElement(ii, 0) = nodeids[2*ii];
-    // 	request.matrix.GetElement(ii, 1) = nodeids[2*ii+1];
-    // 	for (size_t j(0); j < 6 ; ++j)
-    // 	  request.matrix.GetElement(ii, j+2) = point_coords[6*ii+j];
-    //       }
-    //     }
-    
-    
-    //// maybe resurrect as AD_HOC message?
-    //     void change_state(msg::Service & request)
-    //     {
-    //       request.InitRequest(1, 0, 0);
-    //       request.code[0] = GET_POS;
-    //       request.code[0] = CHANGE_STATE;
-    //     } 
-    
-    
-    //// maybe resurrect as AD_HOC message?
-    //     void float_command(msg::Service & request)
-    //     {
-    //       request.InitRequest(1, 0, 0);
-    //       request.code[0] = FLOAT;
-    //     }
-    
-    
-    //// maybe resurrect as AD_HOC message?
-    //     void activate_command(msg::Service & request)
-    //     {
-    //       request.InitRequest(1, 0, 0);
-    //       request.code[0] = ACTIVATE;
-    //     }
     
   }
   
