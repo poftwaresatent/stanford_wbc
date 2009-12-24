@@ -16,7 +16,7 @@
  * <http://www.gnu.org/licenses/>
  */
 
-#include "BehaviorDirectory.hpp"
+#include "DirectoryCmdServer.hpp"
 #include <wbc/core/BehaviorDescription.hpp>
 #include <wbc/core/RobotControlModel.hpp>
 #include <wbc/core/BranchingRepresentation.hpp>
@@ -30,16 +30,16 @@ static wbcnet::logger_t logger(wbcnet::get_logger("wbc"));
 
 namespace wbc {
 
-  BehaviorDirectory::
-  BehaviorDirectory(std::vector<BehaviorDescription*> const & behavior,
-		    ServoImplementation * servo)
+  DirectoryCmdServer::
+  DirectoryCmdServer(std::vector<BehaviorDescription*> const & behavior,
+		     ServoProcessAPI * servo)
     : m_behavior(behavior),
       m_servo(servo)
   {
   }
 
 
-  wbcnet::srv_result_t BehaviorDirectory::
+  wbcnet::srv_result_t DirectoryCmdServer::
   ListBehaviors(wbcrun::listing_t & behaviors) const
   {
     for (size_t ii(0); ii < m_behavior.size(); ++ii)
@@ -48,7 +48,7 @@ namespace wbc {
   }
 
 
-  wbcnet::srv_result_t BehaviorDirectory::
+  wbcnet::srv_result_t DirectoryCmdServer::
   ListBehaviorCmds(int behaviorID,
 		   wbcrun::command_list_t & commands) const
   {
@@ -58,7 +58,7 @@ namespace wbc {
   }
 
 
-  wbcnet::srv_result_t BehaviorDirectory::
+  wbcnet::srv_result_t DirectoryCmdServer::
   HandleServoCmd(int commandID,
 		 wbcnet::msg::Service::vector_type const * code_in,
 		 wbcnet::msg::Service::matrix_type const * data_in,
@@ -67,7 +67,7 @@ namespace wbc {
   {
     if (logger->isDebugEnabled()) {
       ostringstream msg;
-      msg << "BehaviorDirectory::HandleServoCmd(" << commandID << ", ...)\n"
+      msg << "DirectoryCmdServer::HandleServoCmd(" << commandID << ", ...)\n"
 	  << "  code_in:\n";
       code_in->Display(msg, "    ");
       msg << "  data_in:\n";
@@ -89,12 +89,12 @@ namespace wbc {
     //   // 	return wbcnet::SRV_MISSING_CODE;
     //   // {
     //   // 	int const nodeID((*code_in)[0]);
-    //   // 	taoDNode * node(m_servo->m_robmodel->branching()->node(nodeID));
+    //   // 	taoDNode * node(m_servo_implementation->m_robmodel->branching()->node(nodeID));
     //   // 	if ( ! node)
     //   // 	  return wbcnet::SRV_INVALID_CODE;
     //   // 	SAIVector zero(3);
     //   // 	SAITransform const
-    //   // 	  transform(m_servo->m_kinematics->globalFrame(node, zero));
+    //   // 	  transform(m_servo_implementation->m_kinematics->globalFrame(node, zero));
     //   // 	SAIVectorAPI reply(transform.rotation().vecForm());
     //   // 	reply.append(transform.translation());
     //   // 	code_out->SetNElements(0);
@@ -111,15 +111,15 @@ namespace wbc {
     //   // 	SAIVectorAPI alpha(size);
     //   // 	for (int ii(0);ii<size;++ii){
     //   // 	  int const nodeID((*code_in)[ii]);
-    //   // 	  LOG_DEBUG (logger, "BehaviorDirectory::HandleServoCmd()\n" << "  GET_LINK_ANGLE, nodeID = " << nodeID);
-    //   // 	  if (nodeID >  m_servo->m_kinematics->jointPositions().size()){
+    //   // 	  LOG_DEBUG (logger, "DirectoryCmdServer::HandleServoCmd()\n" << "  GET_LINK_ANGLE, nodeID = " << nodeID);
+    //   // 	  if (nodeID >  m_servo_implementation->m_kinematics->jointPositions().size()){
     //   // 	    LOG_WARN (logger,
-    //   // 		      "BehaviorDirectory::HandleServoCmd(): GET_LINK_ANGLE: only "
-    //   // 		      << m_servo->m_kinematics->jointPositions().size() << " joints available");
+    //   // 		      "DirectoryCmdServer::HandleServoCmd(): GET_LINK_ANGLE: only "
+    //   // 		      << m_servo_implementation->m_kinematics->jointPositions().size() << " joints available");
     //   // 	    return wbcnet::SRV_INVALID_CODE;
     //   // 	  }
     //   // 	  else
-    //   // 	    alpha.elementAt(ii) = m_servo->m_kinematics->jointPositions()[nodeID];
+    //   // 	    alpha.elementAt(ii) = m_servo_implementation->m_kinematics->jointPositions()[nodeID];
     //   // 	}
     //   // 	code_out->SetNElements(0);
     //   // 	data_out->Copy(alpha);
@@ -131,7 +131,7 @@ namespace wbc {
   }
 
 
-  wbcnet::srv_result_t BehaviorDirectory::
+  wbcnet::srv_result_t DirectoryCmdServer::
   HandleBehaviorCmd(int behaviorID,
 		    int commandID,
 		    wbcnet::msg::Service::vector_type const * code_in,
@@ -145,7 +145,7 @@ namespace wbc {
   }
 
 
-  wbcnet::srv_result_t BehaviorDirectory::
+  wbcnet::srv_result_t DirectoryCmdServer::
   ListTasks(int behaviorID,
 	    wbcrun::listing_t & tasks) const
   {
@@ -162,7 +162,7 @@ namespace wbc {
   }
 
 
-  wbcnet::srv_result_t BehaviorDirectory::
+  wbcnet::srv_result_t DirectoryCmdServer::
   ListTaskCmds(int behaviorID,
 	       int taskID,
 	       wbcrun::command_list_t & commands) const
@@ -202,7 +202,7 @@ namespace wbc {
   }
 
 
-  wbcnet::srv_result_t BehaviorDirectory::
+  wbcnet::srv_result_t DirectoryCmdServer::
   HandleTaskCmd(int behaviorID,
 		int taskID,
 		int commandID,
@@ -212,12 +212,12 @@ namespace wbc {
 		wbcnet::msg::Service::matrix_type * data_out)
   {
     LOG_DEBUG (logger,
-	       "BehaviorDirectory::HandleTaskCmd(" << behaviorID << ", " << taskID << ", " << commandID << ", ...)");
+	       "DirectoryCmdServer::HandleTaskCmd(" << behaviorID << ", " << taskID << ", " << commandID << ", ...)");
   
     if ((0 > behaviorID) || (static_cast<int>(m_behavior.size()) <= behaviorID))
       return wbcnet::SRV_INVALID_BEHAVIOR_ID;
 
-    LOG_DEBUG (logger,  "BehaviorDirectory::HandleTaskCmd(): match behavior = " << m_behavior[behaviorID]->name);
+    LOG_DEBUG (logger,  "DirectoryCmdServer::HandleTaskCmd(): match behavior = " << m_behavior[behaviorID]->name);
   
     BehaviorDescription::task_set_vector const & task_set(m_behavior[behaviorID]->allTaskSets());
     int count(0);
@@ -236,12 +236,12 @@ namespace wbc {
     if ( ! task)
       return wbcnet::SRV_INVALID_TASK_ID;
   
-    LOG_DEBUG (logger,  "BehaviorDirectory::HandleTaskCmd(): match task = " << task->name);
+    LOG_DEBUG (logger,  "DirectoryCmdServer::HandleTaskCmd(): match task = " << task->name);
   
     switch (commandID) {
     
     case wbcnet::SRV_GET_TASK_TYPE:
-      LOG_DEBUG (logger,  "BehaviorDirectory::HandleTaskCmd(): GET_TASK_TYPE");
+      LOG_DEBUG (logger,  "DirectoryCmdServer::HandleTaskCmd(): GET_TASK_TYPE");
       if (code_out->SetNElements(1))
 	(*code_out)[0] = static_cast<int32_t>(task->taskType());
       else
@@ -249,31 +249,31 @@ namespace wbc {
       break;
     
     case wbcnet::SRV_GET_DIMENSION:
-      LOG_DEBUG (logger,  "BehaviorDirectory::HandleTaskCmd(): GET_DIMENSION NOT_IMPLEMENTED");
+      LOG_DEBUG (logger,  "DirectoryCmdServer::HandleTaskCmd(): GET_DIMENSION NOT_IMPLEMENTED");
       // XXXX should unify TaskDescription state definition
       return wbcnet::SRV_NOT_IMPLEMENTED;
       break;
   
     case wbcnet::SRV_SET_GOAL:
-      LOG_DEBUG (logger,  "BehaviorDirectory::HandleTaskCmd(): SET_GOAL NOT_IMPLEMENTED");
+      LOG_DEBUG (logger,  "DirectoryCmdServer::HandleTaskCmd(): SET_GOAL NOT_IMPLEMENTED");
       // XXXX should unify TaskDescription state definition
       return wbcnet::SRV_NOT_IMPLEMENTED;
       break;
   
     case wbcnet::SRV_GET_GOAL:
-      LOG_DEBUG (logger,  "BehaviorDirectory::HandleTaskCmd(): GET_GOAL NOT_IMPLEMENTED");
+      LOG_DEBUG (logger,  "DirectoryCmdServer::HandleTaskCmd(): GET_GOAL NOT_IMPLEMENTED");
       // XXXX should unify TaskDescription state definition
       return wbcnet::SRV_NOT_IMPLEMENTED;
       break;
     
     case wbcnet::SRV_GET_ACTUAL:
-      LOG_DEBUG (logger,  "BehaviorDirectory::HandleTaskCmd(): GET_ACTUAL NOT_IMPLEMENTED");
+      LOG_DEBUG (logger,  "DirectoryCmdServer::HandleTaskCmd(): GET_ACTUAL NOT_IMPLEMENTED");
       // XXXX should unify TaskDescription state definition
       return wbcnet::SRV_NOT_IMPLEMENTED;
       break;
     
     case wbcnet::SRV_SET_PROP_GAIN:
-      LOG_DEBUG (logger,  "BehaviorDirectory::HandleTaskCmd(): SET_PROP_GAIN");
+      LOG_DEBUG (logger,  "DirectoryCmdServer::HandleTaskCmd(): SET_PROP_GAIN");
       // XXXX one day we can treat vectors of gains (one per joint or other dimension)
       if ((data_in->NRows() < 1) || (data_in->NColumns() < 1))
 	return wbcnet::SRV_INVALID_DATA;
@@ -282,7 +282,7 @@ namespace wbc {
       break;
     
     case wbcnet::SRV_GET_PROP_GAIN:
-      LOG_DEBUG (logger,  "BehaviorDirectory::HandleTaskCmd(): GET_PROP_GAIN");
+      LOG_DEBUG (logger,  "DirectoryCmdServer::HandleTaskCmd(): GET_PROP_GAIN");
       // XXXX one day we can treat vectors of gains (one per joint or other dimension)
       if ( ! data_out->SetSize(1, 1))
 	return wbcnet::SRV_OTHER_ERROR;
@@ -291,7 +291,7 @@ namespace wbc {
       break;
     
     case wbcnet::SRV_SET_DIFF_GAIN:
-      LOG_DEBUG (logger,  "BehaviorDirectory::HandleTaskCmd(): SET_DIFF_GAIN");
+      LOG_DEBUG (logger,  "DirectoryCmdServer::HandleTaskCmd(): SET_DIFF_GAIN");
       // XXXX one day we can treat vectors of gains (one per joint or other dimension)
       if ((data_in->NRows() < 1) || (data_in->NColumns() < 1))
 	return wbcnet::SRV_INVALID_DATA;
@@ -300,7 +300,7 @@ namespace wbc {
       break;
     
     case wbcnet::SRV_GET_DIFF_GAIN:
-      LOG_DEBUG (logger,  "BehaviorDirectory::HandleTaskCmd(): GET_DIFF_GAIN");
+      LOG_DEBUG (logger,  "DirectoryCmdServer::HandleTaskCmd(): GET_DIFF_GAIN");
       // XXXX one day we can treat vectors of gains (one per joint or other dimension)
       if ( ! data_out->SetSize(1, 1))
 	return wbcnet::SRV_OTHER_ERROR;
@@ -309,7 +309,7 @@ namespace wbc {
       break;
 
     case wbcnet::SRV_SET_MAX_VEL:
-      LOG_DEBUG (logger,  "BehaviorDirectory::HandleTaskCmd(): SET_MAX_VEL");
+      LOG_DEBUG (logger,  "DirectoryCmdServer::HandleTaskCmd(): SET_MAX_VEL");
       // XXXX one day we can treat vectors of gains (one per joint or other dimension)
       if ((data_in->NRows() < 1) || (data_in->NColumns() < 1))
 	return wbcnet::SRV_INVALID_DATA;
@@ -318,7 +318,7 @@ namespace wbc {
       break;
     
     case wbcnet::SRV_GET_MAX_VEL:
-      LOG_DEBUG (logger,  "BehaviorDirectory::HandleTaskCmd(): GET_MAX_VEL");
+      LOG_DEBUG (logger,  "DirectoryCmdServer::HandleTaskCmd(): GET_MAX_VEL");
       // XXXX one day we can treat vectors of gains (one per joint or other dimension)
       if ( ! data_out->SetSize(1, 1))
 	return wbcnet::SRV_OTHER_ERROR;
@@ -327,7 +327,7 @@ namespace wbc {
       break;
 
     case wbcnet::SRV_SET_MAX_ACCEL:
-      LOG_DEBUG (logger,  "BehaviorDirectory::HandleTaskCmd(): SET_MAX_ACCEL");
+      LOG_DEBUG (logger,  "DirectoryCmdServer::HandleTaskCmd(): SET_MAX_ACCEL");
       // XXXX one day we can treat vectors of gains (one per joint or other dimension)
       if ((data_in->NRows() < 1) || (data_in->NColumns() < 1))
 	return wbcnet::SRV_INVALID_DATA;
@@ -336,7 +336,7 @@ namespace wbc {
       break;
     
     case wbcnet::SRV_GET_MAX_ACCEL:
-      LOG_DEBUG (logger,  "BehaviorDirectory::HandleTaskCmd(): GET_MAX_ACCEL");
+      LOG_DEBUG (logger,  "DirectoryCmdServer::HandleTaskCmd(): GET_MAX_ACCEL");
       // XXXX one day we can treat vectors of gains (one per joint or other dimension)
       if ( ! data_out->SetSize(1, 1))
 	return wbcnet::SRV_OTHER_ERROR;
@@ -346,13 +346,13 @@ namespace wbc {
     
     default:
       LOG_DEBUG (logger,
-		 "BehaviorDirectory::HandleTaskCmd(): unhandled command\n"
+		 "DirectoryCmdServer::HandleTaskCmd(): unhandled command\n"
 		 << "  commandID = " << commandID
 		 << " \"" << wbcnet::srv_command_to_string(commandID) << "\"");
       return wbcnet::SRV_INVALID_COMMAND;
     }
   
-    LOG_DEBUG (logger,  "BehaviorDirectory::HandleTaskCmd(): SUCCESS");
+    LOG_DEBUG (logger,  "DirectoryCmdServer::HandleTaskCmd(): SUCCESS");
   
     return wbcnet::SRV_SUCCESS;
   }

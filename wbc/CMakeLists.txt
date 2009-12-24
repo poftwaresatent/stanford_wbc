@@ -71,7 +71,7 @@ add_library (
   
   bin/builtin.cpp
   bin/attributes.cpp
-  bin/BehaviorDirectory.cpp
+  bin/DirectoryCmdServer.cpp
   bin/ModelProcess.cpp
   bin/ServoModelProcess.cpp
   bin/ServoProcess.cpp

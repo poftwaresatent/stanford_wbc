@@ -17,6 +17,7 @@
  */
 
 #include "ServoModelProcess.hpp"
+#include "DirectoryCmdServer.hpp"
 #include <wbcnet/NetConfig.hpp>
 #include <wbcrun/msg/RobotState.hpp>
 #include <wbcnet/log.hpp>
@@ -33,6 +34,7 @@ namespace wbc {
   ServoModelProcess::
   ServoModelProcess()
     : Process("servo-model", 0, -1, wbcnet::ENDIAN_DETECT),
+      m_directory_cmd_server(0),
       m_servo_imp(0),
       m_own_servo_imp(false),
       m_model_imp(0),
@@ -125,6 +127,7 @@ namespace wbc {
       delete m_servo_imp;
     if (m_own_model_imp)
       delete m_model_imp;
+    delete m_directory_cmd_server;
   }
   
   
@@ -176,10 +179,17 @@ namespace wbc {
     
     else if (wbcrun::msg::USER_REQUEST == msg_id) {
       LOG_TRACE (logger, "wbc::ServoModelProcess::HandleMessagePayload(): got USER_REQUEST");
-      m_user_reply.InitReply(m_user_request);
-      if ( ! m_servo_imp->HandleServiceCall(m_user_request, m_user_reply)) {
-	LOG_INFO (logger,
-		  "wbc::ServoModelProcess::HandleMessagePayload(): USER_REQUEST not handled by servo");
+      if ( ! m_directory_cmd_server) {
+	m_directory_cmd_server = new DirectoryCmdServer(m_servo_imp->GetBehaviorLibrary(), this);
+      }
+      if ( ! m_directory_cmd_server->Dispatch(m_user_request, m_user_reply)) {
+	if (logger->isWarnEnabled()) {
+	  ostringstream msg;
+	  msg << "wbc::ServoModelProcess::HandleMessagePayload(): DirectoryCmdServer::Dispatch() failed\n"
+	      << "  It did not seem like the user request:\n";
+	  m_user_request.Dump(msg, "    ");
+	  LOG_WARN (logger, msg.str());
+	}
       }
       EnqueueMessage(m_user_channel, &m_user_reply, true, false);
     }

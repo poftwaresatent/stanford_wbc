@@ -25,7 +25,8 @@
 namespace wbc {
   
   class ServoModelProcess
-    : public wbcrun::Process
+    : public wbcrun::Process,
+      public ServoProcessAPI
   {
   public:
     ServoModelProcess();
@@ -55,6 +56,8 @@ namespace wbc {
       RUNNING_STATE,	       /**< running a behavior */
       ERROR_STATE	       /**< placeholder for later extension */
     } state_t;
+    
+    DirectoryCmdServer * m_directory_cmd_server;
     
     ServoImplementation * m_servo_imp;
     bool m_own_servo_imp;

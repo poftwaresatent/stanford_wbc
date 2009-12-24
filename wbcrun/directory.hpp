@@ -147,66 +147,52 @@ namespace wbcrun {
     bool m_own_transaction;
   };
   
-
-  /** \todo XXXX make the next logical step: turn it into
-      DirectoryCmdServer! ...or, actually, into a static function,
-      because it just does case-based marshalling of requests and
-      replies */
-  class DirectoryDispatcher
+  
+  /**
+     This subclass only adds some minimal dispatching
+     functionality. In order to implement a user command server, you
+     should subclass this and provide implemetations for the methods
+     that have been left pure virtual.
+   */
+  class DirectoryCmdServer
+    : public Directory
   {
   public:
-    virtual ~DirectoryDispatcher() {}
-    
     /**
-       The default implementation tries to re-route some "standard"
-       commands and returns true to indicate that it has handled the
-       command (or detected a protocol error). In case of re-routing,
-       some processing is done first:
-
-       - BEHAVIOR_DIR eats up two elements of the message.code vector,
-         code[0] being the BEHAVIOR_DIR tag and code[1] being the
-         behavior ID passed to HandleBehaviorCmd().
-
-       - TASK_DIR eats up three elements of message.code, code[0]
-         being the TASK_DIR tag, code[1] being the behavior ID, and
-         code[2] being the task ID passed to HandleTaskCmd().
-
-       \note This list is undergoing current development, and the doc
-       can be out of sync. Look at the code in order to get up-to-date
-       information.
+       Unpack the request along the domain, command, and other code
+       elements, and call the corresponding more specific methods that
+       need to be implemented by subclasses, extracting the relevant
+       parts of the request code vector in the process. Protocol
+       errors and similar glitches are also directly caught here, so
+       subclasses need not worry about them.
        
-       The idea is to make it easier for subclasses to implement
-       additional service calls by first checking whether the
-       superclass can handle it. For example in a theoretical
-       MyDispatcher subclass:
-       \code
-       bool MyDispatcher::Handle(...) {
-         if (DirectoryDispatcher::Handle(...))
-	   return true;
-	 switch (message.code[0]) {
-	   case 42:
-	     life_the_universe_and_everything();
-	     // should fill in reply accordingly...
-	     return true;
-	 }
-	 return false;
-       }
-       \endcode
-       This way, further subclassing of MyDispatcher allows to chain
-       handlers from general to specific.
+       - SRV_SERVO_DOMAIN: if the command is SRV_GET_BEHAVIOR_LIST,
+         the request gets forwarded to ListBehaviors(), otherwise to
+         HandleServoCmd().
+	 
+       - SRV_BEHAVIOR_DOMAIN: if the command is SRV_GET_COMMAND_LIST,
+         the request gets forwarded to ListBehaviorCmds(). If the
+         command is SRV_GET_TASK_LIST, then ListTasks() gets
+         called. Otherwise, HandleBehaviorCmd() is the method that
+         catches it.
+	 
+       - SRV_TASK_DOMAIN: if the command is SRV_GET_COMMAND_LIST, the
+         request gets forwarded to ListTaskCmds(). Otherwise,
+         HandleTaskCmd() is called.
+	 
+       - SRV_OTHER_DOMAIN and upwards, as well as negative domain
+         codes, are currently treated like SRV_NOT_IMPLEMENTED.
+	 
+       \todo Implement SRV_OTHER_DOMAIN handling (probably needs some
+       tweaks to the super class).
        
-       \return false if the message.code[0] did not match any of the
-       known tags, or true if it did or some other condition was
-       handled by this implementation.
-       
-       \todo Remove redundancy between return value and the reply
-       out-parameter, while keeping it easy for subclass implementers.
+       \return true if the request got dispatched, false otherwise. In
+       any case, you can just go ahead and send the reply over the
+       wire (unless the subclass code that it has been dispatched to
+       bungled it).
     */
-    virtual bool Handle(Directory & directory,
-			/** the request sent by the user */
-			wbcnet::msg::Service const & message,
-			/** the reply to be filled in by the implementation */
-			wbcnet::msg::Service & reply);
+    bool Dispatch(wbcnet::msg::Service const & request,
+		  wbcnet::msg::Service & reply);
   };
   
 }

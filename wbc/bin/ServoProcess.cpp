@@ -24,7 +24,7 @@
 
 #include "ServoProcess.hpp"
 #include "TaskModelListener.hpp"
-#include "BehaviorDirectory.hpp"
+#include "DirectoryCmdServer.hpp"
 #include <wbcrun/message_id.hpp>
 #include <wbcnet/NetConfig.hpp>
 #include <wbcnet/log.hpp>
@@ -69,8 +69,7 @@ namespace wbc {
 		      wbc::RobotAPI * robotAPI,
 		      wbcnet::DelayHistogram * dhist,
 		      int pskip)
-    : m_directory(0),
-      m_joint_angles(ndof),
+    : m_joint_angles(ndof),
       m_joint_velocities(nvel),
       m_contact_forces(contact_nrows, contact_ncols),
       m_command_torques(0),	// init to zero to detect the second iteration
@@ -96,151 +95,150 @@ namespace wbc {
   ServoImplementation::
   ~ServoImplementation()
   {
-    delete m_directory;
     delete m_task_model_listener;
   }
   
   
-  bool ServoImplementation::
-  HandleServiceCall(wbcnet::msg::Service const & user_request,
-		    wbcnet::msg::Service & user_reply)
-  {
-    if (logger->isDebugEnabled()) {
-      ostringstream msg;
-      msg << "wbc::ServoImplementation::HandleServiceCall()\n";
-      user_request.Dump(msg, "  ");
-      LOG_DEBUG (logger, msg.str());
-    }
+// // //   bool ServoImplementation::
+// // //   HandleServiceCall(wbcnet::msg::Service const & user_request,
+// // // 		    wbcnet::msg::Service & user_reply)
+// // //   {
+// // //     if (logger->isDebugEnabled()) {
+// // //       ostringstream msg;
+// // //       msg << "wbc::ServoImplementation::HandleServiceCall()\n";
+// // //       user_request.Dump(msg, "  ");
+// // //       LOG_DEBUG (logger, msg.str());
+// // //     }
     
-    if ( ! m_directory)
-      m_directory = new BehaviorDirectory(m_behavior, this);
+// // //     if ( ! m_directory)
+// // //       m_directory = new BehaviorDirectory(m_behavior, this);
     
-    if (m_directory_dispatcher.Handle(*m_directory, user_request, user_reply)) {
-      if (logger->isDebugEnabled()) {
-	ostringstream msg;
-	msg << "wbc::ServoImplementation::HandleServiceCall() dispatcher did it\n";
-	user_reply.Dump(msg, "  ");
-	LOG_DEBUG (logger, msg.str());
-      }
-      return true;
-    }
-    LOG_DEBUG (logger, "wbc::ServoImplementation::HandleServiceCall(): dispatcher did not take care of it");
+// // //     if (m_directory_dispatcher.Handle(*m_directory, user_request, user_reply)) {
+// // //       if (logger->isDebugEnabled()) {
+// // // 	ostringstream msg;
+// // // 	msg << "wbc::ServoImplementation::HandleServiceCall() dispatcher did it\n";
+// // // 	user_reply.Dump(msg, "  ");
+// // // 	LOG_DEBUG (logger, msg.str());
+// // //       }
+// // //       return true;
+// // //     }
+// // //     LOG_DEBUG (logger, "wbc::ServoImplementation::HandleServiceCall(): dispatcher did not take care of it");
     
-    user_reply.InitReply(user_request);
+// // //     user_reply.InitReply(user_request);
     
-    if (user_request.code.NElements() < 2) {
-      user_reply.code[0] = wbcnet::SRV_MISSING_CODE;
-      if (logger->isDebugEnabled()) {
-	ostringstream msg;
-	msg << "wbc::ServoImplementation::HandleServiceCall() MISSING_CODE\n";
-	user_reply.Dump(msg, "  ");
-	LOG_DEBUG (logger, msg.str());
-      }
-      return true;
-    }
+// // //     if (user_request.code.NElements() < 2) {
+// // //       user_reply.code[0] = wbcnet::SRV_MISSING_CODE;
+// // //       if (logger->isDebugEnabled()) {
+// // // 	ostringstream msg;
+// // // 	msg << "wbc::ServoImplementation::HandleServiceCall() MISSING_CODE\n";
+// // // 	user_reply.Dump(msg, "  ");
+// // // 	LOG_DEBUG (logger, msg.str());
+// // //       }
+// // //       return true;
+// // //     }
     
-    if (user_request.code[0] != wbcnet::SRV_SERVO_DOMAIN) {
-      LOG_WARN (logger,
-		"wbc::ServoImplementation::HandleServiceCall(): invalid user request domain "
-		<< (int) user_request.code[0] << " " << wbcnet::srv_domain_to_string(user_request.code[0])
-		<< " (servo only explicitly handles SRV_SERVO_DOMAIN), replying with INVALID_COMMAND");
-      user_reply.code[0] = wbcnet::SRV_INVALID_COMMAND;
-      return true;
-    }
+// // //     if (user_request.code[0] != wbcnet::SRV_SERVO_DOMAIN) {
+// // //       LOG_WARN (logger,
+// // // 		"wbc::ServoImplementation::HandleServiceCall(): invalid user request domain "
+// // // 		<< (int) user_request.code[0] << " " << wbcnet::srv_domain_to_string(user_request.code[0])
+// // // 		<< " (servo only explicitly handles SRV_SERVO_DOMAIN), replying with INVALID_COMMAND");
+// // //       user_reply.code[0] = wbcnet::SRV_INVALID_COMMAND;
+// // //       return true;
+// // //     }
     
-    switch (user_request.code[1]) {
+// // //     switch (user_request.code[1]) {
       
-    case wbcnet::SRV_GET_ACTUAL:
-      SAIMatrixAPI data(m_joint_angles);
-      data.appendHorizontally(m_joint_velocities);
-      data.appendHorizontally(m_command_torques);
-      user_reply.matrix.Copy(data);
-      user_reply.code[0] = wbcnet::SRV_SUCCESS;
-      if (logger->isDebugEnabled()) {
-	ostringstream msg;
-	msg << "wbc::ServoImplementation::HandleServiceCall() GET_ACTUAL SUCCESS\n";
-	user_reply.Dump(msg, "  ");
-	LOG_DEBUG (logger, msg.str());
-      }
-      return true;
+// // //     case wbcnet::SRV_GET_ACTUAL:
+// // //       SAIMatrixAPI data(m_joint_angles);
+// // //       data.appendHorizontally(m_joint_velocities);
+// // //       data.appendHorizontally(m_command_torques);
+// // //       user_reply.matrix.Copy(data);
+// // //       user_reply.code[0] = wbcnet::SRV_SUCCESS;
+// // //       if (logger->isDebugEnabled()) {
+// // // 	ostringstream msg;
+// // // 	msg << "wbc::ServoImplementation::HandleServiceCall() GET_ACTUAL SUCCESS\n";
+// // // 	user_reply.Dump(msg, "  ");
+// // // 	LOG_DEBUG (logger, msg.str());
+// // //       }
+// // //       return true;
       
-      ////
-      //// XXXX to do: resurrect GET_END_POS command
-      ////
-      //     case wbcnet::SRV_GET_END_POS:
-      //       if ( ! m_end_effector) {
-      // 	user_reply.code[0] = wbcnet::SRV_OTHER_ERROR;
-      // 	LOG_ERROR (logger, "wbc::ServoImplementation::HandleServiceCall(): GET_END_POS without end effector");
-      // 	if (logger->isDebugEnabled()) {
-      // 	  ostringstream msg;
-      // 	  msg << "wbc::ServoImplementation::HandleServiceCall() OTHER_ERROR\n";
-      // 	  user_reply.Dump(msg, "  ");
-      // 	  LOG_DEBUG (logger, msg.str());
-      // 	}
-      // 	return true;
-      //       }
-      //       {
-      // 	SAITransform const transform(m_kinematics->globalFrame(m_end_effector, nullVector));
-      // 	SAIVectorAPI reply(transform.rotation().vecForm());
-      // 	reply.append(transform.translation());
-      // 	user_reply.matrix.Copy(reply);
-      //       }
-      //       user_reply.code[0] = wbcnet::SRV_SUCCESS;
-      //       if (logger->isDebugEnabled()) {
-      // 	ostringstream msg;
-      // 	msg << "wbc::ServoImplementation::HandleServiceCall() GET_END_POS SUCCESS\n";
-      // 	user_reply.Dump(msg, "  ");
-      // 	LOG_DEBUG (logger, msg.str());
-      //       }
-      //       return true;
+// // //       ////
+// // //       //// XXXX to do: resurrect GET_END_POS command
+// // //       ////
+// // //       //     case wbcnet::SRV_GET_END_POS:
+// // //       //       if ( ! m_end_effector) {
+// // //       // 	user_reply.code[0] = wbcnet::SRV_OTHER_ERROR;
+// // //       // 	LOG_ERROR (logger, "wbc::ServoImplementation::HandleServiceCall(): GET_END_POS without end effector");
+// // //       // 	if (logger->isDebugEnabled()) {
+// // //       // 	  ostringstream msg;
+// // //       // 	  msg << "wbc::ServoImplementation::HandleServiceCall() OTHER_ERROR\n";
+// // //       // 	  user_reply.Dump(msg, "  ");
+// // //       // 	  LOG_DEBUG (logger, msg.str());
+// // //       // 	}
+// // //       // 	return true;
+// // //       //       }
+// // //       //       {
+// // //       // 	SAITransform const transform(m_kinematics->globalFrame(m_end_effector, nullVector));
+// // //       // 	SAIVectorAPI reply(transform.rotation().vecForm());
+// // //       // 	reply.append(transform.translation());
+// // //       // 	user_reply.matrix.Copy(reply);
+// // //       //       }
+// // //       //       user_reply.code[0] = wbcnet::SRV_SUCCESS;
+// // //       //       if (logger->isDebugEnabled()) {
+// // //       // 	ostringstream msg;
+// // //       // 	msg << "wbc::ServoImplementation::HandleServiceCall() GET_END_POS SUCCESS\n";
+// // //       // 	user_reply.Dump(msg, "  ");
+// // //       // 	LOG_DEBUG (logger, msg.str());
+// // //       //       }
+// // //       //       return true;
       
-    case wbcnet::SRV_TOGGLE_RECORDER:
-      Recorder::FlushAll();
-      user_reply.code[0] = wbcnet::SRV_SUCCESS;
-      if (logger->isDebugEnabled()) {
-	ostringstream msg;
-	msg << "wbc::ServoImplementation::HandleServiceCall() TOGGLE_RECORDER SUCCESS\n";
-	user_reply.Dump(msg, "  ");
-	LOG_DEBUG (logger, msg.str());
-      }
-      return true;
+// // //     case wbcnet::SRV_TOGGLE_RECORDER:
+// // //       Recorder::FlushAll();
+// // //       user_reply.code[0] = wbcnet::SRV_SUCCESS;
+// // //       if (logger->isDebugEnabled()) {
+// // // 	ostringstream msg;
+// // // 	msg << "wbc::ServoImplementation::HandleServiceCall() TOGGLE_RECORDER SUCCESS\n";
+// // // 	user_reply.Dump(msg, "  ");
+// // // 	LOG_DEBUG (logger, msg.str());
+// // //       }
+// // //       return true;
       
-    default:
-      if (m_current_behavior) {
-	LOG_DEBUG (logger,
-		   "wbc::ServoImplementation::HandleServiceCall(): forwarding " << (int) user_request.code[0]
-		   << " " << wbcnet::SRV_get_id_str(user_request.code[0]) << " to behavior "
-		   << m_current_behavior->name);
-	user_reply.code.SetNElements(1);
-	user_reply.matrix.SetSize(0, 0);
+// // //     default:
+// // //       if (m_current_behavior) {
+// // // 	LOG_DEBUG (logger,
+// // // 		   "wbc::ServoImplementation::HandleServiceCall(): forwarding " << (int) user_request.code[0]
+// // // 		   << " " << wbcnet::SRV_get_id_str(user_request.code[0]) << " to behavior "
+// // // 		   << m_current_behavior->name);
+// // // 	user_reply.code.SetNElements(1);
+// // // 	user_reply.matrix.SetSize(0, 0);
 
-#error wtf
+// // // #error wtf
 
-	user_reply.code[0] = m_current_behavior->handleCommand(user_request.code.ElementPointer(),
-							       user_request.nCodes,
-							       SAIMatrixAPI(user_request.matrix));
-      }
-      else {
-	LOG_WARN (logger,
-		  "wbc::ServoImplementation::HandleServiceCall(): cannot forward " << (int) user_request.code[0]
-		  << " " << wbcnet::SRV_get_id_str(user_request.code[0]) << " (no current behavior)");
-	user_reply.code.SetNElements(1);
-	user_reply.matrix.SetSize(0, 0);
-	user_reply.code[0] = wbcnet::SRV_TRY_AGAIN;
-      }
-      if (logger->isDebugEnabled()) {
-	ostringstream msg;
-	msg << "wbc::ServoImplementation::HandleServiceCall(): reply from behavior\n";
-	user_reply.Dump(msg, "  ");
-	LOG_DEBUG (logger, msg.str());
-      }
-      return true;
+// // // 	user_reply.code[0] = m_current_behavior->handleCommand(user_request.code.ElementPointer(),
+// // // 							       user_request.nCodes,
+// // // 							       SAIMatrixAPI(user_request.matrix));
+// // //       }
+// // //       else {
+// // // 	LOG_WARN (logger,
+// // // 		  "wbc::ServoImplementation::HandleServiceCall(): cannot forward " << (int) user_request.code[0]
+// // // 		  << " " << wbcnet::SRV_get_id_str(user_request.code[0]) << " (no current behavior)");
+// // // 	user_reply.code.SetNElements(1);
+// // // 	user_reply.matrix.SetSize(0, 0);
+// // // 	user_reply.code[0] = wbcnet::SRV_TRY_AGAIN;
+// // //       }
+// // //       if (logger->isDebugEnabled()) {
+// // // 	ostringstream msg;
+// // // 	msg << "wbc::ServoImplementation::HandleServiceCall(): reply from behavior\n";
+// // // 	user_reply.Dump(msg, "  ");
+// // // 	LOG_DEBUG (logger, msg.str());
+// // //       }
+// // //       return true;
       
-    }
+// // //     }
     
-    LOG_WARN (logger, "wbc::ServoImplementation::HandleServiceCall(): BUG? reached end of switch");
-    return false;		// never happens though
-  }
+// // //     LOG_WARN (logger, "wbc::ServoImplementation::HandleServiceCall(): BUG? reached end of switch");
+// // //     return false;		// never happens though
+// // //   }
   
   
   wbc::TaskModelListener * ServoImplementation::
@@ -643,101 +641,101 @@ namespace wbc {
   }
   
   
-  int ServoProcess::
-  HandleMessagePayload(wbcnet::unique_id_t msg_id)
-  {
-    if (wbcrun::msg::STATUS == msg_id) {
-      LOG_TRACE (logger, "wbc::ServoProcess::HandleMessagePayload(): got STATUS");
+// // //   int ServoProcess::
+// // //   HandleMessagePayload(wbcnet::unique_id_t msg_id)
+// // //   {
+// // //     if (wbcrun::msg::STATUS == msg_id) {
+// // //       LOG_TRACE (logger, "wbc::ServoProcess::HandleMessagePayload(): got STATUS");
       
-      if (wbcrun::msg::MODEL_SUCCESS == m_model_status.status) {
-	LOG_TRACE (logger, "  MODEL_SUCCESS");
-	if (WAIT_MODEL_STATE == m_state) {
-	  LOG_TRACE (logger, "  transition state WAIT_MODEL to RUNNING");
-	  m_state = RUNNING_STATE;
-	}
-	wbc::TaskModelBase * task_model(m_model_listener->GetLastUpdatedModel());
-	if ( ! task_model) {
-	  LOG_ERROR (logger,
-			 "wbc::ServoProcess::HandleMessagePayload():\n"
-			 << "  BUG? m_model_listener->GetLastUpdatedModel() returned NULL\n"
-			 << "  but it should have received at least one matrix message before\n"
-			 << "  arriving here.");
-	  return 777;
-	}
-	uint8_t const requestID(task_model->GetRequestID());
-	if ((m_current_behaviorID != m_next_behaviorID)
-	    && (requestID == m_behavior_transition_requestID)) {
-	  LOG_TRACE (logger,
-			 "  finish behavior transition\n"
-			 << "    m_current_behaviorID = " << (int) m_current_behaviorID << "\n"
-			 << "    m_next_behaviorID = " << (int) m_next_behaviorID << "\n"
-			 << "    requestID = " << (int) requestID << "\n"
-			 << "    m_behavior_transition_requestID = "
-			 << (int) m_behavior_transition_requestID);
-	  m_current_behaviorID = m_next_behaviorID;
-	}
-	else
-	  if (logger->isTraceEnabled()) {
-	    if (m_current_behaviorID == m_next_behaviorID) {
-	      LOG_TRACE (logger,
-			     "  got a fresh model for the still running behavior "
-			     << (int) m_current_behaviorID);
-	    }
-	    else {
-	      LOG_TRACE (logger,
-			     "  cannot finish behavior transition:\n"
-			     << "   probably this means we got an update for the old behavior\n"
-			     << "   or maybe it's a bug in request ID handling\n"
-			     << "     m_current_behaviorID = " << (int) m_current_behaviorID << "\n"
-			     << "     m_next_behaviorID = " << (int) m_next_behaviorID << "\n"
-			     << "     requestID = " << (int) requestID << "\n"
-			     << "     m_behavior_transition_requestID = "
-			     << (int) m_behavior_transition_requestID);
-	    }
-	  }
-	////	UpdateTaskModel(task_model, m_current_behaviorID);
-      }
+// // //       if (wbcrun::msg::MODEL_SUCCESS == m_model_status.status) {
+// // // 	LOG_TRACE (logger, "  MODEL_SUCCESS");
+// // // 	if (WAIT_MODEL_STATE == m_state) {
+// // // 	  LOG_TRACE (logger, "  transition state WAIT_MODEL to RUNNING");
+// // // 	  m_state = RUNNING_STATE;
+// // // 	}
+// // // 	wbc::TaskModelBase * task_model(m_model_listener->GetLastUpdatedModel());
+// // // 	if ( ! task_model) {
+// // // 	  LOG_ERROR (logger,
+// // // 			 "wbc::ServoProcess::HandleMessagePayload():\n"
+// // // 			 << "  BUG? m_model_listener->GetLastUpdatedModel() returned NULL\n"
+// // // 			 << "  but it should have received at least one matrix message before\n"
+// // // 			 << "  arriving here.");
+// // // 	  return 777;
+// // // 	}
+// // // 	uint8_t const requestID(task_model->GetRequestID());
+// // // 	if ((m_current_behaviorID != m_next_behaviorID)
+// // // 	    && (requestID == m_behavior_transition_requestID)) {
+// // // 	  LOG_TRACE (logger,
+// // // 			 "  finish behavior transition\n"
+// // // 			 << "    m_current_behaviorID = " << (int) m_current_behaviorID << "\n"
+// // // 			 << "    m_next_behaviorID = " << (int) m_next_behaviorID << "\n"
+// // // 			 << "    requestID = " << (int) requestID << "\n"
+// // // 			 << "    m_behavior_transition_requestID = "
+// // // 			 << (int) m_behavior_transition_requestID);
+// // // 	  m_current_behaviorID = m_next_behaviorID;
+// // // 	}
+// // // 	else
+// // // 	  if (logger->isTraceEnabled()) {
+// // // 	    if (m_current_behaviorID == m_next_behaviorID) {
+// // // 	      LOG_TRACE (logger,
+// // // 			     "  got a fresh model for the still running behavior "
+// // // 			     << (int) m_current_behaviorID);
+// // // 	    }
+// // // 	    else {
+// // // 	      LOG_TRACE (logger,
+// // // 			     "  cannot finish behavior transition:\n"
+// // // 			     << "   probably this means we got an update for the old behavior\n"
+// // // 			     << "   or maybe it's a bug in request ID handling\n"
+// // // 			     << "     m_current_behaviorID = " << (int) m_current_behaviorID << "\n"
+// // // 			     << "     m_next_behaviorID = " << (int) m_next_behaviorID << "\n"
+// // // 			     << "     requestID = " << (int) requestID << "\n"
+// // // 			     << "     m_behavior_transition_requestID = "
+// // // 			     << (int) m_behavior_transition_requestID);
+// // // 	    }
+// // // 	  }
+// // // 	////	UpdateTaskModel(task_model, m_current_behaviorID);
+// // //       }
       
-      else if (wbcrun::msg::MODEL_ERROR == m_model_status.status) {
-	LOG_TRACE (logger, "  MODEL_ERROR --> just retry");
-	////maybe one day//// HandleModelFailure();
-      }
+// // //       else if (wbcrun::msg::MODEL_ERROR == m_model_status.status) {
+// // // 	LOG_TRACE (logger, "  MODEL_ERROR --> just retry");
+// // // 	////maybe one day//// HandleModelFailure();
+// // //       }
       
-      else
-	LOG_TRACE (logger, "  ignoring status " << (int) m_model_status.status << "");
-    }
+// // //       else
+// // // 	LOG_TRACE (logger, "  ignoring status " << (int) m_model_status.status << "");
+// // //     }
 
-    else if (wbcrun::msg::TASK_SPEC == msg_id) {
-      LOG_TRACE (logger, "wbc::ServoProcess::HandleMessagePayload(): got TASK_SPEC");
-      BeginBehaviorTransition(m_user_task_spec.behaviorID);
-    }
+// // //     else if (wbcrun::msg::TASK_SPEC == msg_id) {
+// // //       LOG_TRACE (logger, "wbc::ServoProcess::HandleMessagePayload(): got TASK_SPEC");
+// // //       BeginBehaviorTransition(m_user_task_spec.behaviorID);
+// // //     }
 
-    else if (wbcrun::msg::USER_REQUEST == msg_id) {
-      LOG_TRACE (logger, "wbc::ServoProcess::HandleMessagePayload(): got USER_REQUEST");
-      m_user_reply.Reset();
-      if ( ! m_imp->HandleServiceCall(m_user_request, m_user_reply)) {
-	if ( ! m_user_reply.code.SetNElements(1)) {
-	  LOG_ERROR (logger,
-			 "wbc::ServoProcess::HandleMessagePayload()\n"
-			 << "  weird, could not resize user reply code to one");
-	  return 888;
-	}
-	m_user_reply.matrix.SetSize(0, 0);
-	m_user_reply.code[0] = wbcnet::SRV_NOT_IMPLEMENTED;
-      }
-      EnqueueMessage(m_user_channel, &m_user_reply, true, false);
-    }
+// // //     else if (wbcrun::msg::USER_REQUEST == msg_id) {
+// // //       LOG_TRACE (logger, "wbc::ServoProcess::HandleMessagePayload(): got USER_REQUEST");
+// // //       m_user_reply.Reset();
+// // //       if ( ! m_imp->HandleServiceCall(m_user_request, m_user_reply)) {
+// // // 	if ( ! m_user_reply.code.SetNElements(1)) {
+// // // 	  LOG_ERROR (logger,
+// // // 			 "wbc::ServoProcess::HandleMessagePayload()\n"
+// // // 			 << "  weird, could not resize user reply code to one");
+// // // 	  return 888;
+// // // 	}
+// // // 	m_user_reply.matrix.SetSize(0, 0);
+// // // 	m_user_reply.code[0] = wbcnet::SRV_NOT_IMPLEMENTED;
+// // //       }
+// // //       EnqueueMessage(m_user_channel, &m_user_reply, true, false);
+// // //     }
     
-    else {
-      LOG_TRACE (logger,
-		     "wbc::ServoProcess::HandleMessagePayload()\n"
-		     << "  unknown message ID " << (int) msg_id
-		     << " [" << wbcrun::msg::get_id_str(msg_id));
-      return 999;
-    }
+// // //     else {
+// // //       LOG_TRACE (logger,
+// // // 		     "wbc::ServoProcess::HandleMessagePayload()\n"
+// // // 		     << "  unknown message ID " << (int) msg_id
+// // // 		     << " [" << wbcrun::msg::get_id_str(msg_id));
+// // //       return 999;
+// // //     }
     
-    return 0;
-  }
+// // //     return 0;
+// // //   }
 
 
   void ServoProcess::

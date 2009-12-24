@@ -37,136 +37,125 @@ using namespace wbcnet;
 namespace wbcrun {
   
   
-  bool DirectoryDispatcher::Handle(Directory & directory,
-				   wbcnet::msg::Service const & request,
-				   wbcnet::msg::Service & reply)
+  bool DirectoryCmdServer::
+  Dispatch(wbcnet::msg::Service const & request,
+	   wbcnet::msg::Service & reply)
   {
+    reply.InitReply(request);
+    
     if (1 > request.code.NElements()) {
-      reply.code.SetNElements(1);
       reply.code[0] = SRV_MISSING_CODE;
-      reply.matrix.SetSize(0, 0);
-      return true;
+      return false;
     }
     
-    switch (request.code[0]) {
+    int const domain(request.code[0]);
+    
+    // servo domain //////////////////////////////////////////////////
+    
+    if (SRV_SERVO_DOMAIN == domain) {
       
-    case SRV_SERVO_DOMAIN:
       if (2 > request.code.NElements()) {
-	reply.code.SetNElements(1);
 	reply.code[0] = SRV_MISSING_CODE;
-	reply.matrix.SetSize(0, 0);
+	return false;
       }
-      else {
-	int const commandID(request.code[1]);
-	reply.clear();
-	int32_t result;
-	if (SRV_GET_BEHAVIOR_LIST == commandID) {
-	  listing_t behaviors;
-	  result = directory.ListBehaviors(behaviors);
-	  if (SRV_SUCCESS == result)
-	    if ( ! reply.append(behaviors.begin(), behaviors.end()))
-	      result = SRV_OTHER_ERROR;
-	  reply.code.SetNElements(1);
-	  reply.matrix.SetSize(0, 0);
-	}
-	else {
-	  result = directory.HandleServoCmd(commandID,
-					    &request.code.CreateSplice(2), &request.matrix,
-					    &reply.code, &reply.matrix);
-	}
-	// make sure reply.code[0] is set to the result code... should
-	// be done inside directory, but you never know.
-	if (reply.code.NElements() < 1)
-	  reply.code.SetNElements(1);
-	reply.code[0] = result;
-      }
-      return true;
       
-    case SRV_BEHAVIOR_DOMAIN:
-      if (3 > request.code.NElements()) {
-	reply.code.SetNElements(1);
-	reply.code[0] = SRV_MISSING_CODE;
-	reply.matrix.SetSize(0, 0);
-      }
-      else {
-	int const behaviorID(request.code[1]);
-	int const commandID(request.code[2]);
-	int32_t result;
-	if (SRV_GET_COMMAND_LIST == commandID) {
-	  command_list_t commands;
-	  result = directory.ListBehaviorCmds(behaviorID, commands);
-	  if (SRV_SUCCESS != result)
-	    reply.code.SetNElements(1);
-	  else {
-	    reply.code.SetNElements(commands.size() + 1);
-	    size_t ii(1);
-	    for (command_list_t::const_iterator rr(commands.begin()); rr != commands.end();
-		 ++rr, ++ii)
-	      reply.code[ii] = *rr;
+      if (SRV_GET_BEHAVIOR_LIST == request.code[1]) {
+	listing_t behaviors;
+	reply.code[0] = ListBehaviors(behaviors);
+	if (SRV_SUCCESS == reply.code[0]) {
+	  if ( ! reply.append(behaviors.begin(), behaviors.end())) {
+	    reply.code[0] = SRV_OTHER_ERROR;
 	  }
 	}
-	else if (SRV_GET_TASK_LIST == commandID) {
-	  listing_t tasks;
-	  result = directory.ListTasks(behaviorID, tasks);
-	  reply.code.SetNElements(1);
-	  reply.clear();	// XXXX need to do this more often all over this code
-	  reply.matrix.SetSize(0, 0); // XXXX need to do this more often all over this code
-	  if (SRV_SUCCESS == result) {
-	    if ( ! reply.append(tasks.begin(), tasks.end()))
-	      result = SRV_OTHER_ERROR;
-	  }
-	}
-	else {
-	  result = directory.HandleBehaviorCmd(behaviorID, commandID,
-					       &request.code.CreateSplice(2), &request.matrix,
-					       &reply.code, &reply.matrix);
-	}
-	// make sure reply.code[0] is set to the result code... should
-	// be done inside directory, but you never know.
-	if (reply.code.NElements() < 1)
-	  reply.code.SetNElements(1);
-	reply.code[0] = result;
+	return true;
       }
-      return true;
       
-    case SRV_TASK_DOMAIN:
-      if (4 > request.code.NElements()) {
-	reply.code.SetNElements(1);
-	reply.code[0] = SRV_MISSING_CODE;
-	reply.matrix.SetSize(0, 0);
-      }
-      else {
-	int const behaviorID(request.code[1]);
-	int const taskID(request.code[2]);
-	int const commandID(request.code[3]);
-	int32_t result;
-	if (SRV_GET_COMMAND_LIST == commandID) {
-	  command_list_t commands;
-	  result = directory.ListTaskCmds(behaviorID, taskID, commands);
-	  if (SRV_SUCCESS != result)
-	    reply.code.SetNElements(1);
-	  else {
-	    reply.code.SetNElements(commands.size() + 1);
-	    size_t ii(1);
-	    for (command_list_t::const_iterator rr(commands.begin()); rr != commands.end();
-		 ++rr, ++ii)
-	      reply.code[ii] = *rr;
-	  }
-	}
-	else {
-	  result = directory.HandleTaskCmd(behaviorID, taskID, commandID,
-					   &request.code.CreateSplice(3), &request.matrix,
-					   &reply.code, &reply.matrix);
-	}
-	// make sure reply.code[0] is set to the result code... should
-	// be done inside directory, but you never know.
-	if (reply.code.NElements() < 1)
-	  reply.code.SetNElements(1);
-	reply.code[0] = result;
-      }
+      reply.code[0] = HandleServoCmd(request.code[1],
+				     &request.code.CreateSplice(2), &request.matrix,
+				     &reply.code, &reply.matrix);
       return true;
       
     }
+    
+    // behavior domain //////////////////////////////////////////////////
+    
+    if (SRV_BEHAVIOR_DOMAIN == domain) {
+      
+      if (3 > request.code.NElements()) {
+	reply.code[0] = SRV_MISSING_CODE;
+	return false;
+      }
+      
+      int const behaviorID(request.code[1]);
+      int const commandID(request.code[2]);
+      
+      if (SRV_GET_COMMAND_LIST == commandID) {
+	command_list_t commands;
+	reply.code[0] = ListBehaviorCmds(behaviorID, commands);
+	if (SRV_SUCCESS == reply.code[0]) {
+	  reply.code.SetNElements(commands.size() + 1);
+	  size_t ii(1);
+	  for (command_list_t::const_iterator rr(commands.begin()); rr != commands.end();
+	       ++rr, ++ii)
+	    reply.code[ii] = *rr;
+	}
+	return true;
+      }
+      
+      if (SRV_GET_TASK_LIST == commandID) {
+	listing_t tasks;
+	reply.code[0] = ListTasks(behaviorID, tasks);
+	if (SRV_SUCCESS == reply.code[0]) {
+	  if ( ! reply.append(tasks.begin(), tasks.end())) {
+	    reply.code[0] = SRV_OTHER_ERROR;
+	  }
+	}
+	return true;
+      }
+      
+      reply.code[0] = HandleBehaviorCmd(behaviorID, commandID,
+					&request.code.CreateSplice(2), &request.matrix,
+					&reply.code, &reply.matrix);
+      return true;
+      
+    }
+    
+    // task domain //////////////////////////////////////////////////
+    
+    if (SRV_TASK_DOMAIN == domain) {
+      
+      if (4 > request.code.NElements()) {
+	reply.code[0] = SRV_MISSING_CODE;
+	return false;
+      }
+      
+      int const behaviorID(request.code[1]);
+      int const taskID(request.code[2]);
+      int const commandID(request.code[3]);
+      
+      if (SRV_GET_COMMAND_LIST == commandID) {
+	command_list_t commands;
+	reply.code[0] = ListTaskCmds(behaviorID, taskID, commands);
+	if (SRV_SUCCESS == reply.code[0]) {
+	  reply.code.SetNElements(commands.size() + 1);
+	  size_t ii(1);
+	  for (command_list_t::const_iterator rr(commands.begin()); rr != commands.end();
+	       ++rr, ++ii)
+	    reply.code[ii] = *rr;
+	  return true;
+	}
+      }
+      
+      reply.code[0] = HandleTaskCmd(behaviorID, taskID, commandID,
+				    &request.code.CreateSplice(3), &request.matrix,
+				    &reply.code, &reply.matrix);
+      return true;
+      
+    }
+    
+    // other domains: currently not implemented
+    
+    reply.code[0] = SRV_NOT_IMPLEMENTED; // redundant but cheap
     
     return false;
   }

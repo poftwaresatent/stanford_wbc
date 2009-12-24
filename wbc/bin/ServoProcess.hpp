@@ -47,7 +47,7 @@ namespace wbc {
 
   class TaskModelBase;
   class RobotAPI;
-  class BehaviorDirectory;
+  class DirectoryCmdServer;
   class Dynamics;
   class Kinematics;
   class Contact;
@@ -55,6 +55,17 @@ namespace wbc {
   class TaskModelListener;
   class BehaviorDescription;
   class RobotControlModel;
+  
+  
+  /** \note Just for implementing DirectoryCmdServer in a way that is
+      agnostic of multi-rate or one-process servo/model setup... BUT
+      this quick rfct introduces multiple inheritance for ServoProcess
+      and ServoModelProcess. */
+  class ServoProcessAPI
+  {
+  public:
+    virtual ~ServoProcessAPI() {}
+  };
   
   
   class ServoImplementation
@@ -75,11 +86,6 @@ namespace wbc {
 			int pskip);
 
     virtual ~ServoImplementation();
-    
-    /** If you return false, this gets translated
-	into a reply containing SRV_NOT_IMPLEMENTED */
-    virtual bool HandleServiceCall(wbcnet::msg::Service const & request,
-				   wbcnet::msg::Service & reply);
     
     virtual bool UpdateRobotState(wbcrun::msg::RobotState & state);
     
@@ -114,11 +120,11 @@ namespace wbc {
     
     /** \todo ...serialization stuff should not concern servo implementers... */
     virtual class TaskModelListener * GetTaskModelListener();
-
+    
+    std::vector<BehaviorDescription*> const & GetBehaviorLibrary() { return m_behavior; }
+    
+    
   protected:
-    BehaviorDirectory * m_directory;
-    wbcrun::DirectoryDispatcher m_directory_dispatcher;
-
     timeval m_robot_state_tstamp;
     SAIVectorAPI m_joint_angles;
     SAIVectorAPI m_joint_velocities;
@@ -147,7 +153,8 @@ namespace wbc {
   
   
   class ServoProcess
-    : public wbcrun::Process
+    : public wbcrun::Process,
+      public ServoProcessAPI
   {
   public:
     ServoProcess();
@@ -194,6 +201,8 @@ namespace wbc {
       RUNNING_STATE,	       /**< running a behavior */
       ERROR_STATE	       /**< placeholder for later extension */
     } state_t;
+    
+    DirectoryCmdServer * m_directory_cmd_server;
     
     ServoImplementation * m_imp;
     bool m_own_imp;

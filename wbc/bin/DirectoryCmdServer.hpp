@@ -16,24 +16,27 @@
  * <http://www.gnu.org/licenses/>
  */
 
-#ifndef WBC_BEHAVIOR_DIRECTORY_HPP
-#define WBC_BEHAVIOR_DIRECTORY_HPP
+#ifndef WBC_DIRECTORY_CMD_SERVER_HPP
+#define WBC_DIRECTORY_CMD_SERVER_HPP
 
 #include <wbcrun/directory.hpp>
 
 namespace wbc {
   
   class BehaviorDescription;
-  class ServoImplementation;
+  class ServoProcessAPI;
   
-  class BehaviorDirectory
-    : public wbcrun::Directory
+  
+  class DirectoryCmdServer
+    : public wbcrun::DirectoryCmdServer
   {
   public:
-    BehaviorDirectory(std::vector<BehaviorDescription*> const & behavior,
-		      /** can be NULL, but then HandleServoCmd() will always fail */
-		      ServoImplementation * servo);
-  
+    DirectoryCmdServer(std::vector<BehaviorDescription*> const & behavior,
+		       /** can be NULL, but then several things will
+			   always fail and be flagged
+			   SRV_NOT_IMPLEMENTED */
+		       ServoProcessAPI * servo);
+    
     virtual wbcnet::srv_result_t
     HandleServoCmd(int commandID,
 		   wbcnet::msg::Service::vector_type const * code_in,
@@ -76,9 +79,9 @@ namespace wbc {
   
   protected:
     std::vector<BehaviorDescription*> const & m_behavior;
-    ServoImplementation * m_servo;
+    ServoProcessAPI * m_servo;
   };
 
 }
 
-#endif // WBC_BEHAVIOR_DIRECTORY_HPP
+#endif // WBC_DIRECTORY_CMD_SERVER_HPP
