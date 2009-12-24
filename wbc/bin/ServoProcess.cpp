@@ -443,6 +443,7 @@ namespace wbc {
   ServoProcess::
   ServoProcess()
     : Process("servo", 0, -1, wbcnet::ENDIAN_DETECT),
+      m_directory_cmd_server(0),
       m_imp(0),
       m_own_imp(false),
       m_state(READY_STATE),
@@ -587,6 +588,7 @@ namespace wbc {
     delete m_user_channel;
     if (m_own_imp)
       delete m_imp;
+    delete m_directory_cmd_server;
   }
   
   
