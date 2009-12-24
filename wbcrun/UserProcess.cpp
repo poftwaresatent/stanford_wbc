@@ -76,7 +76,6 @@ static void handle_SIGTSTP(int signum)
 
 
 static bool ncurses_active(false);
-static bool keyboard_querry(false);
 
 
 namespace {
@@ -111,7 +110,6 @@ namespace wbcrun {
   bool UserProcess::
   Step() throw(std::exception)
   {
-    keyboard_querry=false;
     static const int buflen(1024);
     static char buffer[buflen];
     
@@ -120,7 +118,6 @@ namespace wbcrun {
       cout << "FATAL ERROR reading standard input\n";
       return false;
     }
-    keyboard_querry=true;
     istringstream line(buffer);
     string token;
     line >> token;
@@ -373,35 +370,31 @@ namespace wbcrun {
   int UserProcess::
   HandleMessagePayload(wbcnet::unique_id_t msg_id)
   {
-    if (wbcrun::msg::USER_REPLY != msg_id) {
-      LOG_TRACE (logger,
-		     "wbcrun::UserProcess::HandleMessagePayload()\n"
-		     << "  unknown message ID " << (int) msg_id);
+    if (ncurses_active) {
       return 0;
     }
     
-    if (logger->isTraceEnabled()) {
-      if (m_user_request.requestID != m_user_reply.requestID) {
-	LOG_TRACE (logger,
-		       "wbcrun::UserProcess::HandleMessagePayload()\n"
-		       << "  requestID mismatch: expected " << (int) m_user_request.requestID
-		       << " but got " << (int) m_user_reply.requestID);
-      }
-      if (1 < m_user_reply.nCodes) {
-	LOG_TRACE (logger,
-		       "wbcrun::UserProcess::HandleMessagePayload()\n"
-		       << "  no status info in user_reply");
-      }
-      else {
-	LOG_TRACE (logger,
-		       "wbcrun::UserProcess::HandleMessagePayload()\n"
-		       << "  user_reply status " << m_user_reply.code[0] << ": "
-		       << wbcnet::srv_result_to_string(m_user_reply.code[0]));
-      }
+    cout << "wbcrun::UserProcess::HandleMessagePayload():\n"
+	 << "  message:\n";
+    m_user_reply.Dump(cout, "    ");
+    
+    if (wbcrun::msg::USER_REPLY != msg_id) {
+      cout << "  ERROR unknown message ID " << (int) msg_id << "\n";
+      return 0;
     }
     
-    if ( ! ncurses_active && keyboard_querry)
-      m_user_reply.Dump(cout, "  ");
+    if (m_user_request.requestID != m_user_reply.requestID) {
+      cout << "  WARNING requestID mismatch: expected " << (int) m_user_request.requestID
+	   << " but got " << (int) m_user_reply.requestID << "\n";
+    }
+    
+    if (1 < m_user_reply.nCodes) {
+      cout << "  WARNING no status info in message\n";
+    }
+    else {
+      cout << "  status " << m_user_reply.code[0] << ": "
+	   << wbcnet::srv_result_to_string(m_user_reply.code[0]) << "\n";
+    }
     
     return 0;
   }
