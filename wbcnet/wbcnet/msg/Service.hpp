@@ -225,10 +225,13 @@ namespace wbcnet {
       void InitSetBehavior(int behaviorID);
       
       void InitSetGoal(double const * goal_coordinates, size_t n_coordinates);
+      void InitSetGains(double const * gains, size_t n_gains);
   
       void InitGetPositions();
       void InitGetVelocities();
       void InitGetTorques();
+      void InitFloat();
+      void InitActivate();
       
       void InitGetLinkTransform(int linkID);
       void InitGetLinkTransform(std::string const & linkName);

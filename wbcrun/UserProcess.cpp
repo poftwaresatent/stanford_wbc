@@ -176,12 +176,60 @@ namespace wbcrun {
         ReceiveWait(10000, 1);
         return true;
       }
-
+      
+      if ("float" == token) {
+	m_user_request.InitFloat();
+	cout << "wbcrun::UserProcess::Step(): sending user request\n";
+	m_user_request.Dump(cout, "    ");
+        EnqueueMessage(m_channel, &m_user_request, false, false);
+        SendWait(10000);
+        ReceiveWait(10000, 1);
+        return true;
+      }
+      
+      if ("activate" == token) {
+	m_user_request.InitActivate();
+	cout << "wbcrun::UserProcess::Step(): sending user request\n";
+	m_user_request.Dump(cout, "    ");
+        EnqueueMessage(m_channel, &m_user_request, false, false);
+        SendWait(10000);
+        ReceiveWait(10000, 1);
+        return true;
+      }
+      
+      if ("setgoal" == token) {
+        double goal[7];
+        line >> goal[0] >>goal[1] >>goal[2] >>goal[3] >>goal[4] >>goal[5] >>goal[6] ;
+        if ( ! line) {
+          cout << "SYNTAX ERROR reading goal pos and orientation\n";
+          return true;
+        }
+        m_user_request.InitSetGoal(goal, 7);
+        EnqueueMessage(m_channel, &m_user_request, false, false);
+        SendWait(10000);
+        ReceiveWait(10000, 1);
+        return true;
+      }     
+      
+      if ("setgains" == token) {
+        double gains[4];
+        line >> gains[0] >>gains[1] >>gains[2] >>gains[3];
+	if ( ! line) {
+          cout << "SYNTAX ERROR reading gains\n";
+          return true;
+        }
+        m_user_request.InitSetGains(gains, 4);
+        EnqueueMessage(m_channel, &m_user_request, false, false);
+        SendWait(10000);
+        ReceiveWait(10000, 1);
+        return true;
+      }        
+      
       if ("b?" == token) {
         cout << "available behaviors:\n";
         size_t ii(0);
         for (listing_t::const_iterator bb(GetBehaviorList().begin()), bend(GetBehaviorList().end());
-            bb != bend; ++bb, ++ii)
+	     bb != bend; ++bb, ++ii)
           cout << "  [" << ii << "] " << *bb << "\n";
         return true;
       }
@@ -200,7 +248,7 @@ namespace wbcrun {
         int const nbehaviors(static_cast<int>(GetBehaviorList().size()));
         if (nbehaviors <= bnum) {
           cout << "ERROR behavior number " << bnum << " is too large (max "
-            << nbehaviors - 1 << ")\n";
+	       << nbehaviors - 1 << ")\n";
           return true;
         }
         if (("b" == token) && (bnum == m_task_spec.behaviorID)) {
@@ -233,7 +281,8 @@ namespace wbcrun {
       }
       
       cout << "SYNTAX ERROR: unknown command \"" << token << "\"\n"
-	" known commands:\n"
+	"\n"
+	" generic commands:\n"
 	"  pos      -  request current joint positions\n"
 	"  vel      -  request current joint velocities\n"
 	"  tau      -  request current command torques\n"
@@ -243,7 +292,13 @@ namespace wbcrun {
 	"  b   <N>  -  switch to behavior number <N>\n"
 	"  r        -  toggle recorder state (writes them to file after the 2nd time)\n"
 	"  k        -  enter interactive_key_press mode (use 'q' to leave it again)\n"
-	"  xmlrpc   -  spawn XMLRPC loop, runs until SIGTSTP (i.e. Ctrl-Z)\n";
+	"  xmlrpc   -  spawn XMLRPC loop, runs until SIGTSTP (i.e. Ctrl-Z)\n"
+	"\n"
+	" experimental and behavior-specific commands:\n"
+	"  float    -  send a FLOAT request (not understood by all behaviors)\n"
+	"  activate -  send an ACTIVATE request (not understood by all behaviors)\n"
+	"  setgoal  -  enter goal position (hardcoded 7-D vector -- x y z axis angle)\n"
+	"  setgains -  enter control gains (type (1(x) or 2(y) or 3(yaw)) kp kd ki)\n";
     }
     catch (exception const & ee) {
       cout << "EXCEPTION " << ee.what() << "\n";

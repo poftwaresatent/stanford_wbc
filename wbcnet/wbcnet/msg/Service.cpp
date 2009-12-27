@@ -329,10 +329,21 @@ namespace wbcnet {
     InitSetGoal(double const * goal_coordinates, size_t n_coordinates)
     {
       InitRequest(2, n_coordinates, 1);
-      code[0] = SRV_SERVO_DOMAIN;
+      code[0] = SRV_BEHAVIOR_DOMAIN;
       code[1] = SRV_SET_GOAL;
       for (size_t ii(0); ii < n_coordinates; ++ii)
 	matrix.GetElement(ii, 0) = goal_coordinates[ii];
+    }
+    
+    
+    void Service::
+    InitSetGains(double const * gains, size_t n_gains)
+    {
+      InitRequest(2, n_gains, 1);
+      code[0] = SRV_BEHAVIOR_DOMAIN;
+      code[1] = SRV_SET_GAINS;
+      for (size_t ii(0); ii < n_gains; ++ii)
+	matrix.GetElement(ii, 0) = gains[ii];
     }
     
     
@@ -384,6 +395,24 @@ namespace wbcnet {
     
     
     void Service::
+    InitFloat()
+    {
+      InitRequest(2, 0, 0);
+      code[0] = SRV_BEHAVIOR_DOMAIN;
+      code[1] = SRV_FLOAT;
+    }
+    
+    
+    void Service::
+    InitActivate()
+    {
+      InitRequest(2, 0, 0);
+      code[0] = SRV_BEHAVIOR_DOMAIN;
+      code[1] = SRV_ACTIVATE;
+    }
+    
+    
+    void Service::
     InitToggleRecorder()
     {
       InitRequest(2, 0, 0);
@@ -396,7 +425,7 @@ namespace wbcnet {
     InitKeyPress(int32_t keycode)
     {
       InitRequest(3, 0, 0);
-      code[0] = SRV_SERVO_DOMAIN;
+      code[0] = SRV_BEHAVIOR_DOMAIN;
       code[1] = SRV_KEY_PRESS;
       code[2] = keycode;
     }
