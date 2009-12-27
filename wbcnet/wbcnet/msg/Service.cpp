@@ -63,6 +63,8 @@ static char const * srv_command_name[] = {
   "SRV_GET_PROP_GAIN",
   "SRV_SET_DIFF_GAIN",
   "SRV_GET_DIFF_GAIN",
+  "SRV_SET_GAINS",
+  "SRV_GET_GAINS",
   "SRV_SET_MAX_VEL",
   "SRV_GET_MAX_VEL",
   "SRV_SET_MAX_ACCEL",
@@ -70,6 +72,8 @@ static char const * srv_command_name[] = {
   "SRV_GET_BEHAVIOR_LIST",
   "SRV_GET_COMMAND_LIST",
   "SRV_GET_TASK_LIST",
+  "SRV_ACTIVATE",
+  "SRV_FLOAT",
   "SRV_OTHER_COMMAND"
 };
 

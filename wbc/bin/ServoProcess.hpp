@@ -33,6 +33,7 @@
 #include <wbc/core/SAIMatrixAPI.hpp>
 #include <wbcrun/directory.hpp>
 #include <wbcrun/msg/RobotState.hpp>
+#include <sys/time.h>
 
 class taoDNode;
 

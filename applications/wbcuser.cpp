@@ -31,6 +31,7 @@
 #include <err.h>
 #include <signal.h>
 #include <sys/types.h>
+#include <stdlib.h>
 
 using namespace std;
 
