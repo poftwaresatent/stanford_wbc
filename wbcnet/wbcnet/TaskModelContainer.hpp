@@ -29,8 +29,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WBCRUN_TASK_MODEL_CONTAINER_HPP
-#define WBCRUN_TASK_MODEL_CONTAINER_HPP
+#ifndef WBCNET_TASK_MODEL_CONTAINER_HPP
+#define WBCNET_TASK_MODEL_CONTAINER_HPP
 
 #ifdef WIN32
 #include "extras.h"
@@ -40,11 +40,8 @@
 #include <vector>
 
 namespace wbcnet {
-  class MatrixStorageAPI;
-}
-
-namespace wbcrun {
   
+  class MatrixStorageAPI;
   
   struct task_model_container_default_traits {
     static bool delete_matrices() { return true; }
@@ -222,4 +219,4 @@ namespace wbcrun {
   
 }
 
-#endif // WBCRUN_TASK_MODEL_CONTAINER_HPP
+#endif // WBCNET_TASK_MODEL_CONTAINER_HPP

@@ -29,13 +29,13 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WBCRUN_TASK_MODEL_API_HPP
-#define WBCRUN_TASK_MODEL_API_HPP
+#ifndef WBCNET_TASK_MODEL_API_HPP
+#define WBCNET_TASK_MODEL_API_HPP
 
-#include <wbcrun/TaskModelContainer.hpp>
+#include <wbcnet/TaskModelContainer.hpp>
 #include <wbcnet/TaskAtomizer.hpp>
 
-namespace wbcrun {
+namespace wbcnet {
   
   
   class TaskModelAPI
@@ -122,4 +122,4 @@ namespace wbcrun {
   
 }
 
-#endif // WBCRUN_TASK_MODEL_API_HPP
+#endif // WBCNET_TASK_MODEL_API_HPP

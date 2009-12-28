@@ -29,10 +29,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <wbcrun/Factory.hpp>
+#include <wbcnet/Factory.hpp>
 #include <gtest/gtest.h>
 
-using namespace wbcrun;
+using namespace wbcnet;
 using namespace std;
 
 class Foo {

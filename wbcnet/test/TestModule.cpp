@@ -41,7 +41,7 @@ public:
 };
 
 // this little function is the key to runtime module loading...
-wbcrun::Module * wbcrun_create_module()
+wbcnet::Module * wbcnet_create_module()
 {
   return new Foo();
 }

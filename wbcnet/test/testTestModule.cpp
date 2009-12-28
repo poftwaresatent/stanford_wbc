@@ -35,7 +35,7 @@
 #include <stdlib.h>
 
 using namespace std;
-using namespace wbcrun;
+using namespace wbcnet;
 
 int main(int argc, char ** argv) {
   try {

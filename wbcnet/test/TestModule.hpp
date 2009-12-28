@@ -29,9 +29,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <wbcrun/DLModule.hpp>
+#include <wbcnet/DLModule.hpp>
 
-class TestModule: public wbcrun::Module
+class TestModule: public wbcnet::Module
 {
 public:
   virtual void SayHello() const = 0;

@@ -29,16 +29,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WBCRUN_MESSAGE_ID_HPP
-#define WBCRUN_MESSAGE_ID_HPP
+#ifndef WBCNET_MESSAGE_ID_HPP
+#define WBCNET_MESSAGE_ID_HPP
 
-namespace wbcrun {
+namespace wbcnet {
   
   namespace msg {
     
     typedef enum {
       STATUS,
-      SERVO_STATE,		// deprecated, use ROBOT_STATE instead
       ROBOT_STATE,
       TASK_SPEC,
       TASK_MATRIX,
@@ -53,4 +52,4 @@ namespace wbcrun {
   
 }
 
-#endif // WBCRUN_MESSAGE_ID_HPP
+#endif // WBCNET_MESSAGE_ID_HPP

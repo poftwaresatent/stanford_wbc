@@ -56,8 +56,6 @@ namespace wbcnet {
      class performs some housekeeping on behalf of the servo process,
      such that it is easier to determine at what instant a behavioral
      state transition has finished.
-     
-     \todo Move this class to wbcrun, it fits better there.
   */
   class TaskAtomizer
   {

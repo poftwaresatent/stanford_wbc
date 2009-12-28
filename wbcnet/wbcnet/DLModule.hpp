@@ -29,14 +29,14 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WBCRUN_DL_MODULE_HPP
-#define WBCRUN_DL_MODULE_HPP
+#ifndef WBCNET_DL_MODULE_HPP
+#define WBCNET_DL_MODULE_HPP
 
-#include <wbcrun/Registry.hpp>
+#include <wbcnet/Registry.hpp>
 #include <string>
 #include <iosfwd>
 
-namespace wbcrun {
+namespace wbcnet {
   
   class Module {
   public:
@@ -52,12 +52,12 @@ namespace wbcrun {
 // ...rest of the file...
 
 extern "C" {
-  typedef wbcrun::Module * (*wbcrun_create_module_t)();
-  wbcrun::Module * wbcrun_create_module();
+  typedef wbcnet::Module * (*wbcnet_create_module_t)();
+  wbcnet::Module * wbcnet_create_module();
 }
 
 
-namespace wbcrun {
+namespace wbcnet {
   
   class DLModule
   {
@@ -72,10 +72,10 @@ namespace wbcrun {
     template<class ModuleSubclass>
     ModuleSubclass * Get() const throw(std::runtime_error) {
       if ( ! m_module)
-	throw std::runtime_error("wbcrun::DLModule::Get(): no module loaded");
+	throw std::runtime_error("wbcnet::DLModule::Get(): no module loaded");
       ModuleSubclass * ms(dynamic_cast<ModuleSubclass *>(m_module));
       if ( ! ms)
-	throw std::runtime_error("wbcrun::DLModule::Get(): invalid module subclass");
+	throw std::runtime_error("wbcnet::DLModule::Get(): invalid module subclass");
       return ms;
     }
     
@@ -85,7 +85,7 @@ namespace wbcrun {
   };
   
   
-  typedef wbcrun::Registry<DLModule *, registry_trait_delete<DLModule *> > ModuleRegistrySuper;
+  typedef wbcnet::Registry<DLModule *, registry_trait_delete<DLModule *> > ModuleRegistrySuper;
   
   class ModuleRegistry
     : protected ModuleRegistrySuper {
@@ -100,7 +100,7 @@ namespace wbcrun {
       return ModuleRegistrySuper::Get(name)->Get<ModuleSubclass>();
       registry_t::const_iterator ir(m_registry.find(name));
       if (m_registry.end() == ir)
-	throw std::runtime_error("wbcrun::FactoryRegistry::Create(): name \"" + name
+	throw std::runtime_error("wbcnet::FactoryRegistry::Create(): name \"" + name
 				 + "\" is not in registry");
       return ir->second->Get<ModuleSubclass>();
     }
@@ -109,4 +109,4 @@ namespace wbcrun {
 }
 
 #endif // DISABLE_PLUGINS
-#endif // WBCRUN_DL_MODULE_HPP
+#endif // WBCNET_DL_MODULE_HPP

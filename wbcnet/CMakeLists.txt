@@ -35,6 +35,8 @@ LIST (APPEND WBCNET_SRCS
       wbcnet/AutoSocket.cpp
       wbcnet/udp_util.cpp
       wbcnet/NetConfig.cpp
+      wbcnet/message_id.cpp
+      wbcnet/DLModule.cpp
       wbcnet/imp/MQNetConfig.cpp
       wbcnet/imp/TCPNetConfig.cpp
       wbcnet/imp/SPQNetConfig.cpp
@@ -235,6 +237,14 @@ target_link_libraries (testLogDisabled wbcnet ${WBCNET_LIBS})
 add_executable (testLogWithoutLog4cxx test/testLogWithoutLog4cxx.cpp)
 target_link_libraries (testLogWithoutLog4cxx wbcnet ${WBCNET_LIBS})
 
+add_library (TestModule MODULE test/TestModule.cpp)
+add_executable (testTestModule test/testTestModule.cpp)
+if (CMAKE_SYSTEM_NAME MATCHES OpenBSD)
+  target_link_libraries (testTestModule wbcnet ${WBCNET_LIBS})
+else (CMAKE_SYSTEM_NAME MATCHES OpenBSD)
+  target_link_libraries (testTestModule dl wbcnet ${WBCNET_LIBS})
+endif (CMAKE_SYSTEM_NAME MATCHES OpenBSD)
+
 if (${WBCNET_HAVE_MQUEUE})
   add_executable (testMQWrap test/testMQWrap.cpp)
   target_link_libraries (testMQWrap wbcnet ${WBCNET_LIBS})
@@ -249,6 +259,31 @@ if (WBCNET_HAVE_NETWRAP)
   add_executable (testNetWrapper test/testNetWrapper.cpp)
   target_link_libraries (testNetWrapper wbcnet ${WBCNET_LIBS})
 endif (WBCNET_HAVE_NETWRAP)
+
+### try to find Google testing framework, and enable some more tests if it was found
+
+message (STATUS "GTEST_DIR is \"${GTEST_DIR}\"")
+if (GTEST_DIR)
+  message (STATUS "using GTEST_DIR")
+  list (APPEND CMAKE_REQUIRED_INCLUDES ${GTEST_DIR}/include ${GTEST_DIR})
+  include_directories (${GTEST_DIR}/include ${GTEST_DIR})
+  link_directories (${GTEST_DIR}/lib ${GTEST_DIR})
+endif (GTEST_DIR)
+
+check_include_file_cxx (gtest/gtest.h WBCNET_HAVE_GTEST)
+
+if (${WBCNET_HAVE_GTEST})
+  message (STATUS "Found Google testing framework.")
+  #XXXX to do: resurrect test_model_servo
+  ###  add_executable (test_model_servo test/test_model_servo.cpp test/TestDirectory.cpp)
+  ###  target_link_libraries (test_model_servo wbcnet ${WBCNET_LIBS} gtest)
+  add_executable (testFactory test/testFactory.cpp)
+  target_link_libraries (testFactory wbcnet ${WBCNET_LIBS} gtest)
+else (${WBCNET_HAVE_GTEST})
+  message (STATUS "WARNING Google testing framework not found! If you do have it, use -DGTEST_DIR:path=/where/ever or set the GTEST_DIR environment variable")
+endif (${WBCNET_HAVE_GTEST})
+
+### installation-related commands
 
 FILE (GLOB headers "wbcnet/*.hpp")
 INSTALL (FILES ${headers} DESTINATION include/wbcnet)

@@ -29,14 +29,14 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WBCRUN_REGISTRY_HPP
-#define WBCRUN_REGISTRY_HPP
+#ifndef WBCNET_REGISTRY_HPP
+#define WBCNET_REGISTRY_HPP
 
 #include <string>
 #include <map>
 #include <stdexcept>
 
-namespace wbcrun {
+namespace wbcnet {
   
   /** Traits for Registry instances that should not delete their
       contents, e.g. they contain values or references, or pointers
@@ -76,14 +76,14 @@ namespace wbcrun {
     
     void Add(std::string const & name, value_t value) throw(std::runtime_error) {
       if (m_registry.find(name) != m_registry.end())
-	throw std::runtime_error("wbcrun::Registry::Add(): name \"" + name + "\" already taken");
+	throw std::runtime_error("wbcnet::Registry::Add(): name \"" + name + "\" already taken");
       m_registry.insert(make_pair(name, value));
     }
     
     value_t Get(std::string const & name) const throw(std::runtime_error) {
       const_iterator_t ir(m_registry.find(name));
       if (m_registry.end() == ir)
-	throw std::runtime_error("wbcrun::Registry::Get(): name \"" + name + "\" not registered");
+	throw std::runtime_error("wbcnet::Registry::Get(): name \"" + name + "\" not registered");
       return ir->second;
     }
     
@@ -103,4 +103,4 @@ namespace wbcrun {
   
 }
 
-#endif // WBCRUN_REGISTRY_HPP
+#endif // WBCNET_REGISTRY_HPP

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UNIT_TESTS="testEndian testID testMQWrap testPack testProxy testTaskAtomizer testMuldex"
+UNIT_TESTS="testEndian testID testMQWrap testPack testProxy testTaskAtomizer testMuldex testFactory testTestModule"
 USER_TESTS="testSockWrapMuldex testStreamBufMgr"
 
 rm -f run-success.log

@@ -38,11 +38,11 @@
 #include <sstream>
 #include <dlfcn.h>
 
-static wbcnet::logger_t logger(wbcnet::get_logger("wbcrun"));
+static wbcnet::logger_t logger(wbcnet::get_logger("wbcnet"));
 
 using namespace std;
 
-namespace wbcrun {
+namespace wbcnet {
   
   
   DLModule::
@@ -68,7 +68,7 @@ namespace wbcrun {
   {
     if (m_dl) {
       ostringstream os;
-      os << "wbcrun::DLModule::Load(" << filename << "): already loaded another file";
+      os << "wbcnet::DLModule::Load(" << filename << "): already loaded another file";
       throw runtime_error(os.str());
     }
 
@@ -81,34 +81,34 @@ namespace wbcrun {
     m_dl = dlopen(filename.c_str(), flag);
     if ( ! m_dl) {
       ostringstream os;
-      os << "wbcrun::DLModule::Load(" << filename << "): dlopen() failed: " << dlerror();
+      os << "wbcnet::DLModule::Load(" << filename << "): dlopen() failed: " << dlerror();
       throw runtime_error(os.str());
     }
     
-    LOG_TRACE (logger, "wbcrun::DLModule::Load(" << filename << "): dlopen() OK");
+    LOG_TRACE (logger, "wbcnet::DLModule::Load(" << filename << "): dlopen() OK");
     
     dlerror();
-    wbcrun_create_module_t create_module;
-    create_module = (wbcrun_create_module_t) dlsym(m_dl, "wbcrun_create_module");
+    wbcnet_create_module_t create_module;
+    create_module = (wbcnet_create_module_t) dlsym(m_dl, "wbcnet_create_module");
     char const * dlsym_error(dlerror());
     if (dlsym_error) {
       ostringstream os;
-      os << "wbcrun::DLModule::Load(" << filename << "): dlsym() failed: " << dlsym_error;
+      os << "wbcnet::DLModule::Load(" << filename << "): dlsym() failed: " << dlsym_error;
       throw runtime_error(os.str());
     }
     
-    LOG_TRACE (logger, "wbcrun::DLModule::Load(" << filename << "): dlsym() OK");
+    LOG_TRACE (logger, "wbcnet::DLModule::Load(" << filename << "): dlsym() OK");
     
     m_module = create_module();
     if ( ! m_module) {
       dlclose(m_dl);
       m_dl = 0;
       ostringstream os;
-      os << "wbcrun::DLModule::Load(" << filename << "): create_module() failed";
+      os << "wbcnet::DLModule::Load(" << filename << "): create_module() failed";
       throw runtime_error(os.str());
     }
     
-    LOG_TRACE (logger, "wbcrun::DLModule::Load(" << filename << "): create_module() OK");
+    LOG_TRACE (logger, "wbcnet::DLModule::Load(" << filename << "): create_module() OK");
     
     return m_module;
   }
@@ -120,7 +120,7 @@ namespace wbcrun {
   {
     if (Have(name)) {
       ostringstream os;
-      os << "wbcrun::ModuleRegistry::LoadModule(): name \"" << name << "\" already taken";
+      os << "wbcnet::ModuleRegistry::LoadModule(): name \"" << name << "\" already taken";
       throw runtime_error(os.str());
     }
     
@@ -129,7 +129,7 @@ namespace wbcrun {
       dl->Load(path, false);
       Add(name, dl);
       LOG_TRACE (logger,
-		     "wbcrun::ModuleRegistry::LoadModule(" << name << ", " << path << ") OK");
+		     "wbcnet::ModuleRegistry::LoadModule(" << name << ", " << path << ") OK");
       return dl;
     }
     catch (runtime_error const & ee) {
@@ -138,7 +138,7 @@ namespace wbcrun {
     }
     catch (exception const & ee) {
       delete dl;
-      throw runtime_error("wbcrun::ModuleRegistry::LoadModule(" + name
+      throw runtime_error("wbcnet::ModuleRegistry::LoadModule(" + name
 			  + "): unexpected exception: " + ee.what());
     }
   }

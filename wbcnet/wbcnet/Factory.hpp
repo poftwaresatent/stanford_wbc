@@ -29,12 +29,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WBCRUN_FACTORY_HPP
-#define WBCRUN_FACTORY_HPP
+#ifndef WBCNET_FACTORY_HPP
+#define WBCNET_FACTORY_HPP
 
-#include <wbcrun/Registry.hpp>
+#include <wbcnet/Registry.hpp>
 
-namespace wbcrun {
+namespace wbcnet {
   
   template<typename root_t>
   class FactoryAPI {
@@ -65,4 +65,4 @@ namespace wbcrun {
   
 }
 
-#endif // WBCRUN_FACTORY_HPP
+#endif // WBCNET_FACTORY_HPP

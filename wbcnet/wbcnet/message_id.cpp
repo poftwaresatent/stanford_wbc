@@ -31,7 +31,7 @@
 
 #include "message_id.hpp"
 
-namespace wbcrun {
+namespace wbcnet {
   
   namespace msg {
         
@@ -39,7 +39,6 @@ namespace wbcrun {
     {
       static char * nm[] = {
 	"STATUS",
-	"SERVO_STATE",
 	"ROBOT_STATE",
 	"TASK_SPEC",
 	"TASK_MATRIX",
