@@ -68,6 +68,8 @@ add_library (
   util/RecorderImpl.cpp
   util/dump.cpp
   util/urdf_to_tao.cpp
+  util/File.cpp
+  util/utc.cpp
   
   bin/builtin.cpp
   bin/attributes.cpp

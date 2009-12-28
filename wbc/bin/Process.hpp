@@ -36,8 +36,47 @@
 #include <wbcnet/Muldex.hpp>
 #include <stdexcept>
 #include <map>
+#include <list>
+
+namespace wbcnet {
+  class Proxy;
+  class Sink;
+  class Source;
+}
+
 
 namespace wbcrun {
+  
+  
+  /** Has to be a list because we remove items from it while iterating
+      over its elements. */
+  typedef std::list<wbcnet::Proxy *> proxylist_t;
+  
+  
+  /** Contains pending outgoing messages, where they are to be sent,
+      and how many should be sent. */
+  struct outgoing_s {
+    outgoing_s(wbcnet::Sink * _sink, int _max_n_snd)
+      : sink(_sink), max_n_snd(_max_n_snd) {}
+    
+    wbcnet::Sink * sink;
+    int max_n_snd; /** maximum number of messages to send (use "-1" for unlimited) */
+    proxylist_t pending;
+    proxylist_t done;
+  };
+  
+  
+  /** Contains an incoming channel and how many messages should be
+      attempted to be read from it each time. */
+  struct incoming_s {
+    incoming_s(wbcnet::Source * _source, int _max_n_rcv)
+      : source(_source), max_n_rcv(_max_n_rcv) {}
+    
+    wbcnet::Source * source;
+    int max_n_rcv; /** maximum number of messages to receive (use "-1"
+		       for unlimited, which creates an infinite loop,
+		       so maybe do not use it that way) */
+  };
   
   
   /**
