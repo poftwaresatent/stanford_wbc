@@ -54,6 +54,7 @@ public:
   bool active;
   int rotates_about_;
   int translates_about_;
+  double default_pos_;
 
   axis_angle orientation_in_parent_axisangle;
 

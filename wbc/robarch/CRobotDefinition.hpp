@@ -89,10 +89,10 @@ public:
 	void addLink(const robot_link & arg_link2add, const bool isRoot, const string arg_name);
 	void addGlobalData(SGlobalRobotDS* arg_globData){  globalRobData_ = arg_globData;  }
 	//NOTE TODO Consider implementing removeLink as well
-	std::vector<robot_link*>* retRootLinkVector(){	return rootLinkVector;	}
-	std::vector<robot_link*>* retChildLinkVector(){	return childLinkVector;	}	
-	std::map<string,robot_link*>* retName2LinkMap(){	return linkName2LinkMap;	}
-	SGlobalRobotDS* retGlobData(){ return &globalRobData_;  }
+	std::vector<robot_link*>* getRootLinkVector(){	return rootLinkVector;	}
+	std::vector<robot_link*>* getChildLinkVector(){	return childLinkVector;	}
+	std::map<string,robot_link*>* getName2LinkMap(){	return linkName2LinkMap;	}
+	SGlobalRobotDS* getGlobData(){ return &globalRobData_;  }
 };
 
 
