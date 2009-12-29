@@ -39,10 +39,10 @@ namespace wbc {
     
     virtual wbcnet::srv_result_t
     HandleServoCmd(int commandID,
-		   wbcnet::msg::Service::vector_type const * code_in,
-		   wbcnet::msg::Service::matrix_type const * data_in,
-		   wbcnet::msg::Service::vector_type * code_out,
-		   wbcnet::msg::Service::matrix_type * data_out);
+		   wbcnet::srv_code_t const * code_in,
+		   wbcnet::srv_matrix_t const * data_in,
+		   wbcnet::srv_code_t * code_out,
+		   wbcnet::srv_matrix_t * data_out);
     
     virtual wbcnet::srv_result_t
     ListBehaviors(wbcrun::listing_t & behaviors) const;
@@ -54,10 +54,10 @@ namespace wbc {
     virtual wbcnet::srv_result_t
     HandleBehaviorCmd(int behaviorID,
 		      int commandID,
-		      wbcnet::msg::Service::vector_type const * code_in,
-		      wbcnet::msg::Service::matrix_type const * data_in,
-		      wbcnet::msg::Service::vector_type * code_out,
-		      wbcnet::msg::Service::matrix_type * data_out);
+		      wbcnet::srv_code_t const * code_in,
+		      wbcnet::srv_matrix_t const * data_in,
+		      wbcnet::srv_code_t * code_out,
+		      wbcnet::srv_matrix_t * data_out);
   
     virtual wbcnet::srv_result_t
     ListTasks(int behaviorID,
@@ -72,10 +72,10 @@ namespace wbc {
     HandleTaskCmd(int behaviorID,
 		  int taskID,
 		  int commandID,
-		  wbcnet::msg::Service::vector_type const * code_in,
-		  wbcnet::msg::Service::matrix_type const * data_in,
-		  wbcnet::msg::Service::vector_type * code_out,
-		  wbcnet::msg::Service::matrix_type * data_out);
+		  wbcnet::srv_code_t const * code_in,
+		  wbcnet::srv_matrix_t const * data_in,
+		  wbcnet::srv_code_t * code_out,
+		  wbcnet::srv_matrix_t * data_out);
   
   protected:
     std::vector<BehaviorDescription*> const & m_behavior;

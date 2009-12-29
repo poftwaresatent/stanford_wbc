@@ -41,7 +41,7 @@ public:
   virtual TaskSet * activeTaskSet();
   virtual void onUpdate();
   
-  virtual int32_t handleKey(int32_t keycode);
+  virtual int handleKey(int keycode);
   
 protected:
   virtual void loadMovementPrimitives( RobotControlModel* ) throw(std::runtime_error);

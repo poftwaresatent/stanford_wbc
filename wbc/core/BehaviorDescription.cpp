@@ -68,45 +68,56 @@ namespace wbc {
       return -1;
     return foo->second;  
   }
-
-
-  int32_t BehaviorDescription::
-  handleCommand(int32_t const * codeVector,
-		size_t nCodes,
-		SAIMatrix const & matrix)
-  {
-    return handleStdCommand(codeVector, nCodes, matrix);
-  }
-
-
-  int32_t BehaviorDescription::
-  handleStdCommand(int32_t const * codeVector,
-		   size_t nCodes,
-		   SAIMatrix const & matrix)
-  {
-    if (nCodes < 1)
-      return wbcnet::SRV_MISSING_CODE;
   
-    switch (codeVector[0]) {
-    
+  
+  int BehaviorDescription::
+  handleCommand(int commandID,
+		wbcnet::srv_code_t const * code_in,
+		wbcnet::srv_matrix_t const * data_in,
+		wbcnet::srv_code_t * code_out,
+		wbcnet::srv_matrix_t * data_out)
+  {
+    switch (commandID) {
+      
     case wbcnet::SRV_KEY_PRESS:
-      if (nCodes < 2)
-	return wbcnet::SRV_INVALID_DIMENSION;
-      return handleKey(codeVector[1]);
-    
+      if (code_in->NElements() < 1)
+	return wbcnet::SRV_MISSING_CODE;
+      return handleKey((*code_in)[0]);
+      
+    case wbcnet::SRV_SET_GOAL:
+      {
+	// NOTE: legacy code had the goal stored as a row-vector,
+	// which is why we do it "the transposed" way here.
+	SAIVector goal(0);
+	if (data_in->NRows() > 0) {
+	  goal.setSize(data_in->NColumns());
+	  for (int ii(0); ii < data_in->NColumns(); ++ii) {
+	    goal[ii] = data_in->GetElement(0, ii);
+	  }
+	}
+	return handleSetGoal(goal);
+      }
+      
     }
-  
+    
     return wbcnet::SRV_NOT_IMPLEMENTED;
   }
-
-
-  int32_t BehaviorDescription::
-  handleKey(int32_t keycode)
+  
+  
+  int BehaviorDescription::
+  handleKey(int keycode)
   {
     return wbcnet::SRV_NOT_IMPLEMENTED;
   }
-
-
+  
+  
+  int BehaviorDescription::
+  handleSetGoal(SAIVector const & goal)
+  {
+    return wbcnet::SRV_NOT_IMPLEMENTED;
+  }
+  
+  
   Recorder * BehaviorDescription::
   createRecorder(char const * header, char const * filename, Recorder::Mode mode)
   {

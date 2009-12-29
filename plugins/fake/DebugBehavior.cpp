@@ -60,8 +60,8 @@ loadMovementPrimitives( RobotControlModel* robmodel )
 }
 
 
-int32_t DebugBehavior::
-handleKey(int32_t keycode)
+int DebugBehavior::
+handleKey(int keycode)
 {
   std::cout << "DebugBehavior::handleKey(" << keycode << ")\n";
   return wbcnet::SRV_SUCCESS;

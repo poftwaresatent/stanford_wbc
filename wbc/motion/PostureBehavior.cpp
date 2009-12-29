@@ -77,49 +77,20 @@ namespace wbc {
   }
   
   
-  int32_t PostureBehavior::
-  handleCommand(int32_t const * codeVector,
-		size_t nCodes,
-		SAIMatrix const & matrix)
+  int PostureBehavior::
+  handleSetGoal(SAIVector const & goal)
   {
-    // handleStdCommand() will dispatch e.g. to handleKey() as
-    // appropriate by looking at the codeVector
-    
-    int32_t const std_result(handleStdCommand(codeVector, nCodes, matrix));
-    if (wbcnet::SRV_NOT_IMPLEMENTED != std_result) {
-      return std_result;
+    if (goal.size() != robModel()->branching()->numJoints()) {
+      return wbcnet::SRV_INVALID_DIMENSION;
     }
-    
-    // handleStdCommand() did not understand the command, let's see
-    // what we can do with it...
-    
-    // this switch has only one case (at the moment), which looks
-    // weird, but we hope to extend this "soon"
-    switch (codeVector[0]) {      
-    
-    case wbcnet::SRV_SET_GOAL:
-      cout << "recieved SET_GOAL command" << endl;
-      if (matrix.column()!=1 || matrix.row()!=robModel()->branching()->numJoints()){
-	cout << "wrong dimension: " << matrix.column() << "  " << matrix.row() << endl;
-	return wbcnet::SRV_INVALID_DIMENSION;
-      }
-      else {
-	SAIVector goalPosture(robModel()->branching()->numJoints());
-	for (int i = 0; i< robModel()->branching()->numJoints(); i++)
-	  goalPosture[i] = matrix[0][i];
-	whole_body_posture_.goalPostureConfig(goalPosture);
-	activeTaskSet_ = &taskSetOperational_;
-	return wbcnet::SRV_SUCCESS;
-      }
-
-    }
-    
-    return wbcnet::SRV_NOT_IMPLEMENTED;
+    whole_body_posture_.goalPostureConfig(goal);
+    activeTaskSet_ = &taskSetOperational_;
+    return wbcnet::SRV_SUCCESS;
   }
   
   
-  int32_t PostureBehavior::
-  handleKey(int32_t keycode)
+  int PostureBehavior::
+  handleKey(int keycode)
   {
     if ((0 != float_key_) && (keycode == float_key_)) {
       activeTaskSet_ = &taskSetFloat_;
@@ -134,7 +105,7 @@ namespace wbc {
     
     key_posture_t::const_iterator iposture(key_posture_.find(keycode));
     if (key_posture_.end() == iposture) {
-      return wbcnet::SRV_NOT_IMPLEMENTED;
+      return wbcnet::SRV_OTHER_ERROR;
     }
     
     if (iposture->second.size() != robModel()->branching()->numActuatedJoints()) {

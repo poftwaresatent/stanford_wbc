@@ -355,7 +355,7 @@ namespace wbcrun {
       if (('q' == ch) || ('Q' == ch))
 	break;
       
-      m_user_request.InitKeyPress(ch);
+      m_user_request.InitKeyPress(-1, ch);
       EnqueueMessage(m_channel, &m_user_request, false, false);
       ostringstream os_status;
       os_status << "key code: " << ch << "\n"
