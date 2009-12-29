@@ -14,10 +14,6 @@ message ("configuring WBCRUN")
 ### the core sources and dependencies
 
 list (APPEND WBCRUN_SRCS
-      util.cpp
-      message_id.cpp
-      directory.cpp
-      DLModule.cpp
       Process.cpp
       UserProcess.cpp)
 

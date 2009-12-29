@@ -31,7 +31,7 @@
 
 #include "TestDirectory.hpp"
 
-namespace wbcrun {
+namespace wbc {
   
   wbcnet::srv_result_t TestDirectory::
   ListBehaviors(listing_t & behaviors) const

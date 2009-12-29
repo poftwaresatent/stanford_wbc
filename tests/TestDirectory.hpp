@@ -29,12 +29,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WBCRUN_TEST_DIRECTORY_HPP
-#define WBCRUN_TEST_DIRECTORY_HPP
+#ifndef WBC_TEST_DIRECTORY_HPP
+#define WBC_TEST_DIRECTORY_HPP
 
-#include <wbcrun/directory.hpp>
+#include <wbc/bin/directory.hpp>
 
-namespace wbcrun {
+namespace wbc {
   
   class TestDirectory
     : public Directory
@@ -70,4 +70,4 @@ namespace wbcrun {
   
 }
 
-#endif // WBCRUN_TEST_DIRECTORY_HPP
+#endif // WBC_TEST_DIRECTORY_HPP

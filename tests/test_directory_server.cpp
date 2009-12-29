@@ -29,12 +29,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <wbcrun/xmlrpc/directory.hpp>
-#include <wbcrun/test/TestDirectory.hpp>
+#include <wbc/bin/XMLRPCDirectoryServer.hpp>
+#include <wbc/bin/TestDirectory.hpp>
 #include <stdexcept>
 #include <err.h>
 
-using namespace wbcrun;
+using namespace wbc;
 using namespace std;
 
 
