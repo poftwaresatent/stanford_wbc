@@ -105,7 +105,6 @@ public:
   
   //***********************
   //TAO-link specific data:
-  //#ifdef TAO_CONTROLLER //NOTE TODO
   
   //1. Tao tree structure information:
   taoNode* taoNodeAddr; //This node in the tao tree
@@ -119,13 +118,13 @@ public:
   deVector3 rotAxis_;
   deFloat rotAngle_;
   deFrame homeFrame_;
-//  int opID_;
   int linkIsFixed_;
   JointType jointType_;
   bool jointIsFree_; //Is the joint controlled or not
   deFloat joint_limit_lower, joint_limit_upper;
   
-  //#endif
+  //Other useful joint information.
+  deFloat joint_default_pos_;
   
 	SControllerRobotLink()
 	{

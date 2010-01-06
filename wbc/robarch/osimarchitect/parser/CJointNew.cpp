@@ -32,6 +32,7 @@ namespace osimparser {
 CJointNew::CJointNew(void) {
   rotates_about_ = 2;
   translates_about_ = -1;
+  default_pos_ = 0;
 }
 
 void CJointNew::init() {
@@ -117,6 +118,11 @@ bool CJointNew::loadJoint(TiXmlElement* pCustomJoint) {//WrapCylinders and WrapE
     else if (strcmp(levelEightChildTag, "sai_trans_axis") == 0) {
       str = levelEightChildElement->FirstChild()->Value();
       sscanf(str, "%d", &translates_about_);
+      loadFlag = true;
+    }
+    else if (strcmp(levelEightChildTag, "sai_default_pos") == 0) {
+      str = levelEightChildElement->FirstChild()->Value();
+      sscanf(str, "%lf", &default_pos_);
       loadFlag = true;
     }
     else if (strcmp(levelEightChildTag, "CoordinateSet") == 0 && isCustomJoint) {

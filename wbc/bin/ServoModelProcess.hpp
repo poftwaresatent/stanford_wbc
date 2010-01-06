@@ -52,6 +52,7 @@ namespace wbc {
     virtual BranchingRepresentation * GetBranching();
     virtual Kinematics * GetKinematics();
     virtual SAIVector const & GetCommandTorques();
+    virtual BehaviorDescription * GetCurrentBehavior();
     
   protected:
     friend class ModelServoTest;

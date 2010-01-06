@@ -793,4 +793,11 @@ namespace wbc {
     return m_imp->m_command_torques;
   }
   
+  
+  BehaviorDescription * ServoProcess::
+  GetCurrentBehavior()
+  {
+    return m_imp->m_current_behavior;
+  }
+  
 }

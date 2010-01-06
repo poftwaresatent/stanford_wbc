@@ -71,6 +71,7 @@ namespace wbc {
     virtual BranchingRepresentation * GetBranching() = 0;
     virtual Kinematics * GetKinematics() = 0;
     virtual SAIVector const & GetCommandTorques() = 0;
+    virtual BehaviorDescription * GetCurrentBehavior() = 0;
   };
   
   
@@ -200,6 +201,7 @@ namespace wbc {
     virtual BranchingRepresentation * GetBranching();
     virtual Kinematics * GetKinematics();
     virtual SAIVector const & GetCommandTorques();
+    virtual BehaviorDescription * GetCurrentBehavior();
     
     /** Access internal data for testing and debugging. */
     int GetCurrentBehaviorID() const { return m_current_behaviorID; }

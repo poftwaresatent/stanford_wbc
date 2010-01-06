@@ -422,12 +422,14 @@ namespace wbcnet {
     
     
     void Service::
-    InitKeyPress(int32_t keycode)
+    InitKeyPress(int behaviorID,
+		 int32_t keycode)
     {
-      InitRequest(3, 0, 0);
+      InitRequest(4, 0, 0);
       code[0] = SRV_BEHAVIOR_DOMAIN;
-      code[1] = SRV_KEY_PRESS;
-      code[2] = keycode;
+      code[1] = behaviorID;
+      code[2] = SRV_KEY_PRESS;
+      code[3] = keycode;
     }
     
   }

@@ -60,10 +60,10 @@ namespace wbc {
 
   wbcnet::srv_result_t DirectoryCmdServer::
   HandleServoCmd(int commandID,
-		 wbcnet::msg::Service::vector_type const * code_in,
-		 wbcnet::msg::Service::matrix_type const * data_in,
-		 wbcnet::msg::Service::vector_type * code_out,
-		 wbcnet::msg::Service::matrix_type * data_out)
+		 wbcnet::srv_code_t const * code_in,
+		 wbcnet::srv_matrix_t const * data_in,
+		 wbcnet::srv_code_t * code_out,
+		 wbcnet::srv_matrix_t * data_out)
   {
     if (logger->isDebugEnabled()) {
       ostringstream msg;
@@ -140,14 +140,38 @@ namespace wbc {
   wbcnet::srv_result_t DirectoryCmdServer::
   HandleBehaviorCmd(int behaviorID,
 		    int commandID,
-		    wbcnet::msg::Service::vector_type const * code_in,
-		    wbcnet::msg::Service::matrix_type const * data_in,
-		    wbcnet::msg::Service::vector_type * code_out,
-		    wbcnet::msg::Service::matrix_type * data_out)
+		    wbcnet::srv_code_t const * code_in,
+		    wbcnet::srv_matrix_t const * data_in,
+		    wbcnet::srv_code_t * code_out,
+		    wbcnet::srv_matrix_t * data_out)
   {
-    if ((0 > behaviorID) || (static_cast<int>(m_behavior.size()) <= behaviorID))
+    if (static_cast<int>(m_behavior.size()) <= behaviorID) {
       return wbcnet::SRV_INVALID_BEHAVIOR_ID;
-    return wbcnet::SRV_NOT_IMPLEMENTED;
+    }
+    
+    BehaviorDescription * target_behavior(0);
+    if (-1 == behaviorID) {
+      target_behavior = m_servo->GetCurrentBehavior();
+      if ( ! target_behavior) {
+	return wbcnet::SRV_TRY_AGAIN;
+      }
+    }
+    else if (0 <= behaviorID) {
+      target_behavior = m_behavior[behaviorID];
+    }
+    else {
+      return wbcnet::SRV_INVALID_BEHAVIOR_ID;
+    }
+    
+    int const result(target_behavior->handleCommand(commandID, code_in, data_in, code_out, data_out));
+    
+    LOG_INFO (logger,
+	      "wbc::DirectoryCmdServer::HandleBehaviorCmd(" << behaviorID << ", " << commandID << ", ...)\n"
+	      << "  resolved behavior: " << target_behavior->name << "\n"
+	      << "  resolved command: " << wbcnet::srv_command_to_string(commandID) << "\n"
+	      << "  result code: " << result << " " << wbcnet::srv_result_to_string(result));
+    
+    return static_cast<wbcnet::srv_result_t>(result);
   }
 
 
@@ -213,10 +237,10 @@ namespace wbc {
   HandleTaskCmd(int behaviorID,
 		int taskID,
 		int commandID,
-		wbcnet::msg::Service::vector_type const * code_in,
-		wbcnet::msg::Service::matrix_type const * data_in,
-		wbcnet::msg::Service::vector_type * code_out,
-		wbcnet::msg::Service::matrix_type * data_out)
+		wbcnet::srv_code_t const * code_in,
+		wbcnet::srv_matrix_t const * data_in,
+		wbcnet::srv_code_t * code_out,
+		wbcnet::srv_matrix_t * data_out)
   {
     LOG_DEBUG (logger,
 	       "DirectoryCmdServer::HandleTaskCmd(" << behaviorID << ", " << taskID << ", " << commandID << ", ...)");

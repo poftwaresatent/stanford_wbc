@@ -238,7 +238,17 @@ namespace wbcnet {
       
       void InitToggleRecorder();
   
-      void InitKeyPress(int32_t keycode);
+      void InitKeyPress(/** Key press commands have been moved to the
+			    SRV_BEHAVIOR_DOMAIN. They used to be
+			    domain-less and apply to the current
+			    behavior, so you did not need to specify a
+			    behavior ID. In order to support that old
+			    behavior, you can specify -1 as behavior
+			    ID, which will (should) end up retrieveing
+			    the current behavior and sending it that
+			    key code. */
+			int behaviorID,
+			int32_t keycode);
     };
     
   }

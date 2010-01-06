@@ -355,12 +355,24 @@ namespace wbcrun {
       if (('q' == ch) || ('Q' == ch))
 	break;
       
-      m_user_request.InitKeyPress(ch);
+      m_user_request.InitKeyPress(-1, ch);
       EnqueueMessage(m_channel, &m_user_request, false, false);
       ostringstream os_status;
+      os_status << "key code: " << ch << "\n"
+		<< "  sending request:\n";
+      m_user_request.Dump(os_status, "    ");
       try {
 	SendWait(10000);
 	ReceiveWait(10000, 1);
+	os_status << "  received reply:\n";
+	m_user_reply.Dump(os_status, "    ");
+	if (m_user_reply.code.NElements() == 0) {
+	  os_status << "weird, no status code in reply\n";
+	}
+	else {
+	  os_status << "reply status: " << m_user_reply.code[0] << " "
+		    << wbcnet::srv_result_to_string(m_user_reply.code[0]) << "\n";
+	}
       }
       catch (exception const & ee) {
 	ok = false;
@@ -368,10 +380,8 @@ namespace wbcrun {
 	os_status << "EXCEPTION during send or receive\n  " << ee.what();
 	break;
       }
-      if (ok)
-	os_status << "sent: " << ch;
       
-      if (ERR == mvaddstr(5, 5, os_status.str().c_str())) {
+      if (ERR == mvaddstr(5, 0, os_status.str().c_str())) {
 	ok = false;
 	tmp_error_os << "mvaddstr() failed\n";
 	break;
