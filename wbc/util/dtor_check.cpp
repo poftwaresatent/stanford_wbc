@@ -21,6 +21,7 @@
 #include "dtor_check.hpp"
 #include <execinfo.h>
 #include <sstream>
+#include <stdlib.h>
 
 
 namespace wbc {
@@ -44,14 +45,14 @@ namespace wbc {
       char ** strings = backtrace_symbols(array, size);
       fprintf(stderr,
 	      "dtor_check::check(): GOTCHA BABY!\n"
-	      "  current instance %08p\n"
+	      "  current instance %p\n"
 	      "  current backtrace (%d levels):\n",
 	      that, size);
       for (int ii(0); ii < size; ++ii)
 	fprintf(stderr, "    %s\n", strings[ii]);
       free (strings);
       fprintf(stderr,
-	      "  previous instance %08p\n"
+	      "  previous instance %p\n"
 	      "  previous backtrace:\n"
 	      "%s"
 	      "...going bonkers in a second...\n",
@@ -63,7 +64,7 @@ namespace wbc {
       int size = backtrace(array, maxsize);
       char ** strings = backtrace_symbols(array, size);
       fprintf(stderr,
-	      "dtor_check::check(): instance %08p is OK\n"
+	      "dtor_check::check(): instance %p is OK\n"
 	      "  backtrace (%d levels):\n",
 	      that, size);
       for (int ii(0); ii < size; ++ii)
