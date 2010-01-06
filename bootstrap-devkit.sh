@@ -49,7 +49,7 @@ if [ $? -ne 0 ]; then
     exit 42
 fi
 
-SYM_THESE_LIBS="wbc/libStanford_WBC.so tao/libTAO_Dynamics_Engine.so saimatrix/libSAI_Matrix.so wbcnet/libwbcnet.so wbcrun/libwbcrun.so wbc_tinyxml/libwbc_tinyxml.so"
+SYM_THESE_LIBS="wbc/libStanford_WBC.so tao/libTAO_Dynamics_Engine.so saimatrix/libSAI_Matrix.so wbcnet/libwbcnet.so wbc_tinyxml/libwbc_tinyxml.so"
 
 if [ ! -e lib ]; then
     mkdir lib
@@ -124,7 +124,7 @@ else
 	echo "failed to create include directory (for containing symlinks to the headers)"
 	exit 42
     fi
-    for foo in saimatrix tao wbc wbc_tinyxml wbcrun
+    for foo in saimatrix tao wbc wbc_tinyxml
     do
 	ln -s ${WBC_SOURCE}/${foo} include/${foo}
 	if [ $? -ne 0 ]; then

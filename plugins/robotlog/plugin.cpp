@@ -19,6 +19,7 @@
  */
 
 /**
+   \file plugins/robotlog/plugin.cpp
    \author Roland Philippsen
 */
 
@@ -39,7 +40,7 @@ namespace {
   
 }
 
-wbcrun::Module * wbcrun_create_module()
+wbcnet::Module * wbcnet_create_module()
 {
   return new Plugin();
 }

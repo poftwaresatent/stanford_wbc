@@ -27,6 +27,8 @@
 #ifndef WBC_UTIL_FILE_HPP
 #define WBC_UTIL_FILE_HPP
 
+#include <stdexcept>
+
 extern "C" {
 #include <stdio.h>
 }

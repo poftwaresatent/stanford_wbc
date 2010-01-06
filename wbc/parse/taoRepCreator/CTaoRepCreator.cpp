@@ -60,7 +60,7 @@ taoNodeRoot* CTaoRepCreator::taoRootRepCreator(
 		//robot_logger<<"\n taoRootRepCreator: NULL robot definition supplied to taoRepCreator";
 		return NULL;
 	}
-	if ((static_cast<int>((arg_robdef_p->retRootLinkVector())->size()) <= arg_robot_id) || (0
+	if ((static_cast<int>((arg_robdef_p->getRootLinkVector())->size()) <= arg_robot_id) || (0
 			> arg_robot_id)) {
 		//robot_logger<<"\n taoRootRepCreator: No robot matches the id passed. Cannot build tao tree.";
 		return NULL;
@@ -71,7 +71,7 @@ taoNodeRoot* CTaoRepCreator::taoRootRepCreator(
 	//*************************
 	//Step 2a: Find the desired robot root.
 	tmp_robdefRoot_p
-			= (SControllerRobotLink*) (arg_robdef_p->retRootLinkVector())->at(
+			= (SControllerRobotLink*) (arg_robdef_p->getRootLinkVector())->at(
 					arg_robot_id); //The root of the robot
 	assert(NULL != tmp_robdefRoot_p);
 

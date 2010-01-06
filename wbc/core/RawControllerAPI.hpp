@@ -26,7 +26,7 @@
 #ifndef WBC_RAW_CONTROLLER_API_HPP
 #define WBC_RAW_CONTROLLER_API_HPP
 
-#include <wbcrun/Factory.hpp>
+#include <wbcnet/Factory.hpp>
 
 class SAIVector;
 class SAIMatrix;
@@ -54,12 +54,12 @@ namespace wbc {
   
   template<class RawControllerSubclass>
   class RawControllerFactory
-    : public wbcrun::Factory<RawControllerSubclass, RawControllerAPI>
+    : public wbcnet::Factory<RawControllerSubclass, RawControllerAPI>
   {};
   
   
   class RawControllerFactoryRegistry
-    : public wbcrun::FactoryRegistry<RawControllerAPI>
+    : public wbcnet::FactoryRegistry<RawControllerAPI>
   {};
   
   

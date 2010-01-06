@@ -19,6 +19,7 @@
  */
 
 /**
+   \file plugins/nwrobot/plugin.cpp
    \author Roland Philippsen
 */
 
@@ -36,7 +37,7 @@ public:
   }
 };
 
-wbcrun::Module * wbcrun_create_module()
+wbcnet::Module * wbcnet_create_module()
 {
   return new NWPlugin();
 }

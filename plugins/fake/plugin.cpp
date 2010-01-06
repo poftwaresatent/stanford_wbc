@@ -19,6 +19,7 @@
  */
 
 /**
+   \file plugins/fake/plugin.cpp
    \author Roland Philippsen
 */
 
@@ -50,7 +51,7 @@ public:
 };
 
 
-wbcrun::Module * wbcrun_create_module()
+wbcnet::Module * wbcnet_create_module()
 {
   return new FakePlugin();
 }

@@ -1,33 +1,25 @@
 /*
- * Copyright (c) 2008 Roland Philippsen <roland DOT philippsen AT gmx DOT net>
+ * Copyright (c) 2010 Stanford University
  *
- * BSD license:
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holder nor the names of
- *    contributors to this software may be used to endorse or promote
- *    products derived from this software without specific prior written
- *    permission.
+ * This program is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation, either version 3 of
+ * the License, or (at your option) any later version.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHORS AND CONTRIBUTORS ``AS IS''
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
- * PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT
- * HOLDER OR THE CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/>
  */
+
+/**
+   \file UserProcess.cpp
+   \author Roland Philippsen
+*/
 
 #include "UserProcess.hpp"
 #include "message_id.hpp"
@@ -42,24 +34,24 @@
 #define M_PI 3.141592653
 #endif
 
-static wbcnet::logger_t logger(wbcnet::get_logger("wbcrun"));
+static wbcnet::logger_t logger(wbcnet::get_logger("wbc"));
 
 using namespace std; 
 
-#ifdef WBCRUN_HAVE_CURSES
+#ifdef HAVE_CURSES
 # include <curses.h>
-#endif // WBCRUN_HAVE_CURSES
+#endif // HAVE_CURSES
 
 
-#ifdef WBCRUN_HAVE_XMLRPC
+#ifdef HAVE_XMLRPC
 
-#include "xmlrpc/directory.hpp"
+#include "XMLRPCDirectoryServer.hpp"
 #include "XmlRpcServer.h"
 #include <cstring>
 #include <signal.h>
 #include <err.h>
 
-static wbcrun::XMLRPCDirectoryServer * xmlrpc_directory(0);
+static wbc::XMLRPCDirectoryServer * xmlrpc_directory(0);
 
 static void handle_SIGTSTP(int signum)
 {
@@ -72,7 +64,7 @@ static void handle_SIGTSTP(int signum)
     warnx("handle_SIGTSTP(): no xmlrpc_directory found");
 }
 
-#endif // WBCRUN_HAVE_XMLRPC
+#endif // HAVE_XMLRPC
 
 
 static bool ncurses_active(false);
@@ -80,11 +72,11 @@ static bool ncurses_active(false);
 
 namespace {
   
-  class MyServiceTransaction: public wbcrun::ServiceTransaction {
+  class MyServiceTransaction: public wbc::ServiceTransaction {
   public:
-    wbcrun::UserProcess * m_user;
+    wbc::UserProcess * m_user;
     
-    explicit MyServiceTransaction(wbcrun::UserProcess * user): m_user(user) {}
+    explicit MyServiceTransaction(wbc::UserProcess * user): m_user(user) {}
     
     virtual wbcnet::msg::Service * GetRequest()
     { return &m_user->m_user_request; }
@@ -104,7 +96,7 @@ namespace {
 }
 
 
-namespace wbcrun {
+namespace wbc {
   
   
   bool UserProcess::
@@ -129,7 +121,7 @@ namespace wbcrun {
 
       if ("pos" == token) {
 	m_user_request.InitGetPositions();
-	cout << "wbcrun::UserProcess::Step(): sending user request\n";
+	cout << "wbc::UserProcess::Step(): sending user request\n";
 	m_user_request.Dump(cout, "    ");
         EnqueueMessage(m_channel, &m_user_request, false, false);
         SendWait(10000);
@@ -139,7 +131,7 @@ namespace wbcrun {
 
       if ("vel" == token) {
 	m_user_request.InitGetVelocities();
-	cout << "wbcrun::UserProcess::Step(): sending user request\n";
+	cout << "wbc::UserProcess::Step(): sending user request\n";
 	m_user_request.Dump(cout, "    ");
         EnqueueMessage(m_channel, &m_user_request, false, false);
         SendWait(10000);
@@ -149,7 +141,7 @@ namespace wbcrun {
 
       if ("endpos" == token) {
 	m_user_request.InitGetLinkTransform("End_Effector"); // would be nice to give custom name...
-	cout << "wbcrun::UserProcess::Step(): sending user request\n";
+	cout << "wbc::UserProcess::Step(): sending user request\n";
 	m_user_request.Dump(cout, "    ");
         EnqueueMessage(m_channel, &m_user_request, false, false);
         SendWait(10000);
@@ -159,7 +151,7 @@ namespace wbcrun {
       
       if ("tau" == token) {
 	m_user_request.InitGetTorques();
-	cout << "wbcrun::UserProcess::Step(): sending user request\n";
+	cout << "wbc::UserProcess::Step(): sending user request\n";
 	m_user_request.Dump(cout, "    ");
         EnqueueMessage(m_channel, &m_user_request, false, false);
         SendWait(10000);
@@ -169,7 +161,7 @@ namespace wbcrun {
 
       if ("go" == token) {
         InteractiveGoalRequest();
-	cout << "wbcrun::UserProcess::Step(): sending user request\n";
+	cout << "wbc::UserProcess::Step(): sending user request\n";
 	m_user_request.Dump(cout, "    ");
         EnqueueMessage(m_channel, &m_user_request, false, false);
         SendWait(10000);
@@ -179,7 +171,7 @@ namespace wbcrun {
       
       if ("float" == token) {
 	m_user_request.InitFloat();
-	cout << "wbcrun::UserProcess::Step(): sending user request\n";
+	cout << "wbc::UserProcess::Step(): sending user request\n";
 	m_user_request.Dump(cout, "    ");
         EnqueueMessage(m_channel, &m_user_request, false, false);
         SendWait(10000);
@@ -189,7 +181,7 @@ namespace wbcrun {
       
       if ("activate" == token) {
 	m_user_request.InitActivate();
-	cout << "wbcrun::UserProcess::Step(): sending user request\n";
+	cout << "wbc::UserProcess::Step(): sending user request\n";
 	m_user_request.Dump(cout, "    ");
         EnqueueMessage(m_channel, &m_user_request, false, false);
         SendWait(10000);
@@ -311,7 +303,7 @@ namespace wbcrun {
   void UserProcess::
   InteractiveKeyPressLoop()
   {
-#ifndef WBCRUN_HAVE_CURSES
+#ifndef HAVE_CURSES
 
     cout <<
       "Sorry, but curses headers were not found on your system,"
@@ -319,7 +311,7 @@ namespace wbcrun {
       "If you want it, install curses (e.g. libncurses5-dev or so), wipe\n"
       "away your build dir, and rebuild.\n";
 
-#else // WBCRUN_HAVE_CURSES (rest of method)
+#else // HAVE_CURSES (rest of method)
 
     if (ncurses_active) 		// "never" happens though
       endwin();
@@ -401,7 +393,7 @@ namespace wbcrun {
     if (logger->isErrorEnabled() && ( ! tmp_error_os.str().empty()))
       LOG_ERROR (logger, "errors during ncurses mode:\n" << tmp_error_os.str());
     
-#endif // WBCRUN_HAVE_CURSES
+#endif // HAVE_CURSES
   }
   
   
@@ -433,14 +425,14 @@ namespace wbcrun {
       // re-configure us by calling Init() with a different NetConfig,
       // but that's trickier than it might seem because of the
       // incoming and outgoing message queues.
-      throw runtime_error("wbcrun::UserProcess::DoInit(): already initialized");
+      throw runtime_error("wbc::UserProcess::Init(): already initialized");
     }
     
     m_directory_client = new DirectoryCmdClient(new MyServiceTransaction(this), true);
     
     m_channel = netconf.CreateChannel(wbcnet::NetConfig::USER, wbcnet::NetConfig::SERVO);
     if ( ! m_channel)
-      throw runtime_error("wbcrun::UserProcess::DoInit(): could not create channel");
+      throw runtime_error("wbc::UserProcess::Init(): could not create channel");
     AddSink(m_channel, 100);
     AddSource(m_channel, 100);
     
@@ -458,11 +450,11 @@ namespace wbcrun {
       return 0;
     }
     
-    cout << "wbcrun::UserProcess::HandleMessagePayload():\n"
+    cout << "wbc::UserProcess::HandleMessagePayload():\n"
 	 << "  message:\n";
     m_user_reply.Dump(cout, "    ");
     
-    if (wbcrun::msg::USER_REPLY != msg_id) {
+    if (wbcnet::msg::USER_REPLY != msg_id) {
       cout << "  ERROR unknown message ID " << (int) msg_id << "\n";
       return 0;
     }
@@ -519,14 +511,14 @@ namespace wbcrun {
   void UserProcess::
   Cleanup()
   {
-#ifdef WBCRUN_HAVE_CURSES
+#ifdef HAVE_CURSES
     if (ncurses_active) {
       endwin();
       cout << "cleanup up curses\n";
     }
-#endif // WBCRUN_HAVE_CURSES
+#endif // HAVE_CURSES
     
-#ifdef WBCRUN_HAVE_XMLRPC
+#ifdef HAVE_XMLRPC
     if (xmlrpc_directory) {
       cout << "cleanup up XmlRpc\n";
       handle_SIGTSTP(SIGTSTP);
@@ -534,7 +526,7 @@ namespace wbcrun {
       delete xmlrpc_directory;
       xmlrpc_directory = 0;
     }
-#endif // WBCRUN_HAVE_XMLRPC
+#endif // HAVE_XMLRPC
     
     cout << "see you later\n";
   }
@@ -543,12 +535,12 @@ namespace wbcrun {
   void UserProcess::
   XmlRpcLoop()
   {
-#ifndef WBCRUN_HAVE_XMLRPC
+#ifndef HAVE_XMLRPC
     cout << "Sorry, XMLRPC not available in this build\n"
 	 << "  You need xmlrpc++, which you can get by going into the wbc/xmlrpc++ directory\n"
 	 << "  and typing './buildme.sh' at the prompt.  At the next configure / build it\n"
 	 << "  should get picked up\n";
-#else // WBCRUN_HAVE_XMLRPC
+#else // HAVE_XMLRPC
     
     cout << "Installing new signal handler for SIGTSTP\n";
     struct sigaction sig;
@@ -557,7 +549,7 @@ namespace wbcrun {
     struct sigaction save_sig;
     memset(&save_sig, 0, sizeof(save_sig));
     if (0 != sigaction(SIGTSTP, &sig, &save_sig)) {
-      warn("wbcrun::UserProcess::XmlRpcLoop(): sigaction()");
+      warn("wbc::UserProcess::XmlRpcLoop(): sigaction()");
       return;
     }
     
@@ -573,9 +565,9 @@ namespace wbcrun {
     
     cout << "Restoring old signal handler for SIGTSTP\n";
     if (0 != sigaction(SIGTSTP, &save_sig, 0))
-      warn("wbcrun::UserProcess::XmlRpcLoop(): sigaction()");
+      warn("wbc::UserProcess::XmlRpcLoop(): sigaction()");
     
-#endif // WBCRUN_HAVE_XMLRPC
+#endif // HAVE_XMLRPC
   }
   
   
@@ -585,7 +577,7 @@ namespace wbcrun {
     if (m_lazy_behavior_list.empty()) {
       wbcnet::srv_result_t const stat(m_directory_client->ListBehaviors(m_lazy_behavior_list));
       if (wbcnet::SRV_SUCCESS != stat)
-	throw runtime_error("wbcrun::UserProcess::GetBehaviorList():\n"
+	throw runtime_error("wbc::UserProcess::GetBehaviorList():\n"
 			    "  m_directory_client->ListBehaviors() failed: "
 			    + string(wbcnet::srv_result_to_string(stat)));
     }

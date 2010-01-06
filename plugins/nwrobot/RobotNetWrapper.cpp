@@ -27,15 +27,7 @@
 #include <saimatrix/SAIMatrix.h>
 #include <wbcnet/log.hpp>
 #include <wbcnet/strutil.hpp>
-// #include <wbcrun/Process.hpp>
-// #include <sstream>
-// #ifdef WIN32
-// #include "extras.h"
-// #else
-// #include <unistd.h>
 #include <sys/time.h>
-// #endif
-// #include <time.h>
 
 using namespace sfl;
 using namespace std;
@@ -86,8 +78,8 @@ RobotNetWrapper(bool server_mode,
     m_muldex(-1, -1, wbcnet::ENDIAN_DETECT),
     m_channel(0)
 {
-  m_muldex.SetHandler(wbcrun::msg::ROBOT_STATE, new MessageHandler(this));
-  m_muldex.SetHandler(wbcrun::msg::SERVO_COMMAND, new MessageHandler(this));
+  m_muldex.SetHandler(wbcnet::msg::ROBOT_STATE, new MessageHandler(this));
+  m_muldex.SetHandler(wbcnet::msg::SERVO_COMMAND, new MessageHandler(this));
 }
 
 
@@ -174,7 +166,7 @@ writeCommand(SAIVector const & command)
 		 << " exceeds maximum of " << (int) std::numeric_limits<uint8_t>::max());
       return false;
     }
-    m_servo_command = new wbcrun::msg::ServoCommand(true, static_cast<uint8_t>(command.size()));
+    m_servo_command = new wbc::msg::ServoCommand(true, static_cast<uint8_t>(command.size()));
   }
   m_servo_command->command = command;
   
@@ -214,11 +206,11 @@ writeSensors(SAIVector const & jointAngles, SAIVector const & jointVelocities,
 		 << "  opt_force->column() = " << (opt_force ? to_string(opt_force->column()) : string("<NULL>")));
       return false;
     }
-    m_robot_state = new wbcrun::msg::RobotState(true,
-						static_cast<uint8_t>(jointAngles.size()),
-						static_cast<uint8_t>(jointVelocities.size()),
-						static_cast<uint8_t>(opt_force ? opt_force->row() : 0),
-						static_cast<uint8_t>(opt_force ? opt_force->column() : 0));
+    m_robot_state = new wbc::msg::RobotState(true,
+					     static_cast<uint8_t>(jointAngles.size()),
+					     static_cast<uint8_t>(jointVelocities.size()),
+					     static_cast<uint8_t>(opt_force ? opt_force->row() : 0),
+					     static_cast<uint8_t>(opt_force ? opt_force->column() : 0));
   }
   m_robot_state->jointAngles = jointAngles;
   m_robot_state->jointVelocities = jointVelocities;
@@ -355,14 +347,14 @@ namespace {
     Proxy * proxy(0);
     
     switch (msg_id) {
-    case wbcrun::msg::ROBOT_STATE:
+    case wbcnet::msg::ROBOT_STATE:
       if ( ! m_robot->m_robot_state)
-	m_robot->m_robot_state = new wbcrun::msg::RobotState(true, 0, 0, 0, 0);
+	m_robot->m_robot_state = new wbc::msg::RobotState(true, 0, 0, 0, 0);
       proxy = m_robot->m_robot_state;
       break;
-    case wbcrun::msg::SERVO_COMMAND:
+    case wbcnet::msg::SERVO_COMMAND:
       if ( ! m_robot->m_servo_command)
-	m_robot->m_servo_command = new wbcrun::msg::ServoCommand(true, 0);
+	m_robot->m_servo_command = new wbc::msg::ServoCommand(true, 0);
       proxy = m_robot->m_servo_command;
       break;
     default:
@@ -390,10 +382,10 @@ namespace {
   {
     Proxy * proxy(0);
     switch (msg_id) {
-    case wbcrun::msg::ROBOT_STATE:
+    case wbcnet::msg::ROBOT_STATE:
       proxy = m_robot->m_robot_state;
       break;
-    case wbcrun::msg::SERVO_COMMAND:
+    case wbcnet::msg::SERVO_COMMAND:
       proxy = m_robot->m_servo_command;
       break;
     default:

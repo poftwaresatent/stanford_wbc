@@ -31,6 +31,8 @@ extern "C" {
 #include <string.h>
 }
 
+using namespace std;
+
 namespace wbc {
 
   File::

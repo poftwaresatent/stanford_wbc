@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 Roland Philippsen <roland DOT philippsen AT gmx DOT net>
+ * Copyright (c) 2009 Stanford University
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -16,6 +16,11 @@
  * <http://www.gnu.org/licenses/>
  */
 
+/**
+   \file ServoModelProcess.hpp
+   \author Roland Philippsen
+*/
+
 #ifndef WBC_SERVO_MODEL_PROCESS_HPP
 #define WBC_SERVO_MODEL_PROCESS_HPP
 
@@ -25,7 +30,7 @@
 namespace wbc {
   
   class ServoModelProcess
-    : public wbcrun::Process,
+    : public Process,
       public ServoProcessAPI
   {
   public:
@@ -75,12 +80,12 @@ namespace wbc {
     bool m_have_behaviorID;
     
     // not really messages anymore, just shared between model and servo
-    wbcrun::msg::RobotState * m_robot_state;
+    msg::RobotState * m_robot_state;
     
     wbcnet::Channel * m_user_channel;
     
     // incoming messages
-    wbcrun::msg::TaskSpec m_user_task_spec;
+    msg::TaskSpec m_user_task_spec;
     wbcnet::msg::Service m_user_request;
     
     // outgoing messages

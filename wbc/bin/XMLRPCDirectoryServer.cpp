@@ -1,45 +1,38 @@
 /*
- * Copyright (c) 2009 Roland Philippsen <roland DOT philippsen AT gmx DOT net>
+ * Copyright (c) 2010 Stanford University
  *
- * BSD license:
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holder nor the names of
- *    contributors to this software may be used to endorse or promote
- *    products derived from this software without specific prior written
- *    permission.
+ * This program is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation, either version 3 of
+ * the License, or (at your option) any later version.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHORS AND CONTRIBUTORS ``AS IS''
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
- * PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT
- * HOLDER OR THE CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/>
  */
 
+/**
+   \file XMLRPCDirectoryServer.cpp
+   \author Roland Philippsen
+*/
+
 #include "directory.hpp"
+#include "XMLRPCDirectoryServer.hpp"
 #include <XmlRpc.h>
 
-#define WBCRUN_DIRECTORY_DEBUG
-#ifdef WBCRUN_DIRECTORY_DEBUG
+#define WBC_DIRECTORY_DEBUG
+#ifdef WBC_DIRECTORY_DEBUG
 # include <iostream>
-#endif // WBCRUN_DIRECTORY_DEBUG
+#endif // WBC_DIRECTORY_DEBUG
 
 using namespace XmlRpc;
 using namespace wbcnet;
-using namespace wbcrun;
+using namespace wbc;
 using namespace std;
 
 
@@ -49,11 +42,11 @@ namespace {
   static bool xmlrpc_to_vector(XmlRpcValue /*const?*/ & from, srv_code_t & to)
   {
 
-#ifdef WBCRUN_DIRECTORY_DEBUG
+#ifdef WBC_DIRECTORY_DEBUG
     std::cout << "  xmlrpc_to_vector():\n    from: ";
     from.write(std::cout);
     std::cout << "\n" << std::flush;
-#endif // WBCRUN_DIRECTORY_DEBUG
+#endif // WBC_DIRECTORY_DEBUG
 
     int const nelem(from.size());
     if ((to.NElements() != nelem) && ( ! to.SetNElements(nelem)))
@@ -74,22 +67,22 @@ namespace {
   
   static bool xmlrpc_to_matrix(XmlRpcValue /*const?*/ & from, srv_matrix_t & to)
   {
-#ifdef WBCRUN_DIRECTORY_DEBUG
+#ifdef WBC_DIRECTORY_DEBUG
     std::cout << "  xmlrpc_to_matrix():\n    from: ";
     from.write(std::cout);
     std::cout << "\n" << std::flush;
-#endif // WBCRUN_DIRECTORY_DEBUG
+#endif // WBC_DIRECTORY_DEBUG
     
     int const nrows(from["nrows"]);
     int const ncols(from["ncols"]);
     XmlRpcValue /*const?*/ & data(from["data"]);
 
-#ifdef WBCRUN_DIRECTORY_DEBUG
+#ifdef WBC_DIRECTORY_DEBUG
     std::cout << "    nrows: " << nrows << "\n    ncols: " << ncols << "\n    data: ";
     data.write(std::cout);
     ////    std::cout << data.toXml();
     std::cout << "\n" << std::flush;
-#endif // WBCRUN_DIRECTORY_DEBUG
+#endif // WBC_DIRECTORY_DEBUG
     
     int const size(nrows * ncols);
     if (data.size() != size)
@@ -149,11 +142,11 @@ namespace {
     
     // bool ListBehaviors(listing_t & behaviors)
     void execute(XmlRpcValue & params, XmlRpcValue & result) {
-#ifdef WBCRUN_DIRECTORY_DEBUG
+#ifdef WBC_DIRECTORY_DEBUG
       std::cout << "DBG\n" << name() << "():\n  params:\n    ";
       params.write(std::cout);
       std::cout << "\n" << std::flush;
-#endif // WBCRUN_DIRECTORY_DEBUG
+#endif // WBC_DIRECTORY_DEBUG
       
       result.clear();		// "probably" redundant
       listing_t behaviors;
@@ -167,11 +160,11 @@ namespace {
 	result["behaviors"] = listing;
       }
       
-#ifdef WBCRUN_DIRECTORY_DEBUG
+#ifdef WBC_DIRECTORY_DEBUG
       std::cout << "  result:\n    ";
       result.write(std::cout);
       std::cout << "\n" << std::flush;
-#endif // WBCRUN_DIRECTORY_DEBUG
+#endif // WBC_DIRECTORY_DEBUG
     }
   };
   
@@ -182,11 +175,11 @@ namespace {
     
     // bool ListBehaviorCmds(int behaviorID, request_list_t & requests)
     void execute(XmlRpcValue & params, XmlRpcValue & result) {
-#ifdef WBCRUN_DIRECTORY_DEBUG
+#ifdef WBC_DIRECTORY_DEBUG
       std::cout << "DBG\n" << name() << "():\n  params:\n    ";
       params.write(std::cout);
       std::cout << "\n" << std::flush;
-#endif // WBCRUN_DIRECTORY_DEBUG
+#endif // WBC_DIRECTORY_DEBUG
       
       result.clear();		// "probably" redundant
       int const behaviorID(params[0]);
@@ -201,11 +194,11 @@ namespace {
 	result["requests"] = listing;
       }
       
-#ifdef WBCRUN_DIRECTORY_DEBUG
+#ifdef WBC_DIRECTORY_DEBUG
       std::cout << "  result:\n    ";
       result.write(std::cout);
       std::cout << "\n" << std::flush;
-#endif // WBCRUN_DIRECTORY_DEBUG
+#endif // WBC_DIRECTORY_DEBUG
     }
   };
   
@@ -221,11 +214,11 @@ namespace {
     //                                 srv_code_t * code_out,
     //                                 srv_matrix_t * data_out)
     void execute(XmlRpcValue & params, XmlRpcValue & result) {
-#ifdef WBCRUN_DIRECTORY_DEBUG
+#ifdef WBC_DIRECTORY_DEBUG
       std::cout << "DBG\n" << name() << "():\n  params:\n    ";
       params.write(std::cout);
       std::cout << "\n" << std::flush;
-#endif // WBCRUN_DIRECTORY_DEBUG
+#endif // WBC_DIRECTORY_DEBUG
       
       result.clear();		// "probably" redundant
       int const behaviorID(params[0]);
@@ -252,11 +245,11 @@ namespace {
 	matrix_to_xmlrpc(data_out, result["data_out"]);
       }
       
-#ifdef WBCRUN_DIRECTORY_DEBUG
+#ifdef WBC_DIRECTORY_DEBUG
       std::cout << "  result:\n    ";
       result.write(std::cout);
       std::cout << "\n" << std::flush;
-#endif // WBCRUN_DIRECTORY_DEBUG
+#endif // WBC_DIRECTORY_DEBUG
     }
   };
   
@@ -271,11 +264,11 @@ namespace {
     //                                 srv_code_t * code_out,
     //                                 srv_matrix_t * data_out)
     void execute(XmlRpcValue & params, XmlRpcValue & result) {
-#ifdef WBCRUN_DIRECTORY_DEBUG
+#ifdef WBC_DIRECTORY_DEBUG
       std::cout << "DBG\n" << name() << "():\n  params:\n    ";
       params.write(std::cout);
       std::cout << "\n" << std::flush;
-#endif // WBCRUN_DIRECTORY_DEBUG
+#endif // WBC_DIRECTORY_DEBUG
       
       result.clear();		// "probably" redundant
       int const request(string_to_srv_command(params[0]));
@@ -300,11 +293,11 @@ namespace {
 	matrix_to_xmlrpc(data_out, result["data_out"]);
       }
       
-#ifdef WBCRUN_DIRECTORY_DEBUG
+#ifdef WBC_DIRECTORY_DEBUG
       std::cout << "  result:\n    ";
       result.write(std::cout);
       std::cout << "\n" << std::flush;
-#endif // WBCRUN_DIRECTORY_DEBUG
+#endif // WBC_DIRECTORY_DEBUG
     }
   };
   
@@ -315,11 +308,11 @@ namespace {
     
     // bool ListTasks(int behaviorID, listing_t & tasks)
     void execute(XmlRpcValue & params, XmlRpcValue & result) {
-#ifdef WBCRUN_DIRECTORY_DEBUG
+#ifdef WBC_DIRECTORY_DEBUG
       std::cout << "DBG\n" << name() << "():\n  params:\n    ";
       params.write(std::cout);
       std::cout << "\n" << std::flush;
-#endif // WBCRUN_DIRECTORY_DEBUG
+#endif // WBC_DIRECTORY_DEBUG
       
       result.clear();		// "probably" redundant
       int const behaviorID(params[0]);
@@ -334,11 +327,11 @@ namespace {
 	result["tasks"] = listing;
       }
       
-#ifdef WBCRUN_DIRECTORY_DEBUG
+#ifdef WBC_DIRECTORY_DEBUG
       std::cout << "  result:\n    ";
       result.write(std::cout);
       std::cout << "\n" << std::flush;
-#endif // WBCRUN_DIRECTORY_DEBUG
+#endif // WBC_DIRECTORY_DEBUG
     }
   };
   
@@ -349,11 +342,11 @@ namespace {
     
     // bool ListTaskCmds(int behaviorID, int taskID, command_list_t & requests)
     void execute(XmlRpcValue & params, XmlRpcValue & result) {
-#ifdef WBCRUN_DIRECTORY_DEBUG
+#ifdef WBC_DIRECTORY_DEBUG
       std::cout << "DBG\n" << name() << "():\n  params:\n    ";
       params.write(std::cout);
       std::cout << "\n" << std::flush;
-#endif // WBCRUN_DIRECTORY_DEBUG
+#endif // WBC_DIRECTORY_DEBUG
       
       result.clear();		// "probably" redundant
       int const behaviorID(params[0]);
@@ -369,11 +362,11 @@ namespace {
 	result["requests"] = listing;
       }
       
-#ifdef WBCRUN_DIRECTORY_DEBUG
+#ifdef WBC_DIRECTORY_DEBUG
       std::cout << "  result:\n    ";
       result.write(std::cout);
       std::cout << "\n" << std::flush;
-#endif // WBCRUN_DIRECTORY_DEBUG
+#endif // WBC_DIRECTORY_DEBUG
     }
   };
   
@@ -390,11 +383,11 @@ namespace {
     //                             srv_code_t * code_out,
     //                             srv_matrix_t * data_out)
     void execute(XmlRpcValue & params, XmlRpcValue & result) {
-#ifdef WBCRUN_DIRECTORY_DEBUG
+#ifdef WBC_DIRECTORY_DEBUG
       std::cout << "DBG\n" << name() << "():\n  params:\n    ";
       params.write(std::cout);
       std::cout << "\n" << std::flush;
-#endif // WBCRUN_DIRECTORY_DEBUG
+#endif // WBC_DIRECTORY_DEBUG
       
       result.clear();		// "probably" redundant
       int const behaviorID(params[0]);
@@ -423,18 +416,18 @@ namespace {
 	matrix_to_xmlrpc(data_out, result["data_out"]);
       }
       
-#ifdef WBCRUN_DIRECTORY_DEBUG
+#ifdef WBC_DIRECTORY_DEBUG
       std::cout << "  result:\n    ";
       result.write(std::cout);
       std::cout << "\n" << std::flush;
-#endif // WBCRUN_DIRECTORY_DEBUG
+#endif // WBC_DIRECTORY_DEBUG
     }
   };
   
 }
 
 
-namespace wbcrun {
+namespace wbc {
   
   
   XMLRPCDirectoryServer::

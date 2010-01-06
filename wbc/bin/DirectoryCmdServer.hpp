@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 Roland Philippsen <roland DOT philippsen AT gmx DOT net>
+ * Copyright (c) 2010 Stanford University
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -16,10 +16,15 @@
  * <http://www.gnu.org/licenses/>
  */
 
+/**
+   \file DirectoryCmdServer.hpp
+   \author Roland Philippsen
+*/
+
 #ifndef WBC_DIRECTORY_CMD_SERVER_HPP
 #define WBC_DIRECTORY_CMD_SERVER_HPP
 
-#include <wbcrun/directory.hpp>
+#include <wbc/bin/directory.hpp>
 
 namespace wbc {
   
@@ -28,7 +33,7 @@ namespace wbc {
   
   
   class DirectoryCmdServer
-    : public wbcrun::DirectoryCmdServer
+    : public BaseDirectoryCmdServer
   {
   public:
     DirectoryCmdServer(std::vector<BehaviorDescription*> const & behavior,
@@ -45,11 +50,11 @@ namespace wbc {
 		   wbcnet::srv_matrix_t * data_out);
     
     virtual wbcnet::srv_result_t
-    ListBehaviors(wbcrun::listing_t & behaviors) const;
+    ListBehaviors(listing_t & behaviors) const;
   
     virtual wbcnet::srv_result_t
     ListBehaviorCmds(int behaviorID,
-		     wbcrun::command_list_t & commands) const;
+		     command_list_t & commands) const;
   
     virtual wbcnet::srv_result_t
     HandleBehaviorCmd(int behaviorID,
@@ -61,12 +66,12 @@ namespace wbc {
   
     virtual wbcnet::srv_result_t
     ListTasks(int behaviorID,
-	      wbcrun::listing_t & tasks) const;
+	      listing_t & tasks) const;
   
     virtual wbcnet::srv_result_t
     ListTaskCmds(int behaviorID,
 		 int taskID,
-		 wbcrun::command_list_t & commands) const;
+		 command_list_t & commands) const;
   
     virtual wbcnet::srv_result_t
     HandleTaskCmd(int behaviorID,

@@ -26,6 +26,13 @@
 
 #include "utc.hpp"
 
+extern "C" {
+#include <string.h>
+#include <errno.h>
+}
+
+using namespace std;
+
 namespace wbc {
 
 #ifndef WIN32  
@@ -36,12 +43,12 @@ namespace wbc {
     buf[0] = '\0';
     time_t utc;
     if (-1 == time(&utc))
-      throw runtime_error(string("wbcrun::get_utc(): time() failed: ") + strerror(errno));
+      throw runtime_error(string("wbc::get_utc(): time() failed: ") + strerror(errno));
     struct tm utc_tm;
     if (0 == gmtime_r(&utc, &utc_tm))
-      throw runtime_error("wbcrun::get_utc(): gmtime_r() failed");
+      throw runtime_error("wbc::get_utc(): gmtime_r() failed");
     if (0 == strftime(buf, bufsize-1, "%F %T", &utc_tm))
-      throw runtime_error("wbcrun::get_utc(): strftime() failed");
+      throw runtime_error("wbc::get_utc(): strftime() failed");
     buf[bufsize-1] = '\0';	// just paranoid
     
     string result(buf);

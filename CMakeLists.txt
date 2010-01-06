@@ -41,7 +41,7 @@ else (WBC_HAVE_LAPACK)
 endif (WBC_HAVE_LAPACK)
 
 
-### try to find XmlRpc++, only needed for lib search path... is there a better way to achieve this?
+### try to find XmlRpc++
 
 if (NOT XMLRPC_DIR)
   message ("environment XMLRPC_DIR = $ENV{XMLRPC_DIR}")
@@ -163,7 +163,6 @@ subdirs (
   saimatrix
   tao
   wbcnet
-  wbcrun
   wbc
   plugins/fake
   plugins/robotlog

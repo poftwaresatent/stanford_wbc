@@ -114,24 +114,24 @@ namespace wbc {
     this->callback = &callback;
     if (file)
       delete file;
-    file = new wbcrun::File(filename.c_str(), "r");
+    file = new File(filename.c_str(), "r");
     
     while (true) {
       void * buf(XML_GetBuffer(parser, bufsize));
       if (NULL == buf)
-	throw runtime_error("wbcrun::BehaviorParser::Parse(): XML_GetBuffer() failed");
+	throw runtime_error("wbc::BehaviorParser::Parse(): XML_GetBuffer() failed");
       size_t const bytes_read(fread(buf, 1, bufsize, file->stream));
       if (bytes_read == 0) {
 	if (ferror(file->stream)) {
 	  ostringstream os;
-	  os << "wbcrun::BehaviorParser::Parse(): " << filename << ": fread() failed";
+	  os << "wbc::BehaviorParser::Parse(): " << filename << ": fread() failed";
 	  throw runtime_error(os.str());
 	}
 	break;
       }
       if ( ! XML_ParseBuffer(parser, bytes_read, bytes_read == 0)) {
 	ostringstream os;
-	os << "wbcrun::BehaviorParser::Parse(): " << filename
+	os << "wbc::BehaviorParser::Parse(): " << filename
 	   << ": " << XML_GetCurrentLineNumber(parser)
 	   << ": parse error: " << XML_ErrorString(XML_GetErrorCode(parser));
 	throw runtime_error(os.str());
@@ -206,7 +206,7 @@ void start_element_handler(void * userData,
     bp->in_type = true;
     if (bp->buffer)
       delete bp->buffer;
-    bp->buffer = new wbcrun::StringBuffer<XML_Char>();
+    bp->buffer = new wbc::StringBuffer<XML_Char>();
   }
 }
 

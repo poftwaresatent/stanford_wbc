@@ -38,7 +38,7 @@ namespace wbc {
 	but that requires some wider refactorings first. */
     virtual bool updateTorques( /** in  */ BehaviorDescription * behavior,
 				/** in  */ RobotControlModel * robmodel,
-				/** in  */ wbcrun::TaskModelAPI const * taskModel,
+				/** in  */ wbcnet::TaskModelAPI const * taskModel,
 				/** out */ SAIVector & generalizedTorques);
     
     virtual void record( Time const & now );

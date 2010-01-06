@@ -21,7 +21,7 @@
 #ifndef WBC_ROBOT_FACTORY_HPP
 #define WBC_ROBOT_FACTORY_HPP
 
-#include <wbcrun/Registry.hpp>
+#include <wbcnet/Registry.hpp>
 #include <string>
 #include <iosfwd>
 
@@ -75,8 +75,8 @@ namespace wbc {
   };
   
   
-  typedef wbcrun::Registry<RobotFactory *,
-			   wbcrun::registry_trait_delete<RobotFactory *> >
+  typedef wbcnet::Registry<RobotFactory *,
+			   wbcnet::registry_trait_delete<RobotFactory *> >
   RobotFactoryRegistrySuper;
   
   /**

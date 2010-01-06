@@ -5,14 +5,12 @@ list (APPEND LIBS
   SAI_Matrix
   TAO_Dynamics_Engine
   wbcnet
-  wbcrun
   dl
   expat
   )
 
-add_library (
-  Stanford_WBC SHARED
-  
+list (APPEND SRCS
+
   core/Plugin.cpp
   core/RobotFactory.cpp
   core/TaskModelBase.cpp
@@ -80,6 +78,40 @@ add_library (
   bin/TaskModelListener.cpp
   bin/options.cpp
   )
+
+##################################################
+### detect optional xmlrpc++ stuff
+
+include (CheckIncludeFileCXX)
+
+check_include_file_cxx (XmlRpc.h WBC_HAVE_XMLRPC_HEADER)
+if (${WBC_HAVE_XMLRPC_HEADER})
+  message ("Found XmlRpc++ headers")
+  if (XMLRPC_DIR)
+    find_library (WBC_HAVE_XMLRPC_LIB XmlRpc PATHS ${XMLRPC_DIR} ${XMLRPC_DIR}/lib)
+  else (XMLRPC_DIR)
+    find_library (WBC_HAVE_XMLRPC_LIB XmlRpc)
+  endif (XMLRPC_DIR)
+  if (WBC_HAVE_XMLRPC_LIB MATCHES "NOTFOUND")
+    message (FATAL_ERROR "XmlRpc++ library not found, although the header XmlRpc.h was found")
+  else (WBC_HAVE_XMLRPC_LIB MATCHES "NOTFOUND")
+    add_definitions (-DHAVE_XMLRPC)
+    list (APPEND SRCS bin/XMLRPCDirectoryServer.cpp)
+    list (APPEND LIBS XmlRpc)
+  endif (WBC_HAVE_XMLRPC_LIB MATCHES "NOTFOUND")
+else (${WBC_HAVE_XMLRPC_HEADER})
+  message ("WARNING XmlRpc++ not found, or the XmlRpc.h header failed to compile")
+  message ("  You can install it from the stanford-wbc 3rdparty directory")
+  message ("  or from its origin on http://xmlrpcpp.sourceforge.net/ of course.")
+  message ("  After installation, use the XMLRPC_DIR variable to point to the correct location.")
+  message ("  You can either set it in the environment or using -DXMLRPC_DIR:path=/where/ever")
+  message ("  on the cmake command line.")
+endif (${WBC_HAVE_XMLRPC_HEADER})
+
+### done with optional xmlrpc++ stuff
+##################################################
+
+add_library (Stanford_WBC SHARED ${SRCS})
 
 target_link_libraries (Stanford_WBC ${LIBS})
 

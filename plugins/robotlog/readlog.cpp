@@ -19,6 +19,7 @@
  */
 
 /**
+   \file plugins/robotlog/readlog.cpp
    \author Roland Philippsen
 */
 
@@ -53,7 +54,7 @@ RLog(std::string const & infname)
     m_bufsize(512)
 {
   try {
-    m_infile = new wbcrun::File(m_infname.c_str(), "r");
+    m_infile = new wbc::File(m_infname.c_str(), "r");
     m_parser = XML_ParserCreate(NULL);
     XML_SetElementHandler(m_parser, start_element_handler, end_element_handler);
     XML_SetCharacterDataHandler(m_parser, character_data_handler);

@@ -19,12 +19,13 @@
  */
 
 /**
+   \file plugins/robotlog/writelog.cpp
    \author Roland Philippsen
 */
 
 #include "writelog.hpp"
 #include <wbcnet/strutil.hpp>
-#include <wbcrun/util.hpp>
+#include <wbc/util/utc.hpp>
 #include <wbc/core/Plugin.hpp>
 #include <saimatrix/SAIMatrix.h>
 #include <wbcnet/log.hpp>
@@ -58,7 +59,7 @@ init()
   
   m_outfile << "<?xml version=\"1.0\"?>\n";
   try {
-    std::string utc(wbcrun::get_utc());
+    std::string utc(wbc::get_utc());
     m_outfile << "<robotlog utc=\"" << utc << "\">\n";
   }
   catch (...) {
@@ -169,7 +170,7 @@ shutdown() const
   }
   else {
     try {
-      string utc(wbcrun::get_utc());
+      string utc(wbc::get_utc());
       m_outfile << "  <shutdown utc=\"" << utc << "\"/>\n";
     }
     catch (...) {

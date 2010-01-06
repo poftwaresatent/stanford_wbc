@@ -39,7 +39,7 @@ namespace wbc {
   bool MobileManipulatorServoBehaviors::
   updateTorques(BehaviorDescription * behavior,
 		RobotControlModel * robmodel,
-		wbcrun::TaskModelAPI const * taskModel,
+		wbcnet::TaskModelAPI const * taskModel,
 		SAIVector & generalizedTorques)
   {
     MobileManipulatorTaskModel const * mmtm(dynamic_cast<MobileManipulatorTaskModel const *>(taskModel));

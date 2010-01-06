@@ -26,7 +26,7 @@
 #ifndef WBC_TASK_MODEL_BASE_HPP
 #define WBC_TASK_MODEL_BASE_HPP
 
-#include <wbcrun/TaskModelAPI.hpp>
+#include <wbcnet/TaskModelAPI.hpp>
 #include <wbc/core/TaskSet.hpp>
 #include <wbc/core/SAIMatrixAPI.hpp>
 
@@ -50,12 +50,12 @@ namespace wbc {
   
   
   /**
-     Specialization of wbcrun::TaskModel for using SAIMatrix and
+     Specialization of wbcnet::TaskModel for using SAIMatrix and
      providing some functionality useful for all specific task model
      implementations.
    */
   class TaskModelBase
-    : public wbcrun::TaskModel<SAIMatrixAPI>
+    : public wbcnet::TaskModel<SAIMatrixAPI>
   {
   public:
     explicit TaskModelBase(wbcnet::endian_mode_t endian_mode);

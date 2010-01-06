@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 Roland Philippsen <roland DOT philippsen AT gmx DOT net>
+ * Copyright (c) 2010 Stanford University
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -15,6 +15,11 @@
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/>
  */
+
+/**
+   \file DirectoryCmdServer.cpp
+   \author Roland Philippsen
+*/
 
 #include "DirectoryCmdServer.hpp"
 #include <wbc/core/BehaviorDescription.hpp>
@@ -40,7 +45,7 @@ namespace wbc {
 
 
   wbcnet::srv_result_t DirectoryCmdServer::
-  ListBehaviors(wbcrun::listing_t & behaviors) const
+  ListBehaviors(listing_t & behaviors) const
   {
     for (size_t ii(0); ii < m_behavior.size(); ++ii)
       behaviors.push_back(m_behavior[ii]->name);
@@ -50,7 +55,7 @@ namespace wbc {
 
   wbcnet::srv_result_t DirectoryCmdServer::
   ListBehaviorCmds(int behaviorID,
-		   wbcrun::command_list_t & commands) const
+		   command_list_t & commands) const
   {
     if ((0 > behaviorID) || (static_cast<int>(m_behavior.size()) <= behaviorID))
       return wbcnet::SRV_INVALID_BEHAVIOR_ID;
@@ -177,7 +182,7 @@ namespace wbc {
 
   wbcnet::srv_result_t DirectoryCmdServer::
   ListTasks(int behaviorID,
-	    wbcrun::listing_t & tasks) const
+	    listing_t & tasks) const
   {
     if ((0 > behaviorID) || (static_cast<int>(m_behavior.size()) <= behaviorID))
       return wbcnet::SRV_INVALID_BEHAVIOR_ID;
@@ -195,7 +200,7 @@ namespace wbc {
   wbcnet::srv_result_t DirectoryCmdServer::
   ListTaskCmds(int behaviorID,
 	       int taskID,
-	       wbcrun::command_list_t & commands) const
+	       command_list_t & commands) const
   {
     if ((0 > behaviorID) || (static_cast<int>(m_behavior.size()) <= behaviorID))
       return wbcnet::SRV_INVALID_BEHAVIOR_ID;

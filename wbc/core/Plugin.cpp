@@ -80,7 +80,7 @@ namespace wbc {
   void PluginRegistry::
   LoadPluginFile(std::string const & name, std::string const & path) throw(std::runtime_error)
   {
-    wbcrun::DLModule * dl(LoadModule(name, path));
+    wbcnet::DLModule * dl(LoadModule(name, path));
     // in case this fails we're stuck with a bad entry in the module
     // registry, but well... no support for unloading them at the
     // moment
@@ -219,7 +219,7 @@ namespace wbc {
   
   void Extensions::
   AddServoBehaviors(std::string const & name,
-		    wbcrun::FactoryAPI<ServoBehaviorsAPI> * factory)
+		    wbcnet::FactoryAPI<ServoBehaviorsAPI> * factory)
     throw(std::runtime_error)
   {
     LOG_DEBUG (logger, "wbc::Extensions::AddServoBehaviors(): " << name);
@@ -229,7 +229,7 @@ namespace wbc {
   
   void Extensions::
   AddRawController(std::string const & name,
-		   wbcrun::FactoryAPI<RawControllerAPI> * factory)
+		   wbcnet::FactoryAPI<RawControllerAPI> * factory)
     throw(std::runtime_error)
   {
     LOG_DEBUG (logger, "wbc::Extensions::AddRawController(): " << name);

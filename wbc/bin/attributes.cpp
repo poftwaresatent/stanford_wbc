@@ -83,7 +83,7 @@ namespace wbc {
     try {
 #ifdef DISABLE_NETWORKING
 # warning 'Networking is DISABLED, skipping over networking support code.'
-      attr->netcfg = new wbcrun::SPQueueNetConfig();
+      attr->netcfg = new wbcnet::SPQNetConfig();
 #else // DISABLE_NETWORKING
       attr->netcfg = wbcnet::NetConfig::Create(opt.communication);
 #endif // DISABLE_NETWORKING
