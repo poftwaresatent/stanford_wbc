@@ -80,15 +80,19 @@ public:
   
   /** \note pointer semantics to support more than one DOF */
 	virtual void setTau(const deFloat* v) = 0;
+        virtual void zeroTau() = 0;
   
   /** \note pointer semantics to support more than one DOF */
 	virtual void setDDQ(const deFloat* v) = 0;
+	virtual void zeroDDQ() = 0;
   
   /** \note pointer semantics to support more than one DOF */
 	virtual void setDQ(const deFloat* v) = 0;
+	virtual void zeroDQ() = 0;
   
   /** \note pointer semantics to support more than one DOF */
 	virtual void setQ(const deFloat* v) = 0;
+	virtual void zeroQ() = 0;
   
   /** \note pointer semantics to support more than one DOF */
 	virtual void getTau(deFloat* v) = 0;
@@ -137,6 +141,9 @@ public:
 	virtual void addQdelta();
 	virtual void addDQdelta();
 	virtual void zeroTau() { getVarSpherical()->_Tau.zero(); }
+	virtual void zeroDDQ() { getVarSpherical()->_ddQ.zero(); }
+	virtual void zeroDQ() { getVarSpherical()->_dQ.zero(); getVarSpherical()->_dQrotated.zero(); }
+	virtual void zeroQ() { getVarSpherical()->_Q.identity(); }
 	virtual void setTau(const deFloat* v) { getVarSpherical()->_Tau.set(v); }
 	virtual void setDDQ(const deFloat* v) { getVarSpherical()->_ddQ.set(v); }
 	virtual void setDQ(const deFloat* v) { getVarSpherical()->_dQ.set(v); }
@@ -199,6 +206,10 @@ public:
 	virtual void addQdelta() { getVarDOF1()->_Q += getVarDOF1()->_ddQ; }
 	virtual void addDQdelta() { getVarDOF1()->_dQ += getVarDOF1()->_ddQ; if (getDQclamp()) clampDQ(); }
 	virtual void zeroTau() { getVarDOF1()->_Tau = 0; }
+	virtual void zeroDDQ() { getVarDOF1()->_ddQ = 0; }
+	virtual void zeroDQ() { getVarDOF1()->_dQ = 0; }
+	virtual void zeroQ() { getVarDOF1()->_Q = 0; }
+
 	virtual void setTau(const deFloat* v) { getVarDOF1()->_Tau = *v; }
 	virtual void setDDQ(const deFloat* v) { getVarDOF1()->_ddQ = *v; }
 	virtual void setDQ(const deFloat* v) { getVarDOF1()->_dQ = *v; }
