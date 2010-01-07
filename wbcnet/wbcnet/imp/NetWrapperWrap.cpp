@@ -33,7 +33,7 @@
 
 #ifdef HAVE_NETWRAP
 
-#include "imp/NetWrapperWrap.hpp"
+#include "NetWrapperWrap.hpp"
 #include <wbcnet/data.hpp>
 #include <wbcnet/log.hpp>
 #include <string.h>
