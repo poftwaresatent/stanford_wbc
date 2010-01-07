@@ -29,7 +29,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** \file StreamBufMgr.hpp Helps you optimize delay and frequency over the network. */
+/** \file misc/StreamBufMgr.hpp Helps you optimize delay and frequency over the network. */
 
 #ifndef WBCNET_STREAM_BUF_MGR_HPP
 #define WBCNET_STREAM_BUF_MGR_HPP

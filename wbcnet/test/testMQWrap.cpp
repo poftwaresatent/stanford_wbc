@@ -29,9 +29,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** \file testMQWrap.cpp Unit test of POSIX message queue wrapper. */
+/** \file testimp/MQWrap.cpp Unit test of POSIX message queue wrapper. */
 
-#include <wbcnet/MQWrap.hpp>
+#include <wbcnet/imp/MQWrap.hpp>
 #include <wbcnet/proxy.hpp>
 #include <wbcnet/msg/RobotState.hpp>
 #include <wbcnet/log.hpp>

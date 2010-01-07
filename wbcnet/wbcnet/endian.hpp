@@ -35,7 +35,7 @@
 #define WBCNET_ENDIAN_HPP
 
 #ifdef WIN32
-# include "win32_stdint.hpp"
+# include "win32/win32_stdint.hpp"
 #else
 # include <stdint.h>
 #endif

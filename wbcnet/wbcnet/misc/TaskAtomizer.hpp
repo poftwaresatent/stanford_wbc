@@ -29,7 +29,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** \file TaskAtomizer.hpp Declares class TaskAtomizer. */
+/** \file misc/TaskAtomizer.hpp Declares class TaskAtomizer. */
 
 #ifndef WBCNET_TASK_ATOMIZER_HPP
 #define WBCNET_TASK_ATOMIZER_HPP
@@ -37,7 +37,7 @@
 #include <wbcnet/endian_mode.hpp>
 
 #ifdef WIN32
-# include "win32_compat.hpp"
+# include "win32/win32_compat.hpp"
 #else
 # include <sys/time.h>
 # include <stdint.h>

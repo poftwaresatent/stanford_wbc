@@ -30,7 +30,7 @@
  */
 
 #include "TCPNetConfig.hpp"
-#include <wbcnet/SockWrap.hpp>
+#include <wbcnet/imp/SockWrap.hpp>
 #include <wbcnet/strutil.hpp>
 #include <wbcnet/log.hpp>
 #include <iostream>

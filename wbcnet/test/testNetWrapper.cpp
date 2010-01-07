@@ -45,9 +45,9 @@
 */
 
 #include <wbcnet/proxy.hpp>
-#include <wbcnet/NetWrapperWrap.hpp>
+#include <wbcnet/imp/NetWrapperWrap.hpp>
 #include <wbcnet/Muldex.hpp>
-#include <wbcnet/DelayHistogram.hpp>
+#include <wbcnet/misc/DelayHistogram.hpp>
 #include <wbcnet/msg/TaskMatrix.hpp>
 #include <wbcnet/msg/RobotState.hpp>
 

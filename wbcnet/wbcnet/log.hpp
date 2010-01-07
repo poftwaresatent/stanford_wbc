@@ -125,7 +125,7 @@ namespace wbcnet {
 // The user wants no logging, provide definitions that will create no
 // runtime overhead.
 
-# include <wbcnet/fake_log.hpp>
+# include <wbcnet/imp/fake_log.hpp>
 
 # define LOG_TRACE(logger, arg) /* all logging disabled */
 # define LOG_DEBUG(logger, arg) /* all logging disabled */
@@ -165,7 +165,7 @@ namespace wbcnet {
 // implementations of the logging mechanisms that only prints messages
 // of level warning and upwards.
 
-#  include <wbcnet/fake_log.hpp>
+#  include <wbcnet/imp/fake_log.hpp>
 
 // XXXX to do: could use __PRETTY_FUNCTION__ here and also in log4cxx
 // wrapper macros in order to automatically insert the fully qualified

@@ -29,7 +29,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** \file NetWrapperWrap.hpp Communication wrapper for the NetWrapper library from Forcedimension. */
+/** \file imp/NetWrapperWrap.hpp Communication wrapper for the NetWrapper library from Forcedimension. */
 
 #ifndef WBCNET_NETWRAPPER_WRAP_HPP
 #define WBCNET_NETWRAPPER_WRAP_HPP
@@ -44,9 +44,9 @@
 #ifndef WIN32
 # include <netinet/in.h>
 #else
-# include "win32_compat.hpp"
+# include "win32/win32_compat.hpp"
 // This undef has to be above NetWrapper.h, because Windows (or one of
-// the headers included via win32_compat.hpp) defines a preprocessor
+// the headers included via win32/win32_compat.hpp) defines a preprocessor
 // symbol "SendMessage" which expands to "SendMessageA" and thus mucks
 // with our code.
 # undef SendMessage

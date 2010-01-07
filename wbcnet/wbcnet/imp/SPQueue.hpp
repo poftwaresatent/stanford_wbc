@@ -30,7 +30,7 @@
  */
 
 /**
-   \file SPQueue.hpp Queue-based "communication" for single-process applications.
+   \file imp/SPQueue.hpp Queue-based "communication" for single-process applications.
    
    This file contains SPQueue, which is mainly useful for testing
    purposes. Or maybe it can be used as a communication channel

@@ -30,7 +30,7 @@
  */
 
 #include "MQNetConfig.hpp"
-#include <wbcnet/MQWrap.hpp>
+#include <wbcnet/imp/MQWrap.hpp>
 #include <wbcnet/strutil.hpp>
 #include <wbcnet/log.hpp>
 #include <vector>

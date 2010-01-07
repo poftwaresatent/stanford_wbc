@@ -30,7 +30,7 @@
  */
 
 #include "SPQueue.hpp"
-#include "data.hpp"
+#include <wbcnet/data.hpp>
 
 using namespace std;
 

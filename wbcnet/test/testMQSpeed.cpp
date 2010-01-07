@@ -1,4 +1,4 @@
-#include <wbcnet/DelayHistogram.hpp>
+#include <wbcnet/misc/DelayHistogram.hpp>
 #include <mqueue.h>
 #include <signal.h>
 #include <err.h>

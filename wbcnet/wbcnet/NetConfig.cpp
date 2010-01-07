@@ -30,7 +30,7 @@
  */
 
 #include "NetConfig.hpp"
-#include <wbcnet/SPQueue.hpp>
+#include <wbcnet/imp/SPQueue.hpp>
 #include <wbcnet/strutil.hpp>
 #include <wbcnet/log.hpp>
 #include <vector>

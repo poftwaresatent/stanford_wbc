@@ -29,7 +29,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** \file MQWrap.hpp Communication wrapper for POSIX message queues. */
+/** \file imp/MQWrap.hpp Communication wrapper for POSIX message queues. */
 
 #ifndef WBCNET_MQWRAP_HPP
 #define WBCNET_MQWRAP_HPP

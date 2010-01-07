@@ -30,8 +30,8 @@
  */
 
 #include "TaskAtomizer.hpp"
-#include "proxy.hpp"
-#include "msg/TaskMatrix.hpp"
+#include <wbcnet/proxy.hpp>
+#include <wbcnet/msg/TaskMatrix.hpp>
 #include <wbcnet/log.hpp>
 #include <stdlib.h>
 #include <limits>
@@ -39,7 +39,7 @@
 #ifndef WIN32
 #include <strings.h>
 #else
-#include "win32_compat.hpp"
+#include "win32/win32_compat.hpp"
 #endif
 
 static wbcnet::logger_t logger(wbcnet::get_logger("wbcnet"));

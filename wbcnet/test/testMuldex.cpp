@@ -30,7 +30,7 @@
  */
 
 #include <wbcnet/Muldex.hpp>
-#include <wbcnet/SPQueue.hpp>
+#include <wbcnet/imp/SPQueue.hpp>
 #include <wbcnet/msg/RobotState.hpp>
 #include <wbcnet/msg/TaskSpec.hpp>
 #include <wbcnet/log.hpp>

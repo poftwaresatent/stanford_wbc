@@ -33,7 +33,7 @@
 #define WBCNET_TASK_MODEL_CONTAINER_HPP
 
 #ifdef WIN32
-#include "wbcnet/win32_compat.hpp"
+#include "wbcnet/win32/win32_compat.hpp"
 #endif
 
 #include <string>

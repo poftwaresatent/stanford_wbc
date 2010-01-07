@@ -41,7 +41,7 @@
 #ifndef WBCNET_PROXY_HPP
 #define WBCNET_PROXY_HPP
 
-#include <wbcnet/id.hpp>
+#include <wbcnet/misc/id.hpp>
 #include <wbcnet/data.hpp>
 #include <wbcnet/pack.hpp>
 

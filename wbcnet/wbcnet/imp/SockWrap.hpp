@@ -29,7 +29,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** \file SockWrap.hpp Communication interface that wraps around sockets. */
+/** \file imp/SockWrap.hpp Communication interface that wraps around sockets. */
 
 #ifndef WBCNET_SOCKWRAP_HPP
 #define WBCNET_SOCKWRAP_HPP

@@ -32,13 +32,13 @@
 #ifdef HAVE_NETWRAP
 
 #include "NetWrapNetConfig.hpp"
-#include <wbcnet/NetWrapperWrap.hpp>
+#include <wbcnet/imp/NetWrapperWrap.hpp>
 #include <wbcnet/strutil.hpp>
 
 #ifndef WIN32
 # include <netinet/in.h>
 #else
-# include "../win32_compat.hpp"
+# include "../win32/win32_compat.hpp"
 #endif
 
 using namespace std;

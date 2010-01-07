@@ -29,17 +29,17 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** \file NetWrapperWrap.cpp Communication wrapper for the NetWrapper library from Forcedimension. */
+/** \file imp/NetWrapperWrap.cpp Communication wrapper for the NetWrapper library from Forcedimension. */
 
 #ifdef HAVE_NETWRAP
 
-#include "NetWrapperWrap.hpp"
+#include "imp/NetWrapperWrap.hpp"
 #include <wbcnet/data.hpp>
 #include <wbcnet/log.hpp>
 #include <string.h>
 
 #ifdef WIN32
-# include "win32_compat.hpp"
+# include "win32/win32_compat.hpp"
 #undef SendMessage
 #endif
 

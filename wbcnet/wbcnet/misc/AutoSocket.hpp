@@ -29,7 +29,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** \file AutoSocket.hpp Wraps around sockets and robustly reconnects or re-listens. */
+/** \file misc/AutoSocket.hpp Wraps around sockets and robustly reconnects or re-listens. */
 
 #ifndef WBCNET_AUTO_SOCKET_HPP
 #define WBCNET_AUTO_SOCKET_HPP
@@ -38,7 +38,7 @@
 # error Networking is DISABLED, do not use this header.
 #endif // DISABLE_NETWORKING
 
-#include <wbcnet/SockWrap.hpp>
+#include <wbcnet/imp/SockWrap.hpp>
 
 namespace wbcnet {
   

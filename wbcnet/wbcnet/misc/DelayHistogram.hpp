@@ -35,7 +35,7 @@
 #ifndef WIN32
 #include <sys/time.h>
 #else
-#include "wbcnet/win32_compat.hpp"
+#include "wbcnet/win32/win32_compat.hpp"
 #endif
 
 

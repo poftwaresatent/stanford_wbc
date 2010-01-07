@@ -34,7 +34,7 @@
 #ifndef WIN32
 #include <sys/time.h>
 #else
-#include"win32_compat.hpp"
+#include"win32/win32_compat.hpp"
 #endif
 
 #include <time.h>

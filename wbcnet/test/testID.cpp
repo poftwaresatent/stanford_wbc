@@ -29,7 +29,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <wbcnet/id.hpp>
+#include <wbcnet/misc/id.hpp>
 #include <iostream>
 #include <sstream>
 #include <cstdlib>

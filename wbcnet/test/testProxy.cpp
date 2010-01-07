@@ -31,7 +31,7 @@
 
 /** \file testProxy.cpp Unit test for Proxy (sub)classes. */
 
-#include <wbcnet/SPQueue.hpp>
+#include <wbcnet/imp/SPQueue.hpp>
 #include <wbcnet/proxy.hpp>
 #include <wbcnet/msg/RobotState.hpp>
 #include <wbcnet/msg/StringList.hpp>

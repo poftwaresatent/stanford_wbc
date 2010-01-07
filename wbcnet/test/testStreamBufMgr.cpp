@@ -1,4 +1,4 @@
-#include <wbcnet/StreamBufMgr.hpp>
+#include <wbcnet/misc/StreamBufMgr.hpp>
 #include <iostream>
 #include <deque>
 #include <err.h>

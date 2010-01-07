@@ -30,7 +30,7 @@
  */
 
 #include "SPQNetConfig.hpp"
-#include <wbcnet/SPQueue.hpp>
+#include <wbcnet/imp/SPQueue.hpp>
 #include <wbcnet/log.hpp>
 #include <wbcnet/strutil.hpp>
 

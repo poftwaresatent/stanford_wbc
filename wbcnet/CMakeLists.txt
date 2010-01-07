@@ -18,18 +18,18 @@ LIST (APPEND WBCNET_SRCS
       wbcnet/proxy.cpp
       wbcnet/net.cpp
       wbcnet/endian.cpp
-      wbcnet/id.cpp
-      wbcnet/StreamBufMgr.cpp
-      wbcnet/SPQueue.cpp
-      wbcnet/TaskAtomizer.cpp
-      wbcnet/SockWrap.cpp
+      wbcnet/misc/id.cpp
+      wbcnet/misc/StreamBufMgr.cpp
+      wbcnet/imp/SPQueue.cpp
+      wbcnet/misc/TaskAtomizer.cpp
+      wbcnet/imp/SockWrap.cpp
       wbcnet/Muldex.cpp
       wbcnet/strutil.cpp
-      wbcnet/DelayHistogram.cpp
-      wbcnet/AutoSocket.cpp
-      wbcnet/udp_util.cpp
+      wbcnet/misc/DelayHistogram.cpp
+      wbcnet/misc/AutoSocket.cpp
+      wbcnet/misc/udp_util.cpp
       wbcnet/NetConfig.cpp
-      wbcnet/message_id.cpp
+      wbcnet/misc/message_id.cpp
       wbcnet/DLModule.cpp
       wbcnet/imp/MQNetConfig.cpp
       wbcnet/imp/TCPNetConfig.cpp
@@ -83,7 +83,7 @@ INCLUDE (CheckIncludeFileCXX)
 CHECK_INCLUDE_FILE_CXX (mqueue.h WBCNET_HAVE_MQUEUE)
 IF (${WBCNET_HAVE_MQUEUE})
 	ADD_DEFINITIONS (-DWBCNET_HAVE_MQUEUE)
-	LIST (APPEND WBCNET_SRCS wbcnet/MQWrap.cpp)
+	LIST (APPEND WBCNET_SRCS wbcnet/imp/MQWrap.cpp)
 	LIST (APPEND WBCNET_LIBS rt)
 ENDIF (${WBCNET_HAVE_MQUEUE})
 
@@ -170,7 +170,7 @@ if (NETWRAP_DIR)
 #    endif (NETWRAP_CHECK)
     add_definitions (-DHAVE_NETWRAP)
     list (APPEND WBCNET_LIBS netwrapper)
-    list (APPEND WBCNET_SRCS wbcnet/NetWrapperWrap.cpp)
+    list (APPEND WBCNET_SRCS wbcnet/imp/NetWrapperWrap.cpp)
   else (WBCNET_HAVE_NETWRAP)
     message (FATAL_ERROR "NetWrapper.h not found even though NETWRAP_DIR was set to ${NETWRAP_DIR}")
   endif (WBCNET_HAVE_NETWRAP)

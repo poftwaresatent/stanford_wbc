@@ -29,7 +29,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** \file id.hpp Simple name-to-ID and back dictionary (manage proxy and command ID). */
+/** \file misc/id.hpp Simple name-to-ID and back dictionary (manage proxy and command ID). */
 
 #ifndef WBCNET_ID_HPP
 #define WBCNET_ID_HPP
@@ -38,7 +38,7 @@
 #include <map>
 #include <string>
 #ifdef WIN32
-#include "wbcnet/win32_compat.hpp"
+#include "wbcnet/win32/win32_compat.hpp"
 #else
 #include <stdint.h>
 #endif

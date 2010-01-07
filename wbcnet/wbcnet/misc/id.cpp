@@ -29,10 +29,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** \file id.cpp Implementation of IDLookup. */
+/** \file misc/id.cpp Implementation of IDLookup. */
 
 #include "id.hpp"
-#include "strutil.hpp"
+#include <wbcnet/strutil.hpp>
 
 namespace wbcnet {
   

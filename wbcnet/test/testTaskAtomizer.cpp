@@ -29,10 +29,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** \file testTaskAtomizer.cpp Unit test of class TaskAtomizer. */
+/** \file testmisc/TaskAtomizer.cpp Unit test of class TaskAtomizer. */
 
-#include <wbcnet/TaskAtomizer.hpp>
-#include <wbcnet/SPQueue.hpp>
+#include <wbcnet/misc/TaskAtomizer.hpp>
+#include <wbcnet/imp/SPQueue.hpp>
 #include <wbcnet/data.hpp>
 #include <wbcnet/proxy.hpp>
 #include <wbcnet/Muldex.hpp>

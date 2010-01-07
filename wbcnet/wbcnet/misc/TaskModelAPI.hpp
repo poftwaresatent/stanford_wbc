@@ -32,8 +32,8 @@
 #ifndef WBCNET_TASK_MODEL_API_HPP
 #define WBCNET_TASK_MODEL_API_HPP
 
-#include <wbcnet/TaskModelContainer.hpp>
-#include <wbcnet/TaskAtomizer.hpp>
+#include <wbcnet/misc/TaskModelContainer.hpp>
+#include <wbcnet/misc/TaskAtomizer.hpp>
 
 namespace wbcnet {
   
