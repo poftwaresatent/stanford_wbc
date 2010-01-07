@@ -391,4 +391,11 @@ namespace wbcnet {
     return COM_OK;
   }
   
+  
+  bool SockWrap::
+  ResizeSourceBuffer(int size)
+  {
+    return m_nsource.buffer.Resize(size);
+  }
+  
 }

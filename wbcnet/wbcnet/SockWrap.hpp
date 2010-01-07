@@ -106,11 +106,23 @@ namespace wbcnet {
        The counterpart of Send(). Likewise, uses NetSource::Receive()
        for the real work.
        
+       \note When using skip_length_header=true (which presumes that
+       you know what you're doing) it can be tricky to make sure that
+       the right number of bytes is expected. Use ResizeSourceBuffer()
+       for that.
+       
        \return COM_OK if everything went according to plan. Note that
        COM_TRY_AGAIN is fairly common when you are using non-blocking
        I/O, which is the default.
     */
     com_status Receive(BufferAPI & buffer);
+    
+    /**
+       Only really makes sense When using skip_length_header=true, it
+       can be useful before a call to Receive()... use at your own
+       risk though.
+     */
+    bool ResizeSourceBuffer(int size);
     
   protected:
     NetSink m_nsink;
