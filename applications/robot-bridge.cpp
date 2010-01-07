@@ -27,7 +27,7 @@
 #include <wbc/bin/builtin.hpp>
 #include <saimatrix/SAIVector.h>
 #include <saimatrix/SAIMatrix.h>
-#include <wbcnet/DelayHistogram.hpp>
+#include <wbcnet/misc/DelayHistogram.hpp>
 #include <wbcnet/strutil.hpp>
 #include <wbcnet/log.hpp>
 #include <iostream>

@@ -33,7 +33,7 @@
 #include <wbc/bin/directory.hpp>
 #include <wbc/msg/RobotState.hpp>
 #ifdef WIN32
-#include "wbcnet/win32_compat.hpp"
+#include "wbcnet/win32/win32_compat.hpp"
 #else
 #include <sys/time.h>
 #endif

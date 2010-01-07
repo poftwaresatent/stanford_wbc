@@ -28,7 +28,7 @@
 
 #include <wbc/core/RobotAPI.hpp>
 #include <wbc/core/RobotFactory.hpp>
-#include <wbcnet/SockWrap.hpp>
+#include <wbcnet/imp/SockWrap.hpp>
 
 
 namespace netrob {

@@ -38,7 +38,7 @@
 #ifndef WIN32
 #include <stdint.h>
 #else
-#include "wbcnet/win32_compat.hpp"
+#include "wbcnet/win32/win32_compat.hpp"
 #endif
 
 namespace wbc {

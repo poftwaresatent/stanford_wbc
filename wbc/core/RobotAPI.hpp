@@ -24,7 +24,7 @@
 #ifndef WIN32
 #include <sys/types.h>
 #else
-#include <wbcnet/wbcnet/win32_compat.hpp>
+#include <wbcnet/wbcnet/win32/win32_compat.hpp>
 #endif
 
 #include <iosfwd>

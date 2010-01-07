@@ -22,7 +22,7 @@
 */
 
 #include "TaskModelListener.hpp"
-#include <wbcnet/message_id.hpp>
+#include <wbcnet/misc/message_id.hpp>
 #include <wbc/core/TaskModelBase.hpp>
 #include <wbcnet/log.hpp>
 #include <iostream>

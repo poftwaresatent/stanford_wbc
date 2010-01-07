@@ -24,7 +24,7 @@
 #include "ServoProcess.hpp"
 #include "TaskModelListener.hpp"
 #include "DirectoryCmdServer.hpp"
-#include <wbcnet/message_id.hpp>
+#include <wbcnet/misc/message_id.hpp>
 #include <wbcnet/NetConfig.hpp>
 #include <wbcnet/log.hpp>
 #include <wbc/core/TaskModelBase.hpp>
@@ -38,7 +38,7 @@
 #include <wbc/msg/RobotState.hpp>
 #include <wbcnet/msg/TaskSpec.hpp>
 #include <wbcnet/msg/TaskMatrix.hpp>
-#include <wbcnet/DelayHistogram.hpp>
+#include <wbcnet/misc/DelayHistogram.hpp>
 #include <sstream>
 
 

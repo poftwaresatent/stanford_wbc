@@ -25,7 +25,7 @@
 #define WBC_MSG_STATUS_HPP
 
 #include <wbcnet/msg/Status.hpp>
-#include <wbcnet/message_id.hpp>
+#include <wbcnet/misc/message_id.hpp>
 
 namespace wbc {
 

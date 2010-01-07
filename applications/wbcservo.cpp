@@ -31,7 +31,7 @@
 #include <wbc/core/RobotFactory.hpp>
 #include <wbc/core/Contact.hpp>
 #include <wbc/core/Kinematics.hpp>
-#include <wbcnet/DelayHistogram.hpp>
+#include <wbcnet/misc/DelayHistogram.hpp>
 #include <wbcnet/log.hpp>
 #include <wbc/bin/ServoProcess.hpp>
 #include <wbc/bin/ServoModelProcess.hpp>

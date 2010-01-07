@@ -35,7 +35,7 @@
 #include <wbc/core/MobileManipulatorServoBehaviors.hpp>
 #include <wbc/bin/builtin.hpp>
 #include <wbc/bin/options.hpp>
-#include <wbcnet/TaskAtomizer.hpp>
+#include <wbcnet/misc/TaskAtomizer.hpp>
 #include <wbcnet/log.hpp>
 #include <wbcnet/NetConfig.hpp>
 

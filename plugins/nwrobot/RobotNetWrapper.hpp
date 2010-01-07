@@ -36,7 +36,7 @@
 #include <wbc/msg/ServoCommand.hpp>
 #include <wbcnet/Muldex.hpp>
 #include <wbcnet/com.hpp>
-#include <wbcnet/NetWrapperWrap.hpp>
+#include <wbcnet/imp/NetWrapperWrap.hpp>
 
 namespace wbc_nwrobot_plugin {
 

@@ -23,7 +23,7 @@
 */
 
 #include "UserProcess.hpp"
-#include <wbcnet/message_id.hpp>
+#include <wbcnet/misc/message_id.hpp>
 #include <wbcnet/NetConfig.hpp>
 #include <wbcnet/log.hpp>
 #include <iostream>

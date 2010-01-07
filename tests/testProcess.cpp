@@ -27,7 +27,7 @@
 #include <wbc/bin/Process.hpp>
 #include <wbcnet/msg/Service.hpp>
 #include <wbcnet/data.hpp>
-#include <wbcnet/SPQueue.hpp>
+#include <wbcnet/imp/SPQueue.hpp>
 #include <wbcnet/log.hpp>
 #include <sys/time.h>
 #include <time.h>

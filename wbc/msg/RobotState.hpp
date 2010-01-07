@@ -31,7 +31,7 @@
 // We really should find a better way than having a global header for
 // this... maybe a checksum on the names of registered header and
 // payload fields?
-#include <wbcnet/message_id.hpp>
+#include <wbcnet/misc/message_id.hpp>
 
 namespace wbc {
   

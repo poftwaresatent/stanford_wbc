@@ -26,7 +26,7 @@
 #ifndef WBC_TASK_MODEL_BASE_HPP
 #define WBC_TASK_MODEL_BASE_HPP
 
-#include <wbcnet/TaskModelAPI.hpp>
+#include <wbcnet/misc/TaskModelAPI.hpp>
 #include <wbc/core/TaskSet.hpp>
 #include <wbc/core/SAIMatrixAPI.hpp>
 

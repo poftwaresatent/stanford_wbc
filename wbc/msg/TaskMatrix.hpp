@@ -25,7 +25,7 @@
 #define WBC_MSG_TASK_MATRIX_HPP
 
 #include <wbcnet/msg/TaskMatrix.hpp>
-#include <wbcnet/message_id.hpp>
+#include <wbcnet/misc/message_id.hpp>
 #include <limits>
 
 namespace wbc {
