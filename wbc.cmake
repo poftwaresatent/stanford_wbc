@@ -18,10 +18,11 @@ endif (COMMAND cmake_policy)
 #   - XMLRPC_DIR
 #   - LOG4CXX_DIR
 #   - EXPAT_DIR
+#   - NETWRAP_DIR
 #   These variables, if not set, will be attempted to be taken from
 #   the environment. As a side effect, include and link directories
-#   will be adjusted to find gtest, xmlrpc++, log4cxx, and expat
-#   headers and libraries.
+#   will be adjusted to find gtest, xmlrpc++, log4cxx, expat, and
+#   libnetwrapper headers and libraries.
 # - in addition, ROS_BINDEPS_PATH is used (if available) to provide
 #   LOG4CXX_DIR, if that is still undefined after the pther checks.
 #
@@ -48,7 +49,7 @@ macro (wbc_getvars)
     link_directories (${XMLRPC_DIR}/lib ${XMLRPC_DIR})
   endif (XMLRPC_DIR)
   
-  # try to get XMLRPC_DIR from CMake or environment
+  # try to get EXPAT_DIR from CMake or environment
   if (NOT EXPAT_DIR)
     set (EXPAT_DIR $ENV{EXPAT_DIR})
   endif (NOT EXPAT_DIR)
@@ -58,6 +59,17 @@ macro (wbc_getvars)
     include_directories (${EXPAT_DIR}/include ${EXPAT_DIR})
     link_directories (${EXPAT_DIR}/lib ${EXPAT_DIR})
   endif (EXPAT_DIR)
+  
+  # try to get NETWRAP_DIR from CMake or environment
+  if (NOT NETWRAP_DIR)
+    set (NETWRAP_DIR $ENV{NETWRAP_DIR})
+  endif (NOT NETWRAP_DIR)
+  if (NETWRAP_DIR)
+    message ("[WBC] NETWRAP_DIR is set to ${NETWRAP_DIR}")
+    list (APPEND CMAKE_REQUIRED_INCLUDES ${NETWRAP_DIR}/include ${NETWRAP_DIR})
+    include_directories (${NETWRAP_DIR}/include ${NETWRAP_DIR})
+    link_directories (${NETWRAP_DIR}/lib ${NETWRAP_DIR})
+  endif (NETWRAP_DIR)
   
   # try to get LOG4CXX_DIR from CMake or environment
   if (NOT LOG4CXX_DIR)
@@ -94,6 +106,7 @@ endmacro (wbc_getvars)
 #   - HAVE_LOG4CXX
 #   - HAVE_CURSES
 #   - HAVE_EXPAT
+#   - HAVE_NETWRAP
 macro (wbc_init PROJECT_NAME)
   message ("[WBC] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
   message ("[WBC] BEGIN base config of ${PROJECT_NAME}")
@@ -173,9 +186,7 @@ macro (wbc_init PROJECT_NAME)
     include_directories (${WBC_ROOT}/include ${WBC_ROOT})
     link_directories (${WBC_ROOT}/lib ${WBC_ROOT})
   else (WBC_ROOT)
-    message ("[WBC] WARNING WARNING WARNING WARNING")
-    message ("      WBC_ROOT is not set")
-    message ("      it might be required to find headers, libraries, and a CMake module")
+    message ("[WBC] WBC_ROOT is not set (this is probably harmless)")
   endif (WBC_ROOT)
   
   # try to find 3rdparty stuff
@@ -214,7 +225,7 @@ macro (wbc_init PROJECT_NAME)
       add_definitions (-DHAVE_GTEST)
     endif (HAVE_GTEST_LIB MATCHES "NOTFOUND")
   else (${HAVE_GTEST_HEADER})
-    message (STATUS "[WBC] WARNING did not find gtest, some tests will not be available")
+    message ("[WBC] WARNING did not find gtest, some tests will not be available")
   endif (${HAVE_GTEST_HEADER})
   
   check_include_file_cxx (XmlRpc.h HAVE_XMLRPC_HEADER)
@@ -254,6 +265,25 @@ macro (wbc_init PROJECT_NAME)
   else (${HAVE_EXPAT_HEADER})
     message ("[WBC] WARNING did not find expat, some things will not be available")
   endif (${HAVE_EXPAT_HEADER})
+  
+  check_include_file_cxx (NetWrapper.h HAVE_NETWRAP_HEADER)
+  if (${HAVE_NETWRAP_HEADER})
+    message ("[WBC] found netwrap headers")
+    if (NETWRAP_DIR)
+      find_library (HAVE_NETWRAP_LIB netwrapper PATHS ${NETWRAP_DIR} ${NETWRAP_DIR}/lib)
+    else (NETWRAP_DIR)
+      find_library (HAVE_NETWRAP_LIB netwrapper)
+    endif (NETWRAP_DIR)
+    if (HAVE_NETWRAP_LIB MATCHES "NOTFOUND")
+      message (FATAL_ERROR "netwrap library not found, although the header NetWrapper.h was found")
+    else (HAVE_NETWRAP_LIB MATCHES "NOTFOUND")
+      message ("[WBC] found netwrap library")
+      add_definitions (-DHAVE_NETWRAP)
+      set (HAVE_NETWRAP TRUE)
+    endif (HAVE_NETWRAP_LIB MATCHES "NOTFOUND")
+  else (${HAVE_NETWRAP_HEADER})
+    message ("[WBC] WARNING did not find libnetwrapper, some things will not be available")
+  endif (${HAVE_NETWRAP_HEADER})
   
   message ("[WBC] FINISHED base config of ${PROJECT_NAME}")
   message ("[WBC] <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
