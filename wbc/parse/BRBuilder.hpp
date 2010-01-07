@@ -18,7 +18,10 @@
  * <http://www.gnu.org/licenses/>
  */
 
-/** \author Roland Philippsen */
+/**
+   \file BRBuilder.hpp
+   \author Roland Philippsen
+*/
 
 #ifndef WBC_BR_BUILDER_HPP
 #define WBC_BR_BUILDER_HPP

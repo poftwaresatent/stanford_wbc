@@ -1,10 +1,3 @@
-go over all copyright notices in wbc again, and make sure that:
- * copyright is assigned to stanford
- * license is lgplv3
- * there's a note about the origin copyright and bsd license
-
---------------------------------------------------
-
 from wbcrun/test/CMakeLists.txt:
 
 list (APPEND TEST_LIBS wbcrun wbcnet)

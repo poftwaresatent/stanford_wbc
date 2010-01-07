@@ -18,7 +18,10 @@
  * <http://www.gnu.org/licenses/>
  */
 
-/** \author Luis Sentis and Roland Philippsen */
+/**
+   \file TiXmlBRParser.hpp
+   \author Luis Sentis and Roland Philippsen
+*/
 
 #ifndef WBC_TIXML_PARSER_HPP
 #define WBC_TIXML_PARSER_HPP

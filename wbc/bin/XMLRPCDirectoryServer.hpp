@@ -19,6 +19,7 @@
 /**
    \file XMLRPCDirectoryServer.hpp
    \author Roland Philippsen
+   \note Originally Copyright (c) 2009 Roland Philippsen, released under a BSD license.
 */
 
 #ifndef WBC_XMLRPC_DIRECTORY_HPP

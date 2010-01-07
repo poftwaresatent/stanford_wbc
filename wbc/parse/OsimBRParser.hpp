@@ -18,7 +18,10 @@
  * <http://www.gnu.org/licenses/>
  */
 
-/** \author Samir Menon and Roland Philippsen */
+/**
+   \file OsimBRParser.hpp
+   \author Samir Menon and Roland Philippsen
+*/
 
 #ifndef WBC_OSIM_PARSER_HPP
 #define WBC_OSIM_PARSER_HPP

@@ -19,6 +19,7 @@
 /**
    \file UserProcess.cpp
    \author Roland Philippsen
+   \note Originally Copyright (c) 2008 Roland Philippsen, released under a BSD license.
 */
 
 #include "UserProcess.hpp"

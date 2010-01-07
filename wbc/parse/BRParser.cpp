@@ -18,7 +18,10 @@
  * <http://www.gnu.org/licenses/>
  */
 
-/** \author Roland Philippsen */
+/**
+   \file BRParser.cpp
+   \author Roland Philippsen
+*/
 
 #include "BRParser.hpp"
 #include "TiXmlBRParser.hpp"

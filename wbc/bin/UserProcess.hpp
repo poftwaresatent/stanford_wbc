@@ -19,6 +19,7 @@
 /**
    \file UserProcess.hpp
    \author Roland Philippsen
+   \note Originally Copyright (c) 2008 Roland Philippsen, released under a BSD license.
 */
 
 #ifndef WBC_USER_PROCESS_HPP

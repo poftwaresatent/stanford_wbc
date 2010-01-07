@@ -19,6 +19,7 @@
 /**
    \file XMLRPCDirectoryServer.cpp
    \author Roland Philippsen
+   \note Originally Copyright (c) 2009 Roland Philippsen, released under a BSD license.
 */
 
 #include "directory.hpp"

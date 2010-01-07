@@ -18,7 +18,10 @@
  * <http://www.gnu.org/licenses/>
  */
 
-/** \author Samir Menon and Roland Philippsen */
+/**
+   \file OsimBRParser.cpp
+   \author Samir Menon and Roland Philippsen
+*/
 
 #include "OsimBRParser.hpp"
 #include <wbc/core/BranchingRepresentation.hpp>
