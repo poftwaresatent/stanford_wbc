@@ -90,7 +90,7 @@ namespace wbc {
       attr->robmodel = new RobotControlModel(BRParser::parse(opt.brparser_type, opt.xml_filename));
       LOG_INFO (logger, "loading extensions...");
       attr->extensions = load_extensions(attr->robmodel);
-      LOG_INFO (logger, "adding humanoid stuff...");
+      LOG_INFO (logger, "parsing behaviors...");
       BehaviorParser::StdParse(opt.xml_filename, attr->behavior, *attr->extensions->behavior_registry);
       if (attr->behavior.empty()) {
 	throw runtime_error("no (valid) behavior declarations found in `" + opt.xml_filename + "'");
