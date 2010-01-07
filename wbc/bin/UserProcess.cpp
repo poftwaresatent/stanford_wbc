@@ -22,7 +22,7 @@
 */
 
 #include "UserProcess.hpp"
-#include "message_id.hpp"
+#include <wbcnet/message_id.hpp>
 #include <wbcnet/NetConfig.hpp>
 #include <wbcnet/log.hpp>
 #include <iostream>
@@ -401,9 +401,9 @@ namespace wbc {
   UserProcess()
     : Process("user", 0, -1, wbcnet::ENDIAN_DETECT),
       m_channel(0),
-      m_user_request(msg::USER_REQUEST),
-      m_user_reply(msg::USER_REPLY),
-      m_task_spec(msg::TASK_SPEC),
+      m_user_request(wbcnet::msg::USER_REQUEST),
+      m_user_reply(wbcnet::msg::USER_REPLY),
+      m_task_spec(wbcnet::msg::TASK_SPEC),
       m_directory_client(0)
   {
   }
@@ -436,7 +436,7 @@ namespace wbc {
     AddSink(m_channel, 100);
     AddSource(m_channel, 100);
     
-    CreateHandler(msg::USER_REPLY, "UserReply", &m_user_reply);
+    CreateHandler(wbcnet::msg::USER_REPLY, "UserReply", &m_user_reply);
     
     m_task_spec.requestID = 0;
     m_task_spec.behaviorID = numeric_limits<uint8_t>::max();

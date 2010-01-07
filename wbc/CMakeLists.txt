@@ -77,6 +77,9 @@ list (APPEND SRCS
   bin/ServoProcess.cpp
   bin/TaskModelListener.cpp
   bin/options.cpp
+  bin/Process.cpp
+  bin/directory.cpp
+  bin/UserProcess.cpp
   )
 
 ##################################################

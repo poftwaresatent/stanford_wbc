@@ -23,7 +23,7 @@
    \author Roland Philippsen
 */
 
-#include <wbc/UserProcess.hpp>
+#include <wbc/bin/UserProcess.hpp>
 #include <wbcnet/NetConfig.hpp>
 #include <wbcnet/log.hpp>
 #include <iostream>
