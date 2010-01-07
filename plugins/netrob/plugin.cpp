@@ -24,6 +24,7 @@
 */
 
 #include "Robot.hpp"
+#include "RawRobot.hpp"
 #include <wbc/core/Plugin.hpp>
 
 using namespace std;
@@ -35,6 +36,7 @@ namespace netrob {
     virtual void Init(wbc::Extensions & extensions) throw(std::runtime_error)
     {
       extensions.AddRobot("net", new Factory());
+      extensions.AddRobot("rawnet", new RawFactory());
     }
   };
 

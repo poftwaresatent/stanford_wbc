@@ -51,11 +51,12 @@ namespace netrob {
     raw_state_s(size_t npos_, size_t nvel_)
       : npos(npos_),
 	nvel(nvel_),
-	nbytes(sizeof(value_t) * (npos + nvel)),
-	buffer(nbytes, nbytes),
-	joint_positions(reinterpret_cast<value_t*>(buffer.GetData())),
-	joint_velocities(joint_positions + npos * sizeof(value_t))
-    {}
+	nbytes(sizeof(value_type) * (npos + nvel)),
+	buffer(nbytes, nbytes)
+    {
+      joint_positions = reinterpret_cast<value_type*>(buffer.GetData());
+      joint_velocities = joint_positions + npos;
+    }
   };
   
   
@@ -74,9 +75,10 @@ namespace netrob {
     raw_command_s(size_t ncom_)
       : ncom(ncom_),
 	nbytes(sizeof(value_t) * ncom),
-	buffer(nbytes, nbytes),
-	joint_torques(reinterpret_cast<value_t*>(buffer.GetData()))
-    {}
+	buffer(nbytes, nbytes)
+    {
+      joint_torques = reinterpret_cast<value_type*>(buffer.GetData());
+    }
   };
   
   
