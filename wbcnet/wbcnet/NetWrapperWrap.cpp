@@ -163,8 +163,8 @@ namespace wbcnet {
     NetWrapper::Message msg;
     msg.PutArray(buffer.GetData(), buffer.GetSize());
     
-    if (0 != m_socket->SendMessage(msg)) {
-      LOG_ERROR (logger, "wbcnet::TCPNetWrapper::Send(): SendMessage() failed");
+    if (0 != m_socket->SendMsg(msg)) {
+      LOG_ERROR (logger, "wbcnet::TCPNetWrapper::Send(): SendMsg() failed");
       if (0 > m_reconnect_usec_sleep) {
 	return COM_OTHER_ERROR;
       }
@@ -195,7 +195,7 @@ namespace wbcnet {
       return COM_TRY_AGAIN;
     }
     
-    NetWrapper::Message * msg(m_socket->ReadMessage());
+    NetWrapper::Message * msg(m_socket->ReadMsg());
     if (0 == msg) {
       return COM_TRY_AGAIN;
     }
