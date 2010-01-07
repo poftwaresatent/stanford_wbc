@@ -17,6 +17,16 @@ if (wbc_tinyxml_CXX_FLAG_pipe)
   add_definitions (-pipe)
 endif (wbc_tinyxml_CXX_FLAG_pipe)
 
+check_cxx_compiler_flag (-ansi wbc_tinyxml_CXX_FLAG_ansi)
+if (wbc_tinyxml_CXX_FLAG_ansi)
+  add_definitions (-ansi)
+endif (wbc_tinyxml_CXX_FLAG_ansi)
+
+check_cxx_compiler_flag (-pedantic wbc_tinyxml_CXX_FLAG_pedantic)
+if (wbc_tinyxml_CXX_FLAG_pedantic)
+  add_definitions (-pedantic)
+endif (wbc_tinyxml_CXX_FLAG_pedantic)
+
 check_cxx_compiler_flag (-Wall wbc_tinyxml_CXX_FLAG_Wall)
 if (wbc_tinyxml_CXX_FLAG_Wall)
   add_definitions (-Wall)

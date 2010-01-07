@@ -53,6 +53,16 @@ if (TAO_Dynamics_Engine_CXX_FLAG_pipe)
   add_definitions (-pipe)
 endif (TAO_Dynamics_Engine_CXX_FLAG_pipe)
 
+check_cxx_compiler_flag (-ansi TAO_Dynamics_Engine_CXX_FLAG_ansi)
+if (TAO_Dynamics_Engine_CXX_FLAG_ansi)
+  add_definitions (-ansi)
+endif (TAO_Dynamics_Engine_CXX_FLAG_ansi)
+
+check_cxx_compiler_flag (-pedantic TAO_Dynamics_Engine_CXX_FLAG_pedantic)
+if (TAO_Dynamics_Engine_CXX_FLAG_pedantic)
+  add_definitions (-pedantic)
+endif (TAO_Dynamics_Engine_CXX_FLAG_pedantic)
+
 check_cxx_compiler_flag (-Wall TAO_Dynamics_Engine_CXX_FLAG_Wall)
 if (TAO_Dynamics_Engine_CXX_FLAG_Wall)
   add_definitions (-Wall)
