@@ -35,14 +35,20 @@ namespace wbc {
   class RobotControlModel;
   class BehaviorDescription;
   
+  
+  /**
+     Abstract interface for creating BehaviorDescription subclasses.
+  */
   class BehaviorFactoryAPI {  
   public:
     virtual ~BehaviorFactoryAPI() {}
     virtual BehaviorDescription * create() = 0;
   };
   
+  
   /**
-     Should be enough for most if not all cases.
+     Generic factory for BehaviorDescription subclasses that take no
+     constructor arguments.
   */
   template<typename behavior_t>
   class BehaviorFactory
@@ -52,13 +58,22 @@ namespace wbc {
   };
   
   
+  /**
+     Superclass for registries of BehaviorFactoryAPI instances. We
+     could do without this separate typedef... it makes the
+     BehaviorFactoryRegistry declaration a tad more readable though.
+   */
   typedef wbcnet::Registry<BehaviorFactoryAPI *,
 			   wbcnet::registry_trait_delete<BehaviorFactoryAPI *> >
   BehaviorFactoryRegistrySuper;
   
+  
   /**
-     \note Use the superclass' Add() to register BehaviorFactory
-     instances with this registry.
+     The registry of BehaviorFactoryAPI instances used by the
+     (runtime) extension mechanism.
+     
+     \note You use the Add() method from the superclass to register
+     BehaviorFactory instances with this registry.
   */
   class BehaviorFactoryRegistry
     : public BehaviorFactoryRegistrySuper
@@ -69,6 +84,15 @@ namespace wbc {
     */
     explicit BehaviorFactoryRegistry(RobotControlModel * robmodel);
     
+    /**
+       Create a BehaviorDescription subclass, based on a name-based
+       lookup of a BehaviorFactoryAPI. Typically, you register
+       BehaviorFactory<> of your subclasses during the plugin
+       initialization process.
+       
+       If there is no factory registered under the given name, an
+       exception is thrown.
+    */
     BehaviorDescription * Create(std::string const & name) const throw(std::runtime_error);
     
   protected:
