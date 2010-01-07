@@ -55,9 +55,9 @@ namespace wbcnet {
   /**
      Send a stream of packets, hiding partial writes from the
      user. The NetSink has a buffer, and it sends the size of the data
-     followed by the buffer contents over the wire. It sort of mixes
-     the semantics of BufferAPI (by composition) and Sink (by
-     similarity of methods).
+     followed by the buffer contents over the wire (unless the
+     skip_length_header flag is set). It sort of mixes the semantics of
+     BufferAPI (by composition) and Sink (by similarity of methods).
      
      \note On the receiving end, you can use a NetSource instance to
      do the reverse operation.
@@ -76,7 +76,7 @@ namespace wbcnet {
       WRITE_ERROR
     } state;
     
-    NetSink(int bufsize, int max_bufsize);
+    NetSink(int bufsize, int max_bufsize, bool skip_length_header = false);
     
     /**
        Send the buffer via a file descriptor. The NetSink keeps track
@@ -100,6 +100,7 @@ namespace wbcnet {
     Buffer buffer;
     
   protected:
+    bool const m_skip_length_header;
     state m_state;
     int32_t m_length;
     char * m_length_wip;
@@ -112,9 +113,9 @@ namespace wbcnet {
   /**
      Receive a stream of packets, hiding partial reads from the
      user. The NetSource has a buffer, and it receives the size of the
-     data followed by the buffer contents from the wire. It sort of
-     mixes the semantics of BufferAPI (by composition) and Source (by
-     similarity of methods).
+     data followed by the buffer contents from the wire (unless the
+     skip_length_header flag is set). It sort of mixes the semantics of
+     BufferAPI (by composition) and Source (by similarity of methods).
      
      \note On the sending end, you can use a NetSink instance to do
      the reverse operation.
@@ -144,7 +145,7 @@ namespace wbcnet {
       READ_ERROR
     } state;
     
-    NetSource(int bufsize, int max_bufsize);
+    NetSource(int bufsize, int max_bufsize, bool skip_length_header = false);
     
     /**
        Receive the buffer via a file descriptor. The NetSource keeps
@@ -153,6 +154,11 @@ namespace wbcnet {
        want to retrieve the atomized NetSource::buffer. This is only
        safe if the state is DONE (which is the case if this method
        returns COM_OK).
+       
+       BEWARE when using skip_length_header=true: the expected length
+       is simply taken from the current buffer, so make sure that is
+       set to what you expect. Using skip_length_header=true is
+       strongly discouraged anyway though.
        
        \note You are strongly advised to use the same fd for all calls.
     */
@@ -169,6 +175,7 @@ namespace wbcnet {
     Buffer buffer;
     
   protected:
+    bool const m_skip_length_header;
     state m_state;
     int32_t m_length;
     char * m_length_wip;

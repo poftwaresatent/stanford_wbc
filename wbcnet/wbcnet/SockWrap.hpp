@@ -64,7 +64,10 @@ namespace wbcnet {
     SockWrap(int bufsize, int max_bufsize,
 	     /** Subclasses pass in the sockfd which is to be used in
 		 Send() and Receive(). */
-	     int & com_sockfd);
+	     int & com_sockfd,
+	     /** Gets passed to NetSink and NetSource... set it to
+		 true only if you really know what you're doing. */
+	     bool skip_length_header = false);
     
   public:
     /** \note Calls Close(). */
@@ -144,7 +147,10 @@ namespace wbcnet {
        buffer behavior, just like size and max_size parameters of the
        Buffer constructor.
      */
-    SoClient(int bufsize, int max_bufsize);
+    SoClient(int bufsize, int max_bufsize,
+	     /** Set it to true only if you really know what you're
+		 doing. */
+	     bool skip_length_header = false);
     
     /**
        Connect to a server, typically a SoServer instance. Has to be
@@ -183,7 +189,10 @@ namespace wbcnet {
        buffer behavior, just like size and max_size parameters of the
        Buffer constructor.
      */
-    SoServer(int bufsize, int max_bufsize);
+    SoServer(int bufsize, int max_bufsize,
+	     /** Set it to true only if you really know what you're
+		 doing. */
+	     bool skip_length_header = false);
     
     /**
        Bind to and listen on the port specified during Open().  This
