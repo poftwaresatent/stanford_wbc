@@ -27,7 +27,6 @@
 #include <saimatrix/SAIVector.h>
 #include <saimatrix/SAIMatrix.h>
 #include <wbcnet/strutil.hpp>
-////#include <wbc/bin/Process.hpp>
 #include <sstream>
 #ifdef WIN32
 #include "wbcnet/win32_compat.hpp"
@@ -39,6 +38,9 @@
 
 using sfl::splitstring;
 using namespace std;
+
+
+namespace wbc_fake_plugin {
 
 
 RobotFake::
@@ -141,4 +143,6 @@ dumpHelp(std::string const & prefix, std::ostream & os) const
 {
   os << prefix << "spec = [ extra_usleep ]\n"
      << prefix << "  default = 250000\n";
+}
+
 }

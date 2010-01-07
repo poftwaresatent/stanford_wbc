@@ -27,6 +27,9 @@
 #include <wbcnet/msg/Service.hpp>
 
 
+namespace wbc_fake_plugin {
+
+
 DebugBehavior::
 DebugBehavior()
   : BehaviorDescription("DebugBehavior"),
@@ -65,4 +68,6 @@ handleKey(int keycode)
 {
   std::cout << "DebugBehavior::handleKey(" << keycode << ")\n";
   return wbcnet::SRV_SUCCESS;
+}
+
 }
