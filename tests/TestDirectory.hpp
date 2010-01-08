@@ -1,33 +1,28 @@
 /*
- * Copyright (c) 2009 Roland Philippsen <roland DOT philippsen AT gmx DOT net>
+ * Stanford Whole-Body Control Framework http://stanford-wbc.sourceforge.net/
  *
- * BSD license:
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holder nor the names of
- *    contributors to this software may be used to endorse or promote
- *    products derived from this software without specific prior written
- *    permission.
+ * Copyright (c) 2009 Stanford University. All rights reserved.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHORS AND CONTRIBUTORS ``AS IS''
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
- * PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT
- * HOLDER OR THE CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * This program is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation, either version 3 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/>
  */
+
+/**
+   \file TestDirectory.hpp
+   \author Roland Philippsen
+   \note Originally Copyright (c) 2009 Roland Philippsen, released under a BSD license.
+*/
 
 #ifndef WBC_TEST_DIRECTORY_HPP
 #define WBC_TEST_DIRECTORY_HPP
@@ -40,32 +35,32 @@ namespace wbc {
     : public Directory
   {
   public:
-    virtual wbcnet::srv_result_t HandleServoCmd(int requestID,
-					 srv::vector_t const * code_in,
-					 srv::matrix_t const * data_in,
-					 srv::vector_t * code_out,
-					 srv::matrix_t * data_out);
+    virtual wbcnet::srv_result_t HandleServoCmd(int commandID,
+						wbcnet::srv_code_t const * code_in,
+						wbcnet::srv_matrix_t const * data_in,
+						wbcnet::srv_code_t * code_out,
+						wbcnet::srv_matrix_t * data_out);
     
     virtual wbcnet::srv_result_t ListBehaviors(listing_t & behaviors) const;
-    virtual wbcnet::srv_result_t ListBehaviorCmds(int behaviorID, request_list_t & requests) const;
+    virtual wbcnet::srv_result_t ListBehaviorCmds(int behaviorID, command_list_t & commands) const;
     
     virtual wbcnet::srv_result_t HandleBehaviorCmd(int behaviorID,
-					    int requestID,
-					    srv::vector_t const * code_in,
-					    srv::matrix_t const * data_in,
-					    srv::vector_t * code_out,
-					    srv::matrix_t * data_out);
+						   int commandID,
+						   wbcnet::srv_code_t const * code_in,
+						   wbcnet::srv_matrix_t const * data_in,
+						   wbcnet::srv_code_t * code_out,
+						   wbcnet::srv_matrix_t * data_out);
     
     virtual wbcnet::srv_result_t ListTasks(int behaviorID, listing_t & tasks) const;
-    virtual wbcnet::srv_result_t ListTaskCmds(int behaviorID, int taskID, request_list_t & requests) const;
+    virtual wbcnet::srv_result_t ListTaskCmds(int behaviorID, int taskID, command_list_t & commands) const;
     
     virtual wbcnet::srv_result_t HandleTaskCmd(int behaviorID,
-					int taskID,
-					int requestID,
-					srv::vector_t const * code_in,
-					srv::matrix_t const * data_in,
-					srv::vector_t * code_out,
-					srv::matrix_t * data_out);
+					       int taskID,
+					       int commandID,
+					       wbcnet::srv_code_t const * code_in,
+					       wbcnet::srv_matrix_t const * data_in,
+					       wbcnet::srv_code_t * code_out,
+					       wbcnet::srv_matrix_t * data_out);
   };
   
 }

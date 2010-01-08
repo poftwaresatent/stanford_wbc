@@ -1,39 +1,36 @@
 /*
- * Copyright (c) 2009 Roland Philippsen <roland DOT philippsen AT gmx DOT net>
+ * Stanford Whole-Body Control Framework http://stanford-wbc.sourceforge.net/
  *
- * BSD license:
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holder nor the names of
- *    contributors to this software may be used to endorse or promote
- *    products derived from this software without specific prior written
- *    permission.
+ * Copyright (c) 2009 Stanford University. All rights reserved.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHORS AND CONTRIBUTORS ``AS IS''
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
- * PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT
- * HOLDER OR THE CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
- * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * This program is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation, either version 3 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/>
  */
+
+/**
+   \file TestDirectory.cpp
+   \author Roland Philippsen
+   \note Originally Copyright (c) 2009 Roland Philippsen, released under a BSD license.
+*/
 
 #include "TestDirectory.hpp"
 
+using namespace wbcnet;
+
 namespace wbc {
   
-  wbcnet::srv_result_t TestDirectory::
+  srv_result_t TestDirectory::
   ListBehaviors(listing_t & behaviors) const
   {
     behaviors.clear();
@@ -44,13 +41,13 @@ namespace wbc {
   }
   
   
-  wbcnet::srv_result_t TestDirectory::
-  ListBehaviorCmds(int behaviorID, request_list_t & requests) const
+  srv_result_t TestDirectory::
+  ListBehaviorCmds(int behaviorID, command_list_t & commands) const
   {
-    requests.clear();
+    commands.clear();
     
     // what everyone understands:
-    requests.push_back(SRV_GET_DIMENSION);
+    commands.push_back(SRV_GET_DIMENSION);
     
     if (0 == behaviorID) {
       // FloatBehavior
@@ -59,9 +56,9 @@ namespace wbc {
     }
     
     // suppose every other understands every thing
-    requests.push_back(SRV_SET_GOAL);
-    requests.push_back(SRV_GET_GOAL);
-    requests.push_back(SRV_GET_ACTUAL);
+    commands.push_back(SRV_SET_GOAL);
+    commands.push_back(SRV_GET_GOAL);
+    commands.push_back(SRV_GET_POSITIONS);
     
     if (1 == behaviorID) {
       // PostureBehavior
@@ -77,32 +74,32 @@ namespace wbc {
   }
   
   
-  wbcnet::srv_result_t TestDirectory::
-  HandleServoCmd(int requestID,
-		 srv::vector_t const * code_in,
-		 srv::matrix_t const * data_in,
-		 srv::vector_t * code_out,
-		 srv::matrix_t * data_out)
+  srv_result_t TestDirectory::
+  HandleServoCmd(int commandID,
+		 srv_code_t const * code_in,
+		 srv_matrix_t const * data_in,
+		 srv_code_t * code_out,
+		 srv_matrix_t * data_out)
   {
     return SRV_NOT_IMPLEMENTED;
   }
   
   
-  wbcnet::srv_result_t TestDirectory::
+  srv_result_t TestDirectory::
   HandleBehaviorCmd(int behaviorID,
-		    int requestID,
-		    srv::vector_t const * code_in,
-		    srv::matrix_t const * data_in,
-		    srv::vector_t * code_out,
-		    srv::matrix_t * data_out)
+		    int commandID,
+		    srv_code_t const * code_in,
+		    srv_matrix_t const * data_in,
+		    srv_code_t * code_out,
+		    srv_matrix_t * data_out)
   {
     if ((0 > behaviorID) || (2 < behaviorID))
       return SRV_INVALID_BEHAVIOR_ID;
     
     if (0 == behaviorID) {
       // FloatBehavior
-      if (SRV_GET_DIMENSION != requestID)
-	return srv::INVALID_REQUEST;
+      if (SRV_GET_DIMENSION != commandID)
+	return SRV_INVALID_COMMAND;
       if (code_out && code_out->SetNElements(1))
 	(*code_out)[0] = 7;
       return SRV_SUCCESS;
@@ -114,20 +111,20 @@ namespace wbc {
     else // EndEffectorBehavior
       dim = 3;
     
-    if (SRV_GET_DIMENSION == requestID) {
+    if (SRV_GET_DIMENSION == commandID) {
       if (code_out && code_out->SetNElements(1))
 	(*code_out)[0] = dim;
       return SRV_SUCCESS;
     }
     
-    if (SRV_SET_GOAL == requestID) {
+    if (SRV_SET_GOAL == commandID) {
       if (( ! data_in) || (data_in->NRows() != dim) || (data_in->NColumns() != 1))
 	return SRV_INVALID_DATA;
       // could also check e.g. workspace limits and return SRV_OUT_OF_RANGE or whatever
       return SRV_SUCCESS;
     }
     
-    if (SRV_GET_GOAL == requestID) {
+    if (SRV_GET_GOAL == commandID) {
       if (( ! data_out) || ( ! data_out->SetSize(dim, 1)))
 	return SRV_INVALID_DATA;
       for (int ii(0); ii < dim; ++ii)
@@ -135,7 +132,7 @@ namespace wbc {
       return SRV_SUCCESS;
     }
     
-    if (SRV_GET_ACTUAL == requestID) {
+    if (SRV_GET_POSITIONS == commandID) {
       if (( ! data_out) || ( ! data_out->SetSize(dim, 1)))
 	return SRV_INVALID_DATA;
       for (int ii(0); ii < dim; ++ii)
@@ -143,11 +140,11 @@ namespace wbc {
       return SRV_SUCCESS;
     }
     
-    return srv::INVALID_REQUEST;
+    return SRV_INVALID_COMMAND;
   }
   
   
-  wbcnet::srv_result_t TestDirectory::
+  srv_result_t TestDirectory::
   ListTasks(int behaviorID, listing_t & tasks) const
   {
     if (0 == behaviorID) {
@@ -176,12 +173,12 @@ namespace wbc {
   }
   
   
-  wbcnet::srv_result_t TestDirectory::
-  ListTaskCmds(int behaviorID, int taskID, request_list_t & requests) const
+  srv_result_t TestDirectory::
+  ListTaskCmds(int behaviorID, int taskID, command_list_t & commands) const
   {
-    requests.clear();
-    requests.push_back(SRV_GET_TASK_TYPE);
-    requests.push_back(SRV_GET_DIMENSION);
+    commands.clear();
+    commands.push_back(SRV_GET_TASK_TYPE);
+    commands.push_back(SRV_GET_DIMENSION);
     
     if (0 == behaviorID) {
       // FloatBehavior
@@ -197,20 +194,20 @@ namespace wbc {
       // PostureBehavior
       if (0 == taskID) {
 	// PostureTask
-	requests.push_back(SRV_SET_PROP_GAIN);
-	requests.push_back(SRV_GET_PROP_GAIN);
-	requests.push_back(SRV_SET_DIFF_GAIN);
-	requests.push_back(SRV_GET_DIFF_GAIN);
-	requests.push_back(SRV_SET_MAX_VEL);
-	requests.push_back(SRV_GET_MAX_VEL);
-	requests.push_back(SRV_SET_MAX_ACCEL);
-	requests.push_back(SRV_GET_MAX_ACCEL);
+	commands.push_back(SRV_SET_PROP_GAIN);
+	commands.push_back(SRV_GET_PROP_GAIN);
+	commands.push_back(SRV_SET_DIFF_GAIN);
+	commands.push_back(SRV_GET_DIFF_GAIN);
+	commands.push_back(SRV_SET_MAX_VEL);
+	commands.push_back(SRV_GET_MAX_VEL);
+	commands.push_back(SRV_SET_MAX_ACCEL);
+	commands.push_back(SRV_GET_MAX_ACCEL);
 	return SRV_SUCCESS;
       }
       if (1 == taskID) {
 	// FrictionTask
-	requests.push_back(SRV_SET_DIFF_GAIN);
-	requests.push_back(SRV_GET_DIFF_GAIN);
+	commands.push_back(SRV_SET_DIFF_GAIN);
+	commands.push_back(SRV_GET_DIFF_GAIN);
 	return SRV_SUCCESS;
       }
       return SRV_INVALID_TASK_ID;
@@ -224,38 +221,38 @@ namespace wbc {
       }
       if (1 == taskID) {
 	// ObstacleAvoidanceTask
-	requests.push_back(SRV_SET_PROP_GAIN);
-	requests.push_back(SRV_GET_PROP_GAIN);
-	requests.push_back(SRV_SET_DIFF_GAIN);
-	requests.push_back(SRV_GET_DIFF_GAIN);
-	requests.push_back(SRV_SET_MAX_VEL);
-	requests.push_back(SRV_GET_MAX_VEL);
-	requests.push_back(SRV_SET_MAX_ACCEL);
-	requests.push_back(SRV_GET_MAX_ACCEL);
+	commands.push_back(SRV_SET_PROP_GAIN);
+	commands.push_back(SRV_GET_PROP_GAIN);
+	commands.push_back(SRV_SET_DIFF_GAIN);
+	commands.push_back(SRV_GET_DIFF_GAIN);
+	commands.push_back(SRV_SET_MAX_VEL);
+	commands.push_back(SRV_GET_MAX_VEL);
+	commands.push_back(SRV_SET_MAX_ACCEL);
+	commands.push_back(SRV_GET_MAX_ACCEL);
 	return SRV_SUCCESS;
       }
       if (2 == taskID) {
 	// EndEffectorPositionTask
-	requests.push_back(SRV_SET_PROP_GAIN);
-	requests.push_back(SRV_GET_PROP_GAIN);
-	requests.push_back(SRV_SET_DIFF_GAIN);
-	requests.push_back(SRV_GET_DIFF_GAIN);
-	requests.push_back(SRV_SET_MAX_VEL);
-	requests.push_back(SRV_GET_MAX_VEL);
-	requests.push_back(SRV_SET_MAX_ACCEL);
-	requests.push_back(SRV_GET_MAX_ACCEL);
+	commands.push_back(SRV_SET_PROP_GAIN);
+	commands.push_back(SRV_GET_PROP_GAIN);
+	commands.push_back(SRV_SET_DIFF_GAIN);
+	commands.push_back(SRV_GET_DIFF_GAIN);
+	commands.push_back(SRV_SET_MAX_VEL);
+	commands.push_back(SRV_GET_MAX_VEL);
+	commands.push_back(SRV_SET_MAX_ACCEL);
+	commands.push_back(SRV_GET_MAX_ACCEL);
 	return SRV_SUCCESS;
       }
       if (3 == taskID) {
 	// PostureTask
-	requests.push_back(SRV_SET_PROP_GAIN);
-	requests.push_back(SRV_GET_PROP_GAIN);
-	requests.push_back(SRV_SET_DIFF_GAIN);
-	requests.push_back(SRV_GET_DIFF_GAIN);
-	requests.push_back(SRV_SET_MAX_VEL);
-	requests.push_back(SRV_GET_MAX_VEL);
-	requests.push_back(SRV_SET_MAX_ACCEL);
-	requests.push_back(SRV_GET_MAX_ACCEL);
+	commands.push_back(SRV_SET_PROP_GAIN);
+	commands.push_back(SRV_GET_PROP_GAIN);
+	commands.push_back(SRV_SET_DIFF_GAIN);
+	commands.push_back(SRV_GET_DIFF_GAIN);
+	commands.push_back(SRV_SET_MAX_VEL);
+	commands.push_back(SRV_GET_MAX_VEL);
+	commands.push_back(SRV_SET_MAX_ACCEL);
+	commands.push_back(SRV_GET_MAX_ACCEL);
 	return SRV_SUCCESS;
       }
       return SRV_INVALID_TASK_ID;
@@ -265,14 +262,14 @@ namespace wbc {
   }
   
   
-  wbcnet::srv_result_t TestDirectory::
+  srv_result_t TestDirectory::
   HandleTaskCmd(int behaviorID,
 		int taskID,
-		int requestID,
-		srv::vector_t const * code_in,
-		srv::matrix_t const * data_in,
-		srv::vector_t * code_out,
-		srv::matrix_t * data_out)
+		int commandID,
+		srv_code_t const * code_in,
+		srv_matrix_t const * data_in,
+		srv_code_t * code_out,
+		srv_matrix_t * data_out)
   {
     int dim;
     if (0 == behaviorID) {
@@ -321,21 +318,21 @@ namespace wbc {
     else
       return SRV_INVALID_BEHAVIOR_ID;
     
-    if (SRV_GET_TASK_TYPE == requestID) {
+    if (SRV_GET_TASK_TYPE == commandID) {
       if (( ! code_out) || ( ! code_out->SetNElements(1)))
 	return SRV_INVALID_DATA;
       (*code_out)[0] = 42;
       return SRV_SUCCESS;
     }
     
-    if (SRV_GET_DIMENSION == requestID) {
+    if (SRV_GET_DIMENSION == commandID) {
       if (( ! code_out) || ( ! code_out->SetNElements(1)))
 	return SRV_INVALID_DATA;
       (*code_out)[0] = dim;
       return SRV_SUCCESS;
     }
     
-    if (SRV_SET_PROP_GAIN == requestID) {
+    if (SRV_SET_PROP_GAIN == commandID) {
       // also permit 1x1 data
       if (( ! data_in)
 	  || ((data_in->NRows() != dim) && (data_in->NRows() != 1))
@@ -345,7 +342,7 @@ namespace wbc {
       return SRV_SUCCESS;
     }
     
-    if (SRV_GET_PROP_GAIN == requestID) {
+    if (SRV_GET_PROP_GAIN == commandID) {
       if (( ! data_out) || ( ! data_out->SetSize(dim, 1)))
 	return SRV_INVALID_DATA;
       for (int ii(0); ii < dim; ++ii)
@@ -353,7 +350,7 @@ namespace wbc {
       return SRV_SUCCESS;
     }
 
-    if (SRV_SET_DIFF_GAIN == requestID) {
+    if (SRV_SET_DIFF_GAIN == commandID) {
       // also permit 1x1 data
       if (( ! data_in)
 	  || ((data_in->NRows() != dim) && (data_in->NRows() != 1))
@@ -363,7 +360,7 @@ namespace wbc {
       return SRV_SUCCESS;
     }
     
-    if (SRV_GET_DIFF_GAIN == requestID) {
+    if (SRV_GET_DIFF_GAIN == commandID) {
       if (( ! data_out) || ( ! data_out->SetSize(dim, 1)))
 	return SRV_INVALID_DATA;
       for (int ii(0); ii < dim; ++ii)
@@ -371,7 +368,7 @@ namespace wbc {
       return SRV_SUCCESS;
     }
 
-    if (SRV_SET_MAX_VEL == requestID) {
+    if (SRV_SET_MAX_VEL == commandID) {
       // also permit 1x1 data
       if (( ! data_in)
 	  || ((data_in->NRows() != dim) && (data_in->NRows() != 1))
@@ -381,7 +378,7 @@ namespace wbc {
       return SRV_SUCCESS;
     }
     
-    if (SRV_GET_MAX_VEL == requestID) {
+    if (SRV_GET_MAX_VEL == commandID) {
       if (( ! data_out) || ( ! data_out->SetSize(dim, 1)))
 	return SRV_INVALID_DATA;
       for (int ii(0); ii < dim; ++ii)
@@ -389,7 +386,7 @@ namespace wbc {
       return SRV_SUCCESS;
     }
 
-    if (SRV_SET_MAX_ACCEL == requestID) {
+    if (SRV_SET_MAX_ACCEL == commandID) {
       // also permit 1x1 data
       if (( ! data_in)
 	  || ((data_in->NRows() != dim) && (data_in->NRows() != 1))
@@ -399,7 +396,7 @@ namespace wbc {
       return SRV_SUCCESS;
     }
     
-    if (SRV_GET_MAX_ACCEL == requestID) {
+    if (SRV_GET_MAX_ACCEL == commandID) {
       if (( ! data_out) || ( ! data_out->SetSize(dim, 1)))
 	return SRV_INVALID_DATA;
       for (int ii(0); ii < dim; ++ii)
@@ -407,7 +404,7 @@ namespace wbc {
       return SRV_SUCCESS;
     }
     
-    return srv::INVALID_REQUEST;
+    return SRV_INVALID_COMMAND;
   }
   
 }
