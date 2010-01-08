@@ -36,7 +36,7 @@ namespace wbc {
     {
     public:
       inline ServoCommand(bool auto_resize, uint8_t ncommands)
-	: wbcnet::msg::ServoCommand<wbc::SAIVectorAPI>(SERVO_COMMAND, auto_resize, ncommands) {}
+	: wbcnet::msg::ServoCommand<wbc::SAIVectorAPI>(wbcnet::msg::SERVO_COMMAND, auto_resize, ncommands) {}
     };
     
   }
