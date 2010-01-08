@@ -142,7 +142,7 @@ namespace wbcnet {
     
     
     void StringList::
-    display(std::ostream & os, char const * prefix) const
+    display(std::ostream & os, string const & prefix) const
     {
       list<string> strlist;
       extract(strlist);

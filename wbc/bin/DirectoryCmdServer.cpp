@@ -67,8 +67,10 @@ namespace wbc {
   HandleServoCmd(int commandID,
 		 wbcnet::srv_code_t const * code_in,
 		 wbcnet::srv_matrix_t const * data_in,
+		 listing_t const & str_in,
 		 wbcnet::srv_code_t * code_out,
-		 wbcnet::srv_matrix_t * data_out)
+		 wbcnet::srv_matrix_t * data_out,
+		 listing_t & str_out)
   {
     if (logger->isDebugEnabled()) {
       ostringstream msg;
@@ -122,13 +124,24 @@ namespace wbc {
       return wbcnet::SRV_SUCCESS;
       
     case wbcnet::SRV_GET_LINK_TRANSFORM:
-      if (code_in->NElements() < 1)
- 	return wbcnet::SRV_MISSING_CODE;
       {
-    	taoDNode * node(m_servo->GetBranching()->node((*code_in)[0]));
-    	if ( ! node)
+    	taoDNode * node(0);
+	// Try to retrieve linkID from code vector and use that to get
+	// at the node. And fall back to name-based lookup if that
+	// fails.
+	if (code_in->NElements() > 0) {
+	  node = m_servo->GetBranching()->node((*code_in)[0]);
+	}
+	else {
+	  if (str_in.empty()) {
+	    return wbcnet::SRV_MISSING_CODE;
+	  }
+	  node = m_servo->GetBranching()->findLink(*str_in.begin());
+	}
+    	if ( ! node) {
     	  return wbcnet::SRV_INVALID_CODE;
-    	SAIVector zero(3);
+	}
+    	static SAIVector const zero(3);
     	SAITransform const transform(m_servo->GetKinematics()->globalFrame(node, zero));
     	SAIVectorAPI reply(transform.rotation().vecForm());
     	reply.append(transform.translation());

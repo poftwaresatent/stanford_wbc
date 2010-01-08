@@ -41,11 +41,15 @@ namespace wbc {
   public:
     virtual ~Directory() {}
     
+    /** \todo Maybe add str_in and str_out parameters to all other
+	abstract methods as well. */
     virtual wbcnet::srv_result_t HandleServoCmd(int commandID,
-					 wbcnet::srv_code_t const * code_in,
-					 wbcnet::srv_matrix_t const * data_in,
-					 wbcnet::srv_code_t * code_out,
-					 wbcnet::srv_matrix_t * data_out) = 0;
+						wbcnet::srv_code_t const * code_in,
+						wbcnet::srv_matrix_t const * data_in,
+						listing_t const & str_in,
+						wbcnet::srv_code_t * code_out,
+						wbcnet::srv_matrix_t * data_out,
+						listing_t & str_out) = 0;
     
     virtual wbcnet::srv_result_t ListBehaviors(listing_t & behaviors) const = 0;
     
@@ -94,10 +98,12 @@ namespace wbc {
     virtual ~DirectoryCmdClient();
     
     virtual wbcnet::srv_result_t HandleServoCmd(int commandID,
-					 wbcnet::srv_code_t const * code_in,
-					 wbcnet::srv_matrix_t const * data_in,
-					 wbcnet::srv_code_t * code_out,
-					 wbcnet::srv_matrix_t * data_out);
+						wbcnet::srv_code_t const * code_in,
+						wbcnet::srv_matrix_t const * data_in,
+						listing_t const & str_in,
+						wbcnet::srv_code_t * code_out,
+						wbcnet::srv_matrix_t * data_out,
+						listing_t & str_out);
     
     virtual wbcnet::srv_result_t ListBehaviors(listing_t & behaviors) const;
     

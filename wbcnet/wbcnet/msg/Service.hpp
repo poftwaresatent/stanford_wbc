@@ -202,9 +202,11 @@ namespace wbcnet {
       
       void InitListBehaviorCmds(int behaviorID);
       
+      /** \todo More uniform handling of string lists */
       void InitServoCmd(int commandID,
 			srv_code_t const * code_in,
-			srv_matrix_t const * data_in);
+			srv_matrix_t const * data_in,
+			std::list<std::string> const & str_in);
       
       void InitBehaviorCmd(int behaviorID,
 			   int commandID,

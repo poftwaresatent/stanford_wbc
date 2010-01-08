@@ -103,7 +103,7 @@ namespace wbcnet {
 	  matrix(nRows, nColumns) {}
       
       template<typename ostream_t>
-      void Dump(ostream_t & os, char const * prefix) const
+      void Dump(ostream_t & os, std::string const & prefix) const
       {
 	os << prefix << "requestID: " << (int) requestID << "\n"
 	   << prefix << "nCodes: " << (int) nCodes << "\n"
@@ -120,7 +120,7 @@ namespace wbcnet {
 	  os << "\n";
 	}
 	os << prefix << "strlist:\n";
-	StringList::display(os, prefix);
+	StringList::display(os, prefix + "  ");
       }
       
       bool operator == (UserCommand const & rhs) const {

@@ -63,9 +63,21 @@ namespace wbc {
 	return true;
       }
       
+      std::list<std::string> str_in;
+      std::list<std::string> str_out;
+      if ( ! request.extract(str_in)) {
+	reply.code[0] = SRV_OTHER_ERROR + 1;
+      }
       reply.code[0] = HandleServoCmd(request.code[1],
-				     &request.code.CreateSplice(2), &request.matrix,
-				     &reply.code, &reply.matrix);
+				     &request.code.CreateSplice(2),
+				     &request.matrix,
+				     str_in,
+				     &reply.code,
+				     &reply.matrix,
+				     str_out);
+      if ( ! reply.append(str_out.begin(), str_out.end())) {
+	reply.code[0] = SRV_OTHER_ERROR + 2;
+      }
       return true;
       
     }
@@ -219,13 +231,17 @@ namespace wbc {
   HandleServoCmd(int commandID,
 		 wbcnet::srv_code_t const * code_in,
 		 wbcnet::srv_matrix_t const * data_in,
+		 listing_t const & str_in,
 		 wbcnet::srv_code_t * code_out,
-		 wbcnet::srv_matrix_t * data_out)
+		 wbcnet::srv_matrix_t * data_out,
+		 listing_t & str_out)
   {
-    m_transaction->GetRequest()->InitServoCmd(commandID, code_in, data_in);
+    m_transaction->GetRequest()->InitServoCmd(commandID, code_in, data_in, str_in);
     m_transaction->SendWaitReceive();
     code_out->Copy(m_transaction->GetReply()->code);
     data_out->Copy(m_transaction->GetReply()->matrix);
+    str_out.clear();
+    m_transaction->GetReply()->extract(str_out);
     if (code_out->NElements() > 0)
       return wbcnet::srv_result_t((*code_out)[0]);
     return SRV_OTHER_ERROR;

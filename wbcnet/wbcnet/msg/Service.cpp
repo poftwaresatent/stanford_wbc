@@ -251,13 +251,15 @@ namespace wbcnet {
     void Service::
     InitServoCmd(int commandID,
 		 srv_code_t const * code_in,
-		 srv_matrix_t const * data_in)
+		 srv_matrix_t const * data_in,
+		 list<string> const & str_in)
     {
       InitRequest(code_in->NElements() + 2, 0, 0);
       code[0] = SRV_SERVO_DOMAIN;
       code[1] = commandID;
       code.Splice(2, *code_in, 0, std::numeric_limits<int>::max());
       matrix.Copy(*data_in);
+      append(str_in.begin(), str_in.end());
     }
     
     

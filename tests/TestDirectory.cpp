@@ -78,8 +78,10 @@ namespace wbc {
   HandleServoCmd(int commandID,
 		 srv_code_t const * code_in,
 		 srv_matrix_t const * data_in,
+		 listing_t const & str_in,
 		 srv_code_t * code_out,
-		 srv_matrix_t * data_out)
+		 srv_matrix_t * data_out,
+		 listing_t & str_out)
   {
     return SRV_NOT_IMPLEMENTED;
   }

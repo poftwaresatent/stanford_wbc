@@ -101,6 +101,23 @@ namespace {
   }
   
   
+  static bool xmlrpc_to_listing(XmlRpcValue /*const?*/ & from, listing_t & to)
+  {
+    int const nelem(from.size());
+    
+#ifdef WBC_DIRECTORY_DEBUG
+    std::cout << "  xmlrpc_to_listing():\n    nelem: " << nelem << "\n    from: ";
+    from.write(std::cout);
+    std::cout << "\n" << std::flush;
+#endif // WBC_DIRECTORY_DEBUG
+    
+    to.clear();
+    for (int ii(0); ii < nelem; ++ii)
+      to.push_back( /*string(*/ from[ii] /*)*/ );
+    return true;
+  }
+  
+  
   static void vector_to_xmlrpc(srv_code_t const & from, XmlRpcValue & to)
   {
     int const nelem(from.NElements());
@@ -124,6 +141,19 @@ namespace {
     for (int ii(0); ii < size; ++ii)
       data[ii] = from.GetElement(ii);
     to["data"] = data;
+  }
+  
+  
+  static void listing_to_xmlrpc(listing_t const & from, XmlRpcValue & to)
+  {
+    size_t const nelem(from.size());
+    to.clear();			// "probably" redundant
+    to.setSize(nelem);
+    listing_t::const_iterator ifrom(from.begin());
+    for (int ii(0); ii < nelem; ++ii) {
+      to[ii] = *ifrom;
+      ++ifrom;
+    }
   }
   
   
@@ -279,19 +309,23 @@ namespace {
       }
       srv_code_t code_in(0);
       srv_matrix_t data_in(0, 0);
+      listing_t str_in;
       if (params.size() >= 2) {
 	xmlrpc_to_vector(params[1]["code_in"], code_in);
 	xmlrpc_to_matrix(params[1]["data_in"], data_in);
+	xmlrpc_to_listing(params[1]["str_in"], str_in);
       }
       srv_code_t code_out(0);
       srv_matrix_t data_out(0, 0);
+      listing_t str_out;
       wbcnet::srv_result_t const retval(directory->HandleServoCmd(static_cast<srv_command_t>(request),
-							   &code_in, &data_in,
-							   &code_out, &data_out));
+								  &code_in, &data_in, str_in,
+								  &code_out, &data_out, str_out));
       result["retval"] = wbcnet::srv_result_to_string(retval);
       if (SRV_SUCCESS == retval) {
 	vector_to_xmlrpc(code_out, result["code_out"]);
 	matrix_to_xmlrpc(data_out, result["data_out"]);
+	listing_to_xmlrpc(str_out, result["str_out"]);
       }
       
 #ifdef WBC_DIRECTORY_DEBUG

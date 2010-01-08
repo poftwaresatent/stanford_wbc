@@ -38,8 +38,10 @@ namespace wbc {
     virtual wbcnet::srv_result_t HandleServoCmd(int commandID,
 						wbcnet::srv_code_t const * code_in,
 						wbcnet::srv_matrix_t const * data_in,
+						listing_t const & str_in,
 						wbcnet::srv_code_t * code_out,
-						wbcnet::srv_matrix_t * data_out);
+						wbcnet::srv_matrix_t * data_out,
+						listing_t & str_out);
     
     virtual wbcnet::srv_result_t ListBehaviors(listing_t & behaviors) const;
     virtual wbcnet::srv_result_t ListBehaviorCmds(int behaviorID, command_list_t & commands) const;
