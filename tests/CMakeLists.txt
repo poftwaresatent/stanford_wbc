@@ -57,3 +57,6 @@ if (${HAVE_GTEST_HEADER})
 else (${HAVE_GTEST_HEADER})
   message ("WARNING gtest not found, or the gtest/gtest.h header failed to compile")
 endif (${HAVE_GTEST_HEADER})
+
+add_executable (testProcess testProcess.cpp)
+target_link_libraries (testProcess Stanford_WBC)
