@@ -201,7 +201,7 @@ namespace wbc {
     }
     
     else if (wbcnet::msg::USER_REQUEST == msg_id) {
-      LOG_TRACE (logger, "wbc::ServoModelProcess::HandleMessagePayload(): got USER_REQUEST");
+      LOG_INFO (logger, "wbc::ServoModelProcess::HandleMessagePayload(): got USER_REQUEST");
       if ( ! m_directory_cmd_server) {
 	m_directory_cmd_server = new DirectoryCmdServer(m_servo_imp->GetBehaviorLibrary(), this);
       }

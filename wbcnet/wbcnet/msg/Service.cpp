@@ -59,6 +59,7 @@ static char const * srv_command_name[] = {
   "SRV_GET_POSITIONS",
   "SRV_GET_VELOCITIES",
   "SRV_GET_TORQUES",
+  "SRV_GET_JACOBIAN",
   "SRV_SET_PROP_GAIN",
   "SRV_GET_PROP_GAIN",
   "SRV_SET_DIFF_GAIN",
@@ -393,6 +394,16 @@ namespace wbcnet {
       InitRequest(2, 0, 0);
       code[0] = SRV_SERVO_DOMAIN;
       code[1] = SRV_GET_TORQUES;
+    }
+    
+    
+    void Service::
+    InitGetJacobian(int behaviorID)
+    {
+      InitRequest(3, 0, 0);
+      code[0] = SRV_BEHAVIOR_DOMAIN;
+      code[1] = behaviorID;
+      code[2] = SRV_GET_JACOBIAN;
     }
     
     

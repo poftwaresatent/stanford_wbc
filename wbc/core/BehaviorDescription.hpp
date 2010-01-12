@@ -195,6 +195,17 @@ namespace wbc {
      */
     virtual int handleSetGoal(SAIVector const & goal);
     
+    /**
+       The user requests the Jacobian, encoded as a
+       wbcnet::SRV_GET_JACOBIAN commandID to
+       handleCommand(). Implementers should resize and fill in the
+       jacobian parameter. The default implementation returns
+       wbcnet::SRV_NOT_IMPLEMENTED.
+       
+       \return wbcnet::srv_status_t
+     */
+    virtual int handleGetJacobian(SAIMatrix & jacobian);
+    
     ////virtual int32_t getState(int32_t & state) const;
   
   protected:

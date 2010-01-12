@@ -258,6 +258,7 @@ namespace wbc {
       
       if ("r" == token) {
 	m_user_request.InitToggleRecorder();
+        EnqueueMessage(m_channel, &m_user_request, false, false);
         SendWait(10000);
         ReceiveWait(10000, 1);
         return true;
@@ -273,12 +274,23 @@ namespace wbc {
         return true;
       }
       
+      if ("j" == token) {
+	m_user_request.InitGetJacobian(-1);
+	cout << "wbc::UserProcess::Step(): sending user request\n";
+	m_user_request.Dump(cout, "    ");
+        EnqueueMessage(m_channel, &m_user_request, false, false);
+	SendWait(10000);
+        ReceiveWait(10000, 1);
+        return true;
+      }
+      
       cout << "SYNTAX ERROR: unknown command \"" << token << "\"\n"
 	"\n"
 	" generic commands:\n"
 	"  pos      -  request current joint positions\n"
 	"  vel      -  request current joint velocities\n"
 	"  tau      -  request current command torques\n"
+	"  j        -  request current Jacobian from behavior\n"
 	"  endpos   -  show end effector position end orientation\n"
 	"  go       -  enter and send goal\n"
 	"  b?       -  list available behaviors\n"

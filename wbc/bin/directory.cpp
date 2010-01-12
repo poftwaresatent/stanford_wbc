@@ -23,9 +23,12 @@
 */
 
 #include "directory.hpp"
+#include <wbcnet/log.hpp>
 
 using namespace std;
 using namespace wbcnet;
+
+static wbcnet::logger_t logger(wbcnet::get_logger("wbc"));
 
 namespace wbc {
   
@@ -37,6 +40,7 @@ namespace wbc {
     reply.InitReply(request);
     
     if (1 > request.code.NElements()) {
+      LOG_ERROR (logger, "BaseDirectoryCmdServer::Dispatch(): missing domain");
       reply.code[0] = SRV_MISSING_CODE;
       return false;
     }
@@ -48,11 +52,13 @@ namespace wbc {
     if (SRV_SERVO_DOMAIN == domain) {
       
       if (2 > request.code.NElements()) {
+	LOG_ERROR (logger, "BaseDirectoryCmdServer::Dispatch(): missing command in servo request");
 	reply.code[0] = SRV_MISSING_CODE;
 	return false;
       }
       
       if (SRV_GET_BEHAVIOR_LIST == request.code[1]) {
+	LOG_INFO (logger, "BaseDirectoryCmdServer::Dispatch(): SRV_GET_BEHAVIOR_LIST");
 	listing_t behaviors;
 	reply.code[0] = ListBehaviors(behaviors);
 	if (SRV_SUCCESS == reply.code[0]) {
@@ -66,17 +72,24 @@ namespace wbc {
       std::list<std::string> str_in;
       std::list<std::string> str_out;
       if ( ! request.extract(str_in)) {
+	LOG_ERROR (logger, "BaseDirectoryCmdServer::Dispatch(): could not extract string list from servo request");
 	reply.code[0] = SRV_OTHER_ERROR + 1;
       }
-      reply.code[0] = HandleServoCmd(request.code[1],
-				     &request.code.CreateSplice(2),
-				     &request.matrix,
-				     str_in,
-				     &reply.code,
-				     &reply.matrix,
-				     str_out);
-      if ( ! reply.append(str_out.begin(), str_out.end())) {
-	reply.code[0] = SRV_OTHER_ERROR + 2;
+      else {
+	LOG_INFO (logger,
+		  "BaseDirectoryCmdServer::Dispatch(): forwarding command ID "
+		  << request.code[1] << " to HandleServoCmd()");
+	reply.code[0] = HandleServoCmd(request.code[1],
+				       &request.code.CreateSplice(2),
+				       &request.matrix,
+				       str_in,
+				       &reply.code,
+				       &reply.matrix,
+				       str_out);
+	if ( ! reply.append(str_out.begin(), str_out.end())) {
+	  LOG_ERROR (logger, "BaseDirectoryCmdServer::Dispatch(): could not append string list to servo reply");
+	  reply.code[0] = SRV_OTHER_ERROR + 2;
+	}
       }
       return true;
       
@@ -87,6 +100,7 @@ namespace wbc {
     if (SRV_BEHAVIOR_DOMAIN == domain) {
       
       if (3 > request.code.NElements()) {
+	LOG_ERROR (logger, "BaseDirectoryCmdServer::Dispatch(): missing command or behavior ID in behavior request");
 	reply.code[0] = SRV_MISSING_CODE;
 	return false;
       }
@@ -95,6 +109,7 @@ namespace wbc {
       int const commandID(request.code[2]);
       
       if (SRV_GET_COMMAND_LIST == commandID) {
+	LOG_INFO (logger, "BaseDirectoryCmdServer::Dispatch(): SRV_GET_COMMAND_LIST, behavior ID " << behaviorID);
 	command_list_t commands;
 	reply.code[0] = ListBehaviorCmds(behaviorID, commands);
 	if (SRV_SUCCESS == reply.code[0]) {
@@ -108,6 +123,7 @@ namespace wbc {
       }
       
       if (SRV_GET_TASK_LIST == commandID) {
+	LOG_INFO (logger, "BaseDirectoryCmdServer::Dispatch(): SRV_GET_TASK_LIST, behavior ID " << behaviorID);
 	listing_t tasks;
 	reply.code[0] = ListTasks(behaviorID, tasks);
 	if (SRV_SUCCESS == reply.code[0]) {
@@ -118,6 +134,10 @@ namespace wbc {
 	return true;
       }
       
+      LOG_INFO (logger,
+		"BaseDirectoryCmdServer::Dispatch(): forwarding behavior ID "
+		<< behaviorID << " command ID "
+		<< commandID << " to HandleBehaviorCmd()");
       reply.code[0] = HandleBehaviorCmd(behaviorID, commandID,
 					&request.code.CreateSplice(2), &request.matrix,
 					&reply.code, &reply.matrix);
@@ -130,6 +150,8 @@ namespace wbc {
     if (SRV_TASK_DOMAIN == domain) {
       
       if (4 > request.code.NElements()) {
+	LOG_ERROR (logger,
+		   "BaseDirectoryCmdServer::Dispatch(): missing command, task, or behavior ID in task request");
 	reply.code[0] = SRV_MISSING_CODE;
 	return false;
       }
@@ -140,6 +162,9 @@ namespace wbc {
       
       if (SRV_GET_COMMAND_LIST == commandID) {
 	command_list_t commands;
+	LOG_INFO (logger,
+		  "BaseDirectoryCmdServer::Dispatch(): SRV_GET_COMMAND_LIST, behavior ID "
+		  << behaviorID << " task ID " << taskID);
 	reply.code[0] = ListTaskCmds(behaviorID, taskID, commands);
 	if (SRV_SUCCESS == reply.code[0]) {
 	  reply.code.SetNElements(commands.size() + 1);
@@ -151,6 +176,11 @@ namespace wbc {
 	}
       }
       
+      LOG_INFO (logger,
+		"BaseDirectoryCmdServer::Dispatch(): forwarding behavior ID "
+		<< behaviorID << " task ID "
+		<< taskID << " command ID "
+		<< commandID << " to HandleTaskCmd()");
       reply.code[0] = HandleTaskCmd(behaviorID, taskID, commandID,
 				    &request.code.CreateSplice(3), &request.matrix,
 				    &reply.code, &reply.matrix);
@@ -159,6 +189,14 @@ namespace wbc {
     }
     
     // other domains: currently not implemented
+    
+    if (logger->isErrorEnabled()) {
+      ostringstream msg;
+      msg << "BaseDirectoryCmdServer::Dispatch(): no match for request\n";
+      request.Dump(msg, "  ");
+      msg << "returning SRV_NOT_IMPLEMENTED";
+      LOG_ERROR (logger, msg.str());
+    }
     
     reply.code[0] = SRV_NOT_IMPLEMENTED; // redundant but cheap
     

@@ -88,6 +88,7 @@ namespace wbcnet {
     SRV_GET_POSITIONS,
     SRV_GET_VELOCITIES,
     SRV_GET_TORQUES,
+    SRV_GET_JACOBIAN,
     SRV_SET_PROP_GAIN,
     SRV_GET_PROP_GAIN,
     SRV_SET_DIFF_GAIN,
@@ -232,6 +233,7 @@ namespace wbcnet {
       void InitGetPositions();
       void InitGetVelocities();
       void InitGetTorques();
+      void InitGetJacobian(/** set the ID to -1 to select the current behavior*/ int behaviorID);
       void InitFloat();
       void InitActivate();
       

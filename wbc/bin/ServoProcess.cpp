@@ -203,10 +203,10 @@ namespace wbc {
     
     m_kinematics->onUpdate(m_robot_state.jointAngles, m_robot_state.jointVelocities);
     ostringstream msg;
-    if ( ! m_kinematics->checkDisplayJointLimits(logger->isInfoEnabled() ? &msg : 0,
+    if ( ! m_kinematics->checkDisplayJointLimits(logger->isDebugEnabled() ? &msg : 0,
 						 "wbc::ServoImplementation::UpdateTorqueCommand()",
 						 "  ")) {
-      LOG_INFO (logger, msg.str() << "wbc::ServoImplementation::UpdateTorqueCommand(): joint limits hit (ignored...)");
+      LOG_DEBUG (logger, msg.str() << "wbc::ServoImplementation::UpdateTorqueCommand(): joint limits hit (ignored...)");
       // XXXX just ignore joint limits for the time being
     }
     
@@ -562,7 +562,7 @@ namespace wbc {
     }
     
     else if (wbcnet::msg::USER_REQUEST == msg_id) {
-      LOG_TRACE (logger, "wbc::ServoProcess::HandleMessagePayload(): got USER_REQUEST");
+      LOG_INFO (logger, "wbc::ServoProcess::HandleMessagePayload(): got USER_REQUEST");
       if ( ! m_directory_cmd_server) {
 	m_directory_cmd_server = new DirectoryCmdServer(m_imp->GetBehaviorLibrary(), this);
       }

@@ -24,6 +24,7 @@
  */
 
 #include <wbc/core/BehaviorDescription.hpp>
+#include <wbc/core/SAIMatrixAPI.hpp>
 #include <wbcnet/msg/Service.hpp>
 #include <wbc/util/RecorderImpl.hpp>
 
@@ -98,6 +99,18 @@ namespace wbc {
 	return handleSetGoal(goal);
       }
       
+    case wbcnet::SRV_GET_JACOBIAN:
+      {
+	SAIMatrixAPI jacobian;
+	int const result(handleGetJacobian(jacobian));
+	if (wbcnet::SRV_SUCCESS != result) {
+	  return result;
+	}
+	if ( ! data_out->Copy(jacobian)) {
+	  return wbcnet::SRV_OTHER_ERROR;
+	}
+	return wbcnet::SRV_SUCCESS;
+      }
     }
     
     return wbcnet::SRV_NOT_IMPLEMENTED;
@@ -113,6 +126,13 @@ namespace wbc {
   
   int BehaviorDescription::
   handleSetGoal(SAIVector const & goal)
+  {
+    return wbcnet::SRV_NOT_IMPLEMENTED;
+  }
+  
+  
+  int BehaviorDescription::
+  handleGetJacobian(SAIMatrix & jacobian)
   {
     return wbcnet::SRV_NOT_IMPLEMENTED;
   }
