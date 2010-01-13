@@ -111,6 +111,9 @@ namespace wbc {
     inline idToNodeMap_t & idToNodeMap() { return idToNodeMap_; }
     inline taoDNode* node(int nodeID) { return idToNodeMap_[nodeID];}
     
+    inline std::map<std::string, taoDNode*> const & linkNameToNodeMap() const { return linkNameToNodeMap_; }
+    inline std::map<std::string, taoDNode*> const & jointNameToNodeMap() const { return jointNameToNodeMap_; }
+    
     taoDNode * findLink( std::string const & name );
     taoDNode * findJoint( std::string const & name );
     
