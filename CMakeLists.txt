@@ -28,12 +28,15 @@ endif (NOT HAVE_EXPAT)
 
 
 ##################################################
-# users can request a custom hardcoded start of WBC_PLUGIN_PATH
+# users can request a custom hardcoded start of WBC_PLUGIN_PATH, but we fall back on 
 
-if (WBC_PLUGIN_PATH)
-  message ("WBC_PLUGIN_PATH is set to ${WBC_PLUGIN_PATH}, adding it to the preprocessor symbols")
-  add_definitions (-DWBC_PLUGIN_PATH_STR="${WBC_PLUGIN_PATH}")
-endif (WBC_PLUGIN_PATH)
+if (NOT WBC_PLUGIN_PATH)
+  message ("setting WBC_PLUGIN_PATH to ${Stanford_WBC_BINARY_DIR}/plugins")
+  set (WBC_PLUGIN_PATH ${Stanford_WBC_BINARY_DIR}/plugins)
+else (NOT WBC_PLUGIN_PATH)
+  message ("WBC_PLUGIN_PATH already set to ${WBC_PLUGIN_PATH}")
+endif (NOT WBC_PLUGIN_PATH)
+add_definitions (-DWBC_PLUGIN_PATH_STR="${WBC_PLUGIN_PATH}")
 
 
 ##################################################
