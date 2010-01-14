@@ -12,17 +12,21 @@ endif (COMMAND cmake_policy)
 #
 # wbc_getvars ()
 #
-# Check for necessary variables and set them if possible. GTEST_DIR,
-# XMLRPC_DIR, LOG4CXX_DIR: if not set, will be attempted to be taken
-# from the environment. As a side effect, include and link directories
-# will be adjusted to find gtest, xmlrpc++, and log4cxx headers and
-# libraries (either from the specific variables, or summarily from the
-# bindeps path). Note that log4cxx will be taken from the
-# ROS_BINDEPS_PATH environment variable, if that is set, in order to
-# avoid conflicts when we build WBC in conjunction with ROS. If
-# WBC_PLUGIN_PATH is set (as a CMake variable), then the user probably
-# wants to prepend that to the plugin search path, so set the If
-# WBC_PLUGIN_PATH_STR preprocessor symbol.
+# Check for necessary variables and set them if possible.
+# - 3rdparty (some optional) dependencies:
+#   - GTEST_DIR
+#   - XMLRPC_DIR
+#   - LOG4CXX_DIR
+#   - EXPAT_DIR
+#   These variables, if not set, will be attempted to be taken from
+#   the environment. As a side effect, include and link directories
+#   will be adjusted to find gtest, xmlrpc++, log4cxx, and expat
+#   headers and libraries.
+# - in addition, ROS_BINDEPS_PATH is used (if available) to provide
+#   LOG4CXX_DIR, if that is still undefined after the pther checks.
+# - if WBC_PLUGIN_PATH is set (as a CMake variable), then the user
+#   probably wants to prepend that to the plugin search path, so set
+#   the If WBC_PLUGIN_PATH_STR preprocessor symbol.
 #
 macro (wbc_getvars)
   if (WBC_PLUGIN_PATH)
@@ -51,6 +55,17 @@ macro (wbc_getvars)
     include_directories (${XMLRPC_DIR}/include ${XMLRPC_DIR})
     link_directories (${XMLRPC_DIR}/lib ${XMLRPC_DIR})
   endif (XMLRPC_DIR)
+  
+  # try to get XMLRPC_DIR from CMake or environment
+  if (NOT EXPAT_DIR)
+    set (EXPAT_DIR $ENV{EXPAT_DIR})
+  endif (NOT EXPAT_DIR)
+  if (EXPAT_DIR)
+    message ("[WBC] EXPAT_DIR is set to ${EXPAT_DIR}")
+    list (APPEND CMAKE_REQUIRED_INCLUDES ${EXPAT_DIR}/include ${EXPAT_DIR})
+    include_directories (${EXPAT_DIR}/include ${EXPAT_DIR})
+    link_directories (${EXPAT_DIR}/lib ${EXPAT_DIR})
+  endif (EXPAT_DIR)
   
   # try to get LOG4CXX_DIR from CMake or environment
   if (NOT LOG4CXX_DIR)
@@ -86,6 +101,7 @@ endmacro (wbc_getvars)
 #   - HAVE_XMLRPC
 #   - HAVE_LOG4CXX
 #   - HAVE_CURSES
+#   - HAVE_EXPAT
 macro (wbc_init PROJECT_NAME)
   message ("[WBC] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
   message ("[WBC] BEGIN base config of ${PROJECT_NAME}")
@@ -158,7 +174,8 @@ macro (wbc_init PROJECT_NAME)
     link_directories (${WBC_ROOT}/lib ${WBC_ROOT})
   else (WBC_ROOT)
     message ("[WBC] WARNING WARNING WARNING WARNING")
-    message ("      WBC_ROOT is not set, maybe we will not find the Stanford_WBC headers and libraries")
+    message ("      WBC_ROOT is not set")
+    message ("      it might be required to find headers, libraries, and a CMake module")
   endif (WBC_ROOT)
   
   # try to find 3rdparty stuff
@@ -181,38 +198,63 @@ macro (wbc_init PROJECT_NAME)
     message ("[WBC] WARNING did not find curses, key codes will not be available")
   endif (${HAVE_CURSES})
   
-  check_include_file_cxx (gtest/gtest.h HAVE_GTEST)
-  if (${HAVE_GTEST})
+  check_include_file_cxx (gtest/gtest.h HAVE_GTEST_HEADER)
+  if (${HAVE_GTEST_HEADER})
     message ("[WBC] found gtest headers")
-    add_definitions (-DHAVE_CURSES)
-  else (${HAVE_GTEST})
+    if (GTEST_DIR)
+      find_library (HAVE_GTEST_LIB gtest PATHS ${GTEST_DIR} ${GTEST_DIR}/lib)
+    else (GTEST_DIR)
+      find_library (HAVE_GTEST_LIB gtest)
+    endif (GTEST_DIR)
+    if (HAVE_GTEST_LIB MATCHES "NOTFOUND")
+      message (FATAL_ERROR "gtest library not found, although the header gtest/gtest.h was found")
+    else (HAVE_GTEST_LIB MATCHES "NOTFOUND")
+      message ("[WBC] found gtest library")
+      set (HAVE_GTEST TRUE)
+      add_definitions (-DHAVE_GTEST)
+    endif (HAVE_GTEST_LIB MATCHES "NOTFOUND")
+  else (${HAVE_GTEST_HEADER})
     message (STATUS "[WBC] WARNING did not find gtest, some tests will not be available")
-  endif (${HAVE_GTEST})
+  endif (${HAVE_GTEST_HEADER})
   
-  check_include_file_cxx (XmlRpc.h WBC_HAVE_XMLRPC_HEADER)
-  if (${WBC_HAVE_XMLRPC_HEADER})
+  check_include_file_cxx (XmlRpc.h HAVE_XMLRPC_HEADER)
+  if (${HAVE_XMLRPC_HEADER})
     message ("[WBC] found XmlRpc++ headers")
-  if (XMLRPC_DIR)
-    find_library (WBC_HAVE_XMLRPC_LIB XmlRpc PATHS ${XMLRPC_DIR} ${XMLRPC_DIR}/lib)
-  else (XMLRPC_DIR)
-    find_library (WBC_HAVE_XMLRPC_LIB XmlRpc)
-  endif (XMLRPC_DIR)
-  if (WBC_HAVE_XMLRPC_LIB MATCHES "NOTFOUND")
-    message (FATAL_ERROR "XmlRpc++ library not found, although the header XmlRpc.h was found")
-  else (WBC_HAVE_XMLRPC_LIB MATCHES "NOTFOUND")
-    add_definitions (-DHAVE_XMLRPC)
-    list (APPEND SRCS bin/XMLRPCDirectoryServer.cpp)
-    list (APPEND LIBS XmlRpc)
-  endif (WBC_HAVE_XMLRPC_LIB MATCHES "NOTFOUND")
-else (${WBC_HAVE_XMLRPC_HEADER})
-  message ("WARNING XmlRpc++ not found, or the XmlRpc.h header failed to compile")
-  message ("  You can install it from the stanford-wbc 3rdparty directory")
-  message ("  or from its origin on http://xmlrpcpp.sourceforge.net/ of course.")
-  message ("  After installation, use the XMLRPC_DIR variable to point to the correct location.")
-  message ("  You can either set it in the environment or using -DXMLRPC_DIR:path=/where/ever")
-  message ("  on the cmake command line.")
-endif (${WBC_HAVE_XMLRPC_HEADER})
-
+    if (XMLRPC_DIR)
+      find_library (HAVE_XMLRPC_LIB XmlRpc PATHS ${XMLRPC_DIR} ${XMLRPC_DIR}/lib)
+    else (XMLRPC_DIR)
+      find_library (HAVE_XMLRPC_LIB XmlRpc)
+    endif (XMLRPC_DIR)
+    if (HAVE_XMLRPC_LIB MATCHES "NOTFOUND")
+      message (FATAL_ERROR "XmlRpc++ library not found, although the header XmlRpc.h was found")
+    else (HAVE_XMLRPC_LIB MATCHES "NOTFOUND")
+      message ("[WBC] found XmlRpc++ library")
+      add_definitions (-DHAVE_XMLRPC)
+      set (HAVE_XMLRPC TRUE)
+    endif (HAVE_XMLRPC_LIB MATCHES "NOTFOUND")
+  else (${HAVE_XMLRPC_HEADER})
+    message ("[WBC] WARNING did not find XmlRpc++, some bindings will not be available")
+  endif (${HAVE_XMLRPC_HEADER})
+  
+  check_include_file_cxx (expat.h HAVE_EXPAT_HEADER)
+  if (${HAVE_EXPAT_HEADER})
+    message ("[WBC] found expat headers")
+    if (EXPAT_DIR)
+      find_library (HAVE_EXPAT_LIB expat PATHS ${EXPAT_DIR} ${EXPAT_DIR}/lib)
+    else (EXPAT_DIR)
+      find_library (HAVE_EXPAT_LIB expat)
+    endif (EXPAT_DIR)
+    if (HAVE_EXPAT_LIB MATCHES "NOTFOUND")
+      message (FATAL_ERROR "expat library not found, although the header expat.h was found")
+    else (HAVE_EXPAT_LIB MATCHES "NOTFOUND")
+      message ("[WBC] found expat library")
+      add_definitions (-DHAVE_EXPAT)
+      set (HAVE_EXPAT TRUE)
+    endif (HAVE_EXPAT_LIB MATCHES "NOTFOUND")
+  else (${HAVE_EXPAT_HEADER})
+    message ("[WBC] WARNING did not find expat, some things will not be available")
+  endif (${HAVE_EXPAT_HEADER})
+  
   message ("[WBC] FINISHED base config of ${PROJECT_NAME}")
   message ("[WBC] <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
 endmacro (wbc_init)

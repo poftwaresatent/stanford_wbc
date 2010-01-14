@@ -9,12 +9,6 @@ SET (CMAKE_VERBOSE_MAKEFILE ON)
 
 message (">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 message ("configuring WBCNET")
-message ("  CMAKE_HOME_DIR:           ${CMAKE_HOME_DIR}")
-message ("  CMAKE_BINARY_DIR:         ${CMAKE_BINARY_DIR}")
-message ("  CMAKE_CURRENT_BINARY_DIR: ${CMAKE_CURRENT_BINARY_DIR}")
-message ("  CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
-message ("  PROJECT_SOURCE_DIR:       ${PROJECT_SOURCE_DIR}")
-message ("  PROJECT_BINARY_DIR:       ${PROJECT_BINARY_DIR}")
 
 LIST (APPEND WBCNET_SRCS
       wbcnet/log.cpp
@@ -96,36 +90,26 @@ ENDIF (${WBCNET_HAVE_MQUEUE})
 # try to get LOG4CXX_DIR from CMake or environment
 # 1. CMake variable LOG4CXX_DIR
 # 2. environment variable LOG4CXX_DIR
-# 3. CMake variable WBC_BINDEPS_PATH
-# 4. environment variable WBC_BINDEPS_PATH
-# 5. environment variable ROS_BINDEPS_PATH
-# 6. give up
+# 3. environment variable ROS_BINDEPS_PATH
+# 4. give up
 if (NOT LOG4CXX_DIR)
   set (LOG4CXX_DIR $ENV{LOG4CXX_DIR})
 endif (NOT LOG4CXX_DIR)
 if (NOT LOG4CXX_DIR)
-  set (LOG4CXX_DIR ${WBC_BINDEPS_PATH})
-endif (NOT LOG4CXX_DIR)
-if (NOT LOG4CXX_DIR)
-  set (LOG4CXX_DIR $ENV{WBC_BINDEPS_PATH})
-endif (NOT LOG4CXX_DIR)
-if (NOT LOG4CXX_DIR)
   set (LOG4CXX_DIR $ENV{ROS_BINDEPS_PATH})
 endif (NOT LOG4CXX_DIR)
-if (NOT LOG4CXX_DIR)
-  message ("Did not find a specification for LOG4CXX_DIR.")
-else (NOT LOG4CXX_DIR)
+if (LOG4CXX_DIR)
   message ("Using LOG4CXX_DIR = ${LOG4CXX_DIR}")
   list (APPEND CMAKE_REQUIRED_INCLUDES ${LOG4CXX_DIR}/include ${LOG4CXX_DIR})
   list (APPEND TRYCOMPILE_INCLUDE_DIRECTORIES ${LOG4CXX_DIR}/include ${LOG4CXX_DIR})
   include_directories (${LOG4CXX_DIR}/include ${LOG4CXX_DIR})
   list (APPEND TRYCOMPILE_LINK_DIRECTORIES ${LOG4CXX_DIR}/lib ${LOG4CXX_DIR})
   link_directories (${LOG4CXX_DIR}/lib ${LOG4CXX_DIR})
-endif (NOT LOG4CXX_DIR)
+endif (LOG4CXX_DIR)
 
 check_include_file_cxx (log4cxx/logger.h WBCNET_HAVE_LOG4CXX)
 if (WBCNET_HAVE_LOG4CXX)
-  message ("found log4cxx, will check it's version...")
+  message ("found log4cxx headers, will check it's library version")
   try_compile (LOG4CXX_VERSION_CHECK
     ${WBCNET_BINARY_DIR}/log4cxx_version_check
     ${WBCNET_SOURCE_DIR}/test/log4cxx_version_check.cpp
@@ -135,9 +119,8 @@ if (WBCNET_HAVE_LOG4CXX)
       -DLINK_LIBRARIES:string=log4cxx
     OUTPUT_VARIABLE LOG4CXX_VERSION_CHECK_LOG
     )
-  message ("DBG LOG4CXX_VERSION_CHECK: ${LOG4CXX_VERSION_CHECK}")
   if (LOG4CXX_VERSION_CHECK)
-    message ("...log4cxx version check succeeded")
+    message ("log4cxx version check succeeded")
   else (LOG4CXX_VERSION_CHECK)
     message ("LOG4CXX_VERSION_CHECK_LOG:\n${LOG4CXX_VERSION_CHECK_LOG}")
     message (FATAL_ERROR "The log4cxx version check failed (see try_compile log above). Please install log4cxx-0.10.0 (e.g. from the 3rdparty/ directory of stanford-wbc) and tell CMake where to find it by setting the LOG4CXX_DIR variable (either in the environment or by passing -DLOG4CXX:path=/foo/bar to cmake)")
