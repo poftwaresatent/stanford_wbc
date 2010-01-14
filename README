@@ -55,9 +55,9 @@ subdirectory, of the following external open source projects.
 Given that log4cxx, gtest, and XmlRpc++ are somewhat likely to need
 custom installation on your machine, you can tell CMake where to find
 them by using the environment (or CMake) variables LOG4CXX_DIR,
-GTEST_DIR, and XMLRPC_DIR. You can also summarily install them into
-one directory and provide its location using the WBC_BINDEPS_PATH
-environment variable.
+GTEST_DIR, and XMLRPC_DIR. If they are all installed in the same
+location, you can just set one of these three variables and the build
+system should find them all.
 
  * Required:
    * '''tinyxml'''
@@ -91,14 +91,6 @@ environment variable.
 
 
 = INSTALLATION =
-
-'''NOTE:''' If you do not need to install any 3rd bundled party
-packages from source and want to have a development setup which avoids
-(some of the) CAVEATS described below, you can use the provided
-bootstrap-devkit.sh script. Just choose a location where you want to
-(fake-) install, and pass it to the script. The default is to use
-~/wbc as WBC_ROOT, so you might choose to run the bootstrap-devkit.sh
-script without arguments.
 
 
 == Check out the Sources ==
@@ -152,27 +144,10 @@ ${HOME}/wbc, but you can easily adjust this to your needs.
    automated way of doing this):
    {{{
     $ export WBC_ROOT=~/wbc
-    $ export WBC_PLUGIN_PATH=${WBC_ROOT}/plugins
-    $ export WBC_BINDEPS_PATH=${WBC_ROOT}/bindeps
-    $ export PATH=${WBC_ROOT}/bin:${PATH}
    }}}
     For csh or tcsh users, these would look something like "{{{setenv WBC_ROOT ~/wbc}}}" or so.
 
-    '''NOTE:''' you can source the '''bash-env-wbc script''' in order to get these
-    values into your environment. It takes an optional argument
-    specifying your WBC_ROOT. The default is to use ~/wbc.
-   {{{
-    $ source ~/svn-wbc/bash-env-wbc
-   }}}
-
-    It might be a good idea to copy-paste ~/svn-wbc/bash-env-wbc into
-    your ~/.bashrc or ~/.bash_profile, or to source it from there, in
-    order to automatically load your WBC environment setup in each
-    shell that gets started. However, this might interfere with WBC
-    development in case you expect to change the WBC framework code
-    itself (see CAVEATS below).
-
- 3. If you want to keep some of the 3rdparty dependencies elsewhere on
+ 2. If you want to keep some of the 3rdparty dependencies elsewhere on
     your system (for example in order to use them in other projects as
     well), you can optionally use the following environment variables
     to point to more specific directories:
@@ -186,15 +161,10 @@ ${HOME}/wbc, but you can easily adjust this to your needs.
     
     A typical use case is to have log4cxx underneath
     {{{/usr/local/log4cxx}}}, in which case you want set
-    {{{LOG4CXX_DIR}}} in addition to {{{WBC_BINDEPS_PATH}}}:
+    {{{LOG4CXX_DIR}}} like so:
    {{{
     $ export LOG4CXX_DIR=/usr/local/log4cxx
    }}}
-    
-    BTW: You do not really need {{{WBC_BINDEPS_PATH}}} at all, either
-    if all the dependencies are installed in default locations anyway
-    (e.g. you installed them using a package manager) or if you do not
-    care about the optional features they provide.
 
 
 == Install the WBC framework ==
@@ -248,45 +218,3 @@ would look like this:
  $ make
  $ make install
 }}}
-
-
-= CAVEATS =
-
-== Developing the WBC framework code ==
-
-'''NOTE:''' use the {{{bootstrap-devkit.sh}}} script to set up a
-"staged" install that avoids this caveat.
-
-The problem when changing and recompiling the WBC source code is that
-the build system has a tendency to pick up the installed headers
-instead of the ones in the working copy. This means that you might end
-up changing an installed header, so the changes will not show up in
-your working copy, and thus won't get committed... worse, once you're
-happy with the changes and decide to install, they will get wiped
-away.
-
-The '''workaround''' for this is to '''not install WBC''' when you
-expect to change it. Note that you can always point the WBC_ROOT and
-related environment variables to the build and source directories, as
-appropriate (note that we do not create symbolic links from the build
-into the sources anymore, but the CMake files take care of adding the
-appropriate compiler flags).
-
-Note that the '''bash-env-wbc''' script makes this fairly
-straightforward to accomplish, because it allows you to switch between
-WBC "installations" on the fly: just give the desired WBC_ROOT on the
-command line. For example, you want to use a development version of
-WBC, without installing it. You would do the following:
-
-{{{
- $ cd /where/ever
- $ svn co https://stanford-wbc.svn.sourceforge.net/svnroot/stanford-wbc/trunk/wbc
- $ mkdir wbc/build
- $ cd wbc/build
- $ source ../bash-env-wbc `pwd`
- $ cmake ..
- $ make
-}}}
-
-From this point on, you can hack away at WBC and your changes will
-appear after each "make". But '''don't''' run "make install".

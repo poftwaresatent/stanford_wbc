@@ -12,47 +12,30 @@ endif (COMMAND cmake_policy)
 #
 # wbc_getvars ()
 #
-# Check for necessary variables and set them if possible.
-# - WBC_ROOT has to be set before calling this macro
-# - WBC_PLUGIN_PATH can be set, or it will be filled by this macro
-# - WBC_BINDEPS_PATH, GTEST_DIR, XMLRPC_DIR, LOG4CXX_DIR: if not set,
-#   will be attempted to be taken from the environment. As a side
-#   effect, include and link directories will be adjusted to find
-#   gtest, xmlrpc++, and log4cxx headers and libraries (either from
-#   the specific variables, or summarily from the bindeps path). Note
-#   that log4cxx will be taken from the ROS_BINDEPS_PATH environment
-#   variable, if that is set, in order to avoid conflicts when we
-#   build WBC in conjunction with ROS.
+# Check for necessary variables and set them if possible. GTEST_DIR,
+# XMLRPC_DIR, LOG4CXX_DIR: if not set, will be attempted to be taken
+# from the environment. As a side effect, include and link directories
+# will be adjusted to find gtest, xmlrpc++, and log4cxx headers and
+# libraries (either from the specific variables, or summarily from the
+# bindeps path). Note that log4cxx will be taken from the
+# ROS_BINDEPS_PATH environment variable, if that is set, in order to
+# avoid conflicts when we build WBC in conjunction with ROS. If
+# WBC_PLUGIN_PATH is set (as a CMake variable), then the user probably
+# wants to prepend that to the plugin search path, so set the If
+# WBC_PLUGIN_PATH_STR preprocessor symbol.
 #
 macro (wbc_getvars)
-  # try to get WBC_ROOT from CMake or environment
-  if (NOT WBC_ROOT)
-    set (WBC_ROOT $ENV{WBC_ROOT})
-    if (NOT WBC_ROOT)
-      message (FATAL_ERROR "[WBC] WBC_ROOT is not set (neither in CMake nor in environment)")
-    endif (NOT WBC_ROOT)
-    message ("[WBC] using WBC_ROOT from environment: ${WBC_ROOT}")
-  endif (NOT WBC_ROOT)
-  
-  # try to get WBC_PLUGIN_PATH from CMake or environment, fall back on ${WBC_ROOT}/plugins
-  if (NOT WBC_PLUGIN_PATH)
-    set (WBC_PLUGIN_PATH $ENV{WBC_PLUGIN_PATH})
-    if (NOT WBC_PLUGIN_PATH)
-      set (WBC_PLUGIN_PATH ${WBC_ROOT}/plugins)
-      message ("[WBC] using fallback WBC_PLUGIN_PATH: ${WBC_PLUGIN_PATH}")
-    else (NOT WBC_PLUGIN_PATH)
-      message ("[WBC] using WBC_PLUGIN_PATH from environment: ${WBC_PLUGIN_PATH}")
-    endif (NOT WBC_PLUGIN_PATH)
-  endif (NOT WBC_PLUGIN_PATH)
+  if (WBC_PLUGIN_PATH)
+    message ("[WBC] WBC_PLUGIN_PATH is set to ${WBC_PLUGIN_PATH}, adding it to the preprocessor symbols")
+    add_definitions (-DWBC_PLUGIN_PATH_STR="${WBC_PLUGIN_PATH}")
+  endif (WBC_PLUGIN_PATH)
   
   # try to get GTEST_DIR from CMake or environment
   if (NOT GTEST_DIR)
     set (GTEST_DIR $ENV{GTEST_DIR})
-    if (GTEST_DIR)
-      message ("[WBC] using GTEST_DIR from environment: ${GTEST_DIR}")
-    endif (GTEST_DIR)
   endif (NOT GTEST_DIR)
   if (GTEST_DIR)
+    message ("[WBC] GTEST_DIR is set to ${GTEST_DIR}")
     list (APPEND CMAKE_REQUIRED_INCLUDES ${GTEST_DIR}/include ${GTEST_DIR})
     include_directories (${GTEST_DIR}/include ${GTEST_DIR})
     link_directories (${GTEST_DIR}/lib ${GTEST_DIR})
@@ -61,11 +44,9 @@ macro (wbc_getvars)
   # try to get XMLRPC_DIR from CMake or environment
   if (NOT XMLRPC_DIR)
     set (XMLRPC_DIR $ENV{XMLRPC_DIR})
-    if (XMLRPC_DIR)
-      message ("[WBC] using XMLRPC_DIR from environment: ${XMLRPC_DIR}")
-    endif (XMLRPC_DIR)
   endif (NOT XMLRPC_DIR)
   if (XMLRPC_DIR)
+    message ("[WBC] XMLRPC_DIR is set to ${XMLRPC_DIR}")
     list (APPEND CMAKE_REQUIRED_INCLUDES ${XMLRPC_DIR}/include ${XMLRPC_DIR})
     include_directories (${XMLRPC_DIR}/include ${XMLRPC_DIR})
     link_directories (${XMLRPC_DIR}/lib ${XMLRPC_DIR})
@@ -78,31 +59,12 @@ macro (wbc_getvars)
   if (NOT LOG4CXX_DIR)
     set (LOG4CXX_DIR $ENV{ROS_BINDEPS_PATH})
   endif (NOT LOG4CXX_DIR)
-  if (NOT LOG4CXX_DIR)
-    set (LOG4CXX_DIR ${WBC_BINDEPS_PATH})
-  endif (NOT LOG4CXX_DIR)
-  if (NOT LOG4CXX_DIR)
-    set (LOG4CXX_DIR $ENV{WBC_BINDEPS_PATH})
-  endif (NOT LOG4CXX_DIR)
   if (LOG4CXX_DIR)
+    message ("[WBC] LOG4CXX_DIR is set to ${LOG4CXX_DIR}")
     list (APPEND CMAKE_REQUIRED_INCLUDES ${LOG4CXX_DIR}/include ${LOG4CXX_DIR})
     include_directories (${LOG4CXX_DIR}/include ${LOG4CXX_DIR})
     link_directories (${LOG4CXX_DIR}/lib ${LOG4CXX_DIR})
   endif (LOG4CXX_DIR)
-  message ("[WBC] debug -- LOG4CXX_DIR is ${LOG4CXX_DIR}")
-  
-  # try to get WBC_BINDEPS_PATH from CMake or environment
-  if (NOT WBC_BINDEPS_PATH)
-    set (WBC_BINDEPS_PATH $ENV{WBC_BINDEPS_PATH})
-    if (WBC_BINDEPS_PATH)
-      message ("[WBC] using WBC_BINDEPS_PATH from environment: ${WBC_BINDEPS_PATH}")
-    endif (WBC_BINDEPS_PATH)
-  endif (NOT WBC_BINDEPS_PATH)
-  if (WBC_BINDEPS_PATH)
-    list (APPEND CMAKE_REQUIRED_INCLUDES ${WBC_BINDEPS_PATH}/include ${WBC_BINDEPS_PATH})
-    include_directories (${WBC_BINDEPS_PATH}/include ${WBC_BINDEPS_PATH})
-    link_directories (${WBC_BINDEPS_PATH}/lib ${WBC_BINDEPS_PATH})
-  endif (WBC_BINDEPS_PATH)
 endmacro (wbc_getvars)
 
 
@@ -118,7 +80,12 @@ endmacro (wbc_getvars)
 # - operating-system flag -DWIN32, -DOSX, -DLINUX, or -DOPENBSD will be set
 # - compiler flags -pipe and -Wall will be set
 # - compiler flag -O0 will be set for debug build
-#
+# - CMake variables and preprocessor definitions to detect some
+#   optional 3rdparty modules:
+#   - HAVE_GTEST
+#   - HAVE_XMLRPC
+#   - HAVE_LOG4CXX
+#   - HAVE_CURSES
 macro (wbc_init PROJECT_NAME)
   message ("[WBC] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
   message ("[WBC] BEGIN base config of ${PROJECT_NAME}")
@@ -178,28 +145,74 @@ macro (wbc_init PROJECT_NAME)
     endif (CXX_FLAG_O0)
   endif (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
   
-  # make sure we can find our headers
+  # make sure we can find WBC headers and libraries
   wbc_getvars()
-  include_directories (${WBC_ROOT}/include)
-    
-  # use decent logging if available
+  
+  if (NOT WBC_ROOT)
+    set (WBC_ROOT $ENV{WBC_ROOT})
+  endif (NOT WBC_ROOT)
+  if (WBC_ROOT)
+    message ("[WBC] WBC_ROOT is set to ${WBC_ROOT}")
+    list (APPEND CMAKE_REQUIRED_INCLUDES ${WBC_ROOT}/include ${WBC_ROOT})
+    include_directories (${WBC_ROOT}/include ${WBC_ROOT})
+    link_directories (${WBC_ROOT}/lib ${WBC_ROOT})
+  else (WBC_ROOT)
+    message ("[WBC] WARNING WARNING WARNING WARNING")
+    message ("      WBC_ROOT is not set, maybe we will not find the Stanford_WBC headers and libraries")
+  endif (WBC_ROOT)
+  
+  # try to find 3rdparty stuff
   include (CheckIncludeFileCXX)
+  
   check_include_file_cxx (log4cxx/logger.h HAVE_LOG4CXX)
   if (HAVE_LOG4CXX)
+    message ("[WBC] found log4cxx headers")
     add_definitions (-DHAVE_LOG4CXX)
     list (APPEND LIBS log4cxx)
   else (HAVE_LOG4CXX)
     message ("[WBC] WARNING did not find log4cxx, will use simplistic logging")
   endif (HAVE_LOG4CXX)
-
-  # use curses (for key codes) if available
+  
   check_include_file_cxx (curses.h HAVE_CURSES)
   if (${HAVE_CURSES})
+    message ("[WBC] found curses headers")
     add_definitions (-DHAVE_CURSES)
   else (${HAVE_CURSES})
     message ("[WBC] WARNING did not find curses, key codes will not be available")
   endif (${HAVE_CURSES})
   
+  check_include_file_cxx (gtest/gtest.h HAVE_GTEST)
+  if (${HAVE_GTEST})
+    message ("[WBC] found gtest headers")
+    add_definitions (-DHAVE_CURSES)
+  else (${HAVE_GTEST})
+    message (STATUS "[WBC] WARNING did not find gtest, some tests will not be available")
+  endif (${HAVE_GTEST})
+  
+  check_include_file_cxx (XmlRpc.h WBC_HAVE_XMLRPC_HEADER)
+  if (${WBC_HAVE_XMLRPC_HEADER})
+    message ("[WBC] found XmlRpc++ headers")
+  if (XMLRPC_DIR)
+    find_library (WBC_HAVE_XMLRPC_LIB XmlRpc PATHS ${XMLRPC_DIR} ${XMLRPC_DIR}/lib)
+  else (XMLRPC_DIR)
+    find_library (WBC_HAVE_XMLRPC_LIB XmlRpc)
+  endif (XMLRPC_DIR)
+  if (WBC_HAVE_XMLRPC_LIB MATCHES "NOTFOUND")
+    message (FATAL_ERROR "XmlRpc++ library not found, although the header XmlRpc.h was found")
+  else (WBC_HAVE_XMLRPC_LIB MATCHES "NOTFOUND")
+    add_definitions (-DHAVE_XMLRPC)
+    list (APPEND SRCS bin/XMLRPCDirectoryServer.cpp)
+    list (APPEND LIBS XmlRpc)
+  endif (WBC_HAVE_XMLRPC_LIB MATCHES "NOTFOUND")
+else (${WBC_HAVE_XMLRPC_HEADER})
+  message ("WARNING XmlRpc++ not found, or the XmlRpc.h header failed to compile")
+  message ("  You can install it from the stanford-wbc 3rdparty directory")
+  message ("  or from its origin on http://xmlrpcpp.sourceforge.net/ of course.")
+  message ("  After installation, use the XMLRPC_DIR variable to point to the correct location.")
+  message ("  You can either set it in the environment or using -DXMLRPC_DIR:path=/where/ever")
+  message ("  on the cmake command line.")
+endif (${WBC_HAVE_XMLRPC_HEADER})
+
   message ("[WBC] FINISHED base config of ${PROJECT_NAME}")
   message ("[WBC] <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
 endmacro (wbc_init)
@@ -222,7 +235,13 @@ macro (wbc_add_plugin PLUGIN_NAME)
   wbc_init (${PLUGIN_NAME})
   
   add_library (${PLUGIN_NAME} MODULE ${ARGN})
-  set_target_properties (${PLUGIN_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${WBC_PLUGIN_PATH})
+  if (WBC_PLUGIN_PATH)
+    message ("[WBC] setting plugin output path to WBC_PLUGIN_PATH: ${WBC_PLUGIN_PATH}")
+    set_target_properties (${PLUGIN_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${WBC_PLUGIN_PATH})
+  else (WBC_PLUGIN_PATH)
+    message ("[WBC] setting plugin output path to ~/.wbc/plugins")
+    set_target_properties (${PLUGIN_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ~/.wbc/plugins)
+  endif (WBC_PLUGIN_PATH)
   
   message ("[WBC] FINISHED configuring WBC plugin ${PLUGIN_NAME}")
   message ("[WBC] <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")

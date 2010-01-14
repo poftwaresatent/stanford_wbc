@@ -72,36 +72,11 @@ if (HAVE_LOG4CXX)
 ####  list (APPEND LIBS log4cxx)
 endif (HAVE_LOG4CXX)
 
-### hardcode a portion of the plugin search path ###
-
-# try to define WBC_PLUGIN_PATH by trying the following things:
-# 1. CMake variable WBC_PLUGIN_PATH
-# 2. environment variable WBC_PLUGIN_PATH
-# 3. CMake variable WBC_ROOT + "/plugins"
-# 4. environment variable WBC_ROOT + "/plugins"
-# 5. fallback on CMake variable CMAKE_BINARY_DIR + "/plugins"
-
-if (NOT WBC_PLUGIN_PATH)
-  set (WBC_PLUGIN_PATH $ENV{WBC_PLUGIN_PATH})
-  if (NOT WBC_PLUGIN_PATH)
-    if (NOT WBC_ROOT)
-      set (WBC_ROOT $ENV{WBC_ROOT})
-    endif (NOT WBC_ROOT)
-    if (WBC_ROOT)
-      set (WBC_PLUGIN_PATH ${WBC_ROOT}/plugins)
-    endif (WBC_ROOT)
-  endif (NOT WBC_PLUGIN_PATH)
-endif (NOT WBC_PLUGIN_PATH)
-if (NOT WBC_PLUGIN_PATH)
-  set (WBC_PLUGIN_PATH ${CMAKE_BINARY_DIR}/plugins)
-endif (NOT WBC_PLUGIN_PATH)
-
-# The default plugin path gets hardcoded to the beginning of the
-# search order in core/Plugin.cpp using the WBC_PLUGIN_PATH_STR
-# preprocessor definition
-
-add_definitions (-DWBC_PLUGIN_PATH_STR="${WBC_ROOT}/plugins")
-
+### users can request a custom hardcoded start of WBC_PLUGIN_PATH
+if (WBC_PLUGIN_PATH)
+  message ("WBC_PLUGIN_PATH is set to ${WBC_PLUGIN_PATH}, adding it to the preprocessor symbols")
+  add_definitions (-DWBC_PLUGIN_PATH_STR="${WBC_PLUGIN_PATH}")
+endif (WBC_PLUGIN_PATH)
 
 ##################################################
 # If we have ROS, then we might even be able to support URDF-to-TAO
