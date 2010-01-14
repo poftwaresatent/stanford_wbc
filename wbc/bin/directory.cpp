@@ -139,7 +139,7 @@ namespace wbc {
 		<< behaviorID << " command ID "
 		<< commandID << " to HandleBehaviorCmd()");
       reply.code[0] = HandleBehaviorCmd(behaviorID, commandID,
-					&request.code.CreateSplice(2), &request.matrix,
+					&request.code.CreateSplice(3), &request.matrix,
 					&reply.code, &reply.matrix);
       return true;
       
@@ -182,7 +182,7 @@ namespace wbc {
 		<< taskID << " command ID "
 		<< commandID << " to HandleTaskCmd()");
       reply.code[0] = HandleTaskCmd(behaviorID, taskID, commandID,
-				    &request.code.CreateSplice(3), &request.matrix,
+				    &request.code.CreateSplice(4), &request.matrix,
 				    &reply.code, &reply.matrix);
       return true;
       

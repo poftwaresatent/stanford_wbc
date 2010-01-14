@@ -92,12 +92,16 @@ namespace wbc {
   int PostureBehavior::
   handleKey(int keycode)
   {
+    LOG_INFO (logger, "wbc::PostureBehavior::handleKey(): keycode = " << keycode);
+    
     if ((0 != float_key_) && (keycode == float_key_)) {
+      LOG_INFO (logger, "wbc::PostureBehavior::handleKey(): switching to FLOAT task set");
       activeTaskSet_ = &taskSetFloat_;
       return wbcnet::SRV_SUCCESS;
     }
     
     if ((0 != freeze_key_) && (keycode == freeze_key_)) {
+      LOG_INFO (logger, "wbc::PostureBehavior::handleKey(): switching to OPERATIONAL task set (and FREEZE)");
       whole_body_posture_.goalPostureConfig(robModel()->kinematics()->jointPositions());
       activeTaskSet_ = &taskSetOperational_;
       return wbcnet::SRV_SUCCESS;
@@ -105,6 +109,11 @@ namespace wbc {
     
     key_posture_t::const_iterator iposture(key_posture_.find(keycode));
     if (key_posture_.end() == iposture) {
+      LOG_WARN (logger, "wbc::PostureBehavior::handleKey(): unrecognized keycode");
+      //       std::cerr << "wbc::PostureBehavior::handleKey(): unrecognized keycode " << keycode << "\n";
+      //       for (key_posture_t::const_iterator ii(key_posture_.begin()); ii != key_posture_.end(); ++ii) {
+      // 	std::cerr << "  " << ii->first << " : " << ii->second << "\n";
+      //       }
       return wbcnet::SRV_OTHER_ERROR;
     }
     
@@ -116,6 +125,7 @@ namespace wbc {
       return wbcnet::SRV_INVALID_DIMENSION;
     }
     
+    LOG_INFO (logger, "wbc::PostureBehavior::handleKey(): switching to posture " << keycode);
     whole_body_posture_.goalPostureConfig(iposture->second);
     activeTaskSet_ = &taskSetOperational_;
     return wbcnet::SRV_SUCCESS;
