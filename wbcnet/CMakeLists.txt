@@ -9,12 +9,6 @@ SET (CMAKE_VERBOSE_MAKEFILE ON)
 
 message (">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 message ("configuring WBCNET")
-message ("  CMAKE_HOME_DIR:           ${CMAKE_HOME_DIR}")
-message ("  CMAKE_BINARY_DIR:         ${CMAKE_BINARY_DIR}")
-message ("  CMAKE_CURRENT_BINARY_DIR: ${CMAKE_CURRENT_BINARY_DIR}")
-message ("  CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
-message ("  PROJECT_SOURCE_DIR:       ${PROJECT_SOURCE_DIR}")
-message ("  PROJECT_BINARY_DIR:       ${PROJECT_BINARY_DIR}")
 
 LIST (APPEND WBCNET_SRCS
       wbcnet/log.cpp
@@ -35,6 +29,8 @@ LIST (APPEND WBCNET_SRCS
       wbcnet/AutoSocket.cpp
       wbcnet/udp_util.cpp
       wbcnet/NetConfig.cpp
+      wbcnet/message_id.cpp
+      wbcnet/DLModule.cpp
       wbcnet/imp/MQNetConfig.cpp
       wbcnet/imp/TCPNetConfig.cpp
       wbcnet/imp/SPQNetConfig.cpp
@@ -46,6 +42,7 @@ LIST (APPEND WBCNET_SRCS
       wbcnet/msg/Matrix.cpp
       wbcnet/msg/TaskMatrix.cpp
       wbcnet/msg/TaskSpec.cpp
+      wbcnet/msg/Service.cpp
       wbcnet/msg/UserCommand.cpp)
 
 LIST (APPEND CMAKE_REQUIRED_INCLUDES /usr/local/include)
@@ -80,6 +77,8 @@ IF (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
    ENDIF (WBCNET_CXX_FLAG_O0)
 ENDIF (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 
+LIST (APPEND WBCNET_LIBS dl)
+
 INCLUDE (CheckIncludeFileCXX)
 CHECK_INCLUDE_FILE_CXX (mqueue.h WBCNET_HAVE_MQUEUE)
 IF (${WBCNET_HAVE_MQUEUE})
@@ -91,36 +90,26 @@ ENDIF (${WBCNET_HAVE_MQUEUE})
 # try to get LOG4CXX_DIR from CMake or environment
 # 1. CMake variable LOG4CXX_DIR
 # 2. environment variable LOG4CXX_DIR
-# 3. CMake variable WBC_BINDEPS_PATH
-# 4. environment variable WBC_BINDEPS_PATH
-# 5. environment variable ROS_BINDEPS_PATH
-# 6. give up
+# 3. environment variable ROS_BINDEPS_PATH
+# 4. give up
 if (NOT LOG4CXX_DIR)
   set (LOG4CXX_DIR $ENV{LOG4CXX_DIR})
 endif (NOT LOG4CXX_DIR)
 if (NOT LOG4CXX_DIR)
-  set (LOG4CXX_DIR ${WBC_BINDEPS_PATH})
-endif (NOT LOG4CXX_DIR)
-if (NOT LOG4CXX_DIR)
-  set (LOG4CXX_DIR $ENV{WBC_BINDEPS_PATH})
-endif (NOT LOG4CXX_DIR)
-if (NOT LOG4CXX_DIR)
   set (LOG4CXX_DIR $ENV{ROS_BINDEPS_PATH})
 endif (NOT LOG4CXX_DIR)
-if (NOT LOG4CXX_DIR)
-  message ("Did not find a specification for LOG4CXX_DIR.")
-else (NOT LOG4CXX_DIR)
+if (LOG4CXX_DIR)
   message ("Using LOG4CXX_DIR = ${LOG4CXX_DIR}")
   list (APPEND CMAKE_REQUIRED_INCLUDES ${LOG4CXX_DIR}/include ${LOG4CXX_DIR})
   list (APPEND TRYCOMPILE_INCLUDE_DIRECTORIES ${LOG4CXX_DIR}/include ${LOG4CXX_DIR})
   include_directories (${LOG4CXX_DIR}/include ${LOG4CXX_DIR})
   list (APPEND TRYCOMPILE_LINK_DIRECTORIES ${LOG4CXX_DIR}/lib ${LOG4CXX_DIR})
   link_directories (${LOG4CXX_DIR}/lib ${LOG4CXX_DIR})
-endif (NOT LOG4CXX_DIR)
+endif (LOG4CXX_DIR)
 
 check_include_file_cxx (log4cxx/logger.h WBCNET_HAVE_LOG4CXX)
 if (WBCNET_HAVE_LOG4CXX)
-  message ("found log4cxx, will check it's version...")
+  message ("found log4cxx headers, will check it's library version")
   try_compile (LOG4CXX_VERSION_CHECK
     ${WBCNET_BINARY_DIR}/log4cxx_version_check
     ${WBCNET_SOURCE_DIR}/test/log4cxx_version_check.cpp
@@ -130,9 +119,8 @@ if (WBCNET_HAVE_LOG4CXX)
       -DLINK_LIBRARIES:string=log4cxx
     OUTPUT_VARIABLE LOG4CXX_VERSION_CHECK_LOG
     )
-  message ("DBG LOG4CXX_VERSION_CHECK: ${LOG4CXX_VERSION_CHECK}")
   if (LOG4CXX_VERSION_CHECK)
-    message ("...log4cxx version check succeeded")
+    message ("log4cxx version check succeeded")
   else (LOG4CXX_VERSION_CHECK)
     message ("LOG4CXX_VERSION_CHECK_LOG:\n${LOG4CXX_VERSION_CHECK_LOG}")
     message (FATAL_ERROR "The log4cxx version check failed (see try_compile log above). Please install log4cxx-0.10.0 (e.g. from the 3rdparty/ directory of stanford-wbc) and tell CMake where to find it by setting the LOG4CXX_DIR variable (either in the environment or by passing -DLOG4CXX:path=/foo/bar to cmake)")
@@ -164,21 +152,22 @@ if (NETWRAP_DIR)
   message ("DBG WBCNET_HAVE_NETWRAP: ${WBCNET_HAVE_NETWRAP}")
   if (WBCNET_HAVE_NETWRAP)
     message ("found NetWrapper.h")
-    try_compile (NETWRAP_CHECK
-      ${WBCNET_BINARY_DIR}/netwrap_check
-      ${WBCNET_SOURCE_DIR}/test/netwrap_check.cpp
-      CMAKE_FLAGS
-        -DINCLUDE_DIRECTORIES:path=${NETWRAP_DIR}/include
-	-DLINK_DIRECTORIES:path=${NETWRAP_DIR}/lib
-	-DLINK_LIBRARIES:string=netwrapper
-      OUTPUT_VARIABLE NETWRAP_CHECK_LOG
-      )
-    if (NETWRAP_CHECK)
-      message ("checked compilation and linking of Forcedimension LLC's NetWrapper library")
-    else (NETWRAP_CHECK)
-      message ("NETWRAP_CHECK_LOG:\n${NETWRAP_CHECK_LOG}")
-      message (FATAL_ERROR "The netwrapper check failed (see try_compile log above).")
-    endif (NETWRAP_CHECK)
+    message ("WARNING: skipping the try_compile() step because CMake seems broken...")
+#    try_compile (NETWRAP_CHECK
+#      ${WBCNET_BINARY_DIR}/netwrap_check
+#      ${WBCNET_SOURCE_DIR}/test/netwrap_check.cpp
+#      CMAKE_FLAGS
+#        -DINCLUDE_DIRECTORIES:path=${NETWRAP_DIR}/include
+#	-DLINK_DIRECTORIES:path=${NETWRAP_DIR}/lib
+#	-DLINK_LIBRARIES:string=netwrapper
+#      OUTPUT_VARIABLE NETWRAP_CHECK_LOG
+#      )
+#    if (NETWRAP_CHECK)
+#      message ("checked compilation and linking of Forcedimension LLC's NetWrapper library")
+#    else (NETWRAP_CHECK)
+#      message ("NETWRAP_CHECK_LOG:\n${NETWRAP_CHECK_LOG}")
+#      message (FATAL_ERROR "The netwrapper check failed (see try_compile log above).")
+#    endif (NETWRAP_CHECK)
     add_definitions (-DHAVE_NETWRAP)
     list (APPEND WBCNET_LIBS netwrapper)
     list (APPEND WBCNET_SRCS wbcnet/NetWrapperWrap.cpp)
@@ -234,6 +223,14 @@ target_link_libraries (testLogDisabled wbcnet ${WBCNET_LIBS})
 add_executable (testLogWithoutLog4cxx test/testLogWithoutLog4cxx.cpp)
 target_link_libraries (testLogWithoutLog4cxx wbcnet ${WBCNET_LIBS})
 
+add_library (TestModule MODULE test/TestModule.cpp)
+add_executable (testTestModule test/testTestModule.cpp)
+if (CMAKE_SYSTEM_NAME MATCHES OpenBSD)
+  target_link_libraries (testTestModule wbcnet ${WBCNET_LIBS})
+else (CMAKE_SYSTEM_NAME MATCHES OpenBSD)
+  target_link_libraries (testTestModule dl wbcnet ${WBCNET_LIBS})
+endif (CMAKE_SYSTEM_NAME MATCHES OpenBSD)
+
 if (${WBCNET_HAVE_MQUEUE})
   add_executable (testMQWrap test/testMQWrap.cpp)
   target_link_libraries (testMQWrap wbcnet ${WBCNET_LIBS})
@@ -248,6 +245,31 @@ if (WBCNET_HAVE_NETWRAP)
   add_executable (testNetWrapper test/testNetWrapper.cpp)
   target_link_libraries (testNetWrapper wbcnet ${WBCNET_LIBS})
 endif (WBCNET_HAVE_NETWRAP)
+
+### try to find Google testing framework, and enable some more tests if it was found
+
+message (STATUS "GTEST_DIR is \"${GTEST_DIR}\"")
+if (GTEST_DIR)
+  message (STATUS "using GTEST_DIR")
+  list (APPEND CMAKE_REQUIRED_INCLUDES ${GTEST_DIR}/include ${GTEST_DIR})
+  include_directories (${GTEST_DIR}/include ${GTEST_DIR})
+  link_directories (${GTEST_DIR}/lib ${GTEST_DIR})
+endif (GTEST_DIR)
+
+check_include_file_cxx (gtest/gtest.h WBCNET_HAVE_GTEST)
+
+if (${WBCNET_HAVE_GTEST})
+  message (STATUS "Found Google testing framework.")
+  #XXXX to do: resurrect test_model_servo
+  ###  add_executable (test_model_servo test/test_model_servo.cpp test/TestDirectory.cpp)
+  ###  target_link_libraries (test_model_servo wbcnet ${WBCNET_LIBS} gtest)
+  add_executable (testFactory test/testFactory.cpp)
+  target_link_libraries (testFactory wbcnet ${WBCNET_LIBS} gtest)
+else (${WBCNET_HAVE_GTEST})
+  message (STATUS "WARNING Google testing framework not found! If you do have it, use -DGTEST_DIR:path=/where/ever or set the GTEST_DIR environment variable")
+endif (${WBCNET_HAVE_GTEST})
+
+### installation-related commands
 
 FILE (GLOB headers "wbcnet/*.hpp")
 INSTALL (FILES ${headers} DESTINATION include/wbcnet)

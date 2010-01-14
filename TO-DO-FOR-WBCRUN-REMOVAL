@@ -1,0 +1,17 @@
+resurrect the top-level Makefile (it still uses the old wbcnet layout,
+too!)
+
+--------------------------------------------------
+
+go over the old commented-out message handling from ServoProcess.cpp:
+      
+  // // //     case wbcnet::SRV_TOGGLE_RECORDER:
+  // // //       Recorder::FlushAll();
+  // // //       user_reply.code[0] = wbcnet::SRV_SUCCESS;
+  // // //       if (logger->isDebugEnabled()) {
+  // // // 	ostringstream msg;
+  // // // 	msg << "wbc::ServoImplementation::HandleServiceCall() TOGGLE_RECORDER SUCCESS\n";
+  // // // 	user_reply.Dump(msg, "  ");
+  // // // 	LOG_DEBUG (logger, msg.str());
+  // // //       }
+  // // //       return true;

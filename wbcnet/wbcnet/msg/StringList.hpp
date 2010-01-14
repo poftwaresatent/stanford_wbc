@@ -52,9 +52,20 @@ namespace wbcnet {
       bool operator != (StringList const & rhs) const { return ! (*this == rhs); }
       
       void clear();
+      
+      /** \return true on success, false on failure. Failures "should"
+	  be rare: either char is not 8 bits, or we would overflow the
+	  uint16_t max size. */
       bool append(uint8_t const * str);
+      
+      /** \return true on success, false on failure. Failures "should"
+	  be rare: either char is not 8 bits, or we would overflow the
+	  uint16_t max size. */
       bool append(std::string const & str);
       
+      /** \return true on success, false on failure. Failures "should"
+	  be rare: either char is not 8 bits, or we would overflow the
+	  uint16_t max size. */
       template<typename iterator_t>
       bool append(iterator_t begin, iterator_t end) {
 	for (/**/; begin != end; ++begin)
@@ -63,8 +74,15 @@ namespace wbcnet {
 	return true;
       }
       
+      /**
+	 \return true pretty much always, even if the string list is
+	 empty. Only if sizeof(char) is not sizeof(uint8_t) will it
+	 return false... and when that happens we'll have to think
+	 about proper porting to unicode or so.
+       */
       bool extract(std::list<std::string> & strlist) const;
-      void display(std::ostream & os, char const * prefix) const;
+      
+      void display(std::ostream & os, std::string const & prefix) const;
       
       // header
       uint16_t tt_nchars;

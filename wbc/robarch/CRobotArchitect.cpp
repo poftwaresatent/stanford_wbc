@@ -108,18 +108,18 @@ bool CRobotArchitect::buildControllerRobots()
 	std::vector<SControllerRobotLink*>* rootLinkVec, * childLinkVec; //Pointers to link vectors
 	std::map<string,SControllerRobotLink*>* robotName2LinkMap; //Pointer to the link-linkName_ map
 	
-	rootLinkVec = crRobotDef->retRootLinkVector();
+	rootLinkVec = crRobotDef->getRootLinkVector();
 	if( ((int)rootLinkVec->size()) == 0)
 	{//No robots present in file 
 		return false;		
 	}
-	childLinkVec = crRobotDef->retChildLinkVector();
-	robotName2LinkMap = crRobotDef->retName2LinkMap(); 
+	childLinkVec = crRobotDef->getChildLinkVector();
+	robotName2LinkMap = crRobotDef->getName2LinkMap();
 	
 	//NOTE TODO: Loop over the root links and assign ids (all -1 for now) to them.
   std::vector<SControllerRobotLink*>::iterator clink, clinke;
-  for(clink = crRobotDef->retRootLinkVector()->begin(),
-     clinke = crRobotDef->retRootLinkVector()->end();
+  for(clink = crRobotDef->getRootLinkVector()->begin(),
+     clinke = crRobotDef->getRootLinkVector()->end();
      clink != clinke; ++clink)
   {
     (*clink)->parentAddr = NULL;
@@ -129,21 +129,21 @@ bool CRobotArchitect::buildControllerRobots()
   }
 
 	//Loop over the child links, connect them to their parents and assign ids
-	for(clink = crRobotDef->retChildLinkVector()->begin(),
-     clinke = crRobotDef->retChildLinkVector()->end();
+	for(clink = crRobotDef->getChildLinkVector()->begin(),
+     clinke = crRobotDef->getChildLinkVector()->end();
      clink != clinke; ++clink)
   {
   	string tstr = (*clink)->parentName_;
   	parentLinkAddr = (SControllerRobotLink*)((*robotName2LinkMap)[tstr]);		
 		(*clink)->parentAddr = parentLinkAddr;
 		parentLinkAddr->childAddrVector.push_back((*robotName2LinkMap)[(*clink)->linkName_]);
-		(*clink)->link_id =  clink - crRobotDef->retChildLinkVector()->begin();
+		(*clink)->link_id =  clink - crRobotDef->getChildLinkVector()->begin();
 		cout<<" "<<(*clink)->link_id<<" ";
   }
 
 	//Parent ids need to be assigned in another loop to handle unordered link trees
-	for(clink = crRobotDef->retChildLinkVector()->begin(),
-	     clinke = crRobotDef->retChildLinkVector()->end();
+	for(clink = crRobotDef->getChildLinkVector()->begin(),
+	     clinke = crRobotDef->getChildLinkVector()->end();
 	     clink != clinke; ++clink)
   {
     string tstr = (*clink)->parentName_;
@@ -201,8 +201,8 @@ CRobotDefinition<SGraphicsRobotLink>* CRobotArchitect::returnGraphicsRobot()
 	{
 		cout<<"\nPrint Root Links\n";
 		std::vector<SControllerRobotLink*>::iterator rlink, rlinke;
-		for(rlink = crRobotDef->retRootLinkVector()->begin(),
-	     rlinke = crRobotDef->retRootLinkVector()->end();
+		for(rlink = crRobotDef->getRootLinkVector()->begin(),
+	     rlinke = crRobotDef->getRootLinkVector()->end();
 	     rlink != rlinke; ++rlink)
 	  {
 	  	cout<<"Link: "<<(*rlink)->linkName_<<", Parent:"<<(*rlink)->parentName_<<", Depth:"<<0<<endl;	  	
@@ -210,8 +210,8 @@ CRobotDefinition<SGraphicsRobotLink>* CRobotArchitect::returnGraphicsRobot()
 		
 		cout<<"\n\nPrint Child Links\n";
 		std::vector<SControllerRobotLink*>::iterator clink, clinke;
-		for(clink = crRobotDef->retChildLinkVector()->begin(),
-	     clinke = crRobotDef->retChildLinkVector()->end();
+		for(clink = crRobotDef->getChildLinkVector()->begin(),
+	     clinke = crRobotDef->getChildLinkVector()->end();
 	     clink != clinke; ++clink)
 	  {
 	  	cout<<"Link: "<<(*clink)->linkName_<<", Parent:"<<(*clink)->parentName_<<", Depth:"<<0<<endl;	  	
@@ -219,8 +219,8 @@ CRobotDefinition<SGraphicsRobotLink>* CRobotArchitect::returnGraphicsRobot()
 		
 		cout<<"\n\nPrint Tree\n";
 		//Print tree
-		for(rlink = crRobotDef->retRootLinkVector()->begin(),
-	     rlinke = crRobotDef->retRootLinkVector()->end();
+		for(rlink = crRobotDef->getRootLinkVector()->begin(),
+	     rlinke = crRobotDef->getRootLinkVector()->end();
 	     rlink != rlinke; ++rlink)
 	  {	  	
 	  	cout<<"Link: "<<(*rlink)->linkName_<<", Parent:"<<(*rlink)->parentName_<<", Depth:"<<0<<endl;

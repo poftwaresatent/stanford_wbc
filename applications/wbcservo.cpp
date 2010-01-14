@@ -157,7 +157,7 @@ namespace servo {
 static servo::options opt;
 static attributes * attr;
 static ServoImplementation * imp(0);
-static wbcrun::Process * proc(0);
+static wbc::Process * proc(0);
 static RobotAPI * robotAPI;
 static wbcnet::DelayHistogram * dhist;
 static ServoBehaviorsAPI * servoBehaviors;
@@ -221,7 +221,7 @@ int main(int argc, char*argv[])
     errx(EXIT_FAILURE, "EXCEPTION %s", ee.what());
   }
   
-  warnx("initializing wbcrun::ServoProcess");
+  warnx("initializing wbc::ServoProcess");
   size_t const ndof(attr->robmodel->branching()->numJoints());
   size_t const ndof_actuated(attr->robmodel->branching()->numActuatedJoints());
   size_t const nvel(ndof); // one day maybe we will actually have spherical joints... then these will differ

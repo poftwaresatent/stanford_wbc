@@ -18,7 +18,10 @@
  * <http://www.gnu.org/licenses/>
  */
 
-/** \author Roland Philippsen */
+/**
+   \file BRBuilder.cpp
+   \author Roland Philippsen
+*/
 
 #include "BRBuilder.hpp"
 #include <wbc/core/BranchingRepresentation.hpp>

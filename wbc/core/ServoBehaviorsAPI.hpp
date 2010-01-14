@@ -26,11 +26,11 @@
 #ifndef WBC_SERVO_BEHAVIORS_API_HPP
 #define WBC_SERVO_BEHAVIORS_API_HPP
 
-#include <wbcrun/Factory.hpp>
+#include <wbcnet/Factory.hpp>
 
 class SAIVector;
 
-namespace wbcrun {
+namespace wbcnet {
   class TaskModelAPI;
 }
 
@@ -73,7 +73,7 @@ namespace wbc {
   */
   template<class ServoBehaviorSubclass>
   class ServoBehaviorsFactory
-    : public wbcrun::Factory<ServoBehaviorSubclass, ServoBehaviorsAPI>
+    : public wbcnet::Factory<ServoBehaviorSubclass, ServoBehaviorsAPI>
   {};
   
   
@@ -93,7 +93,7 @@ namespace wbc {
      \endcode
   */
   class ServoBehaviorsFactoryRegistry
-    : public wbcrun::FactoryRegistry<ServoBehaviorsAPI>
+    : public wbcnet::FactoryRegistry<ServoBehaviorsAPI>
   {};
   
   
@@ -106,7 +106,7 @@ namespace wbc {
 	but that requires some wider refactorings first. */
     virtual bool updateTorques( /** in  */ BehaviorDescription * behavior,
 				/** in  */ RobotControlModel * robmodel,
-				/** in  */ wbcrun::TaskModelAPI const * taskModel,
+				/** in  */ wbcnet::TaskModelAPI const * taskModel,
 				/** out */ SAIVector & generalizedTorques) = 0;
     
     virtual void record( Time const & now ) = 0;

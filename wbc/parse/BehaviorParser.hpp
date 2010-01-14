@@ -26,7 +26,8 @@
 #ifndef WBC_BEHAVIOR_PARSER_HPP
 #define WBC_BEHAVIOR_PARSER_HPP
 
-#include <wbcrun/util.hpp>
+#include <wbc/util/StringBuffer.hpp>
+#include <wbc/util/File.hpp>
 #include <expat.h>
 #include <string>
 #include <stdexcept>
@@ -109,11 +110,11 @@ namespace wbc {
     // with my fields, though.
     
     XML_ParserStruct * parser;
-    wbcrun::StringBuffer<XML_Char> * buffer;
+    StringBuffer<XML_Char> * buffer;
     bool in_behavior;
     bool in_type;
     std::string filename;
-    wbcrun::File * file;
+    File * file;
     int bufsize;
     BehaviorConstructionCallback const * callback;
   };

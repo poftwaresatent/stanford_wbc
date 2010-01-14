@@ -34,7 +34,9 @@
 #ifndef WBCNET_NETWRAPPER_WRAP_HPP
 #define WBCNET_NETWRAPPER_WRAP_HPP
 
-#ifdef HAVE_NETWRAP
+#ifndef HAVE_NETWRAP
+# error Do not include this header unless you have libnetwrapper.
+#endif // HAVE_NETWRAP
 
 #include <wbcnet/com.hpp>
 #include <string>
@@ -104,7 +106,5 @@ namespace wbcnet {
   };
   
 }
-
-#endif // HAVE_NETWRAP
 
 #endif // WBCNET_NETWRAPPER_WRAP_HPP

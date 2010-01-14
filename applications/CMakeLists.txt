@@ -15,6 +15,6 @@ target_link_libraries (rawservo Stanford_WBC)
 set_target_properties(
   wbcuser wbcmodel wbcservo rawservo
   PROPERTIES
-  INSTALL_RPATH ${WBC_ROOT}/lib:${WBC_ROOT}/bindeps/lib)
+  INSTALL_RPATH_USE_LINK_PATH True)
 
 install (TARGETS wbcuser wbcmodel wbcservo rawservo DESTINATION bin)

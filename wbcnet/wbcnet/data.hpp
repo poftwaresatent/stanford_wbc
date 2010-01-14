@@ -34,15 +34,15 @@
 #ifndef WBCNET_DATA_HPP
 #define WBCNET_DATA_HPP
 
-
 #ifdef WIN32
-    #define NOMINMAX
-    #include <limits>
-    #include <windows.h>
-#undef max
+# define NOMINMAX
+# include <limits>
+# include <windows.h>
+# undef max
 #else
 # include <limits>
 #endif
+
 #include <string>
 
 namespace wbcnet {
@@ -98,6 +98,11 @@ namespace wbcnet {
     virtual int ElementStorageSize() const = 0;
     virtual char const * DataPointer() const = 0;
     virtual char * DataPointer() = 0;
+
+    /**
+       Fills the vector with bytes of value zero.
+    */
+    void SetZero();
     
     /**
        Copies from another vector.
@@ -111,28 +116,43 @@ namespace wbcnet {
     bool Copy(VectorStorageAPI const & rhs);
     
     /**
-       Copies a portion of another vector.
+       Copies a portion of a source vector into a portion of *this
+       (the destination vector).
+       
+       \param dst_begin_idx The index where the splice should be
+       inserted into the destination.
+       
+       \param src The source vector.
+       
+       \param src_begin_idx The index where the splice should be taken
+       from in the source vector.
+       
+       \param src_end_idx An index ONE PAST the end of the range to be
+       spliced from the source vector.
        
        \note
-       - end_idx is "one past" the end.
-       - negative begin_idx or end_idx are treated as being counted
-         from the end backwards, e.g. passing -1 as begin_idx is
-         equivalent to passing NElements() - 1
-       - a begin_idx that refers to "before the start" is silently
-         treated as zero (i.e. "at the start")
-       - an end_idx that refers to "after the end" is silently treated
-         as "at the end"
-       - an invalid range is silently treated like an empty range
+       - Negative indices are treated as being counted
+         from the end backwards. E.g. passing "-1" as src_begin_idx is
+         equivalent to passing "src.NElements()-1".
+       - Indices that, after adjustments for negative values, refer to
+         "before the start" are silently treated as zero (i.e. "at the
+         start"). Similarly, "after the end" is treated as "at the end".
+       - An invalid source range is silently treated like an empty range.
        
        \return true if the splice succeeded. Failures can be due to
        ElementStorageSize() mismatches or failed SetNElements(). The
-       latter "should" always succeed, so as long as you are sure that
-       the former matches (and actually implies the same type, not
-       just the same size) you should be fine.
+       latter "should" always succeed --- thus, as long as you are
+       sure that the former matches (and actually implies the same
+       type, not just the same size) you should be fine.
     */
-    bool Splice(VectorStorageAPI const & orig, int begin_idx,
-		int end_idx = std::numeric_limits<int>::max());
-  };
+    bool Splice(int dst_begin_idx,
+		VectorStorageAPI const & src,
+		int src_begin_idx,
+		/** \note use std::numeric_limits<int>::max() if you
+		    want to include the end of src without needing to
+		    worry about its current size. */
+		int src_end_idx);
+    };
   
   
   template<typename element_t>
@@ -204,6 +224,11 @@ namespace wbcnet {
     virtual int ElementStorageSize() const = 0;
     virtual char const * DataPointer() const = 0;
     virtual char * DataPointer() = 0;
+    
+    /**
+       Fills the matrix with bytes of value zero.
+    */
+    void SetZero();
     
     /**
        \note MatrixStorageAPI does not enforce row- or column- major
@@ -348,7 +373,7 @@ namespace wbcnet {
 
     Vector CreateSplice(int begin_idx, int end_idx = std::numeric_limits<int>::max()) const {
       Vector splice(0);
-      splice.Splice(*this, begin_idx, end_idx);
+      splice.Splice(0, *this, begin_idx, end_idx);
       return splice;
     }
     

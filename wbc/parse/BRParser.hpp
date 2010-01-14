@@ -18,7 +18,10 @@
  * <http://www.gnu.org/licenses/>
  */
 
-/** \author Roland Philippsen */
+/**
+   \file BRParser.hpp
+   \author Roland Philippsen
+*/
 
 #ifndef WBC_BR_PARSER_HPP
 #define WBC_BR_PARSER_HPP

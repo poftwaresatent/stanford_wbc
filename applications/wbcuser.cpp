@@ -23,7 +23,7 @@
    \author Roland Philippsen
 */
 
-#include <wbcrun/UserProcess.hpp>
+#include <wbc/bin/UserProcess.hpp>
 #include <wbcnet/NetConfig.hpp>
 #include <wbcnet/log.hpp>
 #include <iostream>
@@ -31,6 +31,7 @@
 #include <err.h>
 #include <signal.h>
 #include <sys/types.h>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -38,14 +39,14 @@ using namespace std;
 static wbcnet::logger_t logger(wbcnet::get_logger("user"));
 static size_t verbosity(0);
 static string communication("mq");
-static wbcrun::UserProcess * proc(0);
+static wbc::UserProcess * proc(0);
 
 
 static void cleanup()
 {
   if (proc) {
-    LOG_WARN (logger, "cleaning up wbcrun::UserProcess");
-    wbcrun::UserProcess::Cleanup();
+    LOG_WARN (logger, "cleaning up wbc::UserProcess");
+    wbc::UserProcess::Cleanup();
     delete proc;
   }
 }
@@ -136,7 +137,7 @@ static void init()
   wbcnet::NetConfig const * netcfg(wbcnet::NetConfig::Create(communication));
   if ( ! netcfg)
     errx(EXIT_FAILURE, "wbcnet::NetConfig::Create(%s) failed", communication.c_str());
-  proc = new wbcrun::UserProcess();
+  proc = new wbc::UserProcess();
   try {
     proc->Init(*netcfg);
   }

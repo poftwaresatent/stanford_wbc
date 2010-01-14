@@ -127,6 +127,8 @@ bool COsimArchitect::readRobotDefinition(const string arg_file,
           tLnk.jointType_ = JT_PRISMATIC; // NOTE TODO Set to actual joint type
           tLnk.jointAxis_ = (*skeleJoint).translates_about_;
         }
+
+        tLnk.joint_default_pos_ = (*skeleJoint).default_pos_;
       }
 
       /*********************

@@ -27,7 +27,7 @@
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#include <stdarg.h> */
+ */
 
 #include "data.hpp"
 #include "pdebug.hpp"
@@ -35,10 +35,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-//#include <stdarg.h>
 
 #ifdef WIN32
-#define snprintf sprintf_s
+# define snprintf sprintf_s
 #endif
 
 
@@ -171,6 +170,14 @@ namespace wbcnet {
   }
   
   
+  void VectorStorageAPI::
+  SetZero()
+  {
+    if (NElements() > 0)
+      memset(DataPointer(), 0, NElements() * ElementStorageSize());
+  }
+  
+  
   bool VectorStorageAPI::
   Copy(VectorStorageAPI const & rhs)
   {
@@ -186,28 +193,50 @@ namespace wbcnet {
   
   
   bool VectorStorageAPI::
-  Splice(VectorStorageAPI const & orig, int begin_idx, int end_idx)
+  Splice(int dst_begin_idx, VectorStorageAPI const & src, int src_begin_idx, int src_end_idx)
   {
-    if (ElementStorageSize() != orig.ElementStorageSize())
+    int const elem_size(ElementStorageSize());
+    if (elem_size != src.ElementStorageSize())
       return false;
-    if (0 > begin_idx)
-      begin_idx = orig.NElements() - begin_idx;
-    if (0 > begin_idx)
-      begin_idx = 0;
-    if (0 > end_idx)
-      end_idx = orig.NElements() - end_idx;
-    if (orig.NElements() <= end_idx)
-      end_idx = orig.NElements();
-    if (end_idx <= begin_idx)
-      return SetNElements(0);
-    int const len(end_idx - begin_idx);
-    if ( ! SetNElements(len))
+    
+    // adjust dst_begin_index
+    if (0 > dst_begin_idx)
+      dst_begin_idx = NElements() - dst_begin_idx;
+    if (0 > dst_begin_idx)
+      dst_begin_idx = 0;
+    
+    // adjust src_begin_idx and src_end_idx
+    int const src_nelem(src.NElements());
+    if (0 > src_begin_idx)
+      src_begin_idx = src_nelem - src_begin_idx;
+    if (0 > src_begin_idx)
+      src_begin_idx = 0;
+    if (0 > src_end_idx)
+      src_end_idx = src_nelem - src_end_idx;
+    if (src_nelem <= src_end_idx)
+      src_end_idx = src_nelem;
+    
+    // compute size of splice (before and after), treat negative size
+    // as empty range
+    int src_len(src_end_idx - src_begin_idx);
+    if (0 > src_len)
+      src_len = 0;
+    
+    // resize destination (this can create non-initialized values in
+    // case of a dst_begin_index that is higher than the size of the
+    // destination before this call to Splice... however, the caller
+    // is expected to know what they are doing).
+    if ( ! SetNElements(dst_begin_idx + src_len))
       return false;
-    // use memmove because orig might be *this
-    memmove(DataPointer(), orig.DataPointer() + begin_idx * ElementStorageSize(), len * ElementStorageSize());
+    
+    // do the splice, unless it is an empty range. NOTE: use memmove
+    // because src might be *this
+    if (0 != src_len)
+      memmove(DataPointer()     + dst_begin_idx * elem_size,
+	      src.DataPointer() + src_begin_idx * elem_size,
+	                          src_len       * elem_size);
     return true;
   }
-
   
   
   bool MatrixStorageAPI::
@@ -223,6 +252,14 @@ namespace wbcnet {
     if (0 == memcmp(DataPointer(), rhs.DataPointer(), NRows() * NColumns() * ElementStorageSize()))
       return true;
     return false;
+  }
+  
+  
+  void MatrixStorageAPI::
+  SetZero()
+  {
+    if ((NRows() > 0) && (NColumns() > 0))
+      memset(DataPointer(), 0, NRows() * NColumns() * ElementStorageSize());
   }
   
   

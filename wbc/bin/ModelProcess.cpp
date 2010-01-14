@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 Roland Philippsen <roland DOT philippsen AT gmx DOT net>
+ * Copyright (c) 2010 Stanford University
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -16,11 +16,16 @@
  * <http://www.gnu.org/licenses/>
  */
 
+/**
+   \file ModelProcess.cpp
+   \author Roland Philippsen
+*/
+
 #include "ModelProcess.hpp"
-#include <wbcrun/message_id.hpp>
+#include <wbcnet/message_id.hpp>
 #include <wbcnet/NetConfig.hpp>
 #include <wbcnet/log.hpp>
-#include <wbcrun/msg/RobotState.hpp>
+#include <wbc/msg/RobotState.hpp>
 #include <wbcnet/msg/TaskSpec.hpp>
 #include <wbcnet/msg/TaskMatrix.hpp>
 #include <wbcnet/strutil.hpp>
@@ -190,7 +195,7 @@ namespace wbc {
       }
       
       // tell the servo that the model update is finished
-      m_model_status.status = wbcrun::msg::MODEL_SUCCESS;
+      m_model_status.status = wbc::msg::MODEL_SUCCESS;
       LOG_TRACE (logger, "wbc::ModelProcess::Step(): enqueuing and sending MODEL_SUCCESS");
       EnqueueMessage(m_channel, &m_model_status, false, false);
       SendWait(1000);
@@ -198,7 +203,7 @@ namespace wbc {
     
     if (SEND_FAILURE == m_state) {
       LOG_TRACE (logger, "wbc::ModelProcess::Step(): in SEND_FAILURE state");
-      m_model_status.status = wbcrun::msg::MODEL_ERROR;
+      m_model_status.status = wbc::msg::MODEL_ERROR;
       EnqueueMessage(m_channel, &m_model_status, false, false);
       SendWait(1000);
     }
@@ -245,21 +250,21 @@ namespace wbc {
     AddSink(m_channel, 100);
     AddSource(m_channel, 100);
     
-    m_servo_status.status = wbcrun::msg::VOID_STATUS;
-    m_robot_state = new wbcrun::msg::RobotState(false, npos, nvel, force_nrows, force_ncols);
+    m_servo_status.status = wbc::msg::VOID_STATUS;
+    m_robot_state = new wbc::msg::RobotState(false, npos, nvel, force_nrows, force_ncols);
     
-    CreateHandler(wbcrun::msg::STATUS, "servo_status", &m_servo_status);
-    CreateHandler(wbcrun::msg::ROBOT_STATE, "robot_state", m_robot_state);
-    CreateHandler(wbcrun::msg::TASK_SPEC, "task_spec", &m_task_spec);
+    CreateHandler(wbcnet::msg::STATUS, "servo_status", &m_servo_status);
+    CreateHandler(wbcnet::msg::ROBOT_STATE, "robot_state", m_robot_state);
+    CreateHandler(wbcnet::msg::TASK_SPEC, "task_spec", &m_task_spec);
   }
   
   
   int ModelProcess::
   HandleMessagePayload(wbcnet::unique_id_t msg_id)
   {
-    if (wbcrun::msg::STATUS == msg_id) {
+    if (wbcnet::msg::STATUS == msg_id) {
       LOG_TRACE (logger, "wbc::ModelProcess::HandleMessagePayload(): got STATUS");
-      if (wbcrun::msg::COMPUTE_MODEL == m_servo_status.status) {
+      if (wbc::msg::COMPUTE_MODEL == m_servo_status.status) {
 	if (IDLE == m_state) {
 	  LOG_TRACE (logger, "  setting state to COMPUTE");
 	  m_state = COMPUTE;
@@ -273,7 +278,7 @@ namespace wbc {
 		      "  WARNING ignoring invalid STATUS " << (int) m_servo_status.status);
     }
 
-    else if (wbcrun::msg::ROBOT_STATE == msg_id) {
+    else if (wbcnet::msg::ROBOT_STATE == msg_id) {
       if (logger->isTraceEnabled()) {
 	ostringstream msg;
 	msg << "wbc::ModelProcess::HandleMessagePayload(): got ROBOT_STATE\n";
@@ -283,7 +288,7 @@ namespace wbc {
       // just accumulate until the servo tells us msg::COMPUTE_MODEL (see above)
     }
 
-    else if (wbcrun::msg::TASK_SPEC == msg_id) {
+    else if (wbcnet::msg::TASK_SPEC == msg_id) {
       if (logger->isTraceEnabled()) {
 	ostringstream msg;
 	msg << "wbc::ModelProcess::HandleMessagePayload(): got TASK_SPEC\n";
@@ -297,7 +302,7 @@ namespace wbc {
       LOG_TRACE (logger,
 		 "wbc::ModelProcess::HandleMessagePayload()\n"
 		 << "  unknown message ID " << (int) msg_id
-		 << " [" << wbcrun::msg::get_id_str(msg_id));
+		 << " [" << wbcnet::msg::get_id_str(msg_id));
       return 999;
     }
     
@@ -319,8 +324,8 @@ namespace wbc {
   
   
   bool ModelImplementation::
-  ComputeModel(wbcrun::msg::RobotState const & robot_state,
-	       wbcrun::msg::TaskSpec const & task_spec,
+  ComputeModel(wbc::msg::RobotState const & robot_state,
+	       wbc::msg::TaskSpec const & task_spec,
 	       bool skip_behavior_update)
   {
     LOG_DEBUG (logger,

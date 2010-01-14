@@ -33,10 +33,6 @@ class SAIVector;
 class SAIMatrix;
 struct timeval;
 
-namespace wbcrun {
-  class Process;
-}
-
 
 namespace wbc {
 

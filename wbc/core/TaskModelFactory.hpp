@@ -19,7 +19,7 @@
  */
 
 /**
-   \file TaskModelFactory.hpp Utility for creating wbcrun::TaskModelAPI subclasses from plugins.
+   \file TaskModelFactory.hpp Utility for creating wbcnet::TaskModelAPI subclasses from plugins.
    \author Roland Philippsen
  */
 
@@ -27,7 +27,7 @@
 #define WBC_TASK_MODEL_FACTORY_HPP
 
 #include <wbcnet/endian_mode.hpp>
-#include <wbcrun/Registry.hpp>
+#include <wbcnet/Registry.hpp>
 #include <string>
 #include <iosfwd>
 
@@ -47,8 +47,8 @@ namespace wbc {
   };
   
   
-  typedef wbcrun::Registry<TaskModelFactoryAPI *,
-			   wbcrun::registry_trait_delete<TaskModelFactoryAPI *> >
+  typedef wbcnet::Registry<TaskModelFactoryAPI *,
+			   wbcnet::registry_trait_delete<TaskModelFactoryAPI *> >
   TaskModelFactoryRegistrySuper;
   
   /**

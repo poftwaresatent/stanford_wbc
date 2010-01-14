@@ -50,12 +50,9 @@ namespace wbc {
     
     virtual TaskSet* activeTaskSet() { return activeTaskSet_; }
     virtual void onUpdate();
-
-    virtual int32_t handleCommand(int32_t const * codeVector,
-				  size_t nCodes,
-				  SAIMatrix const & matrix);
     
-    virtual int32_t handleKey(int32_t keycode);
+    virtual int handleKey(int keycode);
+    virtual int handleSetGoal(SAIVector const & goal);
     
   protected:
     virtual void loadMovementPrimitives( RobotControlModel* ) throw(std::runtime_error);

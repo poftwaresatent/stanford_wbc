@@ -26,6 +26,7 @@
 #ifndef WBC_BEHAVIOR_DESCRIPTION_HPP
 #define WBC_BEHAVIOR_DESCRIPTION_HPP
 
+#include <wbcnet/msg/Service.hpp>
 #include <wbc/core/TaskSet.hpp>
 #include <wbc/util/saiTime.hpp>
 #include <wbc/util/Recorder.hpp>
@@ -92,89 +93,82 @@ namespace wbc {
        the user process. For example, the desired end-effector position
        and orientation can be encoded as a 7x1 matrix and passed down to
        an EndEffectorBehavior.
-     
-       ATTENTION there is some historic weirdness in this method and how
-       it interacts with handleStdCommand(). See also in particular
-       handleKey().
-     
-       Commands are divided into two parts, a code vector and a
-       matrix. The code vector contains at least one element (the
-       command ID), the matrix can be any size (up to some maximum) or
-       even empty. The role of the code vector is to tell the behavior
-       what the command is about, and the matrix contains the data
-       required to execute the command. For example, in order to set
-       controller gains, the code vector could contain a list of gain
-       IDs, and the matrix could be a list of values to assign to these
-       gains.
-     
+       
+       Command requests are divided into three parts:
+       - a command ID (see wbcnet::srv_command_t)
+       - an input code vector of int32_t
+       - an input matrix of double
+       
+       The result of a command is similarly divided into three parts:
+       - a result ID (see wbcnet::srv_result_t) returned by this method
+       - an output code vector of int32_t
+       - an output matrix of double
+       
        Command IDs and other codes are application-defined (see
-       e.g. wbcrun/service.hpp). The interpretation of the extra codes
-       (beyond codeVector[0], if nCodes>1) and matrix parameters depends
-       on the command ID. It is up to the imlementing subclass to check
-       for correct sizes.
-     
-       \note The default implementation just calls handleStdCommand(),
-       which tries some standard dispatching to
-       e.g. handleKey(). Subclasses that want to add functionality while
-       retaining the standard commands should call handleStdCommand()
-       within their implementation of handleCommand().
-     
-       \return An application-specific status (see
-       e.g. wbcrun/service.hpp).
-    */
-    virtual int32_t handleCommand(int32_t const * codeVector,
-				  size_t nCodes,
-				  SAIMatrix const & matrix);
-  
-    /**
-       Attempts to interpret the codeVector according to some "standard"
-       commands. If it finds a matching code, it will delegate to the
-       corresponding specific method. If it does not find a match, it
-       will return wbcrun::srv::NOT_IMPLEMENTED. This can be used
-       e.g. by subclasses to attempt standard commands, and then refine
-       the call in case it fail, like this:
+       e.g. wbcnet/msg/Service.hpp).  The input code and matrix can be
+       of any size, their interpretation depends on the commandID and
+       how the behavior implements it. The implementing behavior
+       subclass is responsible for checking the incoming sizes. In
+       case of size mismatches, there are several entries of
+       wbcnet::srv_result_t that you can use to signal such an error
+       to the caller. For example, in order to set controller gains,
+       the code vector could contain a list of gain IDs, and the
+       matrix could be a list of values to assign to these gains.
+       
+       The output code and matrix are optional. In order to store
+       values there, implementing subclasses can use the abilities of
+       wbcnet::Vector<> and wbcnet::Matrix<>, which are defined in
+       wbcnet/data.hpp (several layers of API and implementation
+       hierarchy, make sure to check their superclasses).
+       
+       \note IMPORTANT: The default implementation of this method does
+       some simple dispatching based on the commandID parameter. If
+       your want to rely on this dispatching in the superclass, make
+       sure that your overriding method calls the superclass at some
+       point. For example, if the commandID is wbcnet::SRV_KEY_PRESS,
+       then handleKey() ends up being called, which is much easier to
+       override if you do not want to worry about marshalling of codes
+       and matrices.
+
+       For example, if you want to catch cases that are not
+       implemented in the superclass, call that first and react only
+       if the call is not implemented there:
        \code
-       int32_t SomeBehaviorSubclass::handleCommand(...) {
-       int32_t result(handleStdCommand(...));
-       if (wbcrun::srv::NOT_IMPLEMENTED != result)
-       return result;
+       int SomeBehaviorSubclass::handleCommand(...) {
+       int result(handleStdCommand(...));
+       if (wbcnet::SRV_NOT_IMPLEMENTED != result) {
+         return result;
+       }
        // do subclass specific handling here...
        return result;
        }
        \endcode
-     
-       ATTENTION there is some historical weirdness here, which might
-       get refactored away some day: handleCommand() calls
-       handleStdCommand(), which calls e.g. handleKey(). But
-       handleCommand() is overrideable, so if subclass implementors
-       forget to call handleStdCommand() from within their
-       handleCommand(), then e.g. handleKey() never gets called.
-     
-       Currently recognized commands are:
-       - wbcrun::srv::KEY_PRESS -- call handleKey(codeVector[1]) if nCodes > 1
-     
-       \todo add: get and/or set (state, task type, dimension, prog
-       gain, diff gain, max vel, max acc, goal, current)
+       
+       \return A code according to wbcnet::srv_result_t,
+       e.g. wbcnet::SRV_SUCCESS for success,
+       wbcnet::SRV_NOT_IMPLEMENTED for a missing implementation. See
+       wbcnet/msg/Service.hpp for more details.
     */
-    int32_t handleStdCommand(int32_t const * codeVector,
-			     size_t nCodes,
-			     SAIMatrix const & matrix);
-  
+    virtual int handleCommand(int commandID,
+			      wbcnet::srv_code_t const * code_in,
+			      wbcnet::srv_matrix_t const * data_in,
+			      wbcnet::srv_code_t * code_out,
+			      wbcnet::srv_matrix_t * data_out);
+    
     virtual void SingularValues( int tasklevel, SAIMatrix const & SingularValues ) {}
   
     /**
-       The user pressed a key on the keyboard (ncurses mode). Look at
-       <curses.h> for the symbolic names of the key codes.
+       The user pressed a key on the keyboard (ncurses mode), encoded
+       as a wbcnet::SRV_KEY_PRESS commandID to handleCommand(). Look
+       at <curses.h> for the symbolic names of the key codes. The
+       default here in the superclass just returns
+       wbcnet::SRV_NOT_IMPLEMENTED.
      
        ATTENTION if your subclass overrides handleCommand(), then
-       handleKey() will NOT get called UNLESS your handleCommand() calls
-       handleStdCommand() at some point (or you explicitly call
-       handleKey()). This is some historic weirdness: the servo process
-       calls handleCommand(), which calls handleStdCommand(), which
-       calls handleKey().
-     
-       \note Default implementation returns wbcrun::srv::NOT_IMPLEMENTED.
-     
+       handleKey() will NOT get called UNLESS your handleCommand()
+       calls the wbc::BehaviorDescription::handleCommand() at some
+       point, or you explicitly call handleKey().
+       
        \note The CMake build setup (from \c wbc.cmake) detects whether curses are available
        on your system, and sets the HAVE_CURSES preprocessor symbol
        accordingly on the compiler command line. Thus you can use code like this:
@@ -183,13 +177,35 @@ namespace wbc {
        # include <curses.h>
        #endif // HAVE_CURSES
        \endcode
-     
-       \return one of wbcrun::srv::status_t
+       
+       \return wbcnet::srv_status_t
     */
-    virtual int32_t handleKey(int32_t keycode);
-
-    // int32_t handleSetGoal(SAIMatrix const & matrix);
-
+    virtual int handleKey(int keycode);
+    
+    /**
+       The user requests a goal change, encoded as a
+       wbcnet::SRV_SET_GOAL commandID to handleCommand(). Implementers
+       should check the dimension of the matrix before using it. The
+       default implementation returns wbcnet::SRV_NOT_IMPLEMENTED.
+       
+       \note For some reason, the goal is encoded as a one-row matrix
+       in the original request to handleCommand().
+       
+       \return wbcnet::srv_status_t
+     */
+    virtual int handleSetGoal(SAIVector const & goal);
+    
+    /**
+       The user requests the Jacobian, encoded as a
+       wbcnet::SRV_GET_JACOBIAN commandID to
+       handleCommand(). Implementers should resize and fill in the
+       jacobian parameter. The default implementation returns
+       wbcnet::SRV_NOT_IMPLEMENTED.
+       
+       \return wbcnet::srv_status_t
+     */
+    virtual int handleGetJacobian(SAIMatrix & jacobian);
+    
     ////virtual int32_t getState(int32_t & state) const;
   
   protected:

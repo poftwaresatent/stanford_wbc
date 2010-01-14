@@ -1,5 +1,7 @@
 /*
- * Copyright (c) 2008 Roland Philippsen <roland DOT philippsen AT gmx DOT net>
+ * Stanford Whole-Body Control Framework http://stanford-wbc.sourceforge.net/
+ *
+ * Copyright (c) 2010 Stanford University. All rights reserved.
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -15,6 +17,12 @@
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/>
  */
+
+/**
+   \file ShuffleVector.hpp
+   \author Roland Philippsen
+   \note Originally Copyright (c) 2008 Roland Philippsen, released under a BSD license.
+*/
 
 #ifndef WBC_TASK_MODEL_LISTENER_HPP
 #define WBC_TASK_MODEL_LISTENER_HPP

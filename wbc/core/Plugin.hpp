@@ -21,8 +21,8 @@
 #ifndef WBC_PLUGIN_HPP
 #define WBC_PLUGIN_HPP
 
-#include <wbcrun/DLModule.hpp>
-#include <wbcrun/Factory.hpp>
+#include <wbcnet/DLModule.hpp>
+#include <wbcnet/Factory.hpp>
 #include <list>
 
 namespace wbc {
@@ -90,11 +90,11 @@ namespace wbc {
 	subclass takes no constructor arguments.
     */
     void AddServoBehaviors(std::string const & name,
-			   wbcrun::FactoryAPI<ServoBehaviorsAPI> * factory)
+			   wbcnet::FactoryAPI<ServoBehaviorsAPI> * factory)
       throw(std::runtime_error);
     
     void AddRawController(std::string const & name,
-			  wbcrun::FactoryAPI<RawControllerAPI> * factory)
+			  wbcnet::FactoryAPI<RawControllerAPI> * factory)
       throw(std::runtime_error);
     
     RobotFactoryRegistry * robot_registry;
@@ -112,7 +112,7 @@ namespace wbc {
      but anyway. Just call the various methods of the Extensions
      object passed to your plugin.
    */
-  class Plugin : public wbcrun::Module {
+  class Plugin : public wbcnet::Module {
   public:
     virtual void Init(Extensions & extensions) throw(std::runtime_error) = 0;
   };
@@ -127,7 +127,7 @@ namespace wbc {
      path search "intelligence" (haha!) lives.
    */
   class PluginRegistry
-    : protected wbcrun::ModuleRegistry
+    : protected wbcnet::ModuleRegistry
   {
   public:
     explicit PluginRegistry(Extensions & extensions);

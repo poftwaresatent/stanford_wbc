@@ -1,5 +1,4 @@
 /*
- * Copyright (c) 2009 Roland Philippsen <roland DOT philippsen AT gmx DOT net>
  * Copyright (c) 2009 Stanford University
  *
  * This program is free software: you can redistribute it and/or
@@ -25,14 +24,15 @@
 #ifndef WBC_SERVO_PROCESS_HPP
 #define WBC_SERVO_PROCESS_HPP
 
-#include <wbcrun/Process.hpp>
-#include <wbcrun/service.hpp>
-#include <wbcrun/msg/Status.hpp>
-#include <wbcrun/msg/TaskSpec.hpp>
+#include <wbc/bin/Process.hpp>
+#include <wbcnet/msg/Service.hpp>
+#include <wbc/msg/Status.hpp>
+#include <wbc/msg/TaskSpec.hpp>
 #include <wbc/core/SAIVectorAPI.hpp>
 #include <wbc/core/SAIMatrixAPI.hpp>
-#include <wbcrun/directory.hpp>
-#include <wbcrun/msg/RobotState.hpp>
+#include <wbc/bin/directory.hpp>
+#include <wbc/msg/RobotState.hpp>
+#include <sys/time.h>
 
 class taoDNode;
 
@@ -47,7 +47,7 @@ namespace wbc {
 
   class TaskModelBase;
   class RobotAPI;
-  class BehaviorDirectory;
+  class DirectoryCmdServer;
   class Dynamics;
   class Kinematics;
   class Contact;
@@ -55,6 +55,23 @@ namespace wbc {
   class TaskModelListener;
   class BehaviorDescription;
   class RobotControlModel;
+  class BranchingRepresentation;
+  
+  
+  /** \note Just for implementing DirectoryCmdServer in a way that is
+      agnostic of multi-rate or one-process servo/model setup... BUT
+      this quick rfct introduces multiple inheritance for ServoProcess
+      and ServoModelProcess. */
+  class ServoProcessAPI
+  {
+  public:
+    virtual ~ServoProcessAPI() {}
+    virtual wbcnet::srv_result_t BeginBehaviorTransition(int behaviorID) = 0;
+    virtual BranchingRepresentation * GetBranching() = 0;
+    virtual Kinematics * GetKinematics() = 0;
+    virtual SAIVector const & GetCommandTorques() = 0;
+    virtual BehaviorDescription * GetCurrentBehavior() = 0;
+  };
   
   
   class ServoImplementation
@@ -76,12 +93,7 @@ namespace wbc {
 
     virtual ~ServoImplementation();
     
-    /** If you return false, this gets translated
-	into a reply containing srv::NOT_IMPLEMENTED */
-    virtual bool HandleServiceCall(wbcrun::ServiceMessage const & request,
-				   wbcrun::ServiceMessage & reply);
-    
-    virtual bool UpdateRobotState(wbcrun::msg::RobotState & state);
+    virtual bool UpdateRobotState(msg::RobotState & state);
     
     /** When no behavior or model is ready to run, this gets called
 	instead of UpdateTorqueCommand(). Subclasses must send a null
@@ -94,7 +106,7 @@ namespace wbc {
 	model and behavior. The calling process must garantee that the
 	model corresponds to the behavior and is up to date. */
     virtual bool UpdateTorqueCommand(TaskModelBase const * model,
-				     uint8_t behaviorID,
+				     int behaviorID,
 				     /** Set this to true to AVOID
 					 calling
 					 BehaviorDescription::onUpdate()
@@ -110,15 +122,24 @@ namespace wbc {
 	the given behaviorID. */
     virtual bool ResetBehavior(TaskModelBase * next_task_model,
 			       uint8_t requestID,
-			       uint8_t behaviorID);
+			       int behaviorID);
     
     /** \todo ...serialization stuff should not concern servo implementers... */
     virtual class TaskModelListener * GetTaskModelListener();
-
+    
+    std::vector<BehaviorDescription*> const & GetBehaviorLibrary() { return m_behavior; }
+    
+    
   protected:
-    BehaviorDirectory * m_directory;
-    wbcrun::DirectoryDispatcher m_directory_dispatcher;
-
+    // Should maybe fuse these two classes (they used to be one
+    // anyway, back in the days of innocence).
+    friend class ServoProcess;
+    
+    // ...but then this should be fused as well, and it's kinda nice
+    // to have the process and communication logic rather separate
+    // from the number crunching...
+    friend class ServoModelProcess;
+    
     timeval m_robot_state_tstamp;
     SAIVectorAPI m_joint_angles;
     SAIVectorAPI m_joint_velocities;
@@ -140,14 +161,15 @@ namespace wbc {
     wbcnet::DelayHistogram * m_dhist;
     int m_pskip;
     
-    wbcrun::msg::RobotState m_robot_state;
+    msg::RobotState m_robot_state;
     RobotControlModel * m_robmodel;
     taoDNode * m_end_effector;
   };
   
   
   class ServoProcess
-    : public wbcrun::Process
+    : public Process,
+      public ServoProcessAPI
   {
   public:
     ServoProcess();
@@ -165,7 +187,7 @@ namespace wbc {
 	      uint8_t force_nrows, uint8_t force_ncols) throw(std::exception); 
     
     /** Mostly for test and debug. */
-    wbcrun::msg::RobotState const & GetRobotState() const { return *m_robot_state; }
+    msg::RobotState const & GetRobotState() const { return *m_robot_state; }
     
     /**
        Checks that it is OK to transition to the wanted behavior,
@@ -173,13 +195,18 @@ namespace wbc {
        the next task model, and then prepares the model messages and
        enqueues it.
     */
-    void BeginBehaviorTransition(uint8_t behaviorID);
+    virtual wbcnet::srv_result_t BeginBehaviorTransition(int behaviorID);
+    
+    virtual BranchingRepresentation * GetBranching();
+    virtual Kinematics * GetKinematics();
+    virtual SAIVector const & GetCommandTorques();
+    virtual BehaviorDescription * GetCurrentBehavior();
     
     /** Access internal data for testing and debugging. */
-    uint8_t GetCurrentBehaviorID() const { return m_current_behaviorID; }
+    int GetCurrentBehaviorID() const { return m_current_behaviorID; }
     
     /** Access internal data for testing and debugging. */
-    uint8_t GetNextBehaviorID() const { return m_next_behaviorID; }
+    int GetNextBehaviorID() const { return m_next_behaviorID; }
     
     /** Access internal data for testing and debugging. */
     uint8_t GetBehaviorTransitionRequestID() const { return m_behavior_transition_requestID; }
@@ -189,11 +216,13 @@ namespace wbc {
     friend class ModelServoTest;
     
     typedef enum {
-      READY_STATE,	       /**< initialized, but no behavior chosen yet */
-      WAIT_MODEL_STATE,      /**< waiting for the first model update to flush through the system */
-      RUNNING_STATE,	       /**< running a behavior */
-      ERROR_STATE	       /**< placeholder for later extension */
+      READY_STATE,      /**< initialized, but no behavior chosen yet */
+      WAIT_MODEL_STATE,	/**< waiting for the first model update to flush through the system */
+      RUNNING_STATE,	/**< running a behavior */
+      ERROR_STATE	/**< placeholder for later extension */
     } state_t;
+    
+    DirectoryCmdServer * m_directory_cmd_server;
     
     ServoImplementation * m_imp;
     bool m_own_imp;
@@ -204,21 +233,21 @@ namespace wbc {
     wbcnet::Channel * m_user_channel;
     TaskModelListener * m_model_listener;
     
-    uint8_t m_current_behaviorID;
-    uint8_t m_next_behaviorID;
+    int m_current_behaviorID;
+    int m_next_behaviorID;
     uint8_t m_behavior_transition_requestID;
     bool m_init_behavior_transition;
     
     // incoming messages
-    wbcrun::msg::Status m_model_status;
-    wbcrun::msg::TaskSpec m_user_task_spec;
-    wbcrun::ServiceMessage m_user_request;
+    msg::Status m_model_status;
+    msg::TaskSpec m_user_task_spec;
+    wbcnet::msg::Service m_user_request;
     
     // outgoing messages
-    wbcrun::msg::Status m_servo_status;
-    wbcrun::msg::RobotState * m_robot_state;
-    wbcrun::msg::TaskSpec m_model_task_spec;
-    wbcrun::ServiceMessage m_user_reply;
+    msg::Status m_servo_status;
+    msg::RobotState * m_robot_state;
+    msg::TaskSpec m_model_task_spec;
+    wbcnet::msg::Service m_user_reply;
   };
   
 }

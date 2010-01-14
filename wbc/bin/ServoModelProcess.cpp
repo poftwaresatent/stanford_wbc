@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 Roland Philippsen <roland DOT philippsen AT gmx DOT net>
+ * Copyright (c) 2010 Stanford University
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -16,9 +16,16 @@
  * <http://www.gnu.org/licenses/>
  */
 
+/**
+   \file ServoModelProcess.cpp
+   \author Roland Philippsen
+*/
+
 #include "ServoModelProcess.hpp"
+#include "DirectoryCmdServer.hpp"
+#include <wbc/core/RobotControlModel.hpp>
 #include <wbcnet/NetConfig.hpp>
-#include <wbcrun/msg/RobotState.hpp>
+#include <wbc/msg/RobotState.hpp>
 #include <wbcnet/log.hpp>
 #include <iostream>
 
@@ -33,17 +40,19 @@ namespace wbc {
   ServoModelProcess::
   ServoModelProcess()
     : Process("servo-model", 0, -1, wbcnet::ENDIAN_DETECT),
+      m_directory_cmd_server(0),
       m_servo_imp(0),
       m_own_servo_imp(false),
       m_model_imp(0),
       m_own_model_imp(false),
       m_state(READY_STATE),
+      m_behaviorID(-1),
       m_have_behaviorID(false),
       m_robot_state(0),
       m_user_channel(0),
       m_user_task_spec(),
-      m_user_request(wbcrun::msg::USER_REQUEST),
-      m_user_reply(wbcrun::msg::USER_REPLY)
+      m_user_request(wbcnet::msg::USER_REQUEST),
+      m_user_reply(wbcnet::msg::USER_REPLY)
   {
   }
   
@@ -99,10 +108,9 @@ namespace wbc {
       }
       
       LOG_TRACE (logger, "wbc::ServoModelProcess::Step(): RUNNING: update torque");
-      if ( ! m_servo_imp->UpdateTorqueCommand(m_model_imp->GetTaskModel(), m_user_task_spec.behaviorID, true)) {
+      if ( ! m_servo_imp->UpdateTorqueCommand(m_model_imp->GetTaskModel(), m_behaviorID, true)) {
 	LOG_ERROR (logger,
-		       "wbc::ServoModelProcess::Step(): UpdateTorqueCommand(..., "
-		       << (int) m_user_task_spec.behaviorID << ") failed");
+		       "wbc::ServoModelProcess::Step(): UpdateTorqueCommand(..., " << m_behaviorID << ") failed");
 	m_state = ERROR_STATE;
 	return false;
       }
@@ -125,6 +133,7 @@ namespace wbc {
       delete m_servo_imp;
     if (m_own_model_imp)
       delete m_model_imp;
+    delete m_directory_cmd_server;
   }
   
   
@@ -159,33 +168,51 @@ namespace wbc {
     AddSink(m_user_channel, 100);
     AddSource(m_user_channel, 1); // limit the max rate of user requests to one per cycle
     
-    m_robot_state = new wbcrun::msg::RobotState(false, npos, nvel, force_nrows, force_ncols);
+    m_robot_state = new msg::RobotState(false, npos, nvel, force_nrows, force_ncols);
     
-    CreateHandler(wbcrun::msg::TASK_SPEC, "user_task_spec", & m_user_task_spec);
-    CreateHandler(wbcrun::msg::USER_REQUEST, "user_request", & m_user_request);
+    // Kind of redundant: we can get task specs from fire-and-forget
+    // TASK_SPEC messages, or through "proper" service requests.
+    CreateHandler(wbcnet::msg::TASK_SPEC, "user_task_spec", & m_user_task_spec);
+    
+    CreateHandler(wbcnet::msg::USER_REQUEST, "user_request", & m_user_request);
+  }
+  
+  
+  wbcnet::srv_result_t ServoModelProcess::
+  BeginBehaviorTransition(int behaviorID)
+  {
+    // Kind of redundant: we can get task specs from fire-and-forget
+    // TASK_SPEC messages, or through "proper" service requests.
+    m_behaviorID = behaviorID;
+    m_have_behaviorID = true;
+    return wbcnet::SRV_SUCCESS;
   }
   
   
   int ServoModelProcess::
   HandleMessagePayload(wbcnet::unique_id_t msg_id)
   {
-    if (wbcrun::msg::TASK_SPEC == msg_id) {
+    // Kind of redundant: we can get task specs from fire-and-forget
+    // TASK_SPEC messages, or through "proper" service requests.
+    if (wbcnet::msg::TASK_SPEC == msg_id) {
       LOG_TRACE (logger, "wbc::ServoModelProcess::HandleMessagePayload(): got TASK_SPEC");
+      m_behaviorID = m_user_task_spec.behaviorID;
       m_have_behaviorID = true;
     }
     
-    else if (wbcrun::msg::USER_REQUEST == msg_id) {
-      LOG_TRACE (logger, "wbc::ServoModelProcess::HandleMessagePayload(): got USER_REQUEST");
-      m_user_reply.Reset();
-      if ( ! m_servo_imp->HandleServiceCall(m_user_request, m_user_reply)) {
-	if ( ! m_user_reply.code.SetNElements(1)) {
-	  LOG_ERROR (logger,
-			 "wbc::ServoModelProcess::HandleMessagePayload()\n"
-			 << "  weird, could not resize user reply code to one");
-	  return 888;
+    else if (wbcnet::msg::USER_REQUEST == msg_id) {
+      LOG_INFO (logger, "wbc::ServoModelProcess::HandleMessagePayload(): got USER_REQUEST");
+      if ( ! m_directory_cmd_server) {
+	m_directory_cmd_server = new DirectoryCmdServer(m_servo_imp->GetBehaviorLibrary(), this);
+      }
+      if ( ! m_directory_cmd_server->Dispatch(m_user_request, m_user_reply)) {
+	if (logger->isWarnEnabled()) {
+	  ostringstream msg;
+	  msg << "wbc::ServoModelProcess::HandleMessagePayload(): DirectoryCmdServer::Dispatch() failed\n"
+	      << "  It did not seem like the user request:\n";
+	  m_user_request.Dump(msg, "    ");
+	  LOG_WARN (logger, msg.str());
 	}
-	m_user_reply.matrix.SetSize(0, 0);
-	m_user_reply.code[0] = wbcrun::srv::NOT_IMPLEMENTED;
       }
       EnqueueMessage(m_user_channel, &m_user_reply, true, false);
     }
@@ -194,11 +221,39 @@ namespace wbc {
       LOG_TRACE (logger,
 		     "wbc::ServoModelProcess::HandleMessagePayload()\n"
 		     << "  unknown message ID " << (int) msg_id
-		     << " [" << wbcrun::msg::get_id_str(msg_id) << "]");
+		     << " [" << wbcnet::msg::get_id_str(msg_id) << "]");
       return 999;
     }
     
     return 0;
   }
   
+  
+  BranchingRepresentation * ServoModelProcess::
+  GetBranching()
+  {
+    return m_servo_imp->m_robmodel->branching();
+  }
+  
+  
+  Kinematics * ServoModelProcess::
+  GetKinematics()
+  {
+    return m_servo_imp->m_kinematics;
+  }
+  
+  
+  SAIVector const & ServoModelProcess::
+  GetCommandTorques()
+  {
+    return m_servo_imp->m_command_torques;
+  }
+  
+  
+  BehaviorDescription * ServoModelProcess::
+  GetCurrentBehavior()
+  {
+    return m_servo_imp->m_current_behavior;
+  }
+
 }

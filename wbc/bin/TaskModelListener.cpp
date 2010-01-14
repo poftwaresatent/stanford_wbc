@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008 Roland Philippsen <roland DOT philippsen AT gmx DOT net>
+ * Copyright (c) 2010 Stanford University
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -16,8 +16,13 @@
  * <http://www.gnu.org/licenses/>
  */
 
+/**
+   \file TaskModelListener.cpp
+   \author Roland Philippsen
+*/
+
 #include "TaskModelListener.hpp"
-#include <wbcrun/message_id.hpp>
+#include <wbcnet/message_id.hpp>
 #include <wbc/core/TaskModelBase.hpp>
 #include <wbcnet/log.hpp>
 #include <iostream>
@@ -30,7 +35,7 @@ namespace wbc {
   TaskModelListener::
   TaskModelListener(TaskModelBase * model_one,
 		    TaskModelBase * model_two)
-    : task_matrix(wbcrun::msg::TASK_MATRIX,
+    : task_matrix(wbcnet::msg::TASK_MATRIX,
 		  std::numeric_limits<uint8_t>::max(), // max n rows
 		  std::numeric_limits<uint8_t>::max(), // max n cols
 		  0		// data pointer
@@ -47,10 +52,10 @@ namespace wbc {
   int TaskModelListener::
   HandleMessageHeader(wbcnet::unique_id_t msg_id)
   {
-    if (wbcrun::msg::TASK_MATRIX != msg_id) {
+    if (wbcnet::msg::TASK_MATRIX != msg_id) {
       LOG_ERROR (logger,
 		     "wbc::TaskModelListener::HandleMessageHeader(): msg_id " << (int) msg_id
-		     << " is not wbcrun::msg::TASK_MATRIX (" << wbcrun::msg::TASK_MATRIX << ")");
+		     << " is not wbcnet::msg::TASK_MATRIX (" << wbcnet::msg::TASK_MATRIX << ")");
       return -11;
     }
   
@@ -131,10 +136,10 @@ namespace wbc {
   int TaskModelListener::
   HandleMessagePayload(wbcnet::unique_id_t msg_id)
   {
-    if (wbcrun::msg::TASK_MATRIX != msg_id) {
+    if (wbcnet::msg::TASK_MATRIX != msg_id) {
       LOG_ERROR (logger,
 		     "wbc::TaskModelListener::HandleMessagePayload(): msg_id " << (int) msg_id
-		     << " is not wbcrun::msg::TASK_MATRIX (" << wbcrun::msg::TASK_MATRIX << ")");
+		     << " is not wbcnet::msg::TASK_MATRIX (" << wbcnet::msg::TASK_MATRIX << ")");
       return -55;
     }
     

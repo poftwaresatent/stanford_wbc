@@ -18,7 +18,10 @@
  * <http://www.gnu.org/licenses/>
  */
 
-/** \author Samir Menon and Roland Philippsen */
+/**
+   \file OsimBRParser.cpp
+   \author Samir Menon and Roland Philippsen
+*/
 
 #include "OsimBRParser.hpp"
 #include <wbc/core/BranchingRepresentation.hpp>
@@ -81,14 +84,14 @@ namespace wbc {
     // build the various maps and other sugar
 //#warning 'XXXX this only works if the Osim file contains just one root, otherwise we need tree traversal starting at the root that represents our robot.'
     typedef vector<robotarchitect::SControllerRobotLink*> linkvec_t;
-    linkvec_t * linkvec(arg_robdef_p->retChildLinkVector());
+    linkvec_t * linkvec(arg_robdef_p->getChildLinkVector());
     ret_brRep_p->numJoints_ = linkvec->size();
     ret_brRep_p->totalMass_ = 0;
     ret_brRep_p->grav_ = SAIVector(3);
-    //ret_brRep_p->grav_ = SAIVector3((const Float*)arg_robdef_p->retGlobData()->gravity_);
-    ret_brRep_p->grav_[0] = arg_robdef_p->retGlobData()->gravity_[0];
-    ret_brRep_p->grav_[1] = arg_robdef_p->retGlobData()->gravity_[1];
-    ret_brRep_p->grav_[2] = arg_robdef_p->retGlobData()->gravity_[2];
+    //ret_brRep_p->grav_ = SAIVector3((const Float*)arg_robdef_p->getGlobData()->gravity_);
+    ret_brRep_p->grav_[0] = arg_robdef_p->getGlobData()->gravity_[0];
+    ret_brRep_p->grav_[1] = arg_robdef_p->getGlobData()->gravity_[1];
+    ret_brRep_p->grav_[2] = arg_robdef_p->getGlobData()->gravity_[2];
 
     ret_brRep_p->upperJointLimitVec_.setSize( ret_brRep_p->numJoints_ );
     ret_brRep_p->lowerJointLimitVec_.setSize( ret_brRep_p->numJoints_ );

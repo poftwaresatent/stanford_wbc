@@ -19,6 +19,7 @@
  */
 
 /**
+   \file plugins/robotlog/readlog.hpp
    \author Roland Philippsen
 */
 
@@ -27,13 +28,14 @@
 
 #include <wbc/core/RobotAPI.hpp>
 #include <wbc/core/RobotFactory.hpp>
-#include <wbcrun/util.hpp>
+#include <wbc/util/StringBuffer.hpp>
+#include <wbc/util/File.hpp>
 #include <saimatrix/SAIVector.h>
 #include <saimatrix/SAIMatrix.h>
 #include <expat.h>
 #include <list>
 
-typedef wbcrun::StringBuffer<XML_Char> strbuf_t;
+typedef wbc::StringBuffer<XML_Char> strbuf_t;
 
 class RLog
   : public wbc::RobotAPI
@@ -54,7 +56,7 @@ public:
   XML_ParserStruct * m_parser;
   strbuf_t * m_buffer;
   std::string m_infname;
-  wbcrun::File * m_infile;
+  wbc::File * m_infile;
   int m_bufsize;
   std::list<SAIVector> m_pos;
   std::list<SAIVector> m_vel;

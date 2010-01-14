@@ -1,5 +1,4 @@
 /*
- * Copyright (c) 2009 Roland Philippsen <roland DOT philippsen AT gmx DOT net>
  * Copyright (c) 2009 Stanford University
  *
  * This program is free software: you can redistribute it and/or
@@ -18,14 +17,14 @@
  */
 
 /**
-   \file ServoProcess.hpp
+   \file ServoProcess.cpp
    \author Roland Philippsen (execution control) and Luis Sentis (servo algorithm)
 */
 
 #include "ServoProcess.hpp"
 #include "TaskModelListener.hpp"
-#include "BehaviorDirectory.hpp"
-#include <wbcrun/message_id.hpp>
+#include "DirectoryCmdServer.hpp"
+#include <wbcnet/message_id.hpp>
 #include <wbcnet/NetConfig.hpp>
 #include <wbcnet/log.hpp>
 #include <wbc/core/TaskModelBase.hpp>
@@ -36,7 +35,7 @@
 #include <wbc/core/BehaviorDescription.hpp>
 #include <wbc/core/RobotAPI.hpp>
 #include <wbc/core/ServoBehaviorsAPI.hpp>
-#include <wbcrun/msg/RobotState.hpp>
+#include <wbc/msg/RobotState.hpp>
 #include <wbcnet/msg/TaskSpec.hpp>
 #include <wbcnet/msg/TaskMatrix.hpp>
 #include <wbcnet/DelayHistogram.hpp>
@@ -66,11 +65,10 @@ namespace wbc {
 		      std::vector<BehaviorDescription*> const & behavior,
 		      /** \todo depends on multirate or not */
 		      std::vector<TaskModelBase*> const & task_model_pool,
-		      wbc::RobotAPI * robotAPI,
+		      RobotAPI * robotAPI,
 		      wbcnet::DelayHistogram * dhist,
 		      int pskip)
-    : m_directory(0),
-      m_joint_angles(ndof),
+    : m_joint_angles(ndof),
       m_joint_velocities(nvel),
       m_contact_forces(contact_nrows, contact_ncols),
       m_command_torques(0),	// init to zero to detect the second iteration
@@ -80,8 +78,8 @@ namespace wbc {
       m_current_behavior(0),
       m_servoBehaviors(servoBehaviors),
       m_behavior(behavior),
-      m_task_model_listener(new wbc::TaskModelListener(task_model_pool[0],
-						       task_model_pool[1])),
+      m_task_model_listener(new TaskModelListener(task_model_pool[0],
+						  task_model_pool[1])),
       m_robotAPI(robotAPI),
       m_ndof_actuated(ndof_actuated),
       m_dhist(dhist),
@@ -96,166 +94,11 @@ namespace wbc {
   ServoImplementation::
   ~ServoImplementation()
   {
-    delete m_directory;
     delete m_task_model_listener;
   }
   
   
-  bool ServoImplementation::
-  HandleServiceCall(wbcrun::ServiceMessage const & user_request,
-		    wbcrun::ServiceMessage & user_reply)
-  {
-    if (logger->isDebugEnabled()) {
-      ostringstream msg;
-      msg << "wbc::ServoImplementation::HandleServiceCall()\n";
-      user_request.Dump(msg, "  ");
-      LOG_DEBUG (logger, msg.str());
-    }
-    
-    if ( ! m_directory)
-      m_directory = new BehaviorDirectory(m_behavior, this);
-    
-    if (m_directory_dispatcher.Handle(*m_directory, user_request, user_reply)) {
-      if (logger->isDebugEnabled()) {
-	ostringstream msg;
-	msg << "wbc::ServoImplementation::HandleServiceCall() dispatcher did it\n";
-	user_reply.Dump(msg, "  ");
-	LOG_DEBUG (logger, msg.str());
-      }
-      return true;
-    }
-    LOG_DEBUG (logger, "wbc::ServoImplementation::HandleServiceCall(): dispatcher did not take care of it");
-    
-    if (user_request.code.NElements() < 1) {
-      user_reply.code.SetNElements(1);
-      user_reply.matrix.SetSize(0, 0);
-      user_reply.code[0] = wbcrun::srv::MISSING_CODE;
-      if (logger->isDebugEnabled()) {
-	ostringstream msg;
-	msg << "wbc::ServoImplementation::HandleServiceCall() MISSING_CODE\n";
-	user_reply.Dump(msg, "  ");
-	LOG_DEBUG (logger, msg.str());
-      }
-      return true;
-    }
-    
-    switch (user_request.code[0]) {
-      
-    case wbcrun::srv::GET_POS:
-      user_reply.code.SetNElements(1);
-      user_reply.matrix.Copy(m_joint_angles);
-      user_reply.code[0] = wbcrun::srv::SUCCESS;
-      if (logger->isDebugEnabled()) {
-	ostringstream msg;
-	msg << "wbc::ServoImplementation::HandleServiceCall() GET_POS SUCCESS\n";
-	user_reply.Dump(msg, "  ");
-	LOG_DEBUG (logger, msg.str());
-      }
-      return true;
-      
-    case wbcrun::srv::GET_END_POS:
-      if ( ! m_end_effector) {
-	user_reply.code.SetNElements(1);
-	user_reply.matrix.SetSize(0, 0);
-	user_reply.code[0] = wbcrun::srv::OTHER_ERROR;
-	LOG_ERROR (logger, "wbc::ServoImplementation::HandleServiceCall(): GET_END_POS without end effector");
-	if (logger->isDebugEnabled()) {
-	  ostringstream msg;
-	  msg << "wbc::ServoImplementation::HandleServiceCall() OTHER_ERROR\n";
-	  user_reply.Dump(msg, "  ");
-	  LOG_DEBUG (logger, msg.str());
-	}
-	return true;
-      }
-      user_reply.code.SetNElements(1);
-      {
-	SAITransform const transform(m_kinematics->globalFrame(m_end_effector, nullVector));
-	SAIVectorAPI reply(transform.rotation().vecForm());
-	reply.append(transform.translation());
-	user_reply.matrix.Copy(reply);
-      }
-      user_reply.code[0] = wbcrun::srv::SUCCESS;
-      if (logger->isDebugEnabled()) {
-	ostringstream msg;
-	msg << "wbc::ServoImplementation::HandleServiceCall() GET_END_POS SUCCESS\n";
-	user_reply.Dump(msg, "  ");
-	LOG_DEBUG (logger, msg.str());
-      }
-      return true;
-      
-    case wbcrun::srv::GET_VEL:
-      user_reply.code.SetNElements(1);
-      user_reply.matrix.Copy(m_joint_velocities);
-      user_reply.code[0] = wbcrun::srv::SUCCESS;
-      if (logger->isDebugEnabled()) {
-	ostringstream msg;
-	msg << "wbc::ServoImplementation::HandleServiceCall() GET_VEL SUCCESS\n";
-	user_reply.Dump(msg, "  ");
-	LOG_DEBUG (logger, msg.str());
-      }
-      return true;
-      
-    case wbcrun::srv::GET_TORQUES:
-      user_reply.code.SetNElements(1);
-      user_reply.matrix.Copy(m_command_torques);
-      user_reply.code[0] = wbcrun::srv::SUCCESS;
-      if (logger->isDebugEnabled()) {
-	ostringstream msg;
-	msg << "wbc::ServoImplementation::HandleServiceCall() GET_TORQUES SUCCESS\n";
-	user_reply.Dump(msg, "  ");
-	LOG_DEBUG (logger, msg.str());
-      }
-      return true;
-      
-    case wbcrun::srv::TOGGLE_RECORDER:
-      Recorder::FlushAll();
-      user_reply.code.SetNElements(1);
-      user_reply.matrix.SetSize(0, 0);
-      user_reply.code[0] = wbcrun::srv::SUCCESS;
-      if (logger->isDebugEnabled()) {
-	ostringstream msg;
-	msg << "wbc::ServoImplementation::HandleServiceCall() TOGGLE_RECORDER SUCCESS\n";
-	user_reply.Dump(msg, "  ");
-	LOG_DEBUG (logger, msg.str());
-      }
-      return true;
-      
-    default:
-      if (m_current_behavior) {
-	LOG_DEBUG (logger,
-		   "wbc::ServoImplementation::HandleServiceCall(): forwarding " << (int) user_request.code[0]
-		   << " " << wbcrun::srv::get_id_str(user_request.code[0]) << " to behavior "
-		   << m_current_behavior->name);
-	user_reply.code.SetNElements(1);
-	user_reply.matrix.SetSize(0, 0);
-	user_reply.code[0] = m_current_behavior->handleCommand(user_request.code.ElementPointer(),
-							       user_request.nCodes,
-							       SAIMatrixAPI(user_request.matrix));
-      }
-      else {
-	LOG_WARN (logger,
-		  "wbc::ServoImplementation::HandleServiceCall(): cannot forward " << (int) user_request.code[0]
-		  << " " << wbcrun::srv::get_id_str(user_request.code[0]) << " (no current behavior)");
-	user_reply.code.SetNElements(1);
-	user_reply.matrix.SetSize(0, 0);
-	user_reply.code[0] = wbcrun::srv::TRY_AGAIN;
-      }
-      if (logger->isDebugEnabled()) {
-	ostringstream msg;
-	msg << "wbc::ServoImplementation::HandleServiceCall(): reply from behavior\n";
-	user_reply.Dump(msg, "  ");
-	LOG_DEBUG (logger, msg.str());
-      }
-      return true;
-      
-    }
-    
-    LOG_WARN (logger, "wbc::ServoImplementation::HandleServiceCall(): BUG? reached end of switch");
-    return false;		// never happens though
-  }
-  
-  
-  wbc::TaskModelListener * ServoImplementation::
+  TaskModelListener * ServoImplementation::
   GetTaskModelListener()
   {
     return m_task_model_listener;
@@ -263,7 +106,7 @@ namespace wbc {
   
   
   bool ServoImplementation::
-  UpdateRobotState(wbcrun::msg::RobotState & robot_state)
+  UpdateRobotState(msg::RobotState & robot_state)
   {
     LOG_DEBUG (logger, "wbc::ServoImplementation::UpdateRobotState()");
     
@@ -331,16 +174,16 @@ namespace wbc {
   
   
   bool ServoImplementation::
-  UpdateTorqueCommand(wbc::TaskModelBase const * model,
-		      uint8_t current_behaviorID,
+  UpdateTorqueCommand(TaskModelBase const * model,
+		      int current_behaviorID,
 		      bool skip_behavior_update)
   {
     LOG_DEBUG (logger, "wbc::ServoImplementation::UpdateTorqueCommand()");
     
-    if (current_behaviorID >= m_behavior.size()) {
+    if ((0 > current_behaviorID) || (current_behaviorID >= m_behavior.size())) {
       LOG_ERROR (logger,
 		 "wbc::ServoImplementation::UpdateTorqueCommand(): invalid behaviorID "
-		 << (int) current_behaviorID << " (only " << m_behavior.size() << " available)");
+		 << current_behaviorID << " (only " << m_behavior.size() << " available)");
       return false;
     }
     m_current_behavior = m_behavior[current_behaviorID];
@@ -360,10 +203,10 @@ namespace wbc {
     
     m_kinematics->onUpdate(m_robot_state.jointAngles, m_robot_state.jointVelocities);
     ostringstream msg;
-    if ( ! m_kinematics->checkDisplayJointLimits(logger->isInfoEnabled() ? &msg : 0,
+    if ( ! m_kinematics->checkDisplayJointLimits(logger->isDebugEnabled() ? &msg : 0,
 						 "wbc::ServoImplementation::UpdateTorqueCommand()",
 						 "  ")) {
-      LOG_INFO (logger, msg.str() << "wbc::ServoImplementation::UpdateTorqueCommand(): joint limits hit (ignored...)");
+      LOG_DEBUG (logger, msg.str() << "wbc::ServoImplementation::UpdateTorqueCommand(): joint limits hit (ignored...)");
       // XXXX just ignore joint limits for the time being
     }
     
@@ -374,7 +217,7 @@ namespace wbc {
     m_robmodel->time(m_robot_state.acquisitionTime);
     
     SAIVector gravity, coriolis;
-    wbc::TaskModelView const * model_view(model->GetView());
+    TaskModelView const * model_view(model->GetView());
     model_view->gravityForce()->getColumn(0, gravity);
     model_view->coriolisCentrifugalForce()->getColumn(0, coriolis);
     if ((1 == coriolis.size()) || (1 == gravity.size()))
@@ -431,25 +274,25 @@ namespace wbc {
     
     
   bool ServoImplementation::
-  ResetBehavior(wbc::TaskModelBase * next_task_model,
+  ResetBehavior(TaskModelBase * next_task_model,
 		uint8_t requestID,
-		uint8_t behaviorID)
+		int behaviorID)
   {
     if (behaviorID > m_behavior.size()) {
       LOG_ERROR (logger,
-		 "wbc::ServoImplementation::ResetBehavior():  invalid behaviorID " << (int) behaviorID
+		 "wbc::ServoImplementation::ResetBehavior():  invalid behaviorID " << behaviorID
 		 << " (only " << m_behavior.size() << " available)");
       return false;
     }
     if ( ! next_task_model->Reset(requestID, *m_behavior[behaviorID])) {
       LOG_ERROR (logger,
 		 "wbc::ServoImplementation::ResetBehavior(): next_task_model->Reset(" << (int) requestID
-		 << ", behavior[" << (int) behaviorID << "]) failed");
+		 << ", behavior[" << behaviorID << "]) failed");
       return false;
     }
     LOG_DEBUG (logger,
 	       "wbc::ServoImplementation::ResetBehavior() requestID: " << (int) requestID
-	       << "  behaviorID: " << (int) behaviorID);
+	       << "  behaviorID: " << behaviorID);
     return true;
   }
   
@@ -457,23 +300,24 @@ namespace wbc {
   ServoProcess::
   ServoProcess()
     : Process("servo", 0, -1, wbcnet::ENDIAN_DETECT),
+      m_directory_cmd_server(0),
       m_imp(0),
       m_own_imp(false),
       m_state(READY_STATE),
       m_model_channel(0),
       m_user_channel(0),
       m_model_listener(0),
-      m_current_behaviorID(numeric_limits<uint8_t>::max()),
-      m_next_behaviorID(numeric_limits<uint8_t>::max()),
+      m_current_behaviorID(-1),
+      m_next_behaviorID(-1),
       m_behavior_transition_requestID(0),
       m_init_behavior_transition(false),
       m_model_status(),
       m_user_task_spec(),
-      m_user_request(wbcrun::msg::USER_REQUEST),
+      m_user_request(wbcnet::msg::USER_REQUEST),
       m_servo_status(),
       m_robot_state(0),
       m_model_task_spec(),
-      m_user_reply(wbcrun::msg::USER_REPLY)
+      m_user_reply(wbcnet::msg::USER_REPLY)
   {
   }
   
@@ -499,14 +343,14 @@ namespace wbc {
       if (m_init_behavior_transition) {
 	LOG_TRACE (logger, "wbc::ServoProcess::Step(): READY --> WAIT_MODEL");
 	m_state = WAIT_MODEL_STATE;
-	m_model_status.status = wbcrun::msg::MODEL_SUCCESS; // trick to kickstart communication
+	m_model_status.status = msg::MODEL_SUCCESS; // trick to kickstart communication
       }
     }
     
     // maybe feed the model with state and maybe even with task spec
     
-    if (m_model_status.status != wbcrun::msg::VOID_STATUS) {
-      m_model_status.status = wbcrun::msg::VOID_STATUS;
+    if (m_model_status.status != msg::VOID_STATUS) {
+      m_model_status.status = msg::VOID_STATUS;
       ++m_robot_state->requestID;
       
       if (m_init_behavior_transition) {
@@ -518,9 +362,9 @@ namespace wbc {
 	if ( ! m_imp->ResetBehavior(m_model_listener->GetStaleModel(),
 				    m_behavior_transition_requestID, m_next_behaviorID)) {
 	  LOG_ERROR (logger,
-			 "wbc::ServoProcess::Step(): ResetBehavior(..."
-			 << (int) m_behavior_transition_requestID << ", "
-			 << (int) m_next_behaviorID << ") failed");
+		     "wbc::ServoProcess::Step(): ResetBehavior(..."
+		     << (int) m_behavior_transition_requestID << ", "
+		     << m_next_behaviorID << ") failed");
 	  m_state = ERROR_STATE;
 	  // not such a great idea to return without sending the enqueued messages though
 	  return false;
@@ -550,7 +394,7 @@ namespace wbc {
       EnqueueMessage(m_model_channel, m_robot_state, true, false);
       
       LOG_TRACE (logger, "  enqueueing COMPUTE_MODEL status");
-      m_servo_status.status = wbcrun::msg::COMPUTE_MODEL;
+      m_servo_status.status = msg::COMPUTE_MODEL;
       EnqueueMessage(m_model_channel, &m_servo_status, true, false);
       
     } // end if (m_model_status.status != msg::VOID)
@@ -571,8 +415,8 @@ namespace wbc {
 					m_current_behaviorID,
 					false)) {
 	LOG_ERROR (logger,
-		       "wbc::ServoProcess::Step(): UpdateTorqueCommand(..., "
-		       << (int) m_current_behaviorID << ") failed");
+		   "wbc::ServoProcess::Step(): UpdateTorqueCommand(..., "
+		   << m_current_behaviorID << ") failed");
 	return false;
       }
     }
@@ -585,14 +429,6 @@ namespace wbc {
   }
   
   
-//   bool ServoImplementationAPI::
-//   HandleServiceCall(ServiceMessage const & request,
-// 		    ServiceMessage & reply)
-//   {
-//     return false;
-//   }
-  
-  
   ServoProcess::
   ~ServoProcess()
   {
@@ -601,6 +437,7 @@ namespace wbc {
     delete m_user_channel;
     if (m_own_imp)
       delete m_imp;
+    delete m_directory_cmd_server;
   }
   
   
@@ -641,14 +478,14 @@ namespace wbc {
     AddSink(m_user_channel, 100);
     AddSource(m_user_channel, 1); // limit the max rate of user requests to one per cycle
     
-    m_robot_state = new wbcrun::msg::RobotState(false, npos, nvel, force_nrows, force_ncols);
-    m_model_status.status = wbcrun::msg::VOID_STATUS;
+    m_robot_state = new msg::RobotState(false, npos, nvel, force_nrows, force_ncols);
+    m_model_status.status = msg::VOID_STATUS;
     
-    CreateHandler(wbcrun::msg::STATUS, "model_status", & m_model_status);
-    CreateHandler(wbcrun::msg::TASK_SPEC, "user_task_spec", & m_user_task_spec);
-    CreateHandler(wbcrun::msg::USER_REQUEST, "user_request", & m_user_request);
+    CreateHandler(wbcnet::msg::STATUS, "model_status", & m_model_status);
+    CreateHandler(wbcnet::msg::TASK_SPEC, "user_task_spec", & m_user_task_spec);
+    CreateHandler(wbcnet::msg::USER_REQUEST, "user_request", & m_user_request);
     
-    m_muldex.SetHandler(wbcrun::msg::TASK_MATRIX,
+    m_muldex.SetHandler(wbcnet::msg::TASK_MATRIX,
 			new wbcnet::ProxyHandler("task_matrix",
 						 m_model_listener->task_matrix,
 						 true, m_model_listener));
@@ -658,59 +495,59 @@ namespace wbc {
   int ServoProcess::
   HandleMessagePayload(wbcnet::unique_id_t msg_id)
   {
-    if (wbcrun::msg::STATUS == msg_id) {
+    if (wbcnet::msg::STATUS == msg_id) {
       LOG_TRACE (logger, "wbc::ServoProcess::HandleMessagePayload(): got STATUS");
       
-      if (wbcrun::msg::MODEL_SUCCESS == m_model_status.status) {
+      if (msg::MODEL_SUCCESS == m_model_status.status) {
 	LOG_TRACE (logger, "  MODEL_SUCCESS");
 	if (WAIT_MODEL_STATE == m_state) {
 	  LOG_TRACE (logger, "  transition state WAIT_MODEL to RUNNING");
 	  m_state = RUNNING_STATE;
 	}
-	wbc::TaskModelBase * task_model(m_model_listener->GetLastUpdatedModel());
+	TaskModelBase * task_model(m_model_listener->GetLastUpdatedModel());
 	if ( ! task_model) {
 	  LOG_ERROR (logger,
-			 "wbc::ServoProcess::HandleMessagePayload():\n"
-			 << "  BUG? m_model_listener->GetLastUpdatedModel() returned NULL\n"
-			 << "  but it should have received at least one matrix message before\n"
-			 << "  arriving here.");
+		     "wbc::ServoProcess::HandleMessagePayload():\n"
+		     << "  BUG? m_model_listener->GetLastUpdatedModel() returned NULL\n"
+		     << "  but it should have received at least one matrix message before\n"
+		     << "  arriving here.");
 	  return 777;
 	}
 	uint8_t const requestID(task_model->GetRequestID());
 	if ((m_current_behaviorID != m_next_behaviorID)
 	    && (requestID == m_behavior_transition_requestID)) {
 	  LOG_TRACE (logger,
-			 "  finish behavior transition\n"
-			 << "    m_current_behaviorID = " << (int) m_current_behaviorID << "\n"
-			 << "    m_next_behaviorID = " << (int) m_next_behaviorID << "\n"
-			 << "    requestID = " << (int) requestID << "\n"
-			 << "    m_behavior_transition_requestID = "
-			 << (int) m_behavior_transition_requestID);
+		     "  finish behavior transition\n"
+		     << "    m_current_behaviorID = " << m_current_behaviorID << "\n"
+		     << "    m_next_behaviorID = " << m_next_behaviorID << "\n"
+		     << "    requestID = " << (int) requestID << "\n"
+		     << "    m_behavior_transition_requestID = "
+		     << (int) m_behavior_transition_requestID);
 	  m_current_behaviorID = m_next_behaviorID;
 	}
 	else
 	  if (logger->isTraceEnabled()) {
 	    if (m_current_behaviorID == m_next_behaviorID) {
 	      LOG_TRACE (logger,
-			     "  got a fresh model for the still running behavior "
-			     << (int) m_current_behaviorID);
+			 "  got a fresh model for the still running behavior "
+			 << m_current_behaviorID);
 	    }
 	    else {
 	      LOG_TRACE (logger,
-			     "  cannot finish behavior transition:\n"
-			     << "   probably this means we got an update for the old behavior\n"
-			     << "   or maybe it's a bug in request ID handling\n"
-			     << "     m_current_behaviorID = " << (int) m_current_behaviorID << "\n"
-			     << "     m_next_behaviorID = " << (int) m_next_behaviorID << "\n"
-			     << "     requestID = " << (int) requestID << "\n"
-			     << "     m_behavior_transition_requestID = "
-			     << (int) m_behavior_transition_requestID);
+			 "  cannot finish behavior transition:\n"
+			 << "   probably this means we got an update for the old behavior\n"
+			 << "   or maybe it's a bug in request ID handling\n"
+			 << "     m_current_behaviorID = " << m_current_behaviorID << "\n"
+			 << "     m_next_behaviorID = " << m_next_behaviorID << "\n"
+			 << "     requestID = " << (int) requestID << "\n"
+			 << "     m_behavior_transition_requestID = "
+			 << (int) m_behavior_transition_requestID);
 	    }
 	  }
 	////	UpdateTaskModel(task_model, m_current_behaviorID);
       }
       
-      else if (wbcrun::msg::MODEL_ERROR == m_model_status.status) {
+      else if (msg::MODEL_ERROR == m_model_status.status) {
 	LOG_TRACE (logger, "  MODEL_ERROR --> just retry");
 	////maybe one day//// HandleModelFailure();
       }
@@ -719,32 +556,33 @@ namespace wbc {
 	LOG_TRACE (logger, "  ignoring status " << (int) m_model_status.status << "");
     }
 
-    else if (wbcrun::msg::TASK_SPEC == msg_id) {
+    else if (wbcnet::msg::TASK_SPEC == msg_id) {
       LOG_TRACE (logger, "wbc::ServoProcess::HandleMessagePayload(): got TASK_SPEC");
       BeginBehaviorTransition(m_user_task_spec.behaviorID);
     }
-
-    else if (wbcrun::msg::USER_REQUEST == msg_id) {
-      LOG_TRACE (logger, "wbc::ServoProcess::HandleMessagePayload(): got USER_REQUEST");
-      m_user_reply.Reset();
-      if ( ! m_imp->HandleServiceCall(m_user_request, m_user_reply)) {
-	if ( ! m_user_reply.code.SetNElements(1)) {
-	  LOG_ERROR (logger,
-			 "wbc::ServoProcess::HandleMessagePayload()\n"
-			 << "  weird, could not resize user reply code to one");
-	  return 888;
+    
+    else if (wbcnet::msg::USER_REQUEST == msg_id) {
+      LOG_INFO (logger, "wbc::ServoProcess::HandleMessagePayload(): got USER_REQUEST");
+      if ( ! m_directory_cmd_server) {
+	m_directory_cmd_server = new DirectoryCmdServer(m_imp->GetBehaviorLibrary(), this);
+      }
+      if ( ! m_directory_cmd_server->Dispatch(m_user_request, m_user_reply)) {
+	if (logger->isWarnEnabled()) {
+	  ostringstream msg;
+	  msg << "wbc::ServoProcess::HandleMessagePayload(): DirectoryCmdServer::Dispatch() failed\n"
+	      << "  It did not seem like the user request:\n";
+	  m_user_request.Dump(msg, "    ");
+	  LOG_WARN (logger, msg.str());
 	}
-	m_user_reply.matrix.SetSize(0, 0);
-	m_user_reply.code[0] = wbcrun::srv::NOT_IMPLEMENTED;
       }
       EnqueueMessage(m_user_channel, &m_user_reply, true, false);
     }
     
     else {
       LOG_TRACE (logger,
-		     "wbc::ServoProcess::HandleMessagePayload()\n"
-		     << "  unknown message ID " << (int) msg_id
-		     << " [" << wbcrun::msg::get_id_str(msg_id));
+		 "wbc::ServoProcess::HandleMessagePayload()\n"
+		 << "  unknown message ID " << (int) msg_id
+		 << " [" << wbcnet::msg::get_id_str(msg_id));
       return 999;
     }
     
@@ -752,28 +590,34 @@ namespace wbc {
   }
 
 
-  void ServoProcess::
-  BeginBehaviorTransition(uint8_t behaviorID)
+  wbcnet::srv_result_t ServoProcess::
+  BeginBehaviorTransition(int behaviorID)
   {
+    if ((0 > behaviorID) || (behaviorID >= m_imp->GetBehaviorLibrary().size())) {
+      LOG_TRACE (logger,
+		 "ServoProcess::BeginBehaviorTransition(" << behaviorID
+		 << "): INVALID CODE, only " << m_imp->GetBehaviorLibrary().size() << " behaviors available");
+      return wbcnet::SRV_INVALID_CODE;
+    }
+    
     if (m_current_behaviorID == behaviorID) {
       LOG_TRACE (logger,
-		     "ServoProcess::BeginBehaviorTransition(" << (int) behaviorID
-		     << "): already running that behavior");
-      return;
+		 "ServoProcess::BeginBehaviorTransition(" << behaviorID
+		 << "): SUCCESS (already running that behavior)");
+      return wbcnet::SRV_SUCCESS;
     }
     
     if (m_current_behaviorID != m_next_behaviorID) {
       LOG_TRACE (logger,
-		     "ServoProcess::BeginBehaviorTransition(" << (int) behaviorID
-		     << "): already transitioning from " << (int) m_current_behaviorID
-		     << " to " << (int) m_next_behaviorID);
-      return;
+		 "ServoProcess::BeginBehaviorTransition(" << behaviorID
+		 << "): TRY AGAIN, already transitioning from " << m_current_behaviorID
+		 << " to " << (int) m_next_behaviorID);
+      return wbcnet::SRV_TRY_AGAIN;
     }
     
     LOG_TRACE (logger,
-		   "ServoProcess::BeginBehaviorTransition(" << (int) behaviorID
-		   << "): initializing transition from " << (int) m_current_behaviorID
-		   << " to " << (int) behaviorID);
+	       "ServoProcess::BeginBehaviorTransition(" << behaviorID
+	       << "): SUCCESS, initializing transition from " << m_current_behaviorID);
     
     // It is important to always start transitions with the most
     // recent robot state available, so we defer actually sending the
@@ -781,6 +625,36 @@ namespace wbc {
     // Step().
     m_next_behaviorID = behaviorID;
     m_init_behavior_transition = true;
+    
+    return wbcnet::SRV_SUCCESS;
+  }
+  
+  
+  BranchingRepresentation * ServoProcess::
+  GetBranching()
+  {
+    return m_imp->m_robmodel->branching();
+  }
+  
+  
+  Kinematics * ServoProcess::
+  GetKinematics()
+  {
+    return m_imp->m_kinematics;
+  }
+  
+  
+  SAIVector const & ServoProcess::
+  GetCommandTorques()
+  {
+    return m_imp->m_command_torques;
+  }
+  
+  
+  BehaviorDescription * ServoProcess::
+  GetCurrentBehavior()
+  {
+    return m_imp->m_current_behavior;
   }
   
 }

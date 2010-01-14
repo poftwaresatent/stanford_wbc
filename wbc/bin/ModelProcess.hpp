@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 Roland Philippsen <roland DOT philippsen AT gmx DOT net>
+ * Copyright (c) 2010 Stanford University
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -16,29 +16,31 @@
  * <http://www.gnu.org/licenses/>
  */
 
+/**
+   \file ModelProcess.hpp
+   \author Roland Philippsen
+*/
+
 #ifndef WBC_MODEL_PROCESS_HPP
 #define WBC_MODEL_PROCESS_HPP
 
-#include <wbcrun/Process.hpp>
-#include <wbcrun/msg/Status.hpp>
-#include <wbcrun/msg/TaskSpec.hpp>
-#include <wbcrun/msg/TaskMatrix.hpp>
+#include <wbc/bin/Process.hpp>
+#include <wbc/msg/Status.hpp>
+#include <wbc/msg/TaskSpec.hpp>
+#include <wbc/msg/TaskMatrix.hpp>
 
 namespace wbcnet {
   class Channel;
   class NetConfig;
-}
-
-namespace wbcrun {
-  namespace msg {
-    class RobotState;
-  }
   class TaskModelAPI;
 }
   
 
 namespace wbc {
 
+  namespace msg {
+    class RobotState;
+  }
   class TaskModelBase;
   class RobotControlModel;
   class BehaviorDescription;
@@ -62,8 +64,8 @@ namespace wbc {
        occurred, in which case we keep running but send
        msg::MODEL_ERROR as status.
      */
-    bool ComputeModel(wbcrun::msg::RobotState const & robot_state,
-		      wbcrun::msg::TaskSpec const & task_spec,
+    bool ComputeModel(msg::RobotState const & robot_state,
+		      msg::TaskSpec const & task_spec,
 		      /** Set this to true to AVOID calling
 			  BehaviorDescription::onUpdate() of the
 			  current behavior inside this method. This is
@@ -85,7 +87,7 @@ namespace wbc {
   
   
   class ModelProcess
-    : public wbcrun::Process
+    : public Process
   {
   public:
     ModelProcess();
@@ -119,7 +121,7 @@ namespace wbc {
 	      uint8_t npos, uint8_t nvel,
 	      uint8_t force_nrows, uint8_t force_ncols) throw(std::exception);
     
-    wbcrun::msg::RobotState const & GetRobotState() const { return *m_robot_state; }
+    msg::RobotState const & GetRobotState() const { return *m_robot_state; }
     
   protected:
     friend class ModelServoTest;
@@ -138,13 +140,13 @@ namespace wbc {
     wbcnet::Channel * m_channel;
     
     // incoming messages
-    wbcrun::msg::Status m_servo_status;
-    wbcrun::msg::RobotState * m_robot_state; // cannot allocate until ndof etc are known
-    wbcrun::msg::TaskSpec m_task_spec;
+    msg::Status m_servo_status;
+    msg::RobotState * m_robot_state; // cannot allocate until ndof etc are known
+    msg::TaskSpec m_task_spec;
     
     // outgoing messages
-    wbcrun::msg::Status m_model_status;
-    wbcrun::msg::TaskMatrix m_task_matrix;
+    msg::Status m_model_status;
+    msg::TaskMatrix m_task_matrix;
   };
   
 }

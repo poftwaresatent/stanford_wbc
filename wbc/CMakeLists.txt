@@ -5,14 +5,12 @@ list (APPEND LIBS
   SAI_Matrix
   TAO_Dynamics_Engine
   wbcnet
-  wbcrun
   dl
   expat
   )
 
-add_library (
-  Stanford_WBC SHARED
-  
+list (APPEND SRCS
+
   core/Plugin.cpp
   core/RobotFactory.cpp
   core/TaskModelBase.cpp
@@ -68,16 +66,28 @@ add_library (
   util/RecorderImpl.cpp
   util/dump.cpp
   util/urdf_to_tao.cpp
+  util/File.cpp
+  util/utc.cpp
   
   bin/builtin.cpp
   bin/attributes.cpp
-  bin/BehaviorDirectory.cpp
+  bin/DirectoryCmdServer.cpp
   bin/ModelProcess.cpp
   bin/ServoModelProcess.cpp
   bin/ServoProcess.cpp
   bin/TaskModelListener.cpp
   bin/options.cpp
+  bin/Process.cpp
+  bin/directory.cpp
+  bin/UserProcess.cpp
   )
+
+if (HAVE_XMLRPC)
+  list (APPEND SRCS bin/XMLRPCDirectoryServer.cpp)
+  list (APPEND LIBS XmlRpc)
+endif (HAVE_XMLRPC)
+
+add_library (Stanford_WBC SHARED ${SRCS})
 
 target_link_libraries (Stanford_WBC ${LIBS})
 

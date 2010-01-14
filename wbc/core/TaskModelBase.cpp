@@ -48,7 +48,7 @@ namespace wbc {
 
   TaskModelBase::
   TaskModelBase(wbcnet::endian_mode_t endian_mode)
-    : wbcrun::TaskModel<SAIMatrixAPI>(endian_mode)
+    : wbcnet::TaskModel<SAIMatrixAPI>(endian_mode)
   {
   }
 

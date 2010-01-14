@@ -24,8 +24,12 @@
  */
 
 #include <wbc/core/BehaviorDescription.hpp>
-#include <wbcrun/service.hpp>
+#include <wbc/core/SAIMatrixAPI.hpp>
+#include <wbcnet/msg/Service.hpp>
 #include <wbc/util/RecorderImpl.hpp>
+#include <wbcnet/log.hpp>
+
+static wbcnet::logger_t logger(wbcnet::get_logger("wbc"));
 
 namespace wbc {
 
@@ -68,45 +72,93 @@ namespace wbc {
       return -1;
     return foo->second;  
   }
-
-
-  int32_t BehaviorDescription::
-  handleCommand(int32_t const * codeVector,
-		size_t nCodes,
-		SAIMatrix const & matrix)
-  {
-    return handleStdCommand(codeVector, nCodes, matrix);
-  }
-
-
-  int32_t BehaviorDescription::
-  handleStdCommand(int32_t const * codeVector,
-		   size_t nCodes,
-		   SAIMatrix const & matrix)
-  {
-    if (nCodes < 1)
-      return wbcrun::srv::MISSING_CODE;
   
-    switch (codeVector[0]) {
-    
-    case wbcrun::srv::KEY_PRESS:
-      if (nCodes < 2)
-	return wbcrun::srv::INVALID_DIMENSION;
-      return handleKey(codeVector[1]);
-    
+  
+  int BehaviorDescription::
+  handleCommand(int commandID,
+		wbcnet::srv_code_t const * code_in,
+		wbcnet::srv_matrix_t const * data_in,
+		wbcnet::srv_code_t * code_out,
+		wbcnet::srv_matrix_t * data_out)
+  {
+    switch (commandID) {
+      
+    case wbcnet::SRV_KEY_PRESS:
+      if (code_in->NElements() < 1) {
+	LOG_WARN (logger, "wbc::BehaviorDescription::handleCommand(): missing keycode in SRV_KEY_PRESS");
+	return wbcnet::SRV_MISSING_CODE;
+      }
+      LOG_INFO (logger, "wbc::BehaviorDescription::handleCommand(): SRV_KEY_PRESS with keycode " << (*code_in)[0]);
+      return handleKey((*code_in)[0]);
+      
+    case wbcnet::SRV_SET_GOAL:
+      {
+	// NOTE: legacy code had the goal stored as a row-vector,
+	// which is why we do it "the transposed" way here.
+	SAIVector goal(0);
+	if (data_in->NRows() > 0) {
+	  goal.setSize(data_in->NColumns());
+	  for (int ii(0); ii < data_in->NColumns(); ++ii) {
+	    goal[ii] = data_in->GetElement(0, ii);
+	  }
+	}
+	LOG_INFO (logger,
+		  "wbc::BehaviorDescription::handleCommand(): SRV_SET_GOAL with "
+		  << goal.size() << " elements");
+	return handleSetGoal(goal);
+      }
+      
+    case wbcnet::SRV_GET_JACOBIAN:
+      {
+	LOG_INFO (logger, "wbc::BehaviorDescription::handleCommand(): SRV_GET_JACOBIAN");
+	SAIMatrixAPI jacobian;
+	int const result(handleGetJacobian(jacobian));
+	if (wbcnet::SRV_SUCCESS != result) {
+	  LOG_WARN (logger,
+		    "wbc::BehaviorDescription::handleCommand(): handleGetJacobian() failed with "
+		    << wbcnet::srv_result_to_string(result));
+	  return result;
+	}
+	if ( ! data_out->Copy(jacobian)) {
+	  LOG_ERROR (logger, "wbc::BehaviorDescription::handleCommand(): could not copy Jacobian to data_out");
+	  return wbcnet::SRV_OTHER_ERROR;
+	}
+	return wbcnet::SRV_SUCCESS;
+      }
     }
+    
+    LOG_WARN (logger,
+	      "wbc::BehaviorDescription::handleCommand(): unrecognized commandID = "
+	      << commandID << " = " << wbcnet::srv_command_to_string(commandID));
+    
+    return wbcnet::SRV_NOT_IMPLEMENTED;
+  }
   
-    return wbcrun::srv::NOT_IMPLEMENTED;
-  }
-
-
-  int32_t BehaviorDescription::
-  handleKey(int32_t keycode)
+  
+  int BehaviorDescription::
+  handleKey(int keycode)
   {
-    return wbcrun::srv::NOT_IMPLEMENTED;
+    LOG_INFO (logger, "wbc::BehaviorDescription::handleKey(): ABSTRACT in BehaviorDescription");
+    return wbcnet::SRV_ABSTRACT_METHOD;
   }
-
-
+  
+  
+  int BehaviorDescription::
+  handleSetGoal(SAIVector const & goal)
+  {
+    LOG_INFO (logger, "wbc::BehaviorDescription::handleSetGoal(): ABSTRACT in BehaviorDescription");
+    return wbcnet::SRV_ABSTRACT_METHOD;
+  }
+  
+  
+  int BehaviorDescription::
+  handleGetJacobian(SAIMatrix & jacobian)
+  {
+    LOG_INFO (logger, "wbc::BehaviorDescription::handleGetJacobian(): ABSTRACT in BehaviorDescription");
+    return wbcnet::SRV_ABSTRACT_METHOD;
+  }
+  
+  
   Recorder * BehaviorDescription::
   createRecorder(char const * header, char const * filename, Recorder::Mode mode)
   {

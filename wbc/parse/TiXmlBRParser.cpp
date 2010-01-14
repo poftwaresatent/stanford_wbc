@@ -18,7 +18,10 @@
  * <http://www.gnu.org/licenses/>
  */
 
-/** \author Luis Sentis and Roland Philippsen */
+/**
+   \file TiXmlBRParser.cpp
+   \author Luis Sentis and Roland Philippsen
+*/
 
 #include "TiXmlBRParser.hpp"
 #include <wbc/core/BranchingRepresentation.hpp>

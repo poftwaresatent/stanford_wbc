@@ -26,7 +26,7 @@
 #ifndef WBC_BEHAVIOR_FACTORY_HPP
 #define WBC_BEHAVIOR_FACTORY_HPP
 
-#include <wbcrun/Registry.hpp>
+#include <wbcnet/Registry.hpp>
 #include <stdexcept>
 #include <string>
 
@@ -52,8 +52,8 @@ namespace wbc {
   };
   
   
-  typedef wbcrun::Registry<BehaviorFactoryAPI *,
-			   wbcrun::registry_trait_delete<BehaviorFactoryAPI *> >
+  typedef wbcnet::Registry<BehaviorFactoryAPI *,
+			   wbcnet::registry_trait_delete<BehaviorFactoryAPI *> >
   BehaviorFactoryRegistrySuper;
   
   /**

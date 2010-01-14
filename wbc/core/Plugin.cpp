@@ -52,6 +52,7 @@ namespace wbc {
     : m_extensions(extensions)
   {
 #ifdef WBC_PLUGIN_PATH_STR
+    // this is entirely optional and probably not even used anymore
     m_search_directories.push_back(WBC_PLUGIN_PATH_STR);
 #endif // WBC_PLUGIN_PATH_STR
     
@@ -64,7 +65,7 @@ namespace wbc {
     }
     
     if (getenv("HOME"))
-      m_search_directories.push_back(string(getenv("HOME")) + "/.wbc");
+      m_search_directories.push_back(string(getenv("HOME")) + "/.wbc/plugins");
     
     if (logger->isDebugEnabled()) {
       ostringstream msg;
@@ -80,7 +81,7 @@ namespace wbc {
   void PluginRegistry::
   LoadPluginFile(std::string const & name, std::string const & path) throw(std::runtime_error)
   {
-    wbcrun::DLModule * dl(LoadModule(name, path));
+    wbcnet::DLModule * dl(LoadModule(name, path));
     // in case this fails we're stuck with a bad entry in the module
     // registry, but well... no support for unloading them at the
     // moment
@@ -219,7 +220,7 @@ namespace wbc {
   
   void Extensions::
   AddServoBehaviors(std::string const & name,
-		    wbcrun::FactoryAPI<ServoBehaviorsAPI> * factory)
+		    wbcnet::FactoryAPI<ServoBehaviorsAPI> * factory)
     throw(std::runtime_error)
   {
     LOG_DEBUG (logger, "wbc::Extensions::AddServoBehaviors(): " << name);
@@ -229,7 +230,7 @@ namespace wbc {
   
   void Extensions::
   AddRawController(std::string const & name,
-		   wbcrun::FactoryAPI<RawControllerAPI> * factory)
+		   wbcnet::FactoryAPI<RawControllerAPI> * factory)
     throw(std::runtime_error)
   {
     LOG_DEBUG (logger, "wbc::Extensions::AddRawController(): " << name);

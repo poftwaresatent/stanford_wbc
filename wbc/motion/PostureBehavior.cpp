@@ -25,7 +25,7 @@
 
 #include <wbc/motion/PostureBehavior.hpp>
 #include <wbc/core/Kinematics.hpp>
-#include <wbcrun/service.hpp>
+#include <wbcnet/msg/Service.hpp>
 #include <wbcnet/log.hpp>
 
 static wbcnet::logger_t logger(wbcnet::get_logger("wbc"));
@@ -77,72 +77,44 @@ namespace wbc {
   }
   
   
-  int32_t PostureBehavior::
-  handleCommand(int32_t const * codeVector,
-		size_t nCodes,
-		SAIMatrix const & matrix)
+  int PostureBehavior::
+  handleSetGoal(SAIVector const & goal)
   {
-    // handleStdCommand() will dispatch e.g. to handleKey() as
-    // appropriate by looking at the codeVector
-    
-    int32_t const std_result(handleStdCommand(codeVector, nCodes, matrix));
-    if (wbcrun::srv::NOT_IMPLEMENTED != std_result) {
-      return std_result;
+    if (goal.size() != robModel()->branching()->numJoints()) {
+      return wbcnet::SRV_INVALID_DIMENSION;
     }
-    
-    // handleStdCommand() did not understand the command, let's see
-    // what we can do with it...
-    
-    switch (codeVector[0]) {      
-    
-    case wbcrun::srv::SET_GOAL:
-      cout << "recieved SET_GOAL command" << endl;
-      if (matrix.column()!=1 || matrix.row()!=robModel()->branching()->numJoints()){
-	cout << "wrong dimension: " << matrix.column() << "  " << matrix.row() << endl;
-	return wbcrun::srv::INVALID_DIMENSION;
-      }
-      else {
-	SAIVector goalPosture(robModel()->branching()->numJoints());
-	for (int i = 0; i< robModel()->branching()->numJoints(); i++)
-	  goalPosture[i] = matrix[0][i];
-	whole_body_posture_.goalPostureConfig(goalPosture);
-	activeTaskSet_ = &taskSetOperational_;
-	return wbcrun::srv::SUCCESS;
-      }
-      
-    case wbcrun::srv::FLOAT:
-      cout << "recieved FLOAT command" << endl;
-      activeTaskSet_ = &taskSetFloat_;
-      return wbcrun::srv::SUCCESS;
-      
-    case wbcrun::srv::ACTIVATE:
-      cout << "recieved ACTIVATE command" << endl;
-      whole_body_posture_.goalPostureConfig(robModel()->kinematics()->jointPositions());
-      activeTaskSet_ = &taskSetOperational_;
-      return wbcrun::srv::SUCCESS;
-    }
-    
-    return wbcrun::srv::NOT_IMPLEMENTED;
+    whole_body_posture_.goalPostureConfig(goal);
+    activeTaskSet_ = &taskSetOperational_;
+    return wbcnet::SRV_SUCCESS;
   }
   
   
-  int32_t PostureBehavior::
-  handleKey(int32_t keycode)
+  int PostureBehavior::
+  handleKey(int keycode)
   {
+    LOG_INFO (logger, "wbc::PostureBehavior::handleKey(): keycode = " << keycode);
+    
     if ((0 != float_key_) && (keycode == float_key_)) {
+      LOG_INFO (logger, "wbc::PostureBehavior::handleKey(): switching to FLOAT task set");
       activeTaskSet_ = &taskSetFloat_;
-      return wbcrun::srv::SUCCESS;
+      return wbcnet::SRV_SUCCESS;
     }
     
     if ((0 != freeze_key_) && (keycode == freeze_key_)) {
+      LOG_INFO (logger, "wbc::PostureBehavior::handleKey(): switching to OPERATIONAL task set (and FREEZE)");
       whole_body_posture_.goalPostureConfig(robModel()->kinematics()->jointPositions());
       activeTaskSet_ = &taskSetOperational_;
-      return wbcrun::srv::SUCCESS;
+      return wbcnet::SRV_SUCCESS;
     }
     
     key_posture_t::const_iterator iposture(key_posture_.find(keycode));
     if (key_posture_.end() == iposture) {
-      return wbcrun::srv::NOT_IMPLEMENTED;
+      LOG_WARN (logger, "wbc::PostureBehavior::handleKey(): unrecognized keycode");
+      //       std::cerr << "wbc::PostureBehavior::handleKey(): unrecognized keycode " << keycode << "\n";
+      //       for (key_posture_t::const_iterator ii(key_posture_.begin()); ii != key_posture_.end(); ++ii) {
+      // 	std::cerr << "  " << ii->first << " : " << ii->second << "\n";
+      //       }
+      return wbcnet::SRV_OTHER_ERROR;
     }
     
     if (iposture->second.size() != robModel()->branching()->numActuatedJoints()) {
@@ -150,12 +122,13 @@ namespace wbc {
 		 "wbc::PostureBehavior::handleKey(): posture for key code " << keycode
 		 << " has invalid size " << iposture->second.size()
 		 << " (should be " << robModel()->branching()->numActuatedJoints() << ")");
-      return wbcrun::srv::INVALID_DIMENSION;
+      return wbcnet::SRV_INVALID_DIMENSION;
     }
     
+    LOG_INFO (logger, "wbc::PostureBehavior::handleKey(): switching to posture " << keycode);
     whole_body_posture_.goalPostureConfig(iposture->second);
     activeTaskSet_ = &taskSetOperational_;
-    return wbcrun::srv::SUCCESS;
+    return wbcnet::SRV_SUCCESS;
   }
   
   

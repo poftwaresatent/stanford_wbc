@@ -19,6 +19,7 @@
  */
 
 /**
+   \file plugins/nwrobot/RobotNetWrapper.hpp
    \author Roland Philippsen
 */
 
@@ -31,8 +32,8 @@
 
 #include <wbc/core/RobotAPI.hpp>
 #include <wbc/core/RobotFactory.hpp>
-#include <wbcrun/msg/RobotState.hpp>
-#include <wbcrun/msg/ServoCommand.hpp>
+#include <wbc/msg/RobotState.hpp>
+#include <wbc/msg/ServoCommand.hpp>
 #include <wbcnet/Muldex.hpp>
 #include <wbcnet/com.hpp>
 #include <wbcnet/NetWrapperWrap.hpp>
@@ -71,8 +72,8 @@ public:
   bool m_nonblocking;
   uint16_t m_port;
   std::string m_address;
-  wbcrun::msg::RobotState * m_robot_state;
-  wbcrun::msg::ServoCommand * m_servo_command;
+  wbc::msg::RobotState * m_robot_state;
+  wbc::msg::ServoCommand * m_servo_command;
   wbcnet::MdxDispatcher m_muldex;
   wbcnet::TCPNetWrapper * m_channel;
 };
