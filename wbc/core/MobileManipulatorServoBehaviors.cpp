@@ -81,7 +81,7 @@ namespace wbc {
       SAIMatrix const & JStar(*(*mmtm->JStar)[task_id]);
       SAIVector const muStar((*mmtm->muStar)[task_id]->subvector(0,0,LambdaStar.row()));
       SAIVector const pStar((*mmtm->pStar)[task_id]->subvector(0,0,LambdaStar.row()));
-      SAIMatrix const & SingularValues(*(*mmtm->SingularValues)[task_id]);
+      ////SAIMatrix const & SingularValues(*(*mmtm->SingularValues)[task_id]);
       SAIVector const FComp(LambdaStar * JStar * AInv * prevtorque);
       SAIVector accel_des;
       TaskSet::appendServos(its, accel_des);

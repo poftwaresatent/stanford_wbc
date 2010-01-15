@@ -38,6 +38,7 @@
 #include <wbc/core/RobotControlModel.hpp>
 #include <wbc/core/ServoBehaviorsAPI.hpp>
 #include <wbc/core/TaskModelFactory.hpp>
+#include <wbc/core/TaskModelBase.hpp>
 #include <iostream>
 #include <sstream>
 #include <cstring>

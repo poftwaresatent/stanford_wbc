@@ -109,8 +109,11 @@ namespace wbcnet {
       throw runtime_error("get_tcp_port(USER, " + sfl::to_string(to_process)
 			  + "): invalid to_process");
       
-      ////case NetConfig::DISTANCE:
-      ////case NetConfig::MOTOR:
+    case NetConfig::DISTANCE:
+    case NetConfig::MOTOR:
+      throw runtime_error("get_tcp_port(" + sfl::to_string(from_process)
+			  + ", " + sfl::to_string(to_process)
+			  + "): DISTANCE and MOTOR processes are deprecated and will be removed \"real soon now\"");
     }
     
     throw runtime_error("get_tcp_port(" + sfl::to_string(from_process)
