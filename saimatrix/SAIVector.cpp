@@ -37,6 +37,67 @@
 #include "SAIVector3.h"
 #include "SAIMatrix3.h"
 
+#include <execinfo.h>
+
+
+wtf_info::
+wtf_info()
+  : deleted_vector(0),
+    deleted_data(0),
+    bt_size(0),
+    bt_symbols(0)
+{
+}
+
+
+wtf_info::
+~wtf_info()
+{
+  free(bt_symbols);
+}
+
+
+void wtf_info::
+check(SAIVector * that, Float * data)
+{
+  static int const maxsize(20);
+  
+  if (deleted_vector) {
+    fprintf(stderr,
+	    "wtf_info::check(): GOTCHA BABY!\n",
+	    "  current SAIVector instance %08p\n"
+	    "  current data instance      %08p\n"
+	    "  current backtrace:\n",
+	    that, data);
+    void *array[maxsize];
+    int size = backtrace(array, maxsize);
+    char ** strings = backtrace_symbols(array, size);
+    for (int ii(0); ii < size; ++ii)
+      fprintf(stderr, "    %s\n", strings[ii]);
+    free (strings);
+    fprintf(stderr,
+	    "  previous SAIVector instance %08p\n"
+	    "  previous data instance      %08p\n"
+	    "  previous backtrace:\n",
+	    deleted_vector, deleted_data);
+    for (int ii(0); ii < bt_size; ++ii)
+      fprintf(stderr, "    %s\n", bt_symbols[ii]);
+    fprintf(stderr, "...going bonkers...\n");
+    ((void (*)()) 0)();
+  }
+  
+  deleted_vector = that;
+  deleted_data = data;
+  void *array[maxsize];
+  bt_size = backtrace(array, maxsize);
+  bt_symbols = backtrace_symbols(array, bt_size);
+
+  fprintf(stderr,
+	  "wtf_info::check():  SAIVector %08p with data %08p is OK\n",
+	  that, data);
+}
+
+
 #ifdef _WIN32
   #include <float.h>
   #define finite(num) _finite(num)
@@ -107,11 +168,7 @@ SAIVector::SAIVector( const Float* rgVals, int size )
 
 SAIVector::~SAIVector()
 {
-
-  fprintf(stderr,
-	  "SAIVector::~SAIVector(): this %08p  this->m_data %08p\n",
-	  this, m_data);
-
+  wtf.check(this, m_data);
   if( m_data != NULL )
   {
     delete[] m_data;
