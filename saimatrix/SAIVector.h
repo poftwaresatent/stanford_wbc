@@ -42,20 +42,6 @@ class SAIMatrix;
 class SAIVector3;
 class SAIMatrix3;
 
-
-class SAIVector;
-
-struct wtf_info {
-  wtf_info();
-  
-  void check(SAIVector * that, Float * data);
-  
-  SAIVector * deleted_vector;
-  Float * deleted_data;
-  std::string bt_at_deletion;
-};
-
-
 // ===================================================================
 // SAIVector class declaration
 // ===================================================================
@@ -226,8 +212,6 @@ protected:
   int    m_size;
   int    m_maxSize;
   Float* m_data;
-  
-  wtf_info wtf;
 };
 
 static SAIVector s_nullSAIVector( 0 );

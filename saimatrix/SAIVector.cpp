@@ -37,69 +37,6 @@
 #include "SAIVector3.h"
 #include "SAIMatrix3.h"
 
-#include <execinfo.h>
-#include <sstream>
-
-
-wtf_info::
-wtf_info()
-  : deleted_vector(0),
-    deleted_data(0)
-{
-}
-
-
-void wtf_info::
-check(SAIVector * that, Float * data)
-{
-  static int const maxsize(20);
-  void *array[maxsize];
-  
-  if (deleted_vector) {
-    int size = backtrace(array, maxsize);
-    char ** strings = backtrace_symbols(array, size);
-    fprintf(stderr,
-	    "wtf_info::check(): GOTCHA BABY!\n"
-	    "  current SAIVector instance %08p\n"
-	    "  current data instance      %08p\n"
-	    "  current backtrace (%d levels):\n",
-	    that, data, size);
-    for (int ii(0); ii < size; ++ii)
-      fprintf(stderr, "    %s\n", strings[ii]);
-    free (strings);
-    fprintf(stderr,
-	    "  previous SAIVector instance %08p\n"
-	    "  previous data instance      %08p\n"
-	    "  previous backtrace:\n"
-	    "%s"
-	    "...going bonkers in a second...\n",
-	    deleted_vector, deleted_data, bt_at_deletion.c_str());
-    usleep(1000000);
-    ((void (*)()) 0)();
-  }
-  
-  else {
-    int size = backtrace(array, maxsize);
-    char ** strings = backtrace_symbols(array, size);
-    fprintf(stderr,
-	    "wtf_info::check():  SAIVector %08p with data %08p is OK\n"
-	    "  backtrace (%d levels):\n",
-	    that, data, size);
-    for (int ii(0); ii < size; ++ii)
-      fprintf(stderr, "    %s\n", strings[ii]);
-    ////    fprintf(stderr, "  ...trying to save backtrace for future reference...\n");
-    std::ostringstream os;
-    for (int ii(0); ii < size; ++ii)
-      os << "    " << strings[ii] << "\n";
-    free (strings);
-    deleted_vector = that;
-    deleted_data = data;
-    bt_at_deletion = os.str();
-    ////    fprintf(stderr, "  saved backtrace:\n%s", bt_at_deletion.c_str());
-  }
-}
-
-
 #ifdef _WIN32
   #include <float.h>
   #define finite(num) _finite(num)
@@ -170,7 +107,11 @@ SAIVector::SAIVector( const Float* rgVals, int size )
 
 SAIVector::~SAIVector()
 {
-  wtf.check(this, m_data);
+
+  fprintf(stderr,
+	  "SAIVector::~SAIVector(): this %08p  this->m_data %08p\n",
+	  this, m_data);
+
   if( m_data != NULL )
   {
     delete[] m_data;

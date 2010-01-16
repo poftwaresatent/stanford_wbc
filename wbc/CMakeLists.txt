@@ -68,6 +68,7 @@ list (APPEND SRCS
   util/urdf_to_tao.cpp
   util/File.cpp
   util/utc.cpp
+  util/dtor_check.cpp
   
   bin/builtin.cpp
   bin/attributes.cpp
