@@ -107,11 +107,6 @@ SAIVector::SAIVector( const Float* rgVals, int size )
 
 SAIVector::~SAIVector()
 {
-
-  fprintf(stderr,
-	  "SAIVector::~SAIVector(): this %08p  this->m_data %08p\n",
-	  this, m_data);
-
   if( m_data != NULL )
   {
     delete[] m_data;
@@ -245,11 +240,6 @@ void SAIVector::setSize( int size, bool fZero )
 // ===================================================================
 void SAIVector::transfer( SAIVector& src )
 {
-  
-  fprintf(stderr,
-	  "SAIVector::transfer(): this %08p  this->m_data %08p  src %08p  src->m_data %08p\n",
-	  this, m_data, &src, &(src.m_data));
-  
   if( dynamic() && src.dynamic() )
   {
     if( m_data != NULL )
