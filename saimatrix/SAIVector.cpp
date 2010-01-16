@@ -38,22 +38,14 @@
 #include "SAIMatrix3.h"
 
 #include <execinfo.h>
+#include <sstream>
 
 
 wtf_info::
 wtf_info()
   : deleted_vector(0),
-    deleted_data(0),
-    bt_size(0),
-    bt_symbols(0)
+    deleted_data(0)
 {
-}
-
-
-wtf_info::
-~wtf_info()
-{
-  free(bt_symbols);
 }
 
 
@@ -61,40 +53,50 @@ void wtf_info::
 check(SAIVector * that, Float * data)
 {
   static int const maxsize(20);
+  void *array[maxsize];
   
   if (deleted_vector) {
-    fprintf(stderr,
-	    "wtf_info::check(): GOTCHA BABY!\n",
-	    "  current SAIVector instance %08p\n"
-	    "  current data instance      %08p\n"
-	    "  current backtrace:\n",
-	    that, data);
-    void *array[maxsize];
     int size = backtrace(array, maxsize);
     char ** strings = backtrace_symbols(array, size);
+    fprintf(stderr,
+	    "wtf_info::check(): GOTCHA BABY!\n"
+	    "  current SAIVector instance %08p\n"
+	    "  current data instance      %08p\n"
+	    "  current backtrace (%d levels):\n",
+	    that, data, size);
     for (int ii(0); ii < size; ++ii)
       fprintf(stderr, "    %s\n", strings[ii]);
     free (strings);
     fprintf(stderr,
 	    "  previous SAIVector instance %08p\n"
 	    "  previous data instance      %08p\n"
-	    "  previous backtrace:\n",
-	    deleted_vector, deleted_data);
-    for (int ii(0); ii < bt_size; ++ii)
-      fprintf(stderr, "    %s\n", bt_symbols[ii]);
-    fprintf(stderr, "...going bonkers...\n");
+	    "  previous backtrace:\n"
+	    "%s"
+	    "...going bonkers in a second...\n",
+	    deleted_vector, deleted_data, bt_at_deletion.c_str());
+    usleep(1000000);
     ((void (*)()) 0)();
   }
   
-  deleted_vector = that;
-  deleted_data = data;
-  void *array[maxsize];
-  bt_size = backtrace(array, maxsize);
-  bt_symbols = backtrace_symbols(array, bt_size);
-
-  fprintf(stderr,
-	  "wtf_info::check():  SAIVector %08p with data %08p is OK\n",
-	  that, data);
+  else {
+    int size = backtrace(array, maxsize);
+    char ** strings = backtrace_symbols(array, size);
+    fprintf(stderr,
+	    "wtf_info::check():  SAIVector %08p with data %08p is OK\n"
+	    "  backtrace (%d levels):\n",
+	    that, data, size);
+    for (int ii(0); ii < size; ++ii)
+      fprintf(stderr, "    %s\n", strings[ii]);
+    ////    fprintf(stderr, "  ...trying to save backtrace for future reference...\n");
+    std::ostringstream os;
+    for (int ii(0); ii < size; ++ii)
+      os << "    " << strings[ii] << "\n";
+    free (strings);
+    deleted_vector = that;
+    deleted_data = data;
+    bt_at_deletion = os.str();
+    ////    fprintf(stderr, "  saved backtrace:\n%s", bt_at_deletion.c_str());
+  }
 }
 
 

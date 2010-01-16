@@ -47,14 +47,12 @@ class SAIVector;
 
 struct wtf_info {
   wtf_info();
-  ~wtf_info();
   
   void check(SAIVector * that, Float * data);
   
   SAIVector * deleted_vector;
   Float * deleted_data;
-  int bt_size;
-  char ** bt_symbols;
+  std::string bt_at_deletion;
 };
 
 
