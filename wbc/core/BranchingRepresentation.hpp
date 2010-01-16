@@ -29,6 +29,7 @@
 #define WBC_Branching_Representation_H
 
 #include <wbc/util/tao_util.hpp>
+#include <wbc/util/dtor_check.hpp>
 #include <saimatrix/SAIVector.h>
 #include <saimatrix/SAIMatrix.h>
 #include <tao/matrix/TaoDeMath.h>	
@@ -162,6 +163,8 @@ namespace wbc {
 
     static std::string canonicalJointName( const std::string & );
     static std::string canonicalLinkName( const std::string & );
+
+    dtor_check wtf;
   };
 
 }

@@ -53,6 +53,7 @@ namespace wbc {
   BranchingRepresentation::
   ~BranchingRepresentation()
   {
+    wtf.check(this);
   }
   
   

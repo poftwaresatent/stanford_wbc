@@ -1,3 +1,23 @@
+/*
+ * Stanford Whole-Body Control Framework http://stanford-wbc.sourceforge.net/
+ *
+ * Copyright (c) 2010 Stanford University. All rights reserved.
+ *
+ * This program is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation, either version 3 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/>
+ */
+
 #include "dtor_check.hpp"
 #include <execinfo.h>
 #include <sstream>
@@ -43,7 +63,7 @@ namespace wbc {
       int size = backtrace(array, maxsize);
       char ** strings = backtrace_symbols(array, size);
       fprintf(stderr,
-	      "dtor_check::check():  SAIVector %08p with data %08p is OK\n"
+	      "dtor_check::check(): instance %08p is OK\n"
 	      "  backtrace (%d levels):\n",
 	      that, size);
       for (int ii(0); ii < size; ++ii)
