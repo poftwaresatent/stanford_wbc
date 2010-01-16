@@ -68,14 +68,14 @@ namespace wbc {
 	      that, size);
       for (int ii(0); ii < size; ++ii)
 	fprintf(stderr, "    %s\n", strings[ii]);
-      fprintf(stderr, "  ...trying to save backtrace for future reference...\n");
+      ////      fprintf(stderr, "  ...trying to save backtrace for future reference...\n");
       std::ostringstream os;
       for (int ii(0); ii < size; ++ii)
 	os << "    " << strings[ii] << "\n";
       free (strings);
       previous_that = that;
       previous_bt = os.str();
-      fprintf(stderr, "  saved backtrace:\n%s", previous_bt.c_str());
+      ////      fprintf(stderr, "  saved backtrace:\n%s", previous_bt.c_str());
     }
   }
   
