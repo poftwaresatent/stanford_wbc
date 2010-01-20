@@ -24,6 +24,7 @@
 */
 
 #include <wbc/parse/BRBuilder.hpp>
+#include <wbc/core/BranchingRepresentation.hpp>
 #include <gtest/gtest.h>
 
 using namespace std;
@@ -97,6 +98,7 @@ TEST (build, puma)
 		 0, -0.1, 0.1,
 		 'r', 'z');
     BranchingRepresentation * br(brb.create());
+    delete br;
   }
   catch (runtime_error const & ee) {
     ASSERT_TRUE (false) << "EXCEPTION: " << ee.what();

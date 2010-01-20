@@ -29,6 +29,7 @@
 #include <wbc/core/BranchingRepresentation.hpp>
 #include <wbc/core/Plugin.hpp>
 #include <wbc/core/TaskModelFactory.hpp>
+#include <wbc/core/TaskModelBase.hpp>
 #include <iostream>
 #include <sstream>
 #include <cstring>

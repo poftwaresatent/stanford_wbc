@@ -158,7 +158,6 @@ int main(int argc, char*argv[])
   
   try {
     attr = attributes::create(opt);
-    static wbcnet::endian_mode_t const endian_mode(wbcnet::ENDIAN_DETECT);
     robotAPI = attr->extensions->robot_registry->parseCreate(opt.robot_type, &inspector);
     controller = attr->extensions->raw_controller_registry->Create(opt.controller_type);
   }

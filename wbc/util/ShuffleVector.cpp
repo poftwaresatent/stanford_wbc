@@ -84,7 +84,7 @@ namespace wbc {
       if (0 > from_index)
 	out[to_index] = empty_value;
       else {
-	if (in_len <= from_index) {
+	if (in_len <= static_cast<size_t>(from_index)) {
 	  LOG_TRACE (logger, "  oops: " << in_len << " = in_len <= from_index = " << from_index);
 	  ok = false;
 	}

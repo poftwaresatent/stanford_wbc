@@ -135,6 +135,7 @@ namespace wbcnet {
   typedef enum {
     SRV_SUCCESS,
     SRV_NOT_IMPLEMENTED,
+    SRV_ABSTRACT_METHOD,
     SRV_TRY_AGAIN,
     SRV_INVALID_DIMENSION,
     SRV_INVALID_BEHAVIOR_ID,

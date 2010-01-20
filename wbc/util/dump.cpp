@@ -82,7 +82,7 @@ std::string inertia_matrix_to_string(deMatrix3 const & mx)
 		     std::vector<std::string> * id_to_link_name,
 		     std::vector<std::string> * id_to_joint_name)
   {
-    if ((0 <= root->getID()) && id_to_link_name && (id_to_link_name->size() > root->getID())) {
+    if ((0 <= root->getID()) && id_to_link_name && (id_to_link_name->size() > static_cast<size_t>(root->getID()))) {
       os << prefix << "* " << (*id_to_link_name)[root->getID()]
 	 << " (ID " << root->getID() << " at "<< (void*) root << ")\n";
     }
@@ -94,7 +94,7 @@ std::string inertia_matrix_to_string(deMatrix3 const & mx)
        << prefix << "    center:       " << *root->center() << "\n"
        << prefix << "    mass:         " << *root->mass() << "\n"
        << prefix << "    inertia:      " << inertia_matrix_to_string(*root->inertia()) << "\n";
-    if (id_to_joint_name && (id_to_joint_name->size() > root->getID())) {
+    if (id_to_joint_name && (id_to_joint_name->size() > static_cast<size_t>(root->getID()))) {
       os << prefix << "    joint name:   " << (*id_to_joint_name)[root->getID()] << "\n";
     }
     for (taoJoint /*const*/ * jlist(root->getJointList()); jlist != 0; jlist = jlist->getNext()) {

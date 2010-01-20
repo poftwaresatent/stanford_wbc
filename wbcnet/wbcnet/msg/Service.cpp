@@ -81,6 +81,7 @@ static char const * srv_command_name[] = {
 static char const * srv_result_name[] = {
   "SRV_SUCCESS",
   "SRV_NOT_IMPLEMENTED",
+  "SRV_ABSTRACT_METHOD",
   "SRV_TRY_AGAIN",
   "SRV_INVALID_DIMENSION",
   "SRV_INVALID_BEHAVIOR_ID",

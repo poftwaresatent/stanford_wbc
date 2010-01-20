@@ -52,6 +52,7 @@ namespace wbc {
     : m_extensions(extensions)
   {
 #ifdef WBC_PLUGIN_PATH_STR
+    // this is entirely optional and probably not even used anymore
     m_search_directories.push_back(WBC_PLUGIN_PATH_STR);
 #endif // WBC_PLUGIN_PATH_STR
     
@@ -64,7 +65,7 @@ namespace wbc {
     }
     
     if (getenv("HOME"))
-      m_search_directories.push_back(string(getenv("HOME")) + "/.wbc");
+      m_search_directories.push_back(string(getenv("HOME")) + "/.wbc/plugins");
     
     if (logger->isDebugEnabled()) {
       ostringstream msg;

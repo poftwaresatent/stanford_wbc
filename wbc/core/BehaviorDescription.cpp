@@ -27,6 +27,9 @@
 #include <wbc/core/SAIMatrixAPI.hpp>
 #include <wbcnet/msg/Service.hpp>
 #include <wbc/util/RecorderImpl.hpp>
+#include <wbcnet/log.hpp>
+
+static wbcnet::logger_t logger(wbcnet::get_logger("wbc"));
 
 namespace wbc {
 
@@ -81,8 +84,11 @@ namespace wbc {
     switch (commandID) {
       
     case wbcnet::SRV_KEY_PRESS:
-      if (code_in->NElements() < 1)
+      if (code_in->NElements() < 1) {
+	LOG_WARN (logger, "wbc::BehaviorDescription::handleCommand(): missing keycode in SRV_KEY_PRESS");
 	return wbcnet::SRV_MISSING_CODE;
+      }
+      LOG_INFO (logger, "wbc::BehaviorDescription::handleCommand(): SRV_KEY_PRESS with keycode " << (*code_in)[0]);
       return handleKey((*code_in)[0]);
       
     case wbcnet::SRV_SET_GOAL:
@@ -96,22 +102,34 @@ namespace wbc {
 	    goal[ii] = data_in->GetElement(0, ii);
 	  }
 	}
+	LOG_INFO (logger,
+		  "wbc::BehaviorDescription::handleCommand(): SRV_SET_GOAL with "
+		  << goal.size() << " elements");
 	return handleSetGoal(goal);
       }
       
     case wbcnet::SRV_GET_JACOBIAN:
       {
+	LOG_INFO (logger, "wbc::BehaviorDescription::handleCommand(): SRV_GET_JACOBIAN");
 	SAIMatrixAPI jacobian;
 	int const result(handleGetJacobian(jacobian));
 	if (wbcnet::SRV_SUCCESS != result) {
+	  LOG_WARN (logger,
+		    "wbc::BehaviorDescription::handleCommand(): handleGetJacobian() failed with "
+		    << wbcnet::srv_result_to_string(result));
 	  return result;
 	}
 	if ( ! data_out->Copy(jacobian)) {
+	  LOG_ERROR (logger, "wbc::BehaviorDescription::handleCommand(): could not copy Jacobian to data_out");
 	  return wbcnet::SRV_OTHER_ERROR;
 	}
 	return wbcnet::SRV_SUCCESS;
       }
     }
+    
+    LOG_WARN (logger,
+	      "wbc::BehaviorDescription::handleCommand(): unrecognized commandID = "
+	      << commandID << " = " << wbcnet::srv_command_to_string(commandID));
     
     return wbcnet::SRV_NOT_IMPLEMENTED;
   }
@@ -120,21 +138,24 @@ namespace wbc {
   int BehaviorDescription::
   handleKey(int keycode)
   {
-    return wbcnet::SRV_NOT_IMPLEMENTED;
+    LOG_INFO (logger, "wbc::BehaviorDescription::handleKey(): ABSTRACT in BehaviorDescription");
+    return wbcnet::SRV_ABSTRACT_METHOD;
   }
   
   
   int BehaviorDescription::
   handleSetGoal(SAIVector const & goal)
   {
-    return wbcnet::SRV_NOT_IMPLEMENTED;
+    LOG_INFO (logger, "wbc::BehaviorDescription::handleSetGoal(): ABSTRACT in BehaviorDescription");
+    return wbcnet::SRV_ABSTRACT_METHOD;
   }
   
   
   int BehaviorDescription::
   handleGetJacobian(SAIMatrix & jacobian)
   {
-    return wbcnet::SRV_NOT_IMPLEMENTED;
+    LOG_INFO (logger, "wbc::BehaviorDescription::handleGetJacobian(): ABSTRACT in BehaviorDescription");
+    return wbcnet::SRV_ABSTRACT_METHOD;
   }
   
   

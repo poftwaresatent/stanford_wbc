@@ -37,7 +37,7 @@ namespace wbcnet {
         
     char const * get_id_str(int id)
     {
-      static char * nm[] = {
+      static char const * nm[] = {
 	"STATUS",
 	"ROBOT_STATE",
 	"TASK_SPEC",
