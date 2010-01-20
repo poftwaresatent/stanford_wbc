@@ -4,10 +4,6 @@
 // behind TAO, they can treat this as an opaque pointer type.
 class taoDNode;
 
-class SAIVector;
-class SAIMatrix;
-class SAITransform;
-
 namespace wbc {
   // For the moment we are wrapping the existing code. Later we'll
   // cleanly migrate its joint-space-related parts to here.
@@ -15,6 +11,7 @@ namespace wbc {
 }
 
 namespace jspace {
+  
   
   class Model
   {
@@ -25,71 +22,80 @@ namespace jspace {
 	the state update from the computation of the various
 	quantities in order to efficiently use the TAO tree
 	representation, which forces us to distribute the state over
-	its nodes before computing the model. In order to avoid
-	computing things that the user does not need, the Model
-	internally uses a tick counter for caching: a given quantity
-	is only computed if it is outdated, otherwise we simply
-	retrieve the information already at hand. */
+	its nodes before computing the model. */
     void setState(State const & state);
     
     //////////////////////////////////////////////////
     // Bare tree accessors.
-    //
-    // We should actually distinguish between links and joints, but
-    // the current parsers all ensure that there is exactly one joint
-    // per link.
     
-    int getNNodes();
+    /** Compute or retrieve the cached number of links in the
+	robot. Note that each link can have any number of joints, and
+	each joint can have any number of degrees of freedom, which is
+	why getNJoints() and getNDOF() might come in handy, too. */
+    int getNLinks();
+    
+    /** Compute or retrieve the cached number of joints in the
+	robot. Note that each joint can have any number of degrees of
+	freedom, which is why getNDOF() might come in handy, too. */
     int getNJoints();
-    taoDNode * getNode(int id);
-    taoDNode * getNode(std::string const & name_or_alias);
-    taoDNode * getJoint(std::string const & name_or_alias);
-    int getNodeID(taoDNode const * node);
+    
+    /** Compute or retrieve the cached number of degrees of freedom of
+	the robot. Note that each joint can have any number of degrees
+	of freedom, which is why this method might return something
+	else than getNJoints(). */
+    int getNDOF();
+    
+    /** Retrieve a link by ID. */
+    taoDNode * getLink(int id);
+    
+    /** Retrieve a link by its name or registered alias. A typical
+	alias would be "end-effector" or "End_Effector" or so, which
+	might correspond to "right-gripper" or so depending on the
+	robot. */
+    taoDNode * getLinkByName(std::string const & name_or_alias);
+    
+    /** Retrieve a link by a joint name or registered alias. This will
+	find and retrieve the node to which the joint is attached (see
+	also getLinkByName()), which allows you to retrieve the
+	taoJoint instance itself. Note that a taoDNode can have any
+	number of joints, so you might have to search through them to
+	find the exact one you're looking for. */
+    taoDNode * getLinkByJointName(std::string const & name_or_alias);
     
     //////////////////////////////////////////////////
     // kinematic facet
     
-    /** Utility for computing local and global, forward and reverse
-	frame transformations. from_node and to_node can be NULL, in
-	which case the root (base) will be used. The result gets
-	stored in the out_transform parameter, instead of being
-	returned by value, in order to minimize the number of
-	temporary copies in the system.
-    */
-    bool computeTransformation(taoDNode const * from_node,
-			       taoDNode const * to_node,
-			       SAITransform & out_transform);
+    /** Retrieve the translation and rotation of a node origin. The
+	translation is returned into a three-dimensional vector, and
+	the rotation into a quaternion with elements x, y, z, and w.
+	
+	\return True on success. The only possible failure stems from
+	an invalid node, so if you got that using getLink() or one of
+	the related methods you can safely ignore the return value. */
+    bool getGlobalFrame(taoDNode const * node,
+			vector_t translation,
+			vector_t rotation);
     
-    /** Jacobian at the origin of a node. */
-    bool computeNodeJacobian(taoDNode const * node,
-			     SAIMatrix & jacobian);
-    
-    /** Jacobian of a point that is attached to a given node. Passing
-	a NULL frame means to interpret the point in the global
-	frame. Use computeTransformation() for other cases. */
-    bool computePointJacobian(taoDNode const * node,
-			      SAITransform const * frame,
-			      SAIVector const & point,
-			      SAIMatrix & jacobian);
+    /** Compute the global Jacobian for a point given in global
+	coordinates. */
+    void computeJacobian(vector_t const & global_point,
+			 matrix_t & jacobian);
     
     //////////////////////////////////////////////////
     // dynamics facet
     
-    /** Compute (or retrieve from the cache) the gravity joint-torque
-	vector. */
-    void getGravity(SAIVector & gravity) const;
+    /** Retrieve the gravity joint-torque vector. */
+    void getGravity(vector_t & gravity) const;
     
-    /** Compute (or retrieve from the cache) the Coriolis and
-	contrifugal joint-torque vector. */
-    void getCoriolisCentrifugal(SAIVector & coriolis_centrifugal) const;
+    /** Retrieve the Coriolis and contrifugal joint-torque vector. */
+    void getCoriolisCentrifugal(vector_t & coriolis_centrifugal) const;
     
-    /** Compute (or retrieve from the cache) the joint-space
-	mass-inertia matrix, a.k.a. the kinetic energy matrix. */
-    void getMassInertia(SAIMatrix & mass_inertia) const;
+    /** Retrieve the joint-space mass-inertia matrix, a.k.a. the
+	kinetic energy matrix. */
+    void getMassInertia(matrix_t & mass_inertia) const;
     
-    /** Computed (or retrieve from the cache) the inverse joint-space
-	mass-inertia matrix. */
-    void getInverseMassInertia(SAIMatrix & inverse_mass_inertia) const;
+    /** Retrieve the inverse joint-space mass-inertia matrix. */
+    void getInverseMassInertia(matrix_t & inverse_mass_inertia) const;
     
     
   private:
@@ -100,9 +106,6 @@ namespace jspace {
     wbc::RobotControlModel * robmodel_;
     
     State state_;
-    
-    int state_tick_;
-    int robmodel_tick_;
   };
   
 }
