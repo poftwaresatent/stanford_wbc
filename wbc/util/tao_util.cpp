@@ -20,6 +20,7 @@
 
 #include "tao_util.hpp"
 #include <tao/dynamics/taoDNode.h>
+#include <tao/dynamics/taoJoint.h>
 #include <wbcnet/strutil.hpp>
 
 namespace wbc {
@@ -47,6 +48,32 @@ namespace wbc {
       count += countNumberOfLinks(child);
     }
     return count;
+  }
+  
+  
+  int countNumberOfJoints(taoDNode * node)
+  {
+    int count(0);
+    for (taoJoint * joint(node->getJointList()); 0 != joint; joint = joint->getNext()) {
+      ++count;
+    }
+    for (taoDNode * child(node->getDChild()); 0 != child; child = child->getDSibling()) {
+      count += countNumberOfJoints(child);
+    }
+    return count;
+  }
+  
+  
+  int countDegreesOfFreedom(taoDNode * node)
+  {
+    int dof(0);
+    for (taoJoint * joint(node->getJointList()); 0 != joint; joint = joint->getNext()) {
+      dof += joint->getDOF();
+    }
+    for (taoDNode * child(node->getDChild()); 0 != child; child = child->getDSibling()) {
+      dof += countDegreesOfFreedom(child);
+    }
+    return dof;
   }
   
   
