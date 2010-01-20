@@ -20,11 +20,6 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#if WIN32 
-//# include "SAIPHeader.h"
-# pragma hdrstop
-#endif
-
 #include "taoWorld.h"
 #include "taoGroup.h"
 
