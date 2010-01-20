@@ -105,7 +105,7 @@ namespace wbc {
     }
 
     taoDynamics::invDynamics(dynamicEvaluationModel2_->rootNode(),&gravityAccel_);
-    deFloat A[noj_*noj_];
+    deFloat A[noj_*noj_];	// XXXX this only supports one-DOF-per-joint robots (?)
     taoDynamics::computeA(dynamicEvaluationModel2_->rootNode(),noj_,A);
 
     for(int i = 0; i < noj_; i++)

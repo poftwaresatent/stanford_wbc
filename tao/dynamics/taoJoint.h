@@ -77,14 +77,29 @@ public:
 	virtual void clampDQ() = 0;
 	virtual void integrate(const deFloat dt) = 0;
 	virtual void updateFrameLocal(deFrame* local) = 0;
-
+  
+  /** \note pointer semantics to support more than one DOF */
 	virtual void setTau(const deFloat* v) = 0;
+  
+  /** \note pointer semantics to support more than one DOF */
 	virtual void setDDQ(const deFloat* v) = 0;
+  
+  /** \note pointer semantics to support more than one DOF */
 	virtual void setDQ(const deFloat* v) = 0;
+  
+  /** \note pointer semantics to support more than one DOF */
 	virtual void setQ(const deFloat* v) = 0;
+  
+  /** \note pointer semantics to support more than one DOF */
 	virtual void getTau(deFloat* v) = 0;
+  
+  /** \note pointer semantics to support more than one DOF */
 	virtual void getDDQ(deFloat* v) = 0;
+  
+  /** \note pointer semantics to support more than one DOF */
 	virtual void getDQ(deFloat* v) = 0;
+  
+  /** \note pointer semantics to support more than one DOF */
 	virtual void getQ(deFloat* v) = 0;
 
 private:
@@ -143,7 +158,7 @@ public:
 
 	    Looking at the taoJointDOF1 version, by analogy this
 	    method probably returns the Jacobian contribution of this
-	    joint, expressed in the global frame. But it beats my why
+	    joint, expressed in the global frame. But it beats me why
 	    this method returns a pointer to a 3x3 matrix whereas the
 	    1-DOF version returns a 6D vector (the latter should work
 	    in both cases, no?).
