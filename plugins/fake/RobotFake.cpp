@@ -30,7 +30,7 @@
 ////#include <wbc/bin/Process.hpp>
 #include <sstream>
 #ifdef WIN32
-#include "extras.h"
+#include "wbcnet/win32_compat.hpp"
 #else
 #include <unistd.h>
 #include <sys/time.h>

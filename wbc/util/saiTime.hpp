@@ -29,7 +29,7 @@
 #define WBC_SAI_TIME_H
 
 #ifdef WIN32
-#include "extras.h"
+#include "wbcnet/win32_compat.hpp"
 #else
 #include <sys/time.h>
 #endif

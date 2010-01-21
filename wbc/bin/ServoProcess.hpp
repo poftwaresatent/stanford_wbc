@@ -32,7 +32,11 @@
 #include <wbc/core/SAIMatrixAPI.hpp>
 #include <wbc/bin/directory.hpp>
 #include <wbc/msg/RobotState.hpp>
+#ifdef WIN32
+#include "wbcnet/win32_compat.hpp"
+#else
 #include <sys/time.h>
+#endif
 
 class taoDNode;
 

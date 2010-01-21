@@ -33,7 +33,7 @@
 #include <wbc/core/RobotControlModel.hpp>
 
 #ifdef WIN32
-#include "extras.h"
+#include "wbcnet/win32_compat.hpp"
 #endif
 
 namespace wbc {

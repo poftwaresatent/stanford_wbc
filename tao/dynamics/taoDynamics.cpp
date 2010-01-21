@@ -34,10 +34,7 @@
 #include <tao/dynamics/taoJoint.h>
 #include <assert.h>
 #include <string.h>
-
-#ifdef WIN32
-#include <malloc.h>
-#endif
+#include <vector>
 
 void taoDynamics::initialize(taoDNode* root)
 {
@@ -150,17 +147,24 @@ deInt taoDynamics::computeDOF(taoDNode* root)
 // in order to get A, B, G
 void taoDynamics::computeG(taoDNode* root, deVector3* gravity, const deInt dof, deFloat* G)
 {
-#ifdef WIN32
-	deFloat* ddq = (deFloat*)_alloca(dof * sizeof(deFloat));
-	deFloat* dq = (deFloat*)_alloca(dof * sizeof(deFloat));
-	deFloat* tau = (deFloat*)_alloca(dof * sizeof(deFloat));
-	deFloat* zero = (deFloat*)_alloca(dof * sizeof(deFloat));
-#else
-	deFloat ddq[dof];
-	deFloat dq[dof];
-	deFloat tau[dof];
-	deFloat zero[dof];
-#endif
+	assert(dof == computeDOF(root));
+
+	// XXXX: ddq, dq, and tau "only" serve to store the old state,
+	// which will get restored after the computation... shouldn't
+	// there be a better way to do this, e.g. by externalizing the
+	// state?
+	//
+	// Also note that we use vector<> to implement a dynamically
+	// sized array, in order to be more portable. GCC allows
+	// "deFloat ddq[dof]" but that is actually a GNU extensions
+	// and does not build i.e. under Windows. In order to use the
+	// vector<> as a pointer, we retrieve the address of its first
+	// element like "&ddq[0]", which is guaranteed to be portable.
+	std::vector<deFloat> ddq(dof);
+	std::vector<deFloat> dq(dof);
+	std::vector<deFloat> tau(dof);
+	
+	std::vector<deFloat> zero(dof, 0);
 
 	// tau = A * ddq + b + g
 	// ddq = 0;
@@ -171,35 +175,30 @@ void taoDynamics::computeG(taoDNode* root, deVector3* gravity, const deInt dof, 
 	// invDynamics();
 	// G = tau;
 
-	assert(dof == computeDOF(root));
-	memset(zero, 0, dof * sizeof(deFloat));
-
-	_Read(root, ddq, TAO_DDQ);
-	_Read(root, dq, TAO_DQ);
-	_Read(root, tau, TAO_TAU);
+	_Read(root, &ddq[0], TAO_DDQ);
+	_Read(root, &dq[0], TAO_DQ);
+	_Read(root, &tau[0], TAO_TAU);
 	
-	_Write(root, zero, TAO_DDQ);
-	_Write(root, zero, TAO_DQ);
+	_Write(root, &zero[0], TAO_DDQ);
+	_Write(root, &zero[0], TAO_DQ);
 
 	invDynamics(root, gravity);
 	_Read(root, G, TAO_TAU);
 
-	_Write(root, ddq, TAO_DDQ);
-	_Write(root, dq, TAO_DQ);
-	_Write(root, tau, TAO_TAU);
+	_Write(root, &ddq[0], TAO_DDQ);
+	_Write(root, &dq[0], TAO_DQ);
+	_Write(root, &tau[0], TAO_TAU);
 }
 
 void taoDynamics::computeB(taoDNode* root, const deInt dof, deFloat* B)
 {
-#ifdef WIN32
-	deFloat* ddq = (deFloat*)_alloca(dof * sizeof(deFloat));
-	deFloat* tau = (deFloat*)_alloca(dof * sizeof(deFloat));
-	deFloat* zero = (deFloat*)_alloca(dof * sizeof(deFloat));
-#else
-	deFloat ddq[dof];
-	deFloat tau[dof];
-	deFloat zero[dof];
-#endif
+	assert(dof == computeDOF(root));
+
+	// see also comments in computeG()
+	std::vector<deFloat> ddq(dof);
+	std::vector<deFloat> tau(dof);
+
+	std::vector<deFloat> zero(dof, 0);
 
 	// tau = A * ddq + b + g
 	// ddq = 0;
@@ -212,30 +211,23 @@ void taoDynamics::computeB(taoDNode* root, const deInt dof, deFloat* B)
 
 	deVector3 g;
 
-	assert(dof == computeDOF(root));
-	memset(zero, 0, dof * sizeof(deFloat));
-
 	g.zero();
 
-	_Read(root, ddq, TAO_DDQ);
-	_Read(root, tau, TAO_TAU);
-	_Write(root, zero, TAO_DDQ);
+	_Read(root, &ddq[0], TAO_DDQ);
+	_Read(root, &tau[0], TAO_TAU);
+	_Write(root, &zero[0], TAO_DDQ);
 
 	invDynamics(root, &g);
 	_Read(root, B, TAO_TAU);
 
-	_Write(root, ddq, TAO_DDQ);
-	_Write(root, tau, TAO_TAU);
+	_Write(root, &ddq[0], TAO_DDQ);
+	_Write(root, &tau[0], TAO_TAU);
 }
 
 // Li = J Ai Jt
 void taoDynamics::computeOpSpaceInertiaMatrixInv(taoDNode* root, const deFloat* J, const deInt row, const deInt dof, const deFloat* Ainv, deFloat* Linv)
 {
-#ifdef WIN32
-	deFloat* L = (deFloat*)_alloca(row * dof * sizeof(deFloat));
-#else
-	deFloat L[row * dof];
-#endif
+	std::vector<deFloat> L(row * dof);
 
 	int i, j, k;
 
@@ -267,26 +259,19 @@ void taoDynamics::computeOpSpaceInertiaMatrixInv(taoDNode* root, const deFloat* 
 
 void taoDynamics::computeA(taoDNode* root, const deInt dof, deFloat* A)
 {
-#ifdef WIN32
-	deFloat* ddq2 = (deFloat*)_alloca(dof * sizeof(deFloat));
-	deFloat* ddq = (deFloat*)_alloca(dof * sizeof(deFloat));
-	deFloat* dq = (deFloat*)_alloca(dof * sizeof(deFloat));
-	deFloat* tau = (deFloat*)_alloca(dof * sizeof(deFloat));
-	deFloat* zero = (deFloat*)_alloca(dof * sizeof(deFloat));
-#else
-	deFloat ddq2[dof];
-	deFloat ddq[dof];
-	deFloat dq[dof];
-	deFloat tau[dof];
-	deFloat zero[dof];
-#endif
+	assert(dof == computeDOF(root));
+
+	// see also comments in computeG()
+	std::vector<deFloat> ddq2(dof, 0);
+	
+	std::vector<deFloat> ddq(dof);
+	std::vector<deFloat> dq(dof);
+	std::vector<deFloat> tau(dof);
+
+	std::vector<deFloat> zero(dof, 0);
 
 	deVector3 g;
 	deInt i;
-
-	assert(dof == computeDOF(root));
-	memset(zero, 0, dof * sizeof(deFloat));
-	memset(ddq2, 0, dof * sizeof(deFloat));
 
 	// tau = A * ddq + b + g
 	// dq = 0;
@@ -300,48 +285,41 @@ void taoDynamics::computeA(taoDNode* root, const deInt dof, deFloat* A)
 
 	g.zero();
 
-	_Read(root, ddq, TAO_DDQ);
-	_Read(root, dq, TAO_DQ);
-	_Read(root, tau, TAO_TAU);
+	_Read(root, &ddq[0], TAO_DDQ);
+	_Read(root, &dq[0], TAO_DQ);
+	_Read(root, &tau[0], TAO_TAU);
 
-	_Write(root, zero, TAO_DQ);
+	_Write(root, &zero[0], TAO_DQ);
 
 	for (i = 0; i < dof; i++)
 	{
 		ddq2[i] = 1;
-		_Write(root, ddq2, TAO_DDQ);
+		_Write(root, &ddq2[0], TAO_DDQ);
 		invDynamics(root, &g);
 		_Read(root, A + dof * i, TAO_TAU);
 		ddq2[i] = 0;
 	}
 
-	_Write(root, ddq, TAO_DDQ);
-	_Write(root, dq, TAO_DQ);
-	_Write(root, tau, TAO_TAU);
+	_Write(root, &ddq[0], TAO_DDQ);
+	_Write(root, &dq[0], TAO_DQ);
+	_Write(root, &tau[0], TAO_TAU);
 }
 
 void taoDynamics::computeAinv(taoDNode* root, const deInt dof, deFloat* Ainv)
 {
-#ifdef WIN32
-	deFloat* tau2 = (deFloat*)_alloca(dof * sizeof(deFloat));
-	deFloat* tau = (deFloat*)_alloca(dof * sizeof(deFloat));
-	deFloat* ddq = (deFloat*)_alloca(dof * sizeof(deFloat));
-	deFloat* dq = (deFloat*)_alloca(dof * sizeof(deFloat));
-	deFloat* zero = (deFloat*)_alloca(dof * sizeof(deFloat));
-#else
-	deFloat tau2[dof];
-	deFloat tau[dof];
-	deFloat ddq[dof];
-	deFloat dq[dof];
-	deFloat zero[dof];
-#endif
+	assert(dof == computeDOF(root));
+
+	// see also comments in computeG()
+	std::vector<deFloat> tau2(dof, 0);
+	
+	std::vector<deFloat> tau(dof);
+	std::vector<deFloat> ddq(dof);
+	std::vector<deFloat> dq(dof);
+	
+	std::vector<deFloat> zero(dof, 0);
 
 	deVector3 g;
 	deInt i;
-
-	assert(dof == computeDOF(root));
-	memset(zero, 0, dof * sizeof(deFloat));
-	memset(tau2, 0, dof * sizeof(deFloat));
 
 	// tau = A * ddq + b + g
 	// ddq = Ainv(tau - b - g)
@@ -354,23 +332,23 @@ void taoDynamics::computeAinv(taoDNode* root, const deInt dof, deFloat* Ainv)
 	// Ainvi = ddqi
 	// ddq is i_th col of Ainv
 	g.zero();
-	_Read(root, tau, TAO_TAU);
-	_Read(root, ddq, TAO_DDQ);
-	_Read(root, dq, TAO_DQ);
-	_Write(root, zero, TAO_DQ);
+	_Read(root, &tau[0], TAO_TAU);
+	_Read(root, &ddq[0], TAO_DDQ);
+	_Read(root, &dq[0], TAO_DQ);
+	_Write(root, &zero[0], TAO_DQ);
 
 	for (i = 0; i < dof; i++)
 	{
 		tau2[i] = 1;
-		_Write(root, tau2, TAO_TAU);
+		_Write(root, &tau2[0], TAO_TAU);
 		fwdDynamics(root, &g);
 		_Read(root, Ainv + dof * i, TAO_DDQ);
 		tau2[i] = 0;
 	}
 
-	_Write(root, tau, TAO_TAU);
-	_Write(root, ddq, TAO_DDQ);
-	_Write(root, dq, TAO_DQ);
+	_Write(root, &tau[0], TAO_TAU);
+	_Write(root, &ddq[0], TAO_DDQ);
+	_Write(root, &dq[0], TAO_DQ);
 }
 
 void taoDynamics::_Read(taoDNode* root, deFloat* v, flagType type)

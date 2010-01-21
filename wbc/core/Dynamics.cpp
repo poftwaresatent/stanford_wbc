@@ -34,6 +34,7 @@
 #include <tao/dynamics/taoDynamics.h>
 #include <tao/utility/TaoDeMassProp.h>
 #include <cstdlib>
+#include "malloc.h"
 
 namespace wbc {
 
@@ -105,8 +106,8 @@ namespace wbc {
     }
 
     taoDynamics::invDynamics(dynamicEvaluationModel2_->rootNode(),&gravityAccel_);
-    deFloat A[noj_*noj_];
-    taoDynamics::computeA(dynamicEvaluationModel2_->rootNode(),noj_,A);
+    std::vector<deFloat> A(noj_*noj_);	// XXXX this only supports one-DOF-per-joint robots (?)
+    taoDynamics::computeA(dynamicEvaluationModel2_->rootNode(),noj_,&A[0]);
 
     for(int i = 0; i < noj_; i++)
       for(int j = 0; j < noj_; j++)
@@ -127,8 +128,8 @@ namespace wbc {
     }
 
     taoDynamics::fwdDynamics(dynamicEvaluationModel2_->rootNode(),&gravityAccel_);
-    deFloat Ainv[noj_*noj_];
-    taoDynamics::computeAinv(dynamicEvaluationModel2_->rootNode(),noj_,Ainv);
+    std::vector<deFloat> Ainv(noj_*noj_);
+    taoDynamics::computeAinv(dynamicEvaluationModel2_->rootNode(),noj_,&Ainv[0]);
 
     for(int i = 0; i < noj_; i++)
       for(int j = 0; j < noj_; j++)
@@ -149,11 +150,11 @@ namespace wbc {
       node->getJointList()[0].zeroTau();
     }
 
-    deFloat tmp[noj_];
-    taoDynamics::computeB(dynamicEvaluationModel2_->rootNode(),noj_,tmp);
+    std::vector<deFloat> tmp(noj_);
+    taoDynamics::computeB(dynamicEvaluationModel2_->rootNode(),noj_,&tmp[0]);
     for(int i = 0; i < noj_; i++) coriolisCentrifugalForce_[i] = tmp[i];
 
-    taoDynamics::computeG(dynamicEvaluationModel2_->rootNode(),&gravityAccel_,noj_,tmp);
+    taoDynamics::computeG(dynamicEvaluationModel2_->rootNode(),&gravityAccel_,noj_,&tmp[0]);
     for(int i = 0; i < noj_; i++) gravityForce_[i] = tmp[i];
   }
 

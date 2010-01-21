@@ -20,11 +20,6 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#if WIN32 
-//#include "SAIPHeader.h"
-#pragma hdrstop
-#endif
-
 #include <tao/utility/TaoDeMassProp.h>
 
 // assuming the dimensions stay the same and the body consists of only one
