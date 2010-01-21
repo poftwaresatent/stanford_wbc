@@ -32,7 +32,7 @@
 #ifndef WIN32
 #include <sys/time.h>
 #else
-#include "extras.h"
+#include "wbcnet/win32_compat.hpp"
 #endif
 
 namespace wbc {

@@ -47,7 +47,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
-				AdditionalIncludeDirectories="../external/expat;../src;../../tao/dynamics;../../tao/matrix;../../tao/utility;../..;../../tao"
+				AdditionalIncludeDirectories="../../wbcnet;../external/expat;../src;../../tao/dynamics;../../tao/matrix;../../tao/utility;../..;../../tao"
 				PreprocessorDefinitions="NDEBUG;WIN32;_LIB;_MSVC;WINVER=0X0500;_CRT_SECURE_NO_DEPRECATE;WINDOWS;DISABLE_PLUGINS;DISABLE_NETWORKING"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -127,7 +127,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../external/expat;../src;../../tao/dynamics;../../tao/matrix;../../tao/utility;../..;../../tao"
+				AdditionalIncludeDirectories="../external/expat;../src;../../tao/dynamics;../../tao/matrix;../../tao/utility;../../wbcnet;../..;../../tao"
 				PreprocessorDefinitions="_DEBUG;WIN32;_LIB;_MSVC;_CRT_SECURE_NO_DEPRECATE;WINDOWS;DISABLE_PLUGINS;DISABLE_NETWORKING"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -555,6 +555,14 @@
 				Name="util"
 				>
 				<File
+					RelativePath="..\..\wbc\util\File.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\wbc\util\File.hpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\wbc\util\RecorderImpl.cpp"
 					>
 				</File>
@@ -568,6 +576,10 @@
 				</File>
 				<File
 					RelativePath="..\..\wbc\util\saiTime.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\wbc\util\StringBuffer.hpp"
 					>
 				</File>
 				<File
@@ -791,19 +803,19 @@
 				Name="bin"
 				>
 				<File
-					RelativePath="..\..\wbc\bin\BehaviorDirectory.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\wbc\bin\BehaviorDirectory.hpp"
-					>
-				</File>
-				<File
 					RelativePath="..\..\wbc\bin\builtin.cpp"
 					>
 				</File>
 				<File
 					RelativePath="..\..\wbc\bin\builtin.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\wbc\bin\directory.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\wbc\bin\directory.hpp"
 					>
 				</File>
 				<File
@@ -816,6 +828,14 @@
 				</File>
 				<File
 					RelativePath="..\..\wbc\bin\ModelProcess.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\wbc\bin\Process.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\wbc\bin\Process.hpp"
 					>
 				</File>
 				<File
@@ -840,6 +860,14 @@
 				</File>
 				<File
 					RelativePath="..\..\wbc\bin\TaskModelListener.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\wbc\bin\UserProcess.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\wbc\bin\UserProcess.hpp"
 					>
 				</File>
 			</Filter>
@@ -891,99 +919,27 @@
 					</File>
 				</Filter>
 			</Filter>
-		</Filter>
-		<Filter
-			Name="wbc run"
-			>
-			<File
-				RelativePath="..\..\wbcrun\directory.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\wbcrun\directory.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\wbcrun\Factory.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\wbcrun\message_id.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\wbcrun\message_id.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\wbcrun\NetConfig.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\wbcrun\NetConfig.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\wbcrun\Process.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\wbcrun\Process.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\wbcrun\Registry.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\wbcrun\service.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\wbcrun\service.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\wbcrun\TaskModelAPI.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\wbcrun\TaskModelContainer.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\wbcrun\UserProcess.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\wbcrun\UserProcess.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\wbcrun\util.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\wbcrun\util.hpp"
-				>
-			</File>
 			<Filter
 				Name="msg"
 				>
 				<File
-					RelativePath="..\..\wbcrun\msg\RobotState.hpp"
+					RelativePath="..\..\wbc\msg\RobotState.hpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\wbcrun\msg\Status.hpp"
+					RelativePath="..\..\wbc\msg\ServoCommand.hpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\wbcrun\msg\TaskMatrix.hpp"
+					RelativePath="..\..\wbc\msg\Status.hpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\wbcrun\msg\TaskSpec.hpp"
+					RelativePath="..\..\wbc\msg\TaskMatrix.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\wbc\msg\TaskSpec.hpp"
 					>
 				</File>
 			</Filter>
@@ -1080,166 +1036,246 @@
 			Name="wbc net"
 			>
 			<File
-				RelativePath="..\..\wbcnet\com.cpp"
+				RelativePath="..\..\wbcnet\wbcnet\com.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\wbcnet\com.hpp"
+				RelativePath="..\..\wbcnet\wbcnet\com.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\wbcnet\data.cpp"
+				RelativePath="..\..\wbcnet\wbcnet\data.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\wbcnet\data.hpp"
+				RelativePath="..\..\wbcnet\wbcnet\data.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\wbcnet\endian.cpp"
+				RelativePath="..\..\wbcnet\wbcnet\endian.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\wbcnet\endian.hpp"
+				RelativePath="..\..\wbcnet\wbcnet\endian.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\wbcnet\id.cpp"
+				RelativePath="..\..\wbcnet\wbcnet\endian_mode.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\wbcnet\id.hpp"
+				RelativePath="..\..\wbcnet\wbcnet\Factory.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\wbcnet\log.cpp"
+				RelativePath="..\..\wbcnet\wbcnet\fake_log.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\wbcnet\log.hpp"
+				RelativePath="..\..\wbcnet\wbcnet\id.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\wbcnet\Muldex.cpp"
+				RelativePath="..\..\wbcnet\wbcnet\id.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\wbcnet\Muldex.hpp"
+				RelativePath="..\..\wbcnet\wbcnet\log.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\wbcnet\pack.cpp"
+				RelativePath="..\..\wbcnet\wbcnet\log.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\wbcnet\pack.hpp"
+				RelativePath="..\..\wbcnet\wbcnet\message_id.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\wbcnet\proxy.cpp"
+				RelativePath="..\..\wbcnet\wbcnet\message_id.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\wbcnet\proxy.hpp"
+				RelativePath="..\..\wbcnet\wbcnet\Muldex.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\wbcnet\StreamBufMgr.cpp"
+				RelativePath="..\..\wbcnet\wbcnet\Muldex.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\wbcnet\StreamBufMgr.hpp"
+				RelativePath="..\..\wbcnet\wbcnet\NetConfig.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\wbcnet\strutil.cpp"
+				RelativePath="..\..\wbcnet\wbcnet\NetConfig.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\wbcnet\strutil.hpp"
+				RelativePath="..\..\wbcnet\wbcnet\NetWrapperWrap.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\wbcnet\TaskAtomizer.cpp"
+				RelativePath="..\..\wbcnet\wbcnet\NetWrapperWrap.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\wbcnet\TaskAtomizer.hpp"
+				RelativePath="..\..\wbcnet\wbcnet\pack.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\wbcnet\wbcnet\pack.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\wbcnet\wbcnet\pdebug.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\wbcnet\wbcnet\proxy.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\wbcnet\wbcnet\proxy.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\wbcnet\wbcnet\Registry.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\wbcnet\wbcnet\SPQueue.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\wbcnet\wbcnet\SPQueue.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\wbcnet\wbcnet\StreamBufMgr.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\wbcnet\wbcnet\StreamBufMgr.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\wbcnet\wbcnet\strutil.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\wbcnet\wbcnet\strutil.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\wbcnet\wbcnet\TaskAtomizer.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\wbcnet\wbcnet\TaskAtomizer.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\wbcnet\wbcnet\TaskModelAPI.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\wbcnet\wbcnet\TaskModelContainer.hpp"
 				>
 			</File>
 			<Filter
 				Name="msg"
 				>
 				<File
-					RelativePath="..\src\features.h"
+					RelativePath="..\..\wbcnet\wbcnet\msg\Matrix.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\wbcnet\msg\Matrix.cpp"
+					RelativePath="..\..\wbcnet\wbcnet\msg\Matrix.hpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\wbcnet\msg\Matrix.hpp"
+					RelativePath="..\..\wbcnet\wbcnet\msg\RobotState.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\wbcnet\msg\RobotState.cpp"
+					RelativePath="..\..\wbcnet\wbcnet\msg\RobotState.hpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\wbcnet\msg\RobotState.hpp"
+					RelativePath="..\..\wbcnet\wbcnet\msg\Service.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\wbcnet\msg\ServoCommand.cpp"
+					RelativePath="..\..\wbcnet\wbcnet\msg\Service.hpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\wbcnet\msg\ServoCommand.hpp"
+					RelativePath="..\..\wbcnet\wbcnet\msg\ServoCommand.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\wbcnet\msg\Status.cpp"
+					RelativePath="..\..\wbcnet\wbcnet\msg\ServoCommand.hpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\wbcnet\msg\Status.hpp"
+					RelativePath="..\..\wbcnet\wbcnet\msg\Status.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\src\stdint.h"
+					RelativePath="..\..\wbcnet\wbcnet\msg\Status.hpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\wbcnet\msg\StringList.cpp"
+					RelativePath="..\..\wbcnet\wbcnet\msg\StringList.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\wbcnet\msg\StringList.hpp"
+					RelativePath="..\..\wbcnet\wbcnet\msg\StringList.hpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\wbcnet\msg\TaskMatrix.cpp"
+					RelativePath="..\..\wbcnet\wbcnet\msg\TaskMatrix.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\wbcnet\msg\TaskMatrix.hpp"
+					RelativePath="..\..\wbcnet\wbcnet\msg\TaskMatrix.hpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\wbcnet\msg\TaskSpec.cpp"
+					RelativePath="..\..\wbcnet\wbcnet\msg\TaskSpec.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\wbcnet\msg\TaskSpec.hpp"
+					RelativePath="..\..\wbcnet\wbcnet\msg\TaskSpec.hpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\wbcnet\msg\UserCommand.cpp"
+					RelativePath="..\..\wbcnet\wbcnet\msg\UserCommand.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\wbcnet\msg\UserCommand.hpp"
+					RelativePath="..\..\wbcnet\wbcnet\msg\UserCommand.hpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="imp"
+				>
+				<File
+					RelativePath="..\..\wbcnet\wbcnet\imp\NetWrapNetConfig.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\wbcnet\wbcnet\imp\NetWrapNetConfig.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\wbcnet\wbcnet\imp\SPQNetConfig.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\wbcnet\wbcnet\imp\SPQNetConfig.hpp"
 					>
 				</File>
 			</Filter>
@@ -1272,10 +1308,6 @@
 				>
 			</File>
 		</Filter>
-		<File
-			RelativePath="..\src\extras.h"
-			>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>

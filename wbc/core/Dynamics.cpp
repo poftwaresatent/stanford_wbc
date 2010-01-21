@@ -34,6 +34,7 @@
 #include <tao/dynamics/taoDynamics.h>
 #include <tao/utility/TaoDeMassProp.h>
 #include <cstdlib>
+#include "malloc.h"
 
 namespace wbc {
 
