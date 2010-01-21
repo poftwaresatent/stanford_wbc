@@ -301,6 +301,8 @@ macro (wbc_add_plugin PLUGIN_NAME)
     message ("[WBC] falling back on the CMake default plugin output path")
   endif (PLUGIN_OUT_DIR)
   
+  install (TARGETS ${PLUGIN_NAME} DESTINATION plugins)
+  
   message ("[WBC] FINISHED configuring WBC plugin ${PLUGIN_NAME}")
   message ("[WBC] <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
 endmacro (wbc_add_plugin)
