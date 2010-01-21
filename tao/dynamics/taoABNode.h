@@ -318,7 +318,7 @@ public:
 	virtual void setABJoint(taoABJoint* joint, deInt i = 0) { _joint[i] = joint; }
 	virtual taoABJoint* getABJoint(deInt i = 0) { return _joint[i]; }
 
-	virtual void setNOJ(deInt n) { _noj = n; _joint = new (taoABJoint*[_noj]); }
+        virtual void setNOJ(deInt n) { _noj = n; _joint = new taoABJoint*[_noj]; }
 	virtual const deInt getNOJ() const { return _noj; }
 
 	virtual ~taoABNodeNOJn() 

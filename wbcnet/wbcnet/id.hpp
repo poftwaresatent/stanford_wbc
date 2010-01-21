@@ -38,7 +38,7 @@
 #include <map>
 #include <string>
 #ifdef WIN32
-#include "win32_compat.hpp"
+#include "wbcnet/win32_compat.hpp"
 #else
 #include <stdint.h>
 #endif

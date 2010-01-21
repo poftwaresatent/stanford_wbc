@@ -25,7 +25,12 @@
 #ifndef DEBUG_BEHAVIOR_HPP
 #define DEBUG_BEHAVIOR_HPP
 
+#ifndef WIN32
 #include <stdint.h>
+#else
+#include "wbcnet/win32_compat.hpp"
+#endif
+
 #include <wbc/core/BehaviorDescription.hpp>
 #include <wbc/core/TaskSet.hpp>
 #include <wbc/motion/FrictionPosture.hpp>

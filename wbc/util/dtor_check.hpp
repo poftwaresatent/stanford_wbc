@@ -1,7 +1,7 @@
 /*
  * Stanford Whole-Body Control Framework http://stanford-wbc.sourceforge.net/
  *
- * Copyright (c) 1997-2009 Stanford University. All rights reserved.
+ * Copyright (c) 2010 Stanford University. All rights reserved.
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -18,42 +18,17 @@
  * <http://www.gnu.org/licenses/>
  */
 
-/**
-   \file File.cpp
-   \author Roland Philippsen
-   \note Originally Copyright (c) 2008 Roland Philippsen, released under a BSD license.
-*/
-
-#include "File.hpp"
-
-extern "C" {
-#include <errno.h>
-#include <string.h>
-}
-
-using namespace std;
+#include <string>
 
 namespace wbc {
-
-  File::
-  File(char const * path, char const * mode) throw (std::runtime_error)
-    : stream(fopen(path, mode))
-  {
-    if (0 == stream)
-#ifndef WIN32
-      throw runtime_error(string("fopen(") + path + ", " + mode +"): " + strerror(errno));
-#else
-      throw runtime_error("fopen() failed");
-#endif
-    clearerr(stream);
-  }
   
+  struct dtor_check {
+    dtor_check();
+    
+    void check(void * that);
+    
+    void * previous_that;
+    std::string previous_bt;
+  };
   
-  File::
-  ~File()
-  {
-    if (0 != stream)
-      fclose(stream);
-  }
-
 }

@@ -28,6 +28,7 @@
 #include <wbc/msg/RobotState.hpp>
 #include <wbcnet/log.hpp>
 #include <iostream>
+#include <sstream>
 
 static wbcnet::logger_t logger(wbcnet::get_logger("wbc"));
 

@@ -34,7 +34,12 @@
 #include <vector>
 #include <map>
 #include <stdexcept>
+
+#ifndef WIN32
 #include <stdint.h>
+#else
+#include "wbcnet/win32_compat.hpp"
+#endif
 
 namespace wbc {
   

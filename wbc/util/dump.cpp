@@ -82,7 +82,7 @@ std::string inertia_matrix_to_string(deMatrix3 const & mx)
 		     std::vector<std::string> * id_to_link_name,
 		     std::vector<std::string> * id_to_joint_name)
   {
-    if ((0 <= root->getID()) && id_to_link_name && (id_to_link_name->size() > root->getID())) {
+    if ((0 <= root->getID()) && id_to_link_name && (id_to_link_name->size() > static_cast<size_t>(root->getID()))) {
       os << prefix << "* " << (*id_to_link_name)[root->getID()]
 	 << " (ID " << root->getID() << " at "<< (void*) root << ")\n";
     }
@@ -94,7 +94,7 @@ std::string inertia_matrix_to_string(deMatrix3 const & mx)
        << prefix << "    center:       " << *root->center() << "\n"
        << prefix << "    mass:         " << *root->mass() << "\n"
        << prefix << "    inertia:      " << inertia_matrix_to_string(*root->inertia()) << "\n";
-    if (id_to_joint_name && (id_to_joint_name->size() > root->getID())) {
+    if (id_to_joint_name && (id_to_joint_name->size() > static_cast<size_t>(root->getID()))) {
       os << prefix << "    joint name:   " << (*id_to_joint_name)[root->getID()] << "\n";
     }
     for (taoJoint /*const*/ * jlist(root->getJointList()); jlist != 0; jlist = jlist->getNext()) {
@@ -219,19 +219,19 @@ namespace std {
     default:                  os << "<invalid type: " << jtype << "> ";
     }
     os << "  " << joint.getDOF() << " DOF";
-    deFloat foo[joint.getDOF()];
-    joint.getQ(foo);
+    std::vector<deFloat> foo(joint.getDOF());
+    joint.getQ(&foo[0]);
     os << "  q: ";
-    dump_deFloat(os, foo, joint.getDOF());
-    joint.getDQ(foo);
+    dump_deFloat(os, &foo[0], joint.getDOF());
+    joint.getDQ(&foo[0]);
     os << "  dq: ";
-    dump_deFloat(os, foo, joint.getDOF());
-    joint.getDDQ(foo);
+    dump_deFloat(os, &foo[0], joint.getDOF());
+    joint.getDDQ(&foo[0]);
     os << "  ddq: ";
-    dump_deFloat(os, foo, joint.getDOF());
-    joint.getTau(foo);
+    dump_deFloat(os, &foo[0], joint.getDOF());
+    joint.getTau(&foo[0]);
     os << "  tau: ";
-    dump_deFloat(os, foo, joint.getDOF());
+    dump_deFloat(os, &foo[0], joint.getDOF());
     return os;
   }
   

@@ -258,7 +258,7 @@ namespace wbcnet {
     for (size_t ii(1); ii < nsets; ++ii)
       fprintf(of, "-+-------------------");
     if (m_lower < nbins) {
-      char * prf("-+");
+      char const * prf("-+");
       for (size_t jj(m_lower); jj <= m_upper; ++jj) {
 	fprintf(of, "%s\n|  [%2zu] %8.3f | %18zu", prf, jj, m_bin_floor[jj], m_bin[jj]);
 	prf = " |";

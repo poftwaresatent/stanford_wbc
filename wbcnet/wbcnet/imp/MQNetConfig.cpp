@@ -74,6 +74,12 @@ namespace wbcnet {
 	return MQ_NAME_ROOT + prefix + "_u2s";
       throw runtime_error("get_mq_name(USER, " + sfl::to_string(to_process)
 			  + "): invalid to_process");
+      
+    case NetConfig::DISTANCE:
+    case NetConfig::MOTOR:
+      throw runtime_error("get_mq_name(" + sfl::to_string(from_process)
+			  + ", " + sfl::to_string(to_process)
+			  + "): DISTANCE and MOTOR processes are deprecated and will be removed \"real soon now\"");
     }
     
     throw runtime_error("get_mq_name(" + sfl::to_string(from_process)

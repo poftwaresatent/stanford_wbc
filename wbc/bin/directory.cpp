@@ -24,6 +24,7 @@
 
 #include "directory.hpp"
 #include <wbcnet/log.hpp>
+#include <sstream>
 
 using namespace std;
 using namespace wbcnet;
@@ -80,6 +81,7 @@ namespace wbc {
 		  "BaseDirectoryCmdServer::Dispatch(): forwarding command ID "
 		  << request.code[1] << " to HandleServoCmd()");
 	reply.code[0] = HandleServoCmd(request.code[1],
+				       // NOTE: taking address of temporary is OK here
 				       &request.code.CreateSplice(2),
 				       &request.matrix,
 				       str_in,
@@ -139,8 +141,11 @@ namespace wbc {
 		<< behaviorID << " command ID "
 		<< commandID << " to HandleBehaviorCmd()");
       reply.code[0] = HandleBehaviorCmd(behaviorID, commandID,
-					&request.code.CreateSplice(3), &request.matrix,
-					&reply.code, &reply.matrix);
+					// NOTE: taking address of temporary is OK here
+					&request.code.CreateSplice(3),
+					&request.matrix,
+					&reply.code,
+					&reply.matrix);
       return true;
       
     }
@@ -182,8 +187,11 @@ namespace wbc {
 		<< taskID << " command ID "
 		<< commandID << " to HandleTaskCmd()");
       reply.code[0] = HandleTaskCmd(behaviorID, taskID, commandID,
-				    &request.code.CreateSplice(4), &request.matrix,
-				    &reply.code, &reply.matrix);
+				    // NOTE: taking address of temporary is OK here
+				    &request.code.CreateSplice(4),
+				    &request.matrix,
+				    &reply.code,
+				    &reply.matrix);
       return true;
       
     }

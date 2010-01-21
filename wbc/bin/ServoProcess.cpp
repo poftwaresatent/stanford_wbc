@@ -180,7 +180,7 @@ namespace wbc {
   {
     LOG_DEBUG (logger, "wbc::ServoImplementation::UpdateTorqueCommand()");
     
-    if ((0 > current_behaviorID) || (current_behaviorID >= m_behavior.size())) {
+    if ((0 > current_behaviorID) || (static_cast<size_t>(current_behaviorID) >= m_behavior.size())) {
       LOG_ERROR (logger,
 		 "wbc::ServoImplementation::UpdateTorqueCommand(): invalid behaviorID "
 		 << current_behaviorID << " (only " << m_behavior.size() << " available)");
@@ -278,7 +278,7 @@ namespace wbc {
 		uint8_t requestID,
 		int behaviorID)
   {
-    if (behaviorID > m_behavior.size()) {
+    if (static_cast<size_t>(behaviorID) > m_behavior.size()) {
       LOG_ERROR (logger,
 		 "wbc::ServoImplementation::ResetBehavior():  invalid behaviorID " << behaviorID
 		 << " (only " << m_behavior.size() << " available)");
@@ -593,7 +593,7 @@ namespace wbc {
   wbcnet::srv_result_t ServoProcess::
   BeginBehaviorTransition(int behaviorID)
   {
-    if ((0 > behaviorID) || (behaviorID >= m_imp->GetBehaviorLibrary().size())) {
+    if ((0 > behaviorID) || (static_cast<size_t>(behaviorID) >= m_imp->GetBehaviorLibrary().size())) {
       LOG_TRACE (logger,
 		 "ServoProcess::BeginBehaviorTransition(" << behaviorID
 		 << "): INVALID CODE, only " << m_imp->GetBehaviorLibrary().size() << " behaviors available");

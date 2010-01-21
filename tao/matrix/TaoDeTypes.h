@@ -41,7 +41,7 @@
  *	\name Basic data type
  */
 //	@{
-#define DE_PRECISION_DOUBLE // Double precision must be synchronized with saimatrix/SAIGlobalDef.h
+#define DE_PRECISION_DOUBLE
 #ifndef DE_PRECISION_DOUBLE
 typedef float deFloat;
 #else

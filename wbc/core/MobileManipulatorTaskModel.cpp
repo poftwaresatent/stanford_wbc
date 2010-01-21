@@ -48,13 +48,13 @@ namespace {
     virtual SAIMatrix const * coriolisCentrifugalForce() const { return mm->coriolisCentrifugalForce; }
 
     virtual SAIMatrix const * LambdaStar(int taskID) const {
-      if (mm->LambdaStar->size() > taskID)
+      if (mm->LambdaStar->size() > static_cast<size_t>(taskID))
 	return (*mm->LambdaStar)[taskID];
       return 0;
     }
 
     virtual SAIMatrix const * JStar(int taskID) const {
-      if (mm->JStar->size() > taskID)
+      if (mm->JStar->size() > static_cast<size_t>(taskID))
 	return (*mm->JStar)[taskID];
       return 0;
     }

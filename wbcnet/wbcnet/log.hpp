@@ -146,7 +146,7 @@ namespace wbcnet {
 
 namespace wbcnet {
   typedef log4cxx::LoggerPtr logger_t;
-  static logger_t get_root_logger() { return log4cxx::Logger::getRootLogger(); }
+  inline logger_t get_root_logger() { return log4cxx::Logger::getRootLogger(); }
   template<typename string_t> logger_t get_logger(string_t const & name) { return log4cxx::Logger::getLogger(name); }
 }
 
