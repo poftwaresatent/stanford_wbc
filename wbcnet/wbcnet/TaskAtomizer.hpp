@@ -59,7 +59,7 @@ namespace wbcnet {
   */
   class TaskAtomizer
   {
-    typedef unsigned long long bitmap_t;
+    typedef unsigned long bitmap_t;
     
   public:
     typedef enum {
