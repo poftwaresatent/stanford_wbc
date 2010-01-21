@@ -24,6 +24,7 @@
 
 #include "directory.hpp"
 #include <wbcnet/log.hpp>
+#include <sstream>
 
 using namespace std;
 using namespace wbcnet;

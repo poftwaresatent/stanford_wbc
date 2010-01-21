@@ -40,7 +40,11 @@ namespace wbc {
     : stream(fopen(path, mode))
   {
     if (0 == stream)
+#ifndef WIN32
       throw runtime_error(string("fopen(") + path + ", " + mode +"): " + strerror(errno));
+#else
+      throw runtime_error("fopen() failed");
+#endif
     clearerr(stream);
   }
   

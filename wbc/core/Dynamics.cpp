@@ -34,6 +34,7 @@
 #include <tao/dynamics/taoDynamics.h>
 #include <tao/utility/TaoDeMassProp.h>
 #include <cstdlib>
+#include "malloc.h"
 
 namespace wbc {
 
@@ -105,7 +106,14 @@ namespace wbc {
     }
 
     taoDynamics::invDynamics(dynamicEvaluationModel2_->rootNode(),&gravityAccel_);
+
+
+#ifdef WIN32
+    deFloat* A = (deFloat*)_malloca(noj_*sizeof(deFloat)*noj_*sizeof(deFloat));
+#else
     deFloat A[noj_*noj_];
+#endif
+
     taoDynamics::computeA(dynamicEvaluationModel2_->rootNode(),noj_,A);
 
     for(int i = 0; i < noj_; i++)
@@ -127,7 +135,13 @@ namespace wbc {
     }
 
     taoDynamics::fwdDynamics(dynamicEvaluationModel2_->rootNode(),&gravityAccel_);
+    
+#ifdef WIN32
+    deFloat* Ainv = (deFloat*)_malloca(noj_*sizeof(deFloat)*noj_*sizeof(deFloat));
+#else
     deFloat Ainv[noj_*noj_];
+#endif
+
     taoDynamics::computeAinv(dynamicEvaluationModel2_->rootNode(),noj_,Ainv);
 
     for(int i = 0; i < noj_; i++)
@@ -149,7 +163,12 @@ namespace wbc {
       node->getJointList()[0].zeroTau();
     }
 
+#ifdef WIN32
+    deFloat* tmp = (deFloat*)_malloca(noj_*sizeof(deFloat));
+#else
     deFloat tmp[noj_];
+#endif
+
     taoDynamics::computeB(dynamicEvaluationModel2_->rootNode(),noj_,tmp);
     for(int i = 0; i < noj_; i++) coriolisCentrifugalForce_[i] = tmp[i];
 
