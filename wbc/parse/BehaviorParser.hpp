@@ -32,6 +32,7 @@
 #include <string>
 #include <stdexcept>
 #include <vector>
+#include <map>
 
 namespace wbc {
   
@@ -40,18 +41,20 @@ namespace wbc {
   
   
   struct BehaviorConstructionCallback {
+    typedef std::map<std::string, std::string> dictionary_t;
+    
     virtual ~BehaviorConstructionCallback() {}
     
     /** \note Declared const so that you can use a temporary instance
 	when calling BehaviorParser::Parse(). */
-    virtual void operator () (std::string const & name) const throw(std::runtime_error) = 0;
+    virtual void operator () (dictionary_t const & params) const throw(std::runtime_error) = 0;
   };
   
   
   /** Simply logs a message to cout. */
   struct DebugBehaviorConstructionCallback:
     public BehaviorConstructionCallback {
-    virtual void operator () (std::string const & name) const throw(std::runtime_error);
+    virtual void operator () (dictionary_t const & params) const throw(std::runtime_error);
   };
   
   
@@ -74,16 +77,13 @@ namespace wbc {
 				    BehaviorFactoryRegistry const & breg);
     
     /**
-       Asks the BehaviorFactoryRegistry to create a behavior, and adds
-       it to the vector of BehaviorDescription instances. Very trivial:
-       \code
-       m_bvec.push_back(m_breg.Create(name));
-       \endcode
-       
-       \note If the given name is invalid,
-       BehaviorFactoryRegistry::Create() will throw an exception.
+       Retrieves the "type" value from the dictionary, asks the
+       BehaviorFactoryRegistry to create a behavior from it, calls the
+       behavior's handleInit() method on all other dictionary entries,
+       and finally adds it to the vector of BehaviorDescription
+       instances.
     */
-    virtual void operator () (std::string const & name) const throw(std::runtime_error);
+    virtual void operator () (dictionary_t const & params) const throw(std::runtime_error);
     
   protected:  
     std::vector<BehaviorDescription*> & m_bvec;
@@ -112,7 +112,8 @@ namespace wbc {
     XML_ParserStruct * parser;
     StringBuffer<XML_Char> * buffer;
     bool in_behavior;
-    bool in_type;
+    BehaviorConstructionCallback::dictionary_t params;
+    std::string param_key;
     std::string filename;
     File * file;
     int bufsize;

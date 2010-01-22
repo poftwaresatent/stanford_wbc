@@ -174,5 +174,13 @@ namespace wbc {
   {
     return recorder_;
   }
-
+  
+  
+  bool BehaviorDescription::
+  handleInit(std::string const & key, std::string const & value) throw(std::runtime_error)
+  {
+    LOG_DEBUG (logger, "wbc::BehaviorDescription::handleInit(" << key << ", " << value << ")");
+    return false;
+  }
+  
 }

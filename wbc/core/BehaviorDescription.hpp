@@ -70,7 +70,24 @@ namespace wbc {
     typedef std::vector<TaskSet*> task_set_vector;
   
     std::string const name;
-  
+    
+    /** Hook for initialization at runtime, i.e. from XML files. After
+	the creation of a new BehaviorDescription subclass instance,
+	this method can get called any number of times, for example
+	passing each XML tag with its corresponding value. Subclasses
+	can intercept the key-value pairs they are interested in, and
+	delegate to their superclass if they do not handle that
+	particular key. The base class implementation simply returns
+	false.
+	
+	\note Errors should be signalled by throwing an exception. The
+	return value only indicates whether this particular (sub)class
+	has handled the value or not.
+	
+	\return true if you have handled the key-value pair, false otherwise.
+    */
+    virtual bool handleInit(std::string const & key, std::string const & value) throw(std::runtime_error);
+    
     virtual ~BehaviorDescription();
 
     virtual TaskSet* activeTaskSet() = 0;
