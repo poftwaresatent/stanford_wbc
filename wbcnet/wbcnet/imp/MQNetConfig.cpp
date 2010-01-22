@@ -212,14 +212,14 @@ namespace wbcnet {
     if (msgsize < 0) {
       msgsize = 1024;
     }
-    static bool const nonblock(true); // hmm... should this be an option as well???
+    static bool const nonblock(false); // hmm... should this be an option as well???
     
     wbcnet::MQWrap::mode_t mode(wbcnet::MQWrap::READ_WRITE);
     if (name_wr != name_rd) {
       mode = wbcnet::MQWrap::WRITE_ONLY;
     }
     wbcnet::MQWrap * sink(new wbcnet::MQWrap(true, true));
-    if ( ! sink->Open(name_wr, mode, maxmsg, msg_size, nonblock)) {
+    if ( ! sink->Open(MQ_NAME_ROOT + name_wr, mode, maxmsg, msg_size, nonblock)) {
       delete sink;
       ostringstream msg;
       msg << "MQNetConfig::CreateChannel(): sink->Open(" << name_wr << ", " << mode << ", " << maxmsg
@@ -231,7 +231,7 @@ namespace wbcnet {
       mode = wbcnet::MQWrap::READ_ONLY;
     }
     wbcnet::MQWrap * source(new wbcnet::MQWrap(true, true));
-    if ( ! source->Open(name_rd, mode, maxmsg, msg_size, nonblock)) {
+    if ( ! source->Open(MQ_NAME_ROOT + name_rd, mode, maxmsg, msg_size, nonblock)) {
       delete sink;
       delete source;
       ostringstream msg;

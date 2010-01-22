@@ -204,7 +204,7 @@ namespace wbcnet {
     }
     string bind_ip("*");
     sfl::token_to(token, 1, bind_ip);
-    static bool const is_nonblocking(true); // maybe make this configurable?
+    static bool const is_nonblocking(false); // maybe make this configurable?
     
     wbcnet::SoServer * sos(new wbcnet::SoServer(0, -1));    
     LOG_TRACE (logger,
@@ -298,7 +298,7 @@ namespace wbcnet {
     }
     string server_ip("127.0.0.1");
     sfl::token_to(token, 1, server_ip);
-    static bool const is_nonblocking(true); // maybe make this configurable?
+    static bool const is_nonblocking(false); // maybe make this configurable?
     
     wbcnet::SoClient * soc(new wbcnet::SoClient(0, -1));
     if ( ! soc->Open(port, is_nonblocking, server_ip)) {
