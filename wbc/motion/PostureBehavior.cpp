@@ -152,4 +152,31 @@ namespace wbc {
     key_posture_[keycode] = posture;
   }
   
+  
+  bool PostureBehavior::
+  handleInit(std::string const & key, std::string const & value) throw(std::runtime_error)
+  {
+    if ("posture_key" == key) {
+      istringstream is(value);
+      if ( ! is) {
+	throw runtime_error("wbc::PostureBehavior::handleInit(" + key + ", " + value
+			    + "): gimme a key and some numbers!");
+      }
+      char keycode;
+      is >> keycode;
+      vector<double> jpos;
+      while (is) {
+	double foo;
+	is >> foo;
+	if (is) {
+	  jpos.push_back(foo);
+	}
+      }
+      addPostureKey(keycode, SAIVector(&jpos[0], jpos.size()));
+      LOG_INFO (logger, "wbc::PostureBehavior::handleInit(): registered keycode " << (int) keycode);
+      return true;
+    }
+    return false;
+  }
+  
 }

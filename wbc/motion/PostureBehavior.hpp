@@ -48,6 +48,8 @@ namespace wbc {
     void setFreezeKey(int32_t keycode);
     void addPostureKey(int32_t keycode, SAIVector const & posture);
     
+    virtual bool handleInit(std::string const & key, std::string const & value) throw(std::runtime_error);
+    
     virtual TaskSet* activeTaskSet() { return activeTaskSet_; }
     virtual void onUpdate();
     
