@@ -68,13 +68,17 @@ namespace wbcnet {
     static void Help(std::string const & prefix, std::ostream & os);
     
     
+    /** Deprecated. Please use the string-based alternative. */
     virtual wbcnet::Channel * CreateChannel(process_t from_process,
 					    process_t to_process) const
       throw(std::runtime_error) = 0;
 
-    /** Default implementation just throws an exception. Subclasses can implement it for providing a more generic creation method, if available. */
+    /** Replacement for the deprecated
+	CreateChannel(process_t,process_t) method. Subclasses must
+	implement it for providing a more generic creation patter. If
+	such is not available, they should throw a runtime_error. */
     virtual wbcnet::Channel * CreateChannel(std::string const & connection_spec) const
-          throw(std::runtime_error);
+          throw(std::runtime_error) = 0;
   };
   
 }

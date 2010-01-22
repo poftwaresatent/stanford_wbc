@@ -102,6 +102,7 @@ subdirs (
   plugins/fake
   plugins/robotlog
   plugins/nwrobot
+  plugins/netrob
   tests
   applications
   )

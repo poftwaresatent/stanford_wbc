@@ -32,6 +32,7 @@
 #include "SPQNetConfig.hpp"
 #include <wbcnet/SPQueue.hpp>
 #include <wbcnet/log.hpp>
+#include <wbcnet/strutil.hpp>
 
 using namespace std;
 
@@ -49,9 +50,8 @@ namespace wbcnet {
   
   
   wbcnet::Channel * SPQNetConfig::
-  CreateChannel(process_t from_process,
-		process_t to_process) const
-      throw(std::runtime_error)
+  CreateChannel(std::string const & from_process,
+		std::string const & to_process) const
   {
     bool own_sink(false);
     wbcnet::SPQueue * sink(GetSPQueue(from_process, to_process));
@@ -71,9 +71,29 @@ namespace wbcnet {
   }
   
   
-  wbcnet::SPQueue * SPQNetConfig::
-  CreateSPQueue(process_t from_process,
+  wbcnet::Channel * SPQNetConfig::
+  CreateChannel(std::string const & connection_spec) const
+    throw(std::runtime_error)
+  {
+    std::string from_process, to_process;
+    sfl::splitstring(connection_spec, ':', from_process, to_process);
+    return CreateChannel(from_process, to_process);
+  }
+  
+  
+  wbcnet::Channel * SPQNetConfig::
+  CreateChannel(process_t from_process,
 		process_t to_process) const
+      throw(std::runtime_error)
+  {
+    return CreateChannel("process__" + sfl::to_string(from_process),
+			 "process__" + sfl::to_string(to_process));
+  }
+  
+  
+  wbcnet::SPQueue * SPQNetConfig::
+  CreateSPQueue(std::string const & from_process,
+		std::string const & to_process) const
   {
     LOG_TRACE (logger,
 	       "wbcnet::SPQNetConfig::CreateSPQueue(" << from_process << ", "
@@ -85,8 +105,8 @@ namespace wbcnet {
   
   
   wbcnet::SPQueue * SPQNetConfig::
-  GetSPQueue(process_t from_process,
-	     process_t to_process) const
+  GetSPQueue(std::string const & from_process,
+	     std::string const & to_process) const
   {
     from_to_t::const_iterator ifrom(m_from_to.find(from_process));
     if (m_from_to.end() == ifrom)

@@ -111,6 +111,15 @@ namespace wbcnet {
   }
   
   
+  wbcnet::Channel * MQNetConfig::
+  CreateChannel(std::string const & connection_spec) const
+    throw(std::runtime_error)
+  {
+    throw runtime_error("wbcnet::MQNetConfig::CreateChannel(): POSIX message queues not supported");
+    return 0;
+  }
+  
+  
 #else // WBCNET_HAVE_MQUEUE
   
   
@@ -174,6 +183,65 @@ namespace wbcnet {
     return 0;
   }
   
+  
+  wbcnet::Channel * MQNetConfig::
+  CreateChannel(std::string const & connection_spec) const
+    throw(std::runtime_error)
+  {
+    vector<string> token;
+    sfl::tokenize(connection_spec, ':', token);
+    
+    string name_wr;
+    sfl::token_to(token, 0, name_wr);
+    if (name_wr.empty()) {
+      throw runtime_error("MQNetConfig::CreateChannel(" + connection_spec
+			  + "): invalid connection_spec, I need at least a queue name to work with here...");
+    }
+    string name_rd;
+    sfl::token_to(token, 1, name_rd);
+    if (name_rd.empty()) {
+      name_rd = name_wr;
+    }
+    long maxmsg(-1);
+    sfl::token_to(token, 2, maxmsg);
+    if (maxmsg < 0) {
+      maxmsg = 10;
+    }
+    long msgsize(-1);
+    sfl::token_to(token, 3, msgsize);
+    if (msgsize < 0) {
+      msgsize = 1024;
+    }
+    static bool const nonblock(true); // hmm... should this be an option as well???
+    
+    wbcnet::MQWrap::mode_t mode(wbcnet::MQWrap::READ_WRITE);
+    if (name_wr != name_rd) {
+      mode = wbcnet::MQWrap::WRITE_ONLY;
+    }
+    wbcnet::MQWrap * sink(new wbcnet::MQWrap(true, true));
+    if ( ! sink->Open(name_wr, mode, maxmsg, msg_size, nonblock)) {
+      delete sink;
+      ostringstream msg;
+      msg << "MQNetConfig::CreateChannel(): sink->Open(" << name_wr << ", " << mode << ", " << maxmsg
+	  << ", " << msg_size << ", " << nonblock << ") failed";
+      throw runtime_error(msg.str());
+    }
+    
+    if (name_wr != name_rd) {
+      mode = wbcnet::MQWrap::READ_ONLY;
+    }
+    wbcnet::MQWrap * source(new wbcnet::MQWrap(true, true));
+    if ( ! source->Open(name_rd, mode, maxmsg, msg_size, nonblock)) {
+      delete sink;
+      delete source;
+      ostringstream msg;
+      msg << "MQNetConfig::CreateChannel(): source->Open(" << name_rd << ", " << mode << ", " << maxmsg
+	  << ", " << msg_size << ", " << nonblock << ") failed";
+      throw runtime_error(msg.str());
+    }
+    
+    return new wbcnet::ProxyChannel(sink, true, source, true);
+  }
   
 #endif // WBCRUN_HAVE_MQUEUE
   
