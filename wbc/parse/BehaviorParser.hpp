@@ -41,7 +41,7 @@ namespace wbc {
   
   
   struct BehaviorConstructionCallback {
-    typedef std::map<std::string, std::string> dictionary_t;
+    typedef std::multimap<std::string, std::string> dictionary_t;
     
     virtual ~BehaviorConstructionCallback() {}
     

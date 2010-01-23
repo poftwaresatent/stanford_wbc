@@ -81,6 +81,10 @@ namespace wbc {
       throw runtime_error("wbc::StdBehaviorConstructionCallback(): no type in parameter dictionary");
     }
     std::string const & name(ii->second);
+    ++ii;
+    if ((params.end() != ii) && ("type" == ii->second)) {
+      throw runtime_error("wbc::StdBehaviorConstructionCallback(): multiple types in parameter dictionary");
+    }
     BehaviorDescription * behavior(m_breg.Create(name));
     try {
       for (ii = params.begin(); ii != params.end(); ++ii) {

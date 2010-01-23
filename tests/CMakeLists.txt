@@ -18,3 +18,6 @@ endif (HAVE_XMLRPC)
 
 add_executable (testProcess testProcess.cpp)
 target_link_libraries (testProcess Stanford_WBC)
+
+add_executable (testBehaviorParser testBehaviorParser.cpp)
+target_link_libraries (testBehaviorParser Stanford_WBC)
