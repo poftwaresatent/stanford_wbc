@@ -60,6 +60,11 @@
 namespace wbcnet {
   
   
+  /**
+     A Channel that wraps around Forcedimension's libnetwrapper. Only
+     avaiable if you have libnetwrapper on your system and you told the
+     wbcnet build system how to locate it.
+  */
   class TCPNetWrapper
     : public Channel
   {

@@ -511,6 +511,7 @@ INPUT                  = mainpage.dox \
                          ../applications \
                          ../plugins \
 			 ../saimatrix \
+			 ../wbcnet/wbcnet \
 			 ../wbc/bin \
 			 ../wbc/core \
 			 ../wbc/motion \

@@ -38,6 +38,11 @@
 namespace wbcnet {
   
   
+  /**
+     Interface for retrieving task model matrices, based on the
+     abstraction of \c setID, \c taskID, and \c matrixID. The meaning
+     of these three indices is further explained in GetMatrix().
+  */
   class TaskModelAPI
     : public wbcnet::TaskAtomizer
   {
@@ -84,6 +89,11 @@ namespace wbcnet {
   };
   
   
+  /**
+     A task model that has a container which actually stores the
+     matrices. It is essentially an adaptor that wraps
+     TaskModelContainer.
+   */
   template<typename matrix_type, typename traits_type = task_model_container_default_traits>
   class TaskModel
     : public TaskModelAPI

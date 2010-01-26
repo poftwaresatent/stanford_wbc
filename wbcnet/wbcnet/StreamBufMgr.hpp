@@ -39,7 +39,17 @@
 
 namespace wbcnet {
   
-  
+
+  /**
+     Utility for achieving "just in time" communication flow. This is
+     useful when you do not know the exact delays and number of
+     buffers along the way from source to destination. It uses a
+     Kanban production model to decide when to send messages full
+     blast, when to trickle them into the stream, and when to stop
+     sending altogether. The aim is to reach a state where we send at
+     regular intervals without flooding or starving any buffer in the
+     loop.
+  */
   class StreamBufMgr
   {
   public:

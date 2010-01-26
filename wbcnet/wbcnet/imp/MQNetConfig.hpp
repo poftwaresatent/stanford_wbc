@@ -38,6 +38,12 @@ namespace wbcnet {
 
   class MQWrap;
   
+
+  /**
+     A NetConfig that creates an MQWrap for you. This allows you to
+     communicate via POSIX message queues, if they are available on
+     your platform.
+  */
   class MQNetConfig
     : public NetConfig
   {

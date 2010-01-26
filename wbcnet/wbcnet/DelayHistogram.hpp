@@ -45,6 +45,28 @@
 
 namespace wbcnet {
   
+  
+  /**
+     Utility for measuring time and creating histograms on the
+     fly. You can have several "sets" (things that you measure) that
+     all share the same "bins" (histogram time slices). You can start
+     and stop sets individually or all at the same time (see Start(),
+     StartAll(), Stop(), StopAll()), and even inject your own external
+     time measurements (see StartStop()). You can ask it to write the
+     current histogram to std::ostream or FILE (see Dump(), DumpAll(),
+     DumpTable()), and for convenience you can tell it only to print
+     every \c oskip time so you do not have to implement a counter
+     (see CheckDumpTable()).
+     
+     \note The floor and ceiling of the histogram have to be given at
+     construction time, which kind of assumes that you already have a
+     fair idea of the range of delays you encounter. In order to make
+     it easier to find out if you are missing important samples above
+     or below the range you are measuring, the absolute minimum and
+     maximum delays are tracked as well. They are output along with
+     the histogram, and you can also access them programmatically
+     using GetMsMin(), GetMsMinAll(), GetMsMax(), and GetMsMaxAll().
+  */
   class DelayHistogram
   {
   public:
@@ -55,6 +77,11 @@ namespace wbcnet {
 		   size_t oskip = 1);
     virtual ~DelayHistogram();
     
+    /**
+       Associate a string with a given set. This is used to make the
+       output more human-readable when printing the histogram (see
+       Dump(), DumpAll(), DumpTable(), and CheckDumpTable()).
+    */
     bool SetName(size_t iset, std::string const & name);
     
     bool Start(size_t iset);
@@ -63,12 +90,47 @@ namespace wbcnet {
     bool Stop(size_t iset);
     bool StopAll();
     
-    /** Like Start() followed by Stop(), but given an external measurement. */
+    /**
+       Like Start() followed by Stop(), but given an external
+       measurement.
+    */
     bool StartStop(size_t iset, struct ::timeval const * start, struct ::timeval const * stop);
     
     bool Dump(std::ostream & os, size_t iset) const;
     bool DumpAll(std::ostream & os) const;
+    
+    /**
+       Pretty print the histogram. The result will look somewhat like
+       the following (produced using the testDelayHistogram program):
+       \verbatim
+         +----------------+--------------------+--------------------+--------------------+
+         | HISTOGRAM      |              set 0 |              set 1 |              set 2 |
+         +----------------+--------------------+--------------------+--------------------+
+         | min     90.090 |             90.090 |            180.178 |            270.240 |
+         | max    324.189 |            108.063 |            216.127 |            324.189 |
+         +----------------+--------------------+--------------------+--------------------+
+         | below  100.000 |                  5 |                  0 |                  0 |
+         +----------------+--------------------+--------------------+--------------------+
+         |  [ 0]  100.000 |                  5 |                  0 |                  0 |
+         |  [ 1]  110.000 |                  0 |                  0 |                  0 |
+       ...etc...
+         |  [18]  280.000 |                  0 |                  0 |                  2 |
+         |  [19]  290.000 |                  0 |                  0 |                  1 |
+         +----------------+--------------------+--------------------+--------------------+
+         | above  300.000 |                  0 |                  0 |                  5 |
+         +----------------+--------------------+--------------------+--------------------+
+       \endverbatim
+     */
     bool DumpTable(FILE * of) const;
+    
+    /**
+       Verifies that \c oskip is non-zero, sees if the current
+       iteration is an integer multiple of \c oskip, and in that case
+       prints the histogram in a nice table format using DumpTable().
+       
+       \return True in case something has been output, false
+       otherwise.
+    */
     bool CheckDumpTable(FILE * of) const;
     
     bool Reset(size_t iset);
