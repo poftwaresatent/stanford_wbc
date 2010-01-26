@@ -19,6 +19,7 @@
  */
 
 /**
+   \file RawController.hpp
    \author Roland Philippsen
 */
 

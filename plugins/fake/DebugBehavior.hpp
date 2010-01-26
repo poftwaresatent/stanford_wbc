@@ -19,6 +19,7 @@
  */
 
 /**
+   \file DebugBehavior.hpp
    \author Roland Philippsen
 */
 
