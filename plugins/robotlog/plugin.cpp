@@ -27,7 +27,7 @@
 #include "writelog.hpp"
 #include <wbc/core/Plugin.hpp>
 
-namespace {
+namespace wbc_robotlog_plugin {
   
   class Plugin: public wbc::Plugin {
   public:
@@ -42,5 +42,5 @@ namespace {
 
 wbcnet::Module * wbcnet_create_module()
 {
-  return new Plugin();
+  return new wbc_robotlog_plugin::Plugin();
 }
