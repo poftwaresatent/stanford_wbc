@@ -36,6 +36,14 @@
 
 namespace netrob {
   
+  
+  /**
+     A wbc::RobotAPI implementation that uses the protocol defined by
+     wbc::msg::RobotState and wbc::msg::ServoCommand. The actual
+     wbcnet::Channel gets allocated using the wbcnet::NetConfig
+     mechanism, providing runtime configurability via specification
+     strings.
+   */
   class Robot
     : public wbc::BidirectionalRobotAPI
   {
@@ -66,6 +74,9 @@ namespace netrob {
   };
   
   
+  /**
+     Factory for netrob::Robot instances.
+  */
   struct Factory
     : public wbc::RobotFactory
   {

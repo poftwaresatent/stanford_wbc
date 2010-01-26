@@ -34,6 +34,12 @@
 namespace netrob {
   
   
+  /**
+     Minimal wbcnet::Buffer-compatible data structure for storing
+     robot state. The fact that the data gets stored in a
+     wbcnet::Buffer makes it straightforward to use the wbcnet
+     communication methods.
+   */
   template<typename value_t>
   struct raw_state_s
   {
@@ -60,6 +66,12 @@ namespace netrob {
   };
   
   
+  /**
+     Minimal wbcnet::Buffer-compatible data structure for storing
+     servo commands. The fact that the data gets stored in a
+     wbcnet::Buffer makes it straightforward to use the wbcnet
+     communication methods.
+   */
   template<typename value_t>
   struct raw_command_s
   {
@@ -82,6 +94,16 @@ namespace netrob {
   };
   
   
+  /**
+     An implementation of wbc::RobotAPI that uses sends and receives
+     just a raw array of values. Useful for cases where the size of
+     the state and command vectors is known at compile time on both
+     sides.
+     
+     \note The underlying data type is currently hardcoded to \c
+     float, but it would be straightforward to make this class generic
+     and select the data type at runtime.
+  */
   class RawRobot
     : public wbc::BidirectionalRobotAPI
   {
@@ -108,6 +130,9 @@ namespace netrob {
   };
   
   
+  /**
+     A factory for netrob::RawRobot instances.
+  */
   struct RawFactory
     : public wbc::RobotFactory
   {
