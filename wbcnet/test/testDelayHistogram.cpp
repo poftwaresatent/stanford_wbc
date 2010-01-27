@@ -47,4 +47,5 @@ int main(int argc, char ** argv)
     }
     dh.DumpAll(cout);
   }
+  dh.DumpTable(stdout);
 }

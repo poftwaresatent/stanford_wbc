@@ -73,6 +73,10 @@ namespace wbc {
     throw(std::runtime_error)
   {
     RobotAPI * robot(parseCreate(api_spec, servo_inspector));
+    if ( ! robot) {
+      throw runtime_error("wbc::RobotFactoryRegistry::parseCreateBidirectional(`" + api_spec 
+			  + "', ...): could not create robot");
+    }
     BidirectionalRobotAPI * birobot(dynamic_cast<BidirectionalRobotAPI*>(robot));
     if ( ! birobot) {
       delete robot;

@@ -19,6 +19,7 @@
  */
 
 /**
+   \file RobotFake.hpp
    \author Roland Philippsen
 */
 
@@ -30,6 +31,11 @@
 #include <wbc/core/RobotFactory.hpp>
 
 
+namespace wbc_fake_plugin {
+
+
+  /** A "robot" that is always in the same state. Very useful for
+      quick tests when you don't have a simulator at hand. */
 class RobotFake
   : public wbc::BidirectionalRobotAPI
 {
@@ -50,11 +56,14 @@ protected:
 };
 
 
+  /** A factory that creates a RobotFake. */
 struct FactoryFake
   : public wbc::RobotFactory
 {
   virtual RobotFake * parse(std::string const & spec, wbc::ServoInspector * servo_inspector);
   virtual void dumpHelp(std::string const & prefix, std::ostream & os) const;
 };
+
+}
 
 #endif // ROBOT_FAKE_HPP

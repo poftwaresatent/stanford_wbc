@@ -38,6 +38,10 @@
 #include <wbcnet/com.hpp>
 #include <wbcnet/NetWrapperWrap.hpp>
 
+namespace wbc_nwrobot_plugin {
+
+  /** A robot that uses the libnetwrapper <em>(C) 2002-2009 - Force
+      Dimension</em> for communication. */
 class RobotNetWrapper
   : public wbc::BidirectionalRobotAPI
 {
@@ -79,11 +83,14 @@ public:
 };
 
 
+  /** A factory for RobotNetWrapper instances. */
 struct FactoryNetWrapper
   : public wbc::RobotFactory
 {
   virtual RobotNetWrapper * parse(std::string const & spec, wbc::ServoInspector * servo_inspector);
   virtual void dumpHelp(std::string const & prefix, std::ostream & os) const;
 };
+
+}
 
 #endif // ROBOT_NET_WRAPPER_HPP

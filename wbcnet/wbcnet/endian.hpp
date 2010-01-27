@@ -43,40 +43,66 @@
 namespace wbcnet {
   
   
+  /** \return True if the system is big endian (e.g. PowerPC, network byte order). */
   inline bool detect_big_endian() {
     static uint16_t const foo(0x1234);
     return ((*reinterpret_cast<uint8_t const *>(&foo)) == 0x12);
   }
   
   
+  /** \return True if the system is little endian (e.g. Intel architecture). */
   inline bool detect_little_endian() {
     static uint16_t const foo(0x1234);
     return ((*reinterpret_cast<uint8_t const *>(&foo)) == 0x34);
   }
   
   
+  /** Empty base template for endian swaps. This empty base allows to
+      catch errors when someone tries to instantiate an endian_swap()
+      on an invalid type. The actual implementations have a convert()
+      method which swaps the byte order of a memory area *IN*
+      *PLACE*. */
   template<int nbytes>
   struct endian_swap_imp {
   };
   
   
+  /** Generic endian_swap() that instantiates the endian_swap_imp
+      based on the number of bytes in the type of the value. This only
+      makes sense for value types, of course... if you pass a pointer
+      type you'll get surprised at runtime.
+      
+      \note Use endian_array_swap() for pointer types. */
   template<typename TT>
   void endian_swap(TT & value) {
     endian_swap_imp<sizeof(TT)>::convert(reinterpret_cast<char*>(&value));
   }
   
   
-  void endian_array_swap(int n_items, int item_size,
+  /** Convert the byte order of a region of memory, by copying to
+      another area. This works for any item size. */
+  void endian_array_swap(/** The number of items in the area. */
+			 int n_items,
+			 /** The number of bytes in each item. */
+			 int item_size,
+			 /** The source array. */
 			 char const * native,
+			 /** Where the conversion will be stored. Do
+			     NOT pass the same pointer to \c native
+			     and \c swapped. */
 			 char * swapped);
   
   
+  /** Implementation of in-place byte order conversion for 8-bit
+      values (it's a no-op, duh). */
   template<>
   struct endian_swap_imp<1> {
     static inline void convert(char * value) {}
   };
   
   
+  /** Implementation of in-place byte order conversion for 16-bit
+      values. */
   template<>
   struct endian_swap_imp<2> {
     static inline void convert(char * value) {
@@ -86,6 +112,8 @@ namespace wbcnet {
   };
   
   
+  /** Implementation of in-place byte order conversion for 32-bit
+      values. */
   template<>
   struct endian_swap_imp<4> {
     static inline void convert(char * value) {
@@ -98,6 +126,8 @@ namespace wbcnet {
   };
   
   
+  /** Implementation of in-place byte order conversion for 64-bit
+      values. */
   template<>
   struct endian_swap_imp<8> {
     static inline void convert(char * value) {

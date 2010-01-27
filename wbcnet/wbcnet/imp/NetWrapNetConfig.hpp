@@ -38,6 +38,12 @@ namespace wbcnet {
   
   class TCPNetWrapper;
   
+  
+  /**
+     A NetConfig that creates a TCPNetWrapper for you. This allows you
+     to communicate via Forcedimension's libnetwrapper, if that is
+     available on your system.
+  */
   class NetWrapNetConfig
     : public NetConfig
   {

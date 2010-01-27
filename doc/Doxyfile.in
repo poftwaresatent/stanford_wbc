@@ -88,7 +88,7 @@ JAVADOC_AUTOBRIEF      = YES
 # will behave just like regular Qt-style comments (thus requiring 
 # an explicit \brief command for a brief description.)
 
-QT_AUTOBRIEF           = NO
+QT_AUTOBRIEF           = YES
 
 # The MULTILINE_CPP_IS_BRIEF tag can be set to YES to make Doxygen 
 # treat a multi-line C++ special comment block (i.e. a block of //! or /// 
@@ -507,18 +507,19 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories 
 # with spaces.
 
-INPUT                  = applications \
-                         plugins \
-			 saimatrix \
-			 tao \
-			 wbc/bin \
-			 wbc/core \
-			 wbc/motion \
-			 wbc/msg \
-			 wbc/parse \
-			 wbc/robarch \
-			 wbc/util \
-			 wbc_tinyxml
+INPUT                  = mainpage.dox \
+                         ../applications \
+                         ../plugins \
+			 ../saimatrix \
+			 ../wbcnet/wbcnet \
+			 ../wbc/bin \
+			 ../wbc/core \
+			 ../wbc/motion \
+			 ../wbc/msg \
+			 ../wbc/parse \
+			 ../wbc/robarch \
+			 ../wbc/util \
+			 ../wbc_tinyxml
 			 
 # This tag can be used to specify the character encoding of the source files 
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is 
@@ -535,8 +536,7 @@ INPUT_ENCODING         = UTF-8
 # *.c *.cc *.cxx *.cpp *.c++ *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh *.hxx 
 # *.hpp *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm *.py *.f90
 
-FILE_PATTERNS          = *.cpp \
-                         *.h \
+FILE_PATTERNS          = *.h \
                          *.hpp \
                          *.dox
 
@@ -550,7 +550,9 @@ RECURSIVE              = YES
 # excluded from the INPUT source files. This way you can easily exclude a 
 # subdirectory from a directory tree whose root is specified with the INPUT tag.
 
-EXCLUDE                = tao/mainpage.dox
+EXCLUDE                = ../wbc/core/control-hierarchy-idea-usage-example.cpp \
+                         ../wbc/core/ideaTaskDescription.hpp \
+                         ../wbc/core/control-hierarchy-idea.hpp
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or 
 # directories that are symbolic links (a Unix filesystem feature) are excluded 

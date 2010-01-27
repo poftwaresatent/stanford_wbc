@@ -28,6 +28,8 @@
 #include <wbc/core/BehaviorFactory.hpp>
 
 using namespace std;
+using namespace wbc_nwrobot_plugin;
+
 
 class NWPlugin: public wbc::Plugin {
 public:

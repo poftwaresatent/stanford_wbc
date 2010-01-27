@@ -21,6 +21,7 @@
 #include "dtor_check.hpp"
 #include <execinfo.h>
 #include <sstream>
+#include <stdio.h>
 #include <stdlib.h>
 
 

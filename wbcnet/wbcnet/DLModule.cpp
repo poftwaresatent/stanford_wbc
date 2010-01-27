@@ -40,6 +40,10 @@
 
 static wbcnet::logger_t logger(wbcnet::get_logger("wbcnet"));
 
+extern "C" {
+  typedef wbcnet::Module * (*wbcnet_create_module_t)();
+}
+
 using namespace std;
 
 namespace wbcnet {

@@ -37,7 +37,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
-////#include <iostream>
+
 
 static wbcnet::logger_t logger(wbcnet::get_logger("wbcnet"));
 
@@ -47,9 +47,10 @@ namespace wbcnet {
   
   SockWrap::
   SockWrap(int bufsize, int max_bufsize,
-	   int & com_sockfd)
-    : m_nsink(bufsize, max_bufsize),
-      m_nsource(bufsize, max_bufsize),
+	   int & com_sockfd,
+	   bool skip_length_header)
+    : m_nsink(bufsize, max_bufsize, skip_length_header),
+      m_nsource(bufsize, max_bufsize, skip_length_header),
       m_sockfd(-1),
       m_com_sockfd(com_sockfd)
   {
@@ -136,9 +137,10 @@ namespace wbcnet {
   
   
   SoClient::
-  SoClient(int bufsize, int max_bufsize)
+  SoClient(int bufsize, int max_bufsize,
+	   bool skip_length_header)
     :  // ref to uninitialized field is OK here
-    SockWrap(bufsize, max_bufsize, m_sockfd),
+    SockWrap(bufsize, max_bufsize, m_sockfd, skip_length_header),
     m_connected(false)
   {
   }
@@ -187,9 +189,10 @@ namespace wbcnet {
   
   
   SoServer::
-  SoServer(int bufsize, int max_bufsize)
+  SoServer(int bufsize, int max_bufsize,
+	   bool skip_length_header)
     :  // ref to uninitialized field is OK here
-    SockWrap(bufsize, max_bufsize, m_client_sockfd),
+    SockWrap(bufsize, max_bufsize, m_client_sockfd, skip_length_header),
     m_bound(false),
     m_accepted(false),
     m_client_sockfd(-1)
@@ -322,6 +325,27 @@ namespace wbcnet {
 		       "wbcnet::SockWrap::Send(): m_nsink is in NetSink::WRITE_ERROR state");
 	return COM_OTHER_ERROR;
       }
+      
+      //////////////////////////////////////////////////
+      // Oops, I think there's a bug here, which is hidden by the fact
+      // that most of the time, writing will succeed in its entirety
+      // because the kernel just copies it to the outgoing
+      // buffer... if the state is neither READY nor WRITE_ERROR, we
+      // should Send() again without setting the buffer, so that the
+      // old one keeps being sent, and in case of success do whatever
+      // is done after this if statement.
+      //
+      // e.g.:
+      // if (NetSink::COM_OK != m_nsink.Send(m_com_sockfd)) {
+      // 	LOG_TRACE (logger, "wbcnet::SockWrap::Send(): m_nsink is not NetSink::READY (yet)");
+      // 	return COM_TRY_AGAIN;
+      // }
+      // else set the bufer etc...
+      //
+      // See also Receive(), which DOES receive each time unless there
+      // is an error.
+      //////////////////////////////////////////////////
+      
       LOG_TRACE (logger, "wbcnet::SockWrap::Send(): m_nsink is not NetSink::READY (yet)");
       return COM_TRY_AGAIN;
     }
@@ -365,6 +389,13 @@ namespace wbcnet {
     }
     
     return COM_OK;
+  }
+  
+  
+  bool SockWrap::
+  ResizeSourceBuffer(int size)
+  {
+    return m_nsource.buffer.Resize(size);
   }
   
 }

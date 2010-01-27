@@ -38,6 +38,12 @@ namespace wbcnet {
 
   class MQWrap;
   
+
+  /**
+     A NetConfig that creates an MQWrap for you. This allows you to
+     communicate via POSIX message queues, if they are available on
+     your platform.
+  */
   class MQNetConfig
     : public NetConfig
   {
@@ -61,6 +67,9 @@ namespace wbcnet {
     
     virtual wbcnet::Channel * CreateChannel(process_t from_process,
 					    process_t to_process) const
+      throw(std::runtime_error);
+    
+    virtual wbcnet::Channel * CreateChannel(std::string const & connection_spec) const
       throw(std::runtime_error);
   };
   

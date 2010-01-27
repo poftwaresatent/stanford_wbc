@@ -19,12 +19,16 @@
  */
 
 /**
+   \file DebugBehavior.cpp
    \author Roland Philippsen
 */
 
 #include "DebugBehavior.hpp"
 #include <wbc/core/TaskSet.hpp>
 #include <wbcnet/msg/Service.hpp>
+
+
+namespace wbc_fake_plugin {
 
 
 DebugBehavior::
@@ -65,4 +69,6 @@ handleKey(int keycode)
 {
   std::cout << "DebugBehavior::handleKey(" << keycode << ")\n";
   return wbcnet::SRV_SUCCESS;
+}
+
 }

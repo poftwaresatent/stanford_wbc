@@ -47,7 +47,12 @@ namespace wbcnet {
   
   typedef uint16_t unique_id_t;
   
-  
+
+  /**
+     A draft of an idea for assigning unique IDs to names at
+     runtime. Never really caught on though, it would probably be
+     better to use checksums of some sort.
+  */
   class IDLookup
   {
   public:

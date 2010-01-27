@@ -19,6 +19,7 @@
  */
 
 /**
+   \file RawController.cpp
    \author Roland Philippsen
 */
 
@@ -34,7 +35,7 @@ using namespace std;
 
 static wbcnet::logger_t logger(wbcnet::get_logger("fake"));
 
-namespace fake {
+namespace wbc_fake_plugin {
   
   bool RawController::
   computeTorques(wbc::RobotControlModel const & robot_model,
