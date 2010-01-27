@@ -66,7 +66,7 @@ namespace wbcros {
     
     size_t ndof_, ndof_actuated_, nvel_, contact_nrows_, contact_ncols_;
     
-    Model();
+    explicit Model(std::string const & param_prefix);
     ~Model();
     
     void initFromURDF(ros::NodeHandle &nn, urdf::Model const & urdf,

@@ -80,6 +80,7 @@ namespace wbc_rosrob_plugin {
        work for you.
     */
     Robot(ros::NodeHandle & ros_node,
+	  std::string const & param_prefix,
 	  std::string const & urdf_param_name,
 	  std::string const & joint_states_topic_name);
     
@@ -108,17 +109,8 @@ namespace wbc_rosrob_plugin {
   {
     /**
        Create a wbc_rosrob_plugin::Robot by parsing a specification
-       string. The servo_inspector can be NULL in this case. You need
-       to properly initialize the ROS system yourself though. For
-       example...
-
-       \code
-       ros::init(argc, argv, "pr2_stanford_wbc", ros::init_options::NoSigintHandler);
-       wbc_rosrob_plugin::Robot * ros_robot(wbc_rosrob_plugin::Factory::parse("", 0));
-       if ( ! ros_robot) {
-         oopsie_could_not_create_ros_robot();
-       }
-       \endcode
+       string. The servo_inspector can be NULL in this case. This
+       method initializes the ROS system for you.
     */
     virtual Robot * parse(std::string const & spec, wbc::ServoInspector * servo_inspector);
     

@@ -51,9 +51,11 @@ namespace wbc_rosrob_plugin {
   
   Robot::
   Robot(ros::NodeHandle & ros_node,
+	std::string const & param_prefix,
 	std::string const & urdf_param_name,
 	std::string const & joint_states_topic_name)
-    : m_ok(false)
+    : m_ok(false),
+      m_model(param_prefix)
   {
     try {
       m_model.initFromParam(ros_node, urdf_param_name, 0);
@@ -154,15 +156,32 @@ namespace wbc_rosrob_plugin {
   Robot * Factory::
   parse(std::string const & spec, wbc::ServoInspector * servo_inspector)
   {
+    std::string param_prefix("/pr2_stanford_wbc/");
     std::string node_home("~");
     std::string urdf_param_name("/robot_description");
     std::string joint_states_topic_name("/joint_states");
+    bool init_ros_please(true);
+    bool disable_ros_sigint(true);
     
     // XXXX to do: implement spec parsing...
     //...    sfl::splitstring(spec, '+', net_spec, channel_spec);
     
+    if (init_ros_please) {
+      int argc(1);
+      char * argv[1];
+      argv[0] = strdup("wbc_rosrob_plugin");
+      if (disable_ros_sigint) {
+	ros::init(argc, argv, "wbc_rosrob_plugin", ros::init_options::NoSigintHandler);
+      }
+      else {
+	ros::init(argc, argv, "wbc_rosrob_plugin");
+      }
+      free(argv[0]);
+    }
+    
     ros::NodeHandle ros_node(node_home);
     Robot * ros_robot(new wbc_rosrob_plugin::Robot(ros_node,
+						   param_prefix,
 						   urdf_param_name,
 						   joint_states_topic_name));
     return ros_robot;

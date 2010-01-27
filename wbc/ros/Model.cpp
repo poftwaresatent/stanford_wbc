@@ -43,9 +43,9 @@ namespace wbcros {
   
   
   Model::
-  Model()
-    : tao_root_param_name_("tao_root_name"),
-      active_links_param_name_("active_links"),
+  Model(std::string const & param_prefix)
+    : tao_root_param_name_(param_prefix + "tao_root_name"),
+      active_links_param_name_(param_prefix + "active_links"),
       tao_root_node_(0),
       branching_(0),
       control_model_(0)
