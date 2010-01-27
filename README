@@ -2,23 +2,25 @@
 		Stanford Whole-Body Control Framework
 		 http://stanford-wbc.sourceforge.net/
 
+======================================================================
+Whole-Body Control Framework
+Copyright (c) 1997-2010 Stanford University. All rights reserved.
+Released under LGPLv3.
+See wbc/gpl-3.0.txt and wbc/lgpl-3.0.txt for more information
 ----------------------------------------------------------------------
-Copyright (c) 1997-2009 Stanford University. All rights reserved.
-
-This program is free software: you can redistribute it and/or
-modify it under the terms of the GNU Lesser General Public License
-as published by the Free Software Foundation, either version 3 of
-the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public
-License along with this program.  If not, see
-<http://www.gnu.org/licenses/>
+TAO Dynamics Engine
+Copyright (c) 2005 Arachi, Inc. and Stanford University. All rights reserved.
+Released under MIT License.
+See tao/README for more information
 ----------------------------------------------------------------------
+Networking Mechanisms for Whole-Body Control (wbcnet)
+Copyright (c) 2008-2009 Roland Philippsen <roland DOT philippsen AT gmx DOT net>
+Released under BSD License.
+See wbcnet/README for more information
+----------------------------------------------------------------------
+3rdparty dependencies not hosted in this project have various other
+copyrights and license terms.
+======================================================================
 
 
 = PREREQUISITES =

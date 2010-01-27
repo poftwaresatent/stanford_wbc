@@ -3,6 +3,7 @@
    \namespace wbc::msg concrete message classes for WBC, derived from wbcnet::msg
    \namespace wbcnet asynchronous non-blocking middleware for WBC
    \namespace wbcnet::msg semi-abstract message classes for WBC
+   \namespace wbcnet::imp an implementation sub-namespace that end users can (hopefully) ignore
    \namespace netrob generic network-based wbc::RobotAPI support (plugin)
    \namespace urdf_to_tao utilities for converting URDF models to TAO format
    \namespace wbc_fake_plugin example and testing of WBC plugin support
@@ -14,6 +15,26 @@
    
    \section Introduction
    
-   Blah blah blah
+   The Stanford Whole-Body Control Framework is being developed the <a
+   href="http://ai.stanford.edu/groups/manips/">Stanford AI and
+   Robotics Lab</a>. Its open-source foundations are hosted on
+   Sourceforge as <a
+   href="http://stanford-wbc.sourceforge.net/">Stanford-WBC</a>,
+   including some of its 3rd party dependencies.
+
+   \subsection high_level_entry High-Level Entry Points for Browsing the Documentation
+   
+   - applications/wbcuser.cpp applications/wbcservo.cpp and applications/wbcmodel.cpp are the sources of the three main WBC executables
+   - wbc::BehaviorDescription and wbc::TaskDescription are the base classes for whole-body behaviors
+   - wbc::RobotControlModel is the container that contains all the models and state information that you can use for implementing whole-body tasks
+   - wbc::TaskModelView is the interface that you can use to access dynamic models when they are received from an external model process
+
+   \subsection low_level_entry Low-Level Entry Points for Browsing the Documentation
+   
+   ...under construction...
+   
+   \section README
+   
+   \verbinclude README
    
 */
