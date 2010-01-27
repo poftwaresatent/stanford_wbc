@@ -38,6 +38,22 @@ namespace wbc {
   class RobotControlModel;
   
   
+  /**
+     Abstract interface for "raw" controllers. All they get from the
+     framework is a RobotControlModel and the connection with a
+     RobotAPI. Everything else has to be provided by the
+     implementer.
+     
+     You can add a RawControllerAPI subclass to your plugin, and use
+     the \c rawservo executable to run it. The \c rawservo will take
+     care of plugin loading, network configuration, instantiation of a
+     robot API from the command line, and robot description file
+     parsing.
+     
+     See the plugins/fake/plugin.cpp for an example of registering a
+     RawControllerAPI subclass with the WBC runtime extension
+     infrastructure.
+  */
   class RawControllerAPI
   {
   public:
@@ -52,12 +68,22 @@ namespace wbc {
   };
   
   
+  /**
+     Generic factory for RawControllerAPI subclasses that are default
+     constructible. If you need constructor arguments for your raw
+     controller, you are probably better off copy-paste-adapting the
+     applications/rawservo.cpp file.
+   */
   template<class RawControllerSubclass>
   class RawControllerFactory
     : public wbcnet::Factory<RawControllerSubclass, RawControllerAPI>
   {};
   
   
+  /**
+     A registry of RawControllerFactory instances. This is used by the
+     plugin mechanism to collect all available raw controllers.
+  */
   class RawControllerFactoryRegistry
     : public wbcnet::FactoryRegistry<RawControllerAPI>
   {};

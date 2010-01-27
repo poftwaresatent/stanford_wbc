@@ -40,6 +40,13 @@ namespace wbc {
   class BehaviorFactoryRegistry;
   
   
+  /**
+     Abstract functor API for creating subclasses of
+     BehaviorDescription. Used as a factory by
+     BehaviorParser::Parse(). Having a separate functor API keeps the
+     XML parsing mechanics nicely separated from the behavior
+     construction logic.
+  */
   struct BehaviorConstructionCallback {
     typedef std::multimap<std::string, std::string> dictionary_t;
     
@@ -51,7 +58,10 @@ namespace wbc {
   };
   
   
-  /** Simply logs a message to cout. */
+  /**
+     A "fake" BehaviorConstructionCallback that helps with
+     debugging. It simply writes messages to standard output.
+  */
   struct DebugBehaviorConstructionCallback:
     public BehaviorConstructionCallback {
     virtual void operator () (dictionary_t const & params) const throw(std::runtime_error);
@@ -59,8 +69,9 @@ namespace wbc {
   
   
   /**
-     Use a BehaviorFactoryRegistry instance to populate a vector of
-     BehaviorDescription instances.
+     The "standard" way of creating behaviors while parsing XML
+     files. This implementation uses a BehaviorFactoryRegistry
+     instance to populate a vector of BehaviorDescription instances.
   */
   struct StdBehaviorConstructionCallback
     : public BehaviorConstructionCallback
@@ -85,12 +96,18 @@ namespace wbc {
     */
     virtual void operator () (dictionary_t const & params) const throw(std::runtime_error);
     
-  protected:  
+  protected:
     std::vector<BehaviorDescription*> & m_bvec;
     BehaviorFactoryRegistry const & m_breg;
   };
   
   
+  /**
+     This class does the actual XML parsing, delegating behavior
+     creation to a BehaviorConstructionCallback. We have chosen to use
+     the expat XML parser library as underlying tool because it is
+     very lean, fast, and robust.
+   */
   class BehaviorParser
   {
   public:

@@ -36,6 +36,20 @@ namespace wbc {
   typedef std::list<wbcnet::srv_command_t> command_list_t;
   
   
+  /**
+     Abstract interface for talking to a running servo. The idea is to
+     subdivide all possible requests into three domains: requests can
+     be intended for (i) the servo itself, (ii) on of its behaviors,
+     or (iii) one of the tasks in one of the behaviors.
+     
+     See the documentation in wbcnet/msg/Service.hpp for more
+     details. Especially wbcnet::srv_command_t, wbcnet::srv_result_t,
+     and wbcnet::msg::Service(). As an implementer on server side of
+     the services. you need not worry too much about the networking
+     aspect though. Most importantly, requests come in as IDs plus a
+     vector of integer codes plus a matrix of floating point values,
+     and replies get returned likewise.
+  */
   class Directory
   {
   public:
@@ -80,6 +94,11 @@ namespace wbc {
   };
   
   
+  /**
+     Abstract interface for the blocking communication mode of service
+     request / reply pairs. An example can be found in the anonymous
+     namespace of UserProcess.cpp.
+  */  
   class ServiceTransaction {
   public:
     virtual ~ServiceTransaction() {}
@@ -89,6 +108,12 @@ namespace wbc {
   };
   
   
+  /**
+     Implements the client-side logic of interfacing with a
+     Directory. This class does the marshalling of reuests and
+     unmarshalling of replies. The actual communication is delegated
+     to a ServiceTransaction object.
+  */
   class DirectoryCmdClient
     : public Directory
   {

@@ -41,6 +41,9 @@ namespace wbc {
   class PluginRegistry;
   
   
+  /**
+     Container for things that are required by \c wbcservo and \c wbcmodel.
+  */
   struct attributes
   {
     attributes();

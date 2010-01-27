@@ -75,14 +75,20 @@ namespace wbc {
   };
   
   
+  /**
+     Base class for a registry of robot factories. Here we hardcode
+     the traits to delete the pointers given to the registry.
+   */
   typedef wbcnet::Registry<RobotFactory *,
 			   wbcnet::registry_trait_delete<RobotFactory *> >
   RobotFactoryRegistrySuper;
   
+  
   /**
-     \note Use the superclass' Add() to register RobotFactory
-     instances with this registry. The default constructor adds a
-     couple of builtin factories.
+     Registry of robot factories. Use RobotFactoryRegistrySuper::Add()
+     to register RobotFactory instances with this registry. Given that
+     Robot APIs exist in "normal" and "bidirectional" varieties, we
+     provide two corresponding creation methods here.
   */
   class RobotFactoryRegistry
     : public RobotFactoryRegistrySuper

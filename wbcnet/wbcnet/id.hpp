@@ -56,7 +56,10 @@ namespace wbcnet {
   class IDLookup
   {
   public:
+    /** An exception due to a problem with a name. */
     struct name_error: public std::runtime_error { name_error(std::string const & name); };
+    
+    /** An exception due to a problem with an ID. */
     struct id_error: public std::runtime_error { id_error(unique_id_t id); };
     
     explicit IDLookup(bool auto_assign);
@@ -88,7 +91,10 @@ namespace wbcnet {
   
   namespace idl {
     
+    /** An exception due to a lack of initialization. */
     struct not_initialized: public std::runtime_error { not_initialized(); };
+    
+    /** An exception caused by a conflict during initialization. */
     struct init_conflict: public std::runtime_error { init_conflict(); };
     
     void CreateSingleton() throw(init_conflict);

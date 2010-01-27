@@ -30,7 +30,11 @@
 namespace wbc {
   
   namespace msg {
-
+    
+    /**
+       Instantiation of wbcnet::msg::TaskSpec that simply adds a
+       hardcoded message ID.
+    */
     class TaskSpec : public wbcnet::msg::TaskSpec {
     public:
       TaskSpec() : wbcnet::msg::TaskSpec(wbcnet::msg::TASK_SPEC) {}
