@@ -21,3 +21,6 @@ target_link_libraries (testProcess Stanford_WBC)
 
 add_executable (testBehaviorParser testBehaviorParser.cpp)
 target_link_libraries (testBehaviorParser Stanford_WBC)
+
+add_executable (testDtorCheck testDtorCheck.cpp)
+target_link_libraries (testDtorCheck Stanford_WBC)
