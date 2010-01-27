@@ -88,6 +88,12 @@ if (HAVE_XMLRPC)
   list (APPEND LIBS XmlRpc)
 endif (HAVE_XMLRPC)
 
+if (HAVE_ROS)
+  list (APPEND SRCS ros_support/Model.cpp)
+####  list (APPEND LIBS XmlRpc)
+endif (HAVE_ROS)
+
+
 add_library (Stanford_WBC SHARED ${SRCS})
 
 target_link_libraries (Stanford_WBC ${LIBS})
