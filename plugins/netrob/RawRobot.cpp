@@ -28,6 +28,7 @@
 #include <saimatrix/SAIMatrix.h>
 #include <wbcnet/log.hpp>
 #include <wbcnet/strutil.hpp>
+#include <vector>
 #include <sys/time.h>
 
 using namespace sfl;

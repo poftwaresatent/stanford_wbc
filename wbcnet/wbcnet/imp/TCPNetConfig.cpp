@@ -34,6 +34,7 @@
 #include <wbcnet/strutil.hpp>
 #include <wbcnet/log.hpp>
 #include <iostream>
+#include <vector>
 
 using namespace std;
 

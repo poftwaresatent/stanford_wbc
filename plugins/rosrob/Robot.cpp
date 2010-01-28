@@ -26,7 +26,11 @@
 #include "Robot.hpp"
 #include <saimatrix/SAIVector.h>
 #include <saimatrix/SAIMatrix.h>
+
+// Quick hack around build sys bug: the rosrob plugin depends on ROS, which has log4cxx.
+#define HAVE_LOG4CXX
 #include <wbcnet/log.hpp>
+
 #include <wbcnet/strutil.hpp>
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>

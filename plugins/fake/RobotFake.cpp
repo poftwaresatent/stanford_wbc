@@ -29,6 +29,8 @@
 #include <wbcnet/strutil.hpp>
 #include <wbcnet/log.hpp>
 #include <sstream>
+#include <vector>
+
 #ifdef WIN32
 #include "wbcnet/win32_compat.hpp"
 #else

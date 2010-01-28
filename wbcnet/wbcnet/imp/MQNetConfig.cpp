@@ -33,6 +33,7 @@
 #include <wbcnet/MQWrap.hpp>
 #include <wbcnet/strutil.hpp>
 #include <wbcnet/log.hpp>
+#include <vector>
 
 using namespace std;
 
