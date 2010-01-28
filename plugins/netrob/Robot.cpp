@@ -121,7 +121,13 @@ namespace netrob {
 		   << wbcnet::muldex_status_str(ms) << " (in BLOCKING mode)");
 	return false;
       }
-      if (ms.muldex != wbcnet::muldex_status::TRY_AGAIN) {
+      if (ms.com == wbcnet::COM_TRY_AGAIN) {
+	LOG_DEBUG (logger,
+		  "netrob::Robot::readSensors(): m_muldex.DemuxOne() said "
+		  << wbcnet::muldex_status_str(ms) << " (which is OK because we are in NON-blocking mode)");
+	// keep working after the else block
+      }
+      else {
 	LOG_ERROR (logger,
 		   "netrob::Robot::readSensors(): m_muldex.DemuxOne() said "
 		   << wbcnet::muldex_status_str(ms) << " (in NON-blocking mode)");
@@ -138,7 +144,7 @@ namespace netrob {
       // size... which they might or might not, depending on whether
       // the caller has used the robot model to correctly initialize
       // the sizes.
-      LOG_INFO (logger, "netrob::Robot::readSensors(): no robot state yet (in NON-blocking mode)");
+      LOG_DEBUG (logger, "netrob::Robot::readSensors(): no robot state yet (in NON-blocking mode)");
       jointPositions.zero();
       jointVelocities.zero();
       acquisition_time.tv_sec = 0;
@@ -188,7 +194,13 @@ namespace netrob {
 		   << wbcnet::muldex_status_str(ms) << " (in BLOCKING mode)");
 	return false;
       }
-      if (ms.muldex != wbcnet::muldex_status::TRY_AGAIN) {
+      if (ms.com == wbcnet::COM_TRY_AGAIN) {
+	LOG_DEBUG (logger,
+		  "netrob::Robot::writeCommand(): muldex.Mux() said "
+		  << wbcnet::muldex_status_str(ms) << " (which is OK because we are in NON-blocking mode)");
+	return true;
+      }
+      else {
 	LOG_ERROR (logger,
 		   "netrob::Robot::writeCommand(): muldex.Mux() said "
 		   << wbcnet::muldex_status_str(ms) << " (in NON-blocking mode)");
@@ -250,7 +262,13 @@ namespace netrob {
 		   << wbcnet::muldex_status_str(ms) << " (in BLOCKING mode)");
 	return false;
       }
-      if (ms.muldex != wbcnet::muldex_status::TRY_AGAIN) {
+      if (ms.com == wbcnet::COM_TRY_AGAIN) {
+	LOG_DEBUG (logger,
+		  "netrob::Robot::writeSensors(): muldex.Mux() said "
+		  << wbcnet::muldex_status_str(ms) << " (which is OK because we are in NON-blocking mode)");
+	return true;
+      }
+      else {
 	LOG_ERROR (logger,
 		   "netrob::Robot::writeSensors(): muldex.Mux() said "
 		   << wbcnet::muldex_status_str(ms) << " (in NON-blocking mode)");
@@ -278,7 +296,13 @@ namespace netrob {
 		   << wbcnet::muldex_status_str(ms) << " (in BLOCKING mode)");
 	return false;
       }
-      if (ms.muldex != wbcnet::muldex_status::TRY_AGAIN) {
+      if (ms.com == wbcnet::COM_TRY_AGAIN) {
+	LOG_DEBUG (logger,
+		  "netrob::Robot::readCommand(): m_muldex.DemuxOne() said "
+		  << wbcnet::muldex_status_str(ms) << " (which is OK because we are in NON-blocking mode)");
+	// keep working after the else block
+      }
+      else {
 	LOG_ERROR (logger,
 		   "netrob::Robot::readCommand(): m_muldex.DemuxOne() said "
 		   << wbcnet::muldex_status_str(ms) << " (in NON-blocking mode)");
@@ -295,7 +319,7 @@ namespace netrob {
       // size... which they might or might not, depending on whether
       // the caller has used the robot model to correctly initialize
       // the sizes.
-      LOG_INFO (logger, "netrob::Robot::readSensors(): no servo command yet (in NON-blocking mode)");
+      LOG_DEBUG (logger, "netrob::Robot::readCommand(): no servo command yet (in NON-blocking mode)");
       command.zero();
       return true;
     }
@@ -315,16 +339,31 @@ namespace netrob {
   Robot * Factory::
   parse(std::string const & spec, wbc::ServoInspector * servo_inspector)
   {
-    string net_spec, channel_spec;
-    sfl::splitstring(spec, '+', net_spec, channel_spec);
-    if (net_spec.empty()) {
-      net_spec = "mq";
+    vector<string> token;
+    sfl::tokenize(spec, '+', token);
+    
+    string mode_spec("b");
+    string net_spec("mq:b");
+    string channel_spec("netrob");
+    sfl::token_to(token, 0, mode_spec);
+    sfl::token_to(token, 1, net_spec);
+    sfl::token_to(token, 2, channel_spec);
+    
+    bool blocking;
+    if (("b" == mode_spec) || ("" == mode_spec)) {
+      blocking = true;
     }
-    if (channel_spec.empty()) {
-      channel_spec = "netrob";
+    else if ("n" == mode_spec) {
+      blocking = false;
     }
+    else {
+      LOG_ERROR (logger,
+		 "netrob::Factory::parse(" << spec << "): invalid mode_spec \"" << mode_spec
+		 << "\" (should be 'b', 'n', or '')");
+      return 0;
+    }
+    
     wbcnet::NetConfig * netconf;
-    bool blocking(true);	// XXXX to do: add this to spec parsing
     try {
       netconf = wbcnet::NetConfig::Create(net_spec);
       LOG_INFO (logger,
@@ -344,8 +383,9 @@ namespace netrob {
   void Factory::
   dumpHelp(std::string const & prefix, std::ostream & os) const
   {
-    os << prefix << "spec = net_spec '+' channel_spec\n"
-       << prefix << "  default = mq+netrob\n"
+    os << prefix << "spec = mode_spec '+' net_spec '+' channel_spec\n"
+       << prefix << "  default = b+mq:b+netrob\n"
+       << prefix << "  mode_spec is 'b' for blocking and 'n' for non-blocking\n"
        << prefix << "  net_spec is passed to wbcnet::NetConfig::Create()\n"
        << prefix << "  channel_spec is passed to wbcnet::NetConfig::CreateChannel()\n";
   }

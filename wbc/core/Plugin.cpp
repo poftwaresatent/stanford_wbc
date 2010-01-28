@@ -124,17 +124,17 @@ namespace wbc {
   size_t PluginRegistry::
   SearchAndLoadPlugins()
   {
-    LOG_DEBUG (logger, "wbc::PluginRegistry::SearchAndLoadPlugins()");
+    LOG_TRACE (logger, "wbc::PluginRegistry::SearchAndLoadPlugins()");
     
     size_t count(0);
     for (listing_t::const_iterator dir(m_search_directories.begin());
 	 dir != m_search_directories.end(); ++dir) {
       
-      LOG_DEBUG (logger, "  directory: " << *dir);
+      LOG_TRACE (logger, "  directory: " << *dir);
       
       DIR * dirp(opendir(dir->c_str()));
       if ( ! dirp) {
-	LOG_WARN (logger,
+	LOG_INFO (logger,
 		       "wbc::PluginRegistry::SearchAndLoadPlugins(): opendir("  << *dir
 		       << "): " << strerror(errno));
 	continue;
@@ -142,10 +142,10 @@ namespace wbc {
       
       for (struct dirent * dent(readdir(dirp)); 0 != dent; dent = readdir(dirp)) {
 	std::string const name(dent->d_name);
-	LOG_DEBUG (logger, "  entry: \"" << name << "\"");
+	LOG_TRACE (logger, "  entry: \"" << name << "\"");
 	// XXXX simplistic matching: has to start with "lib"
 	if (0 != strncmp("lib", name.c_str(), 3)) {
-	  LOG_DEBUG (logger, "  entry does not start with \"lib\"");
+	  LOG_TRACE (logger, "  entry does not start with \"lib\"");
 	  continue;
 	}
 	try {
