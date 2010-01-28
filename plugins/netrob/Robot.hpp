@@ -64,8 +64,27 @@ namespace netrob {
 			      SAIMatrix const * opt_force);
     virtual bool readCommand(SAIVector & command);
     
-//     size_t computeStateAgeMS() const;
-//     size_t computeCommandAgeMS() const;
+    /**
+       Check if outgoing communication was successful. Useful in
+       non-blocking mode, if you need to know whether data has
+       actually gone out.
+       
+       \return True if the last sent message went through. This refers
+       to either writeCommand() or writeSensors(), whichever you
+       called before.
+    */
+    bool sendOk() const;
+    
+    /**
+       Check if incoming communication was successful. Useful in
+       non-blocking mode, if you need to know whether data has
+       actually come in.
+       
+       \return True if the last attempt to receive a message was
+       successful. This refers to either readSensors() or
+       readCommand(), whichever you called before.
+    */
+    bool receiveOk() const;
     
     
   protected:
@@ -81,6 +100,8 @@ namespace netrob {
     wbcnet::NetConfig * m_net_config;
     std::string const m_channel_spec;
     wbcnet::Channel * m_channel;
+    bool m_send_ok;
+    bool m_receive_ok;
   };
   
   

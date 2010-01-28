@@ -66,7 +66,9 @@ namespace netrob {
       m_muldex(-1, -1, wbcnet::ENDIAN_DETECT),
       m_net_config(net_config),
       m_channel_spec(channel_spec),
-      m_channel(0)
+      m_channel(0),
+      m_send_ok(false),
+      m_receive_ok(false)
   {
     m_muldex.SetHandler(wbcnet::msg::ROBOT_STATE, new MessageHandler(this));
     m_muldex.SetHandler(wbcnet::msg::SERVO_COMMAND, new MessageHandler(this));
@@ -114,7 +116,11 @@ namespace netrob {
     
     wbcnet::muldex_status const ms(m_muldex.DemuxOne(m_channel));
     
-    if (ms.muldex != wbcnet::muldex_status::SUCCESS) {
+    if (ms.muldex == wbcnet::muldex_status::SUCCESS) {
+      m_receive_ok = true;
+    }
+    else {
+      m_receive_ok = false;
       if (m_blocking) {
 	LOG_ERROR (logger,
 		   "netrob::Robot::readSensors(): m_muldex.DemuxOne() said "
@@ -187,7 +193,11 @@ namespace netrob {
     
     wbcnet::muldex_status const ms(m_muldex.Mux(m_channel, *m_servo_command));
     
-    if (ms.muldex != wbcnet::muldex_status::SUCCESS) {
+    if (ms.muldex == wbcnet::muldex_status::SUCCESS) {
+      m_send_ok = true;
+    }
+    else {
+      m_send_ok = false;
       if (m_blocking) {
 	LOG_ERROR (logger,
 		   "netrob::Robot::writeCommand(): muldex.Mux() said "
@@ -255,7 +265,11 @@ namespace netrob {
     
     wbcnet::muldex_status const ms(m_muldex.Mux(m_channel, *m_robot_state));
     
-    if (ms.muldex != wbcnet::muldex_status::SUCCESS) {
+    if (ms.muldex == wbcnet::muldex_status::SUCCESS) {
+      m_send_ok = true;
+    }
+    else {
+      m_send_ok = false;
       if (m_blocking) {
 	LOG_ERROR (logger,
 		   "netrob::Robot::writeSensors(): muldex.Mux() said "
@@ -289,7 +303,11 @@ namespace netrob {
     
     wbcnet::muldex_status const ms(m_muldex.DemuxOne(m_channel));
     
-    if (ms.muldex != wbcnet::muldex_status::SUCCESS) {
+    if (ms.muldex == wbcnet::muldex_status::SUCCESS) {
+      m_receive_ok = true;
+    }
+    else {
+      m_receive_ok = false;
       if (m_blocking) {
 	LOG_ERROR (logger,
 		   "netrob::Robot::readCommand(): m_muldex.DemuxOne() said "
