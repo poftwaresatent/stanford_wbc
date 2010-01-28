@@ -73,7 +73,7 @@ namespace netrob {
        to either writeCommand() or writeSensors(), whichever you
        called before.
     */
-    bool sendOk() const;
+    inline bool sendOk() const { return m_send_ok; }
     
     /**
        Check if incoming communication was successful. Useful in
@@ -84,7 +84,7 @@ namespace netrob {
        successful. This refers to either readSensors() or
        readCommand(), whichever you called before.
     */
-    bool receiveOk() const;
+    inline bool receiveOk() const { return m_receive_ok; }
     
     
   protected:
