@@ -50,7 +50,8 @@ namespace netrob {
   public:
     Robot(/** Will be deleted in the dtor */
 	  wbcnet::NetConfig * net_config,
-	  std::string const & channel_spec);
+	  std::string const & channel_spec,
+	  bool blocking);
     
     virtual ~Robot();
     
@@ -63,7 +64,16 @@ namespace netrob {
 			      SAIMatrix const * opt_force);
     virtual bool readCommand(SAIVector & command);
     
+//     size_t computeStateAgeMS() const;
+//     size_t computeCommandAgeMS() const;
+    
+    
+  protected:
+    friend class MessageHandler;
+    
     bool lazyCreateChannel();
+    
+    bool const m_blocking;
     
     wbc::msg::RobotState * m_robot_state;
     wbc::msg::ServoCommand * m_servo_command;
