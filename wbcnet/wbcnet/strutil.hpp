@@ -134,7 +134,7 @@ namespace sfl {
   size_t tokenize(std::string const & input, char separator, tokenlist_t & output) {
     std::string head;
     std::string tail(input);
-    while (splitstring(tail, ':', head, tail))
+    while (splitstring(tail, separator, head, tail))
       output.push_back(head);
     output.push_back(head);
     return output.size();
