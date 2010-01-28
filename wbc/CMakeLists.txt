@@ -89,8 +89,10 @@ if (HAVE_XMLRPC)
 endif (HAVE_XMLRPC)
 
 if (HAVE_ROS)
-  list (APPEND SRCS ros/Model.cpp)
-####  list (APPEND LIBS XmlRpc)
+  list (APPEND SRCS
+    ros/Model.cpp
+    ros/BehaviorLibrary.cpp
+    )
 endif (HAVE_ROS)
 
 
