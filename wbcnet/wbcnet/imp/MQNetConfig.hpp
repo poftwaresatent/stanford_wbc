@@ -50,10 +50,13 @@ namespace wbcnet {
   public:
     typedef NetConfig::process_t process_t;
   
-    size_t const msg_size;
-    std::string const prefix;
-  
-    MQNetConfig(/** You should probably say "2048" here (maybe 1024 or
+    MQNetConfig(/** Message queues can be opened in blocking or
+		    non-blocking mode. Blocking mode tends to be
+		    appropriate for hooking robots up with the servo,
+		    but otherwise it is recommended to use
+		    non-blocking mode. */
+		bool blocking,
+		/** You should probably say "2048" here (maybe 1024 or
 		    even 512 is already enough for low degree of
 		    freedom robots). See
 		    /proc/sys/fs/mqueue/msgsize_max and man
@@ -71,6 +74,11 @@ namespace wbcnet {
     
     virtual wbcnet::Channel * CreateChannel(std::string const & connection_spec) const
       throw(std::runtime_error);
+
+  protected:
+    bool const m_blocking;
+    size_t const m_msg_size;
+    std::string const m_prefix;
   };
   
 }

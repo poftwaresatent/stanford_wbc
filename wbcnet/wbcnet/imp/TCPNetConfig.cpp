@@ -34,6 +34,7 @@
 #include <wbcnet/strutil.hpp>
 #include <wbcnet/log.hpp>
 #include <iostream>
+#include <vector>
 
 using namespace std;
 
@@ -200,20 +201,37 @@ namespace wbcnet {
     
     in_port_t port;
     if ( ! sfl::token_to(token, 0, port)) {
-      throw runtime_error("TCPServerNetConfig::CreateChannel(): give me at least a port number to use!");
+      throw runtime_error("TCPServerNetConfig::CreateChannel(" + connection_spec
+			  + "): give me at least a port number to use!");
     }
-    string bind_ip("*");
+    string bind_ip;
     sfl::token_to(token, 1, bind_ip);
-    static bool const is_nonblocking(false); // maybe make this configurable?
+    if (bind_ip.empty()) {
+      bind_ip = "*";
+    }
+    bool blocking(true);
+    if (token.size() > 2) {
+      if (("b" == token[2]) || ("" == token[2])) {
+	blocking = true;
+      }
+      else if ("n" == token[2]) {
+	blocking = false;
+      }
+      else {
+	throw runtime_error("TCPServerNetConfig::CreateChannel(" + connection_spec
+			    + "): invalid mode_spec \"" + token[2]
+			    + "\" (say 'b', 'n', or '')");
+      }
+    }
     
     wbcnet::SoServer * sos(new wbcnet::SoServer(0, -1));    
     LOG_TRACE (logger,
 	       "TCPServerNetConfig::CreateChannel(" << connection_spec << "): calling sos->Open("
-	       << port << ", " << sfl::to_string(is_nonblocking) << ", " << bind_ip << ")");
-    if ( ! sos->Open(port, is_nonblocking, bind_ip)) {
+	       << port << ", " << sfl::to_string(! blocking) << ", " << bind_ip << ")");
+    if ( ! sos->Open(port, ! blocking, bind_ip)) {
       delete sos;
       throw runtime_error("TCPServerNetConfig::CreateChannel(" + connection_spec + "): sos->Open("
-			  + sfl::to_string(port) + ", " + sfl::to_string(is_nonblocking) + ", "
+			  + sfl::to_string(port) + ", " + sfl::to_string(! blocking) + ", "
 			  + bind_ip + ") failed");
     }
     
@@ -294,18 +312,35 @@ namespace wbcnet {
     
     in_port_t port;
     if ( ! sfl::token_to(token, 0, port)) {
-      throw runtime_error("TCPClientNetConfig::CreateChannel(): give me at least a port number to use!");
+      throw runtime_error("TCPClientNetConfig::CreateChannel(" + connection_spec
+			  + "): give me at least a port number to use!");
     }
-    string server_ip("127.0.0.1");
+    string server_ip;
     sfl::token_to(token, 1, server_ip);
-    static bool const is_nonblocking(false); // maybe make this configurable?
+    if (server_ip.empty()) {
+      server_ip = "127.0.0.1";
+    }
+    bool blocking(true);
+    if (token.size() > 2) {
+      if (("b" == token[2]) || ("" == token[2])) {
+	blocking = true;
+      }
+      else if ("n" == token[2]) {
+	blocking = false;
+      }
+      else {
+	throw runtime_error("TCPClientNetConfig::CreateChannel(" + connection_spec
+			    + "): invalid mode_spec \"" + token[2]
+			    + "\" (say 'b', 'n', or '')");
+      }
+    }
     
     wbcnet::SoClient * soc(new wbcnet::SoClient(0, -1));
-    if ( ! soc->Open(port, is_nonblocking, server_ip)) {
+    if ( ! soc->Open(port, ! blocking, server_ip)) {
       delete soc;
       throw runtime_error("TCPClientNetConfig::CreateChannel(" + connection_spec
 			  + "): soc->Open(" + sfl::to_string(port)
-			  + ", " + sfl::to_string(is_nonblocking) + ", " + server_ip
+			  + ", " + sfl::to_string(! blocking) + ", " + server_ip
 			  + ") failed");
     }
     

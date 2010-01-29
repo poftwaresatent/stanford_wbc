@@ -73,8 +73,21 @@ namespace wbcnet {
 #else // WBCNET_HAVE_MQUEUE
       vector<string> token;
       sfl::tokenize(spec, ':', token);
+      bool blocking(false);
+      if (token.size() > 1) {
+	if ("b" == token[0]) {
+	  blocking = true;
+	}
+	else if (("n" == token[0]) || ("" == token[0])) {
+	  blocking = false;
+	}
+	else {
+	  throw runtime_error("wbcnet::NetConfig::Create(" + com + "): invalid mode \"" + token[0]
+			      + "\" (use 'b', 'n', or '')");
+	}
+      }
       string prefix;
-      if ( ! sfl::token_to(token, 0, prefix)) {
+      if ( ! sfl::token_to(token, 1, prefix)) {
 	// no prefix specified, try some environment variables, or
 	// fallback to some hardcoded value
 	char const * username(getenv("USER"));
@@ -86,9 +99,11 @@ namespace wbcnet {
 	  prefix = username;
       }
       size_t msg_size;
-      if ( ! sfl::token_to(token, 1, msg_size))
+      if ( ! sfl::token_to(token, 2, msg_size))
 	msg_size = 2048;
-      cfg = new MQNetConfig(msg_size, prefix);
+      LOG_INFO (logger, "wbcnet::NetConfig::Create(): creating MQNetConfig("
+		<< sfl::to_string(blocking) << ", " << msg_size << ", " << prefix << ")");
+      cfg = new MQNetConfig(blocking, msg_size, prefix);
 #endif // WBCNET_HAVE_MQUEUE
     }
     

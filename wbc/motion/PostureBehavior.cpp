@@ -27,6 +27,7 @@
 #include <wbc/core/Kinematics.hpp>
 #include <wbcnet/msg/Service.hpp>
 #include <wbcnet/log.hpp>
+#include <sstream>
 
 static wbcnet::logger_t logger(wbcnet::get_logger("wbc"));
 
