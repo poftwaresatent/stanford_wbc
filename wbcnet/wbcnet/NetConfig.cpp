@@ -73,12 +73,12 @@ namespace wbcnet {
 #else // WBCNET_HAVE_MQUEUE
       vector<string> token;
       sfl::tokenize(spec, ':', token);
-      bool blocking(true);
+      bool blocking(false);
       if (token.size() > 1) {
-	if (("b" == token[0]) || ("" == token[0])) {
+	if ("b" == token[0]) {
 	  blocking = true;
 	}
-	else if ("n" == token[0]) {
+	else if (("n" == token[0]) || ("" == token[0])) {
 	  blocking = false;
 	}
 	else {
