@@ -330,22 +330,24 @@ namespace wbcnet {
     
     
     void Service::
-    InitSetGoal(double const * goal_coordinates, size_t n_coordinates)
+    InitSetGoal(int behaviorID, double const * goal_coordinates, size_t n_coordinates)
     {
-      InitRequest(2, n_coordinates, 1);
+      InitRequest(3, n_coordinates, 1);
       code[0] = SRV_BEHAVIOR_DOMAIN;
-      code[1] = SRV_SET_GOAL;
+      code[1] = behaviorID;
+      code[2] = SRV_SET_GOAL;
       for (size_t ii(0); ii < n_coordinates; ++ii)
 	matrix.GetElement(ii, 0) = goal_coordinates[ii];
     }
     
     
     void Service::
-    InitSetGains(double const * gains, size_t n_gains)
+    InitSetGains(int behaviorID, double const * gains, size_t n_gains)
     {
-      InitRequest(2, n_gains, 1);
+      InitRequest(3, n_gains, 1);
       code[0] = SRV_BEHAVIOR_DOMAIN;
-      code[1] = SRV_SET_GAINS;
+      code[1] = behaviorID;
+      code[2] = SRV_SET_GAINS;
       for (size_t ii(0); ii < n_gains; ++ii)
 	matrix.GetElement(ii, 0) = gains[ii];
     }

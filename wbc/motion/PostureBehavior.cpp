@@ -62,8 +62,8 @@ namespace wbc {
     
     whole_body_posture_.robotControlModel(robmodel);
     whole_body_posture_.goalPostureConfig(robModel()->branching()->defaultJointPositions());
-    whole_body_posture_.propGain(400.0);
-    whole_body_posture_.diffGain(15.0);
+    whole_body_posture_.propGain(100.0);
+    whole_body_posture_.diffGain(0.0);
     whole_body_posture_.maxVel(0.85);//rad/s
     taskSetOperational_.addTask(&whole_body_posture_);
     registerTaskSet(&taskSetOperational_);
@@ -86,6 +86,28 @@ namespace wbc {
     }
     whole_body_posture_.goalPostureConfig(goal);
     activeTaskSet_ = &taskSetOperational_;
+    return wbcnet::SRV_SUCCESS;
+  }
+  
+  
+  int PostureBehavior::
+  handleSetGains(SAIVector const & gains)
+  {
+    if (0 == gains.size()) {
+      return wbcnet::SRV_INVALID_DATA;
+    }
+    if (1 == gains.size()) {
+      if (0 > gains[0]) {
+	return wbcnet::SRV_INVALID_DATA;
+      }
+      whole_body_posture_.propGain(gains[0]);
+      return wbcnet::SRV_SUCCESS;
+    }
+    if ((0 > gains[0]) || (0 > gains[1])) {
+      return wbcnet::SRV_INVALID_DATA;
+    }
+    whole_body_posture_.propGain(gains[0]);
+    whole_body_posture_.diffGain(gains[1]);
     return wbcnet::SRV_SUCCESS;
   }
   

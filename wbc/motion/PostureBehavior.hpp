@@ -55,6 +55,7 @@ namespace wbc {
     
     virtual int handleKey(int keycode);
     virtual int handleSetGoal(SAIVector const & goal);
+    virtual int handleSetGains(SAIVector const & gains);
     
   protected:
     virtual void loadMovementPrimitives( RobotControlModel* ) throw(std::runtime_error);
