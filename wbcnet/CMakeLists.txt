@@ -234,6 +234,8 @@ endif (CMAKE_SYSTEM_NAME MATCHES OpenBSD)
 if (${WBCNET_HAVE_MQUEUE})
   add_executable (testMQWrap test/testMQWrap.cpp)
   target_link_libraries (testMQWrap wbcnet ${WBCNET_LIBS})
+  add_executable (testMQSpeed test/testMQSpeed.cpp)
+  target_link_libraries (testMQSpeed wbcnet ${WBCNET_LIBS})
 endif (${WBCNET_HAVE_MQUEUE})
 
 if (WBCNET_HAVE_LOG4CXX)

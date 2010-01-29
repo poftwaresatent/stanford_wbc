@@ -183,8 +183,8 @@ namespace wbc {
        The user pressed a key on the keyboard (ncurses mode), encoded
        as a wbcnet::SRV_KEY_PRESS commandID to handleCommand(). Look
        at <curses.h> for the symbolic names of the key codes. The
-       default here in the superclass just returns
-       wbcnet::SRV_NOT_IMPLEMENTED.
+       default here in the superclass returns
+       wbcnet::SRV_ABSTRACT_METHOD.
      
        ATTENTION if your subclass overrides handleCommand(), then
        handleKey() will NOT get called UNLESS your handleCommand()
@@ -207,22 +207,30 @@ namespace wbc {
     /**
        The user requests a goal change, encoded as a
        wbcnet::SRV_SET_GOAL commandID to handleCommand(). Implementers
-       should check the dimension of the matrix before using it. The
-       default implementation returns wbcnet::SRV_NOT_IMPLEMENTED.
-       
-       \note For some reason, the goal is encoded as a one-row matrix
-       in the original request to handleCommand().
+       should check the dimension of the vector before using it. The
+       default implementation returns wbcnet::SRV_ABSTRACT_METHOD.
        
        \return wbcnet::srv_status_t
      */
     virtual int handleSetGoal(SAIVector const & goal);
     
     /**
+       The user requests a change to the gains, encoded as a
+       wbcnet::SRV_SET_GAINS commandID to
+       handleCommand(). Implementers should check the dimension of the
+       vector before using it. The default implementation returns
+       wbcnet::SRV_ABSTRACT_METHOD.
+       
+       \return wbcnet::srv_status_t
+     */
+    virtual int handleSetGains(SAIVector const & gains);
+    
+    /**
        The user requests the Jacobian, encoded as a
        wbcnet::SRV_GET_JACOBIAN commandID to
        handleCommand(). Implementers should resize and fill in the
        jacobian parameter. The default implementation returns
-       wbcnet::SRV_NOT_IMPLEMENTED.
+       wbcnet::SRV_ABSTRACT_METHOD.
        
        \return wbcnet::srv_status_t
      */
