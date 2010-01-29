@@ -23,6 +23,8 @@ endif (COMMAND cmake_policy)
 #   the environment. As a side effect, include and link directories
 #   will be adjusted to find gtest, xmlrpc++, log4cxx, expat, and
 #   libnetwrapper headers and libraries.
+# - if LOG4CXX_DIR==DISABLED, then it explicitly sets the
+#   DISABLE_LOGGING preprocessor symbol
 # - in addition, ROS_BINDEPS_PATH is used (if available) to provide
 #   LOG4CXX_DIR, if that is still undefined after the pther checks.
 #
@@ -79,10 +81,15 @@ macro (wbc_getvars)
     set (LOG4CXX_DIR $ENV{ROS_BINDEPS_PATH})
   endif (NOT LOG4CXX_DIR)
   if (LOG4CXX_DIR)
-    message ("[WBC] LOG4CXX_DIR is set to ${LOG4CXX_DIR}")
-    list (APPEND CMAKE_REQUIRED_INCLUDES ${LOG4CXX_DIR}/include ${LOG4CXX_DIR})
-    include_directories (${LOG4CXX_DIR}/include ${LOG4CXX_DIR})
-    link_directories (${LOG4CXX_DIR}/lib ${LOG4CXX_DIR})
+    if (LOG4CXX_DIR STREQUAL "DISABLED")
+      message ("[WBC] logging has been explicitly disabled")
+      add_definitions (-DDISABLE_LOGGING)
+    else (LOG4CXX_DIR STREQUAL "DISABLED")
+      message ("[WBC] LOG4CXX_DIR is set to ${LOG4CXX_DIR}")
+      list (APPEND CMAKE_REQUIRED_INCLUDES ${LOG4CXX_DIR}/include ${LOG4CXX_DIR})
+      include_directories (${LOG4CXX_DIR}/include ${LOG4CXX_DIR})
+      link_directories (${LOG4CXX_DIR}/lib ${LOG4CXX_DIR})
+    endif (LOG4CXX_DIR STREQUAL "DISABLED")
   endif (LOG4CXX_DIR)
 endmacro (wbc_getvars)
 
@@ -104,6 +111,9 @@ endmacro (wbc_getvars)
 #   - HAVE_GTEST
 #   - HAVE_XMLRPC
 #   - HAVE_LOG4CXX
+#     note that if the LOG4CXX_DIR variable is set to DISABLED, then
+#     DISABLE_LOGGING will be set regardless of whether log4cxx is
+#     installed on your system.
 #   - HAVE_CURSES
 #   - HAVE_EXPAT
 #   - HAVE_NETWRAP
@@ -194,14 +204,19 @@ macro (wbc_init PROJECT_NAME)
   # try to find 3rdparty stuff
   include (CheckIncludeFileCXX)
   
-  check_include_file_cxx (log4cxx/logger.h HAVE_LOG4CXX)
-  if (HAVE_LOG4CXX)
-    message ("[WBC] found log4cxx headers")
-    add_definitions (-DHAVE_LOG4CXX)
-    list (APPEND LIBS log4cxx)
-  else (HAVE_LOG4CXX)
-    message ("[WBC] WARNING did not find log4cxx, will use simplistic logging")
-  endif (HAVE_LOG4CXX)
+  if (LOG4CXX_DIR STREQUAL "DISABLED")
+    message ("[WBC] logging has been explicitly disabled")
+    add_definitions (-DDISABLE_LOGGING)
+  else (LOG4CXX_DIR STREQUAL "DISABLED")
+    check_include_file_cxx (log4cxx/logger.h HAVE_LOG4CXX)
+    if (HAVE_LOG4CXX)
+      message ("[WBC] found log4cxx headers")
+      add_definitions (-DHAVE_LOG4CXX)
+      list (APPEND LIBS log4cxx)
+    else (HAVE_LOG4CXX)
+      message ("[WBC] WARNING did not find log4cxx, will use simplistic logging")
+    endif (HAVE_LOG4CXX)
+  endif (LOG4CXX_DIR STREQUAL "DISABLED")
   
   check_include_file_cxx (curses.h HAVE_CURSES)
   if (${HAVE_CURSES})
