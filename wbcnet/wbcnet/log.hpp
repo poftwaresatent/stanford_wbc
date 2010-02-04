@@ -145,6 +145,7 @@ namespace wbcnet {
 #  include <log4cxx/logger.h>
 
 namespace wbcnet {
+  using log4cxx::Level;
   typedef log4cxx::LoggerPtr logger_t;
   inline logger_t get_root_logger() { return log4cxx::Logger::getRootLogger(); }
   template<typename string_t> logger_t get_logger(string_t const & name) { return log4cxx::Logger::getLogger(name); }

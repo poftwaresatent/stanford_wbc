@@ -27,6 +27,7 @@
 #include <wbc/core/Kinematics.hpp>
 #include <wbcnet/msg/Service.hpp>
 #include <wbcnet/log.hpp>
+#include <wbcnet/strutil.hpp>
 #include <sstream>
 
 static wbcnet::logger_t logger(wbcnet::get_logger("wbc"));
@@ -41,7 +42,8 @@ namespace wbc {
       float_key_(0),
       freeze_key_(0),
       whole_body_posture_("whole_body_posture"),
-      friction_posture_("friction_posture")
+      friction_posture_("friction_posture"),
+      freeze_requested_(true)
   {
   }
   
@@ -49,11 +51,24 @@ namespace wbc {
   void PostureBehavior::
   onUpdate()
   {
+    if (freeze_requested_) {
+      LOG_INFO (logger, "wbc::PostureBehavior::onUpdate(): switching to OPERATIONAL task set (and FREEZE)");
+      whole_body_posture_.goalPostureConfig(robModel()->kinematics()->jointPositions());
+      activeTaskSet_ = &taskSetOperational_;
+      freeze_requested_ = false;
+    }
     whole_body_posture_.onUpdate();
     friction_posture_.onUpdate();
   }
-
-
+  
+  
+  void PostureBehavior::
+  reset()
+  {
+    freeze_requested_ = true;
+  }
+  
+  
   void PostureBehavior::
   loadMovementPrimitives(RobotControlModel * robmodel)
     throw(std::runtime_error)
@@ -124,13 +139,11 @@ namespace wbc {
     }
     
     if ((0 != freeze_key_) && (keycode == freeze_key_)) {
-      LOG_INFO (logger, "wbc::PostureBehavior::handleKey(): switching to OPERATIONAL task set (and FREEZE)");
-      whole_body_posture_.goalPostureConfig(robModel()->kinematics()->jointPositions());
-      activeTaskSet_ = &taskSetOperational_;
+      freeze_requested_ = true;
       return wbcnet::SRV_SUCCESS;
     }
     
-    key_posture_t::const_iterator iposture(key_posture_.find(keycode));
+    key_posture_t::iterator iposture(key_posture_.find(keycode));
     if (key_posture_.end() == iposture) {
       LOG_WARN (logger, "wbc::PostureBehavior::handleKey(): unrecognized keycode");
       //       std::cerr << "wbc::PostureBehavior::handleKey(): unrecognized keycode " << keycode << "\n";
@@ -141,11 +154,20 @@ namespace wbc {
     }
     
     if (iposture->second.size() != robModel()->branching()->numActuatedJoints()) {
-      LOG_ERROR (logger,
-		 "wbc::PostureBehavior::handleKey(): posture for key code " << keycode
-		 << " has invalid size " << iposture->second.size()
-		 << " (should be " << robModel()->branching()->numActuatedJoints() << ")");
-      return wbcnet::SRV_INVALID_DIMENSION;
+      static bool const strict(false);
+      if (strict) {
+	LOG_ERROR (logger,
+		   "wbc::PostureBehavior::handleKey(): posture for key code " << keycode
+		   << " has invalid size " << iposture->second.size()
+		   << " (should be " << robModel()->branching()->numActuatedJoints() << ")");
+	return wbcnet::SRV_INVALID_DIMENSION;
+      }
+      int const oldsize(iposture->second.size());
+      int const newsize(robModel()->branching()->numActuatedJoints());
+      iposture->second.setSize(newsize, false);
+      for (int ii(oldsize); ii < newsize; ++ii) {
+	iposture->second[ii] = 0;
+      }
     }
     
     LOG_INFO (logger, "wbc::PostureBehavior::handleKey(): switching to posture " << keycode);
@@ -199,6 +221,58 @@ namespace wbc {
       LOG_INFO (logger, "wbc::PostureBehavior::handleInit(): registered keycode " << (int) keycode);
       return true;
     }
+    
+    else if ("whole_body_prop_gain" == key) {
+      istringstream is(value);
+      double kp;
+      is >> kp;
+      if ( ! is) {
+	throw runtime_error("wbc::PostureBehavior::handleInit(" + key + ", " + value
+			    + "): kp expected");
+      }
+      if (0 > kp) {
+	throw runtime_error("wbc::PostureBehavior::handleInit(" + key + ", " + value
+			    + "): invalid kp " + sfl::to_string(kp) + " (must be >= zero)");
+      }
+      whole_body_posture_.propGain(kp);
+      LOG_INFO (logger, "wbc::PostureBehavior::handleInit(): kp set to " << kp);
+      return true;
+    }
+    
+    else if ("whole_body_diff_gain" == key) {
+      istringstream is(value);
+      double kv;
+      is >> kv;
+      if ( ! is) {
+	throw runtime_error("wbc::PostureBehavior::handleInit(" + key + ", " + value
+			    + "): kv expected");
+      }
+      if (0 > kv) {
+	throw runtime_error("wbc::PostureBehavior::handleInit(" + key + ", " + value
+			    + "): invalid kv " + sfl::to_string(kv) + " (must be >= zero)");
+      }
+      whole_body_posture_.diffGain(kv);
+      LOG_INFO (logger, "wbc::PostureBehavior::handleInit(): kv set to " << kv);
+      return true;
+    }
+    
+    else if ("whole_body_max_vel" == key) {
+      istringstream is(value);
+      double vmax;
+      is >> vmax;
+      if ( ! is) {
+	throw runtime_error("wbc::PostureBehavior::handleInit(" + key + ", " + value
+			    + "): vmax expected");
+      }
+      if (0 > vmax) {
+	throw runtime_error("wbc::PostureBehavior::handleInit(" + key + ", " + value
+			    + "): invalid vmax " + sfl::to_string(vmax) + " (must be >= zero)");
+      }
+      whole_body_posture_.maxVel(vmax);
+      LOG_INFO (logger, "wbc::PostureBehavior::handleInit(): vmax set to " << vmax);
+      return true;
+    }
+    
     return false;
   }
   
