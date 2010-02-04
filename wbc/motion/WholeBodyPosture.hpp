@@ -48,6 +48,8 @@ namespace wbc {
 
     virtual void robotControlModel( RobotControlModel* ) throw(std::runtime_error); 
 
+    bool enable_vsat_;
+    
   private:
 
     // attributes

@@ -273,6 +273,21 @@ namespace wbc {
       return true;
     }
     
+    else if ("whole_body_enable_vsat" == key) {
+      if ("true" == value) {
+	whole_body_posture_.enable_vsat_ = true;
+      }
+      else if ("false" == value) {
+	whole_body_posture_.enable_vsat_ = false;
+      }
+      else {
+	throw runtime_error("wbc::PostureBehavior::handleInit(" + key + ", " + value
+			    + "): expected 'true' or 'false'");
+      }
+      LOG_INFO (logger, "wbc::PostureBehavior::handleInit(): enable_vsat set to " << value);
+      return true;
+    }
+    
     return false;
   }
   

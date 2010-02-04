@@ -32,7 +32,8 @@
 namespace wbc {
 
   WholeBodyPosture::WholeBodyPosture(std::string const & name)
-    : TaskDescription(name, 400, 40, 0.1, 0)
+    : TaskDescription(name, 400, 40, 0.1, 0),
+      enable_vsat_(false)
   {}
 
 
@@ -62,7 +63,7 @@ namespace wbc {
     //config_.display("actual posture");
 
     // Saturating upon velocity limits
-    if( m_diffGain != 0 ) {
+    if (enable_vsat_ && (m_diffGain != 0)) {
       double satFactor = desDiff.abs() / ( m_maxVel * m_diffGain );
       if( satFactor > 1 ) desDiff.multiply( 1/satFactor );
     }
