@@ -48,6 +48,10 @@ namespace wbc {
     void setFreezeKey(int32_t keycode);
     void addPostureKey(int32_t keycode, SAIVector const & posture);
     
+    /** Freezes the robot. Sets the goal posture to be the current
+	posture and switches to whole body behavior. */
+    virtual void reset();
+    
     virtual bool handleInit(std::string const & key, std::string const & value) throw(std::runtime_error);
     
     virtual TaskSet* activeTaskSet() { return activeTaskSet_; }
@@ -70,6 +74,8 @@ namespace wbc {
     TaskSet* activeTaskSet_;
     WholeBodyPosture whole_body_posture_;
     FrictionPosture friction_posture_;
+    
+    bool freeze_requested_;
   };
   
 }
