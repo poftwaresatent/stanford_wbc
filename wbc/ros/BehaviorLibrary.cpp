@@ -26,8 +26,21 @@
 #include "BehaviorLibrary.hpp"
 #include <wbc/motion/PostureBehavior.hpp>
 #include <wbc/motion/FloatBehavior.hpp>
+#include <wbc/parse/BehaviorParser.hpp>
+#include <wbcnet/strutil.hpp>
+#include <XmlRpcValue.h>
+#include <XmlRpcException.h>
+#include <ros/node_handle.h>
+
 
 namespace wbcros {
+  
+  
+  BehaviorLibrary::
+  BehaviorLibrary(std::string const & param_prefix)
+    : behaviors_param_name_(param_prefix + "behaviors")
+  {
+  }
   
   
   BehaviorLibrary::
@@ -40,10 +53,8 @@ namespace wbcros {
   
   
   void BehaviorLibrary::
-  initDefault(Model & model)
+  initDummy(Model & model)
   {
-    // should use behavior factories from WBC plugins, or some other
-    // runtime configuration mechanism
     wbc::PostureBehavior * posture_behavior(new wbc::PostureBehavior());
     posture_behavior->robotControlModel(model.control_model_);
     posture_behavior->setFloatKey('f');
@@ -100,6 +111,50 @@ namespace wbcros {
     }
     behavior_.push_back(posture_behavior);
     behavior_.push_back(new wbc::FloatBehavior());
+    behavior_.back()->robotControlModel(model.control_model_);
+  }
+  
+  
+  void BehaviorLibrary::
+  initFromParam(Model & model, ros::NodeHandle &nn,
+		wbc::BehaviorFactoryRegistry const & breg) throw(std::runtime_error)
+  {
+    XmlRpc::XmlRpcValue bval;
+    if ( ! nn.getParam(behaviors_param_name_, bval)) {
+      throw std::runtime_error("wbcros::BehaviorLibrary::initFromParam(): invalid behaviors_param_name_ \""
+			       + behaviors_param_name_ + "\"");
+    }
+    
+    try {
+      wbc::StdBehaviorConstructionCallback bcc(behavior_, breg);
+      for (XmlRpc::XmlRpcValue::iterator ib(bval.begin()); ib != bval.end(); ++ib) {
+	wbc::BehaviorConstructionCallback::dictionary_t bparams;
+	bparams.insert(make_pair("type", ib->first));
+	for (int ip(0); ip < ib->second.size(); ++ip) {
+	  string key, value;
+	  sfl::splitstring(ib->second[ip], ' ', key, value);
+	  bparams.insert(make_pair(key, value));
+	}
+	bcc(bparams);
+	ROS_INFO ("wbcros::BehaviorLibrary::initFromParam(): added %s", ib->first.c_str());
+      }
+    }
+    catch (XmlRpc::XmlRpcException const & ee) {
+      std::ostringstream msg;
+      msg << "wbcros::BehaviorLibrary::initFromParam():"
+	  << " XmlRpcException while reading behaviors: "
+	  << ee.getMessage();
+      throw std::runtime_error(msg.str());
+    }
+    
+    if (behavior_.empty()) {
+      throw std::runtime_error("wbcros::BehaviorLibrary::initFromParam(): no behaviors specified");
+    }
+    
+    for (size_t ii(0); ii < behavior_.size(); ++ii) {
+      behavior_[ii]->robotControlModel(model.control_model_);
+      ROS_INFO ("wbcros::BehaviorLibrary::initFromParam(): initialized %s", behavior_[ii]->name.c_str());
+    }
   }
   
 }

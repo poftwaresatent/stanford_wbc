@@ -143,7 +143,7 @@ namespace wbc {
       return wbcnet::SRV_SUCCESS;
     }
     
-    key_posture_t::const_iterator iposture(key_posture_.find(keycode));
+    key_posture_t::iterator iposture(key_posture_.find(keycode));
     if (key_posture_.end() == iposture) {
       LOG_WARN (logger, "wbc::PostureBehavior::handleKey(): unrecognized keycode");
       //       std::cerr << "wbc::PostureBehavior::handleKey(): unrecognized keycode " << keycode << "\n";
@@ -154,11 +154,20 @@ namespace wbc {
     }
     
     if (iposture->second.size() != robModel()->branching()->numActuatedJoints()) {
-      LOG_ERROR (logger,
-		 "wbc::PostureBehavior::handleKey(): posture for key code " << keycode
-		 << " has invalid size " << iposture->second.size()
-		 << " (should be " << robModel()->branching()->numActuatedJoints() << ")");
-      return wbcnet::SRV_INVALID_DIMENSION;
+      static bool const strict(false);
+      if (strict) {
+	LOG_ERROR (logger,
+		   "wbc::PostureBehavior::handleKey(): posture for key code " << keycode
+		   << " has invalid size " << iposture->second.size()
+		   << " (should be " << robModel()->branching()->numActuatedJoints() << ")");
+	return wbcnet::SRV_INVALID_DIMENSION;
+      }
+      int const oldsize(iposture->second.size());
+      int const newsize(robModel()->branching()->numActuatedJoints());
+      iposture->second.setSize(newsize, false);
+      for (int ii(oldsize); ii < newsize; ++ii) {
+	iposture->second[ii] = 0;
+      }
     }
     
     LOG_INFO (logger, "wbc::PostureBehavior::handleKey(): switching to posture " << keycode);
