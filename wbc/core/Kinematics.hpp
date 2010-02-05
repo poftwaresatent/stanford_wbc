@@ -68,7 +68,7 @@ namespace wbc {
      * If no global point is passed, this function will return the
      * Jacobian at the node's joint.
      */
-    SAIMatrix JacobianAtPoint( taoDNode* node, const SAIVector & globalPointOnLink );
+    SAIMatrix JacobianAtPoint( taoDNode const * node, const SAIVector & globalPointOnLink );
   
     // read CoM and Jacobian CoM
     const SAIVector& COM() const { return com_; }
