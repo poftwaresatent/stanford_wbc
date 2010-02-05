@@ -50,8 +50,11 @@ namespace wbc {
 
     bool enable_vsat_;
     
+    SAIVector test_kp;
+    SAIVector test_kd;
+    
   private:
-
+    
     // attributes
     SAIVector velocity_;
     SAIMatrix globalJacobian_;

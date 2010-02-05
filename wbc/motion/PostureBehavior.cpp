@@ -108,21 +108,59 @@ namespace wbc {
   int PostureBehavior::
   handleSetGains(SAIVector const & gains)
   {
-    if (0 == gains.size()) {
+    if (2 > gains.size()) {
       return wbcnet::SRV_INVALID_DATA;
     }
-    if (1 == gains.size()) {
-      if (0 > gains[0]) {
-	return wbcnet::SRV_INVALID_DATA;
+    if (0 > gains[1]) {
+      return wbcnet::SRV_INVALID_DATA;
+    }
+    if ((2 < gains.size()) && (0 > gains[2])) {
+      return wbcnet::SRV_INVALID_DATA;
+    }
+    
+    int const ndof(robModel()->branching()->numJoints());
+    int const index(static_cast<int>(rint(gains[0])));
+    bool reset_others(false);
+    if (index < 0) {
+      reset_others = true;
+      index = -index;
+    }
+    
+    if (index >= ndof) {
+      return wbcnet::SRV_INVALID_DIMENSION;
+    }
+    
+    if (whole_body_posture_.test_kp.size() != ndof) {
+      int const oldsize(whole_body_posture_.test_kp.size());
+      whole_body_posture_.test_kp.setSize(ndof, false);
+      for (int ii(oldsize); ii < ndof; ++ii) {
+	whole_body_posture_.test_kp[ii] = 0;
       }
-      whole_body_posture_.propGain(gains[0]);
-      return wbcnet::SRV_SUCCESS;
     }
-    if ((0 > gains[0]) || (0 > gains[1])) {
-      return wbcnet::SRV_INVALID_DATA;
+    
+    if (whole_body_posture_.test_kd.size() != ndof) {
+      int const oldsize(whole_body_posture_.test_kd.size());
+      whole_body_posture_.test_kd.setSize(ndof, false);
+      for (int ii(oldsize); ii < ndof; ++ii) {
+	whole_body_posture_.test_kd[ii] = 0;
+      }
     }
-    whole_body_posture_.propGain(gains[0]);
-    whole_body_posture_.diffGain(gains[1]);
+    
+    if (reset_others) {
+      whole_body_posture_.test_kp.zero();
+    }
+    whole_body_posture_.test_kp[index] = gains[1];
+    
+    if (gains.size() > 2) {
+      if (reset_others) {
+	whole_body_posture_.test_kd.zero();
+      }
+      whole_body_posture_.test_kd[index] = gains[2];
+    }
+    else {
+      whole_body_posture_.test_kd[index] = 0;
+    }
+    
     return wbcnet::SRV_SUCCESS;
   }
   

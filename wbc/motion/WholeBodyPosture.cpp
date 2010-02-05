@@ -51,8 +51,31 @@ namespace wbc {
 
     config_ = unactuationMatrix_ * robModel_->kinematics()->jointPositions();
     velocity_ = globalJacobian_ * robModel_->kinematics()->jointVelocities();
-    servoUpdate();
-  } 
+    
+    if (0 == test_kp.size()) {
+      servoUpdate();
+    }
+    else {
+      if (test_kp.size() != config_.size()) {
+	int const oldsize(test_kp.size());
+	test_kp.setSize(config_.size(), false);
+	for (int ii(oldsize); ii < test_kp.size(); ++ii) {
+	  test_kp[ii] = 0;
+	}
+      }
+      if (test_kd.size() != test_kp.size()) {
+	int const oldsize(test_kd.size());
+	test_kd.setSize(test_kp.size(), false);
+	for (int ii(oldsize); ii < test_kd.size(); ++ii) {
+	  test_kd[ii] = 0;
+	}
+      }
+      commandAccel_.setSize(config_.size(), true);
+      for (int ii(0); ii < config_.size(); ++ii) {
+	commandAccel_[ii] = (goalConfig_[ii] -  config_[ii]) * test_kp[ii] - velocity_[ii] * test_kd[ii];
+      }
+    }
+  }
 
   void 
   WholeBodyPosture::servoUpdate() {

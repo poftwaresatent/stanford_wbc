@@ -204,7 +204,7 @@ namespace wbc {
         return true;
       }     
       
-      if ("setgains" == token) {
+      if (("setgains" == token) || ("sg" == token)) {
 	vector<double> gains;
 	double foo;
 	while (line) {
@@ -225,7 +225,7 @@ namespace wbc {
         SendWait(10000);
         ReceiveWait(10000, 1);
         return true;
-      }        
+      }
       
       if ("b?" == token) {
         cout << "available behaviors:\n";
