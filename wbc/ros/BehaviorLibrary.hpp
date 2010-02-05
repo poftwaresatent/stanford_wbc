@@ -30,6 +30,7 @@
 
 namespace wbc {
   class BehaviorDescription;
+  class BehaviorFactoryRegistry;
 }
 
 namespace wbcros {
@@ -37,11 +38,16 @@ namespace wbcros {
   class BehaviorLibrary
   {
   public:
+    std::string behaviors_param_name_;
     std::vector<wbc::BehaviorDescription*> behavior_;
     
+    BehaviorLibrary(std::string const & param_prefix);
     ~BehaviorLibrary();
     
-    void initDefault(Model & model);
+    void initDummy(Model & model);
+    
+    void initFromParam(Model & model, ros::NodeHandle &nn,
+		       wbc::BehaviorFactoryRegistry const & breg) throw(std::runtime_error);
   };
   
 }

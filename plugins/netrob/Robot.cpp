@@ -362,7 +362,7 @@ namespace netrob {
     
     string mode_spec("b");
     string net_spec("mq:b");
-    string channel_spec("netrob");
+    string channel_spec("netrob1:netrob2");
     sfl::token_to(token, 0, mode_spec);
     sfl::token_to(token, 1, net_spec);
     sfl::token_to(token, 2, channel_spec);
@@ -402,7 +402,7 @@ namespace netrob {
   dumpHelp(std::string const & prefix, std::ostream & os) const
   {
     os << prefix << "spec = mode_spec '+' net_spec '+' channel_spec\n"
-       << prefix << "  default = b+mq:b+netrob\n"
+       << prefix << "  default = b+mq:b+netrob1:netrob2\n"
        << prefix << "  mode_spec is 'b' for blocking and 'n' for non-blocking\n"
        << prefix << "  net_spec is passed to wbcnet::NetConfig::Create()\n"
        << prefix << "  channel_spec is passed to wbcnet::NetConfig::CreateChannel()\n";

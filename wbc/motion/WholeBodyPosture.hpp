@@ -48,8 +48,13 @@ namespace wbc {
 
     virtual void robotControlModel( RobotControlModel* ) throw(std::runtime_error); 
 
+    bool enable_vsat_;
+    
+    SAIVector test_kp;
+    SAIVector test_kd;
+    
   private:
-
+    
     // attributes
     SAIVector velocity_;
     SAIMatrix globalJacobian_;
