@@ -17,11 +17,13 @@
    
    The Stanford Whole-Body Control Framework is being developed the <a
    href="http://ai.stanford.edu/groups/manips/">Stanford AI and
-   Robotics Lab</a>. Its open-source foundations are hosted on
-   Sourceforge as <a
+   Robotics Lab</a>. Among other things, it contains the
+   operational-space hierarchical task decomposition code developed by
+   Luis Sentis during his thesis. The open-source foundations of the
+   whole-body controller are hosted on Sourceforge as <a
    href="http://stanford-wbc.sourceforge.net/">Stanford-WBC</a>,
    including some of its 3rd party dependencies.
-
+   
    \subsection high_level_entry High-Level Entry Points for Browsing the Documentation
    
    - applications/wbcuser.cpp applications/wbcservo.cpp and applications/wbcmodel.cpp are the sources of the three main WBC executables
