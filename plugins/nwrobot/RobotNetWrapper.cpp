@@ -35,7 +35,7 @@ using namespace std;
 static wbcnet::logger_t logger(wbcnet::get_logger("nwrobot"));
 
 
-namespace {
+namespace wbc_nwrobot_plugin {
   
   using namespace wbcnet;
   
@@ -54,8 +54,6 @@ namespace {
     RobotNetWrapper * m_robot;
   };
   
-}
-
 
 uint16_t RobotNetWrapper::
 defaultPort()
@@ -328,9 +326,6 @@ dumpHelp(std::string const & prefix, std::ostream & os) const
      << prefix << "  address is only relevant in client mode `c'\n"
      << prefix << "  you can say `bs' or `bc' for blocking mode\n";
 }
-
-
-namespace {
   
   
   MessageHandler::

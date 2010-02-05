@@ -37,6 +37,19 @@ namespace wbc {
   class BranchingRepresentation;
   
   /**
+     Experimental approach to building TAO trees using an interface
+     that is as independent as possible from other libraries. Not
+     tested a lot though.
+     
+     The idea is create a BRBuilder, then feed the tree description to
+     its various construction methods. The idea here is to decouple
+     parsing mechanics from TAO instantiation logic, so that it does
+     not matter whether you get the description from XML files, YAML
+     files, users clicking button, or whatever. At the end of the
+     creation process, you call the create() method to actually
+     instantiate a wbc::BranchingRepresentation based on the
+     accumulated data.
+     
      \note It would be fairly easy to add different signatures for
      different frame representations. The {trans, rot-axis, rot-angle}
      form is just the most convenient for the existing XML file
@@ -52,28 +65,38 @@ namespace wbc {
     BRBuilder();
     
     /**
-       \note The constructor sets this to Earth's values.
+       Specify an alternative gravity. The constructor sets this to
+       Earth's values though, so you might not need this method at
+       all.
     */
     void setGravity(double gx, double gy, double gz);
     
     /**
-       \note The root note is always considered fixed (for the time being, at least).
+       Define where the root node is positioned.  The root note is
+       always considered fixed.
      */
     void setRoot(double frame_tx, double frame_ty, double frame_tz,
 		 double frame_rx, double frame_ry, double frame_rz, double frame_ra)
       throw(std::runtime_error);
     
     /**
-       \note There is no support for fixed non-root joints (not sure
-       whether TAO considers them absolutely or relatively
-       fixed). Neither is there support for free-floating nodes,
+       Add a node to the tree. There is no support for fixed non-root
+       joints. Neither is there support for free-floating nodes,
        although the BranchingRepresentation can handle those.
+       
+       \return The ID of the newly created node. You use this ID later
+       in a call to linkNode() when you specify how the nodes are
+       connected.
     */
     int addNode(std::string const & name,
 		double com_x, double com_y, double com_z,
 		double mass,
 		double inertia_x, double inertia_y, double inertia_z);
     
+    /**
+       Register a node with its parent. Each node has one parent, but
+       it can have several children (it's a tree).
+     */
     void linkNode(/** As previously returned by addNode(). It's an
 		      error to say -1 here (the root node has no
 		      parent). */
@@ -85,7 +108,9 @@ namespace wbc {
       throw(std::runtime_error);
     
     /**
-       \note TAO has support for damping and inertia terms for each
+       Add a joint to a node.
+       
+       \todo TAO has support for damping and inertia terms for each
        joint... but both are set to zero here.
     */
     void addJoint(int nodeID,

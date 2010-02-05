@@ -40,8 +40,10 @@ namespace wbc {
   using namespace wbc_tinyxml;
   
   /**
-     \todo Rename to SAIParser.
-   */
+     This is "the" legacy parser for SAI XML files. It is ugly old
+     code that has been wrapped in the somewhat nicer BRParser
+     interface.
+  */
   class TiXmlBRParser
     : public BRParser
   {

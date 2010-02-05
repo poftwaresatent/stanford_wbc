@@ -42,6 +42,13 @@ namespace wbc {
 
 const std::string WBC_DATA_DIR = "../../rtviz/data_files/";
 
+  /**
+     Utility for logging timestamped data to a text file, which can
+     then be used for further processing. At the moment, SAIVector or
+     double instances can be logged via appendData(). When in \c
+     rt_plot mode (the default), then the file gets opened and closed
+     for each call to appendData().
+  */
 class DataLog
 {
   public:

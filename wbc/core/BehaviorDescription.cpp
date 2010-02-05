@@ -108,6 +108,29 @@ namespace wbc {
 	return handleSetGoal(goal);
       }
       
+    case wbcnet::SRV_SET_GAINS:
+      {
+	SAIVector gains(0);
+	if ((data_in->NRows() > 0) && (data_in->NColumns())) {
+	  if (data_in->NRows() > data_in->NColumns()) {
+	    gains.setSize(data_in->NRows());
+	    for (int ii(0); ii < data_in->NRows(); ++ii) {
+	      gains[ii] = data_in->GetElement(ii, 0);
+	    }
+	  }
+	  else {
+	    gains.setSize(data_in->NColumns());
+	    for (int ii(0); ii < data_in->NColumns(); ++ii) {
+	      gains[ii] = data_in->GetElement(0, ii);
+	    }
+	  }
+	}
+	LOG_INFO (logger,
+		  "wbc::BehaviorDescription::handleCommand(): SRV_SET_GAINS with "
+		  << gains.size() << " elements");
+	return handleSetGains(gains);
+      }
+      
     case wbcnet::SRV_GET_JACOBIAN:
       {
 	LOG_INFO (logger, "wbc::BehaviorDescription::handleCommand(): SRV_GET_JACOBIAN");
@@ -152,6 +175,14 @@ namespace wbc {
   
   
   int BehaviorDescription::
+  handleSetGains(SAIVector const & gains)
+  {
+    LOG_INFO (logger, "wbc::BehaviorDescription::handleSetGains(): ABSTRACT in BehaviorDescription");
+    return wbcnet::SRV_ABSTRACT_METHOD;
+  }
+  
+  
+  int BehaviorDescription::
   handleGetJacobian(SAIMatrix & jacobian)
   {
     LOG_INFO (logger, "wbc::BehaviorDescription::handleGetJacobian(): ABSTRACT in BehaviorDescription");
@@ -174,5 +205,13 @@ namespace wbc {
   {
     return recorder_;
   }
-
+  
+  
+  bool BehaviorDescription::
+  handleInit(std::string const & key, std::string const & value) throw(std::runtime_error)
+  {
+    LOG_DEBUG (logger, "wbc::BehaviorDescription::handleInit(" << key << ", " << value << ")");
+    return false;
+  }
+  
 }

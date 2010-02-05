@@ -38,6 +38,11 @@
 
 namespace wbcnet {
   
+  /**
+     A module is just am empty shell... you can subclass it however
+     you like. We just need some sort of base class for the DLModule
+     and ModuleRegistry mechanisms.
+  */
   class Module {
   public:
     virtual ~Module() {}
@@ -52,23 +57,60 @@ namespace wbcnet {
 // ...rest of the file...
 
 extern "C" {
-  typedef wbcnet::Module * (*wbcnet_create_module_t)();
+  
+  /**
+     Plugin implementers have to provide this function. It allows the
+     wbcnet::DLModule loading mechanism to create an instance of your
+     plugin. This function has C language binding in order to avoid
+     issues due to different C++ name mangling schemes.
+  */
   wbcnet::Module * wbcnet_create_module();
+  
 }
 
 
 namespace wbcnet {
   
+  
+  /**
+     A dynamically loadable module, implementing wbcnet's plugin
+     support infrastructure. By writing a shared library that provides
+     a wbcnet_create_module() function (which has to have C language
+     binding), you can load your Module subclass using the Load()
+     method.
+     
+     \note The DLModule class wraps a single Module subclass. In order
+     to get a whole collection of loadable modules, use a
+     ModuleRegistry.
+  */
   class DLModule
   {
   public:
     DLModule();
+    
+    /**
+       Deletes the loaded Module for you.
+    */
     virtual ~DLModule();
     
-    /** The returned module will be deleted by the destructor of DLModule. */
-    Module * Load(std::string const & filename,
+    /**
+       Attempts to load a plugin file and instantiate the Module
+       therein.  The returned module will be deleted by the destructor
+       of DLModule. Errors are handled by throwing an exception
+       (e.g. no such file, or no wbcnet_create_module() in the shared
+       library).
+    */
+    Module * Load(/** The path to the plugin. */
+		  std::string const & filename,
+		  /** Whether to use immediate or deferred symbol
+		      lookup. If in doubt, say "false" here. */
 		  bool immediate) throw(std::runtime_error);
     
+    /**
+       Dynamically casts the loaded Module to the given
+       subclass. Throws an exception if either there is no module, or
+       it has the wrong type.
+    */
     template<class ModuleSubclass>
     ModuleSubclass * Get() const throw(std::runtime_error) {
       if ( ! m_module)
@@ -85,8 +127,20 @@ namespace wbcnet {
   };
   
   
+  /**
+     Typedef to tidy up the declaration of ModuleRegistry. We want
+     our ModuleRegistry to delete its pointers when it gets
+     destroyed.
+  */
   typedef wbcnet::Registry<DLModule *, registry_trait_delete<DLModule *> > ModuleRegistrySuper;
   
+  
+  /**
+     A collection of DLModule (and thus Module) instances which can be
+     accessed via name-based lookup. Example usage can be found in
+     wbc::Plugin, which implements a search of various filesystem
+     locations in order to instantiate plugins.
+  */
   class ModuleRegistry
     : protected ModuleRegistrySuper {
   public:

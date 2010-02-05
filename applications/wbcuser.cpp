@@ -122,15 +122,15 @@ static void init()
     wbcnet::logger_t rootLogger(wbcnet::get_root_logger());
     if (verbosity > 2) {
       if ( ! rootLogger->isTraceEnabled())
-	rootLogger->setLevel(log4cxx::Level::getTrace());
+	rootLogger->setLevel(wbcnet::Level::getTrace());
     }
     else if (verbosity > 1) {
       if ( ! rootLogger->isDebugEnabled())
-	rootLogger->setLevel(log4cxx::Level::getDebug());
+	rootLogger->setLevel(wbcnet::Level::getDebug());
     }
     else {
       if ( ! rootLogger->isInfoEnabled())
-	rootLogger->setLevel(log4cxx::Level::getInfo());
+	rootLogger->setLevel(wbcnet::Level::getInfo());
     }
   }
   

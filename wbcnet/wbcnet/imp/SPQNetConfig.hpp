@@ -38,6 +38,15 @@ namespace wbcnet {
   
   class SPQueue;
   
+  
+  /**
+     A NetConfig that creates an SPQueue for you. This does not make
+     all that much sense because an SPQueue is just an in-process
+     queue of buffers, and if you have a single process application
+     you either do not use wbcnet or you know that it's single-process
+     and instantiate SPQueue instances directly. It's useful for
+     testing though!
+  */
   class SPQNetConfig
     : public NetConfig
   {
@@ -50,15 +59,21 @@ namespace wbcnet {
 					    process_t to_process) const
       throw(std::runtime_error);
     
-    wbcnet::SPQueue * CreateSPQueue(process_t from_process,
-				    process_t to_process) const;
+    virtual wbcnet::Channel * CreateChannel(std::string const & connection_spec) const
+      throw(std::runtime_error);
     
-    wbcnet::SPQueue * GetSPQueue(process_t from_process,
-				 process_t to_process) const;
+    wbcnet::Channel * CreateChannel(std::string const & from_process,
+				    std::string const & to_process) const;
+    
+    wbcnet::SPQueue * CreateSPQueue(std::string const & from_process,
+				    std::string const & to_process) const;
+    
+    wbcnet::SPQueue * GetSPQueue(std::string const & from_process,
+				 std::string const & to_process) const;
     
   protected:
-    typedef std::map<process_t, wbcnet::SPQueue*> to_t;
-    typedef std::map<process_t, to_t> from_to_t;
+    typedef std::map<std::string, wbcnet::SPQueue*> to_t;
+    typedef std::map<std::string, to_t> from_to_t;
     
     mutable from_to_t m_from_to;
   };

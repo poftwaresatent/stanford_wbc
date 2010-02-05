@@ -42,7 +42,14 @@
 
 namespace wbcnet {
   
-  
+  /**
+     Wraps SockWrap and tries to re-connect or re-listen when the
+     connection is dropped. Use the GetCommunicationSocket() method to
+     get a file descriptor that can be passed to e.g. com_writebuf()
+     and com_readbuf().
+     
+     \note Not really tested a lot.
+   */  
   class AutoSocket
   {
   public:

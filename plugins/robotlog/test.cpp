@@ -33,6 +33,8 @@
 # include <log4cxx/basicconfigurator.h>
 #endif // HAVE_LOG4CXX
 
+using namespace wbc_robotlog_plugin;
+
 
 namespace {
   

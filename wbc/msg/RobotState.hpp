@@ -37,6 +37,10 @@ namespace wbc {
   
   namespace msg {
     
+    /**
+       Instantiation of wbcnet::msg::RobotState compatible with both
+       saimatrix and wbcnet.
+    */
     class RobotState
       : public wbcnet::msg::RobotState<wbc::SAIVectorAPI,
 				       wbc::SAIMatrixAPI>

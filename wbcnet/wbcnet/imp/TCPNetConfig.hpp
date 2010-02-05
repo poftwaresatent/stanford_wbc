@@ -37,6 +37,10 @@
 namespace wbcnet {
   
   
+  /**
+     A NetConfig that creates an SoServer for you. This allows you to
+     communicate via TCP/IP, if that is available on your platform.
+  */
   class TCPServerNetConfig
     : public NetConfig
   {
@@ -51,9 +55,16 @@ namespace wbcnet {
     virtual wbcnet::Channel * CreateChannel(process_t from_process,
 					    process_t to_process) const
       throw(std::runtime_error);
+    
+    virtual wbcnet::Channel * CreateChannel(std::string const & connection_spec) const
+      throw(std::runtime_error);
   };
   
   
+  /**
+     A NetConfig that creates an SoClient for you. This allows you to
+     communicate via TCP/IP, if that is available on your platform.
+  */
   class TCPClientNetConfig
     : public NetConfig
   {
@@ -68,6 +79,9 @@ namespace wbcnet {
     
     virtual wbcnet::Channel * CreateChannel(process_t from_process,
 					    process_t to_process) const
+      throw(std::runtime_error);
+    
+    virtual wbcnet::Channel * CreateChannel(std::string const & connection_spec) const
       throw(std::runtime_error);
   };
   

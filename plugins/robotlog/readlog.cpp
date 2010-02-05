@@ -45,6 +45,9 @@ extern "C" {
 }
 
 
+namespace wbc_robotlog_plugin {
+
+
 RLog::
 RLog(std::string const & infname)
   : m_parser(0),
@@ -223,6 +226,10 @@ dumpHelp(std::string const & prefix, std::ostream & os) const
   os << prefix << "spec = filename\n"
      << prefix << "  default filename = `wlog.xml'\n";
 }
+
+}
+
+using namespace wbc_robotlog_plugin;
 
 
 static int extract_int(const XML_Char * att) throw(std::runtime_error)

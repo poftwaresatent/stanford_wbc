@@ -21,10 +21,27 @@
 #include <string>
 
 namespace wbc {
-  
+
+  /**
+     Utility for hunting double-delete bugs. Add one of these to a
+     class that gets deleted more than once, and in its destructor
+     call dtor_check::check() with the this pointer. The first time it
+     gets called, it remembers the stacktrace, and the second time it
+     will dump the stack trace and cause a segmentation fault (on
+     purpose, so you can easily inspect things with a debugger).
+  */
   struct dtor_check {
     dtor_check();
     
+    /**
+       Verify that a given pointer has not yet been passed to
+       delete. Prints the stack trace at the *previous* deletion and
+       then causes a segfault. Very useful for finding who deleted us
+       first, instead of just seeing the error at the second deletion.
+
+       \note Only seems to work reliable inside virtual
+       destructors. See tests/testDtorCheck.cpp for an example.
+     */
     void check(void * that);
     
     void * previous_that;

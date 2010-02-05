@@ -197,26 +197,35 @@ namespace wbc {
           cout << "SYNTAX ERROR reading goal pos and orientation\n";
           return true;
         }
-        m_user_request.InitSetGoal(goal, 7);
+        m_user_request.InitSetGoal(-1, goal, 7);
         EnqueueMessage(m_channel, &m_user_request, false, false);
         SendWait(10000);
         ReceiveWait(10000, 1);
         return true;
       }     
       
-      if ("setgains" == token) {
-        double gains[4];
-        line >> gains[0] >>gains[1] >>gains[2] >>gains[3];
-	if ( ! line) {
+      if (("setgains" == token) || ("sg" == token)) {
+	vector<double> gains;
+	double foo;
+	while (line) {
+	  line >> foo;
+	  if (line) {
+	    gains.push_back(foo);
+	    cout << "  gain[" << gains.size() << "] = " << foo << "\n";
+	  }
+	}
+	if (gains.empty()) {
           cout << "SYNTAX ERROR reading gains\n";
           return true;
         }
-        m_user_request.InitSetGains(gains, 4);
+        m_user_request.InitSetGains(-1, &gains[0], gains.size());
+	cout << "wbc::UserProcess::Step(): sending user request\n";
+	m_user_request.Dump(cout, "    ");
         EnqueueMessage(m_channel, &m_user_request, false, false);
         SendWait(10000);
         ReceiveWait(10000, 1);
         return true;
-      }        
+      }
       
       if ("b?" == token) {
         cout << "available behaviors:\n";
@@ -517,7 +526,7 @@ namespace wbc {
     for (size_t ii(3); ii < 6; ++ii)
       goal[ii] *= M_PI / 180;
     
-    m_user_request.InitSetGoal(goal, 6);
+    m_user_request.InitSetGoal(-1, goal, 6);
   }
   
   

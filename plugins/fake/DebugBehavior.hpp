@@ -19,11 +19,12 @@
  */
 
 /**
+   \file DebugBehavior.hpp
    \author Roland Philippsen
 */
 
-#ifndef DEBUG_BEHAVIOR_HPP
-#define DEBUG_BEHAVIOR_HPP
+#ifndef FAKE_DEBUG_BEHAVIOR_HPP
+#define FAKE_DEBUG_BEHAVIOR_HPP
 
 #ifndef WIN32
 #include <stdint.h>
@@ -35,8 +36,12 @@
 #include <wbc/core/TaskSet.hpp>
 #include <wbc/motion/FrictionPosture.hpp>
 
+namespace wbc_fake_plugin {
+  
 using namespace wbc;
 
+  /** A "behavior" that just floats the robot and prints messages to
+      stdout whenever handleKey() gets called. */
 class DebugBehavior
   : public BehaviorDescription
 {
@@ -56,4 +61,6 @@ private:
   FrictionPosture friction_posture_;
 };
 
-#endif
+}
+
+#endif // FAKE_DEBUG_BEHAVIOR_HPP

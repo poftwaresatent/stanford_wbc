@@ -27,8 +27,10 @@
 #include <saimatrix/SAIVector.h>
 #include <saimatrix/SAIMatrix.h>
 #include <wbcnet/strutil.hpp>
-////#include <wbc/bin/Process.hpp>
+#include <wbcnet/log.hpp>
 #include <sstream>
+#include <vector>
+
 #ifdef WIN32
 #include "wbcnet/win32_compat.hpp"
 #else
@@ -40,10 +42,17 @@
 using sfl::splitstring;
 using namespace std;
 
+static wbcnet::logger_t logger(wbcnet::get_logger("wbc_fake_plugin"));
+
+
+namespace wbc_fake_plugin {
+
 
 RobotFake::
-RobotFake(int _extra_usleep)
-  : extra_usleep(_extra_usleep)
+RobotFake(int extra_usleep, int drift)
+  : m_extra_usleep(extra_usleep),
+    m_drift(drift),
+    m_tick(0)
 {
 }
 
@@ -52,22 +61,31 @@ bool RobotFake::
 readSensors(SAIVector & jointPositions, SAIVector & jointVelocities, timeval & acquisition_time,
 	    SAIMatrix * opt_force)
 {
-  if (0 != extra_usleep)
-    usleep(extra_usleep);
-
+  if (0 != m_extra_usleep)
+    usleep(m_extra_usleep);
+  
+  double offset;
+  if (0 < m_drift) {
+    offset = 0.1 * (m_tick % m_drift);
+  }
+  else {
+    offset = 0.1;
+  }
+  ++m_tick;
+  
   for ( int ii(0); ii < jointPositions.size(); ++ii )
-    jointPositions[ii] = 0.1 + 0.001 * ii; // an arbitrary value
+    jointPositions[ii] = offset + 0.001 * ii; // an arbitrary value
 
   // notice that joint angles might have a different dimension than joint velocities
   // since they might include quaternions to specify orientation of spherical joints
   for ( int ii(0); ii < jointVelocities.size(); ++ii )
-    jointVelocities[ii] = -0.1 - 0.001 * ii; // an arbitary value
+    jointVelocities[ii] = - offset - 0.001 * ii; // an arbitary value
   
   if (opt_force) {
     opt_force->setSize(6, jointPositions.size(), true);
     for (int icol(0); icol < opt_force->column(); ++icol)
       for (int irow(0); irow < opt_force->row(); ++irow)
-	opt_force->elementAt(irow, icol) = 5 * icol + 0.2 * irow;
+	opt_force->elementAt(irow, icol) = offset + 5 * icol + 0.2 * irow;
   }
   
   if (0 != gettimeofday(&acquisition_time, NULL)) {
@@ -82,8 +100,8 @@ readSensors(SAIVector & jointPositions, SAIVector & jointVelocities, timeval & a
 bool RobotFake::
 writeCommand(SAIVector const & command)
 {
-  if (0 != extra_usleep)
-    usleep(extra_usleep);
+  if (0 != m_extra_usleep)
+    usleep(m_extra_usleep);
   return true;
 }
 
@@ -92,8 +110,8 @@ bool RobotFake::
 writeSensors(SAIVector const & jointAngles, SAIVector const & jointVelocities,
 	     SAIMatrix const * opt_force)
 {
-  if (0 != extra_usleep)
-    usleep(extra_usleep);
+  if (0 != m_extra_usleep)
+    usleep(m_extra_usleep);
   return true;
 }
 
@@ -101,10 +119,21 @@ writeSensors(SAIVector const & jointAngles, SAIVector const & jointVelocities,
 bool RobotFake::
 readCommand(SAIVector & command)
 {
-  if (0 != extra_usleep)
-    usleep(extra_usleep);
+  if (0 != m_extra_usleep)
+    usleep(m_extra_usleep);
+  
+  double offset;
+  if (0 < m_drift) {
+    offset = 1.0 * (m_tick % m_drift);
+  }
+  else {
+    offset = 1.0;
+  }
+  ++m_tick;
+  
   for (int ii(0); ii < command.size(); ++ii)
-    command[ii] = 3 - 0.01 * ii;
+    command[ii] = offset - 0.01 * ii;
+  
   return true;
 }
 
@@ -118,21 +147,19 @@ shutdown() const
 RobotFake * FactoryFake::
 parse(std::string const & spec, wbc::ServoInspector * servo_inspector)
 {
-  int extra_usleep(250000);  
-  string head;
-  string tail(spec);
+  vector<string> token;
+  sfl::tokenize(spec, ':', token);
   
-  if (splitstring(tail, ':', head, tail)) {
-    istringstream is(head);
-    if ( ! (is >> extra_usleep)) {
-      cerr << "FactoryFake: cannot read extra_usleep from \""
-	   << head << "\"\n";
-      return 0;
-    }
-    cerr << "FactoryFake: extra_usleep -> " << extra_usleep << "\n";
-  }
-    
-  return new RobotFake(extra_usleep);
+  int extra_usleep(250000);
+  int drift(0);
+  
+  sfl::token_to(token, 0, extra_usleep);
+  sfl::token_to(token, 1, drift);
+  
+  LOG_INFO (logger, "wbc_fake_plugin::FactoryFake::parse(" << spec << "): creating RobotFake(" <<
+	    extra_usleep << ", " << drift << ")");
+  
+  return new RobotFake(extra_usleep, drift);
 }
   
   
@@ -141,4 +168,6 @@ dumpHelp(std::string const & prefix, std::ostream & os) const
 {
   os << prefix << "spec = [ extra_usleep ]\n"
      << prefix << "  default = 250000\n";
+}
+
 }

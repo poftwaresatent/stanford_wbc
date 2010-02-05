@@ -33,6 +33,8 @@
 static wbcnet::logger_t logger(wbcnet::get_logger("writelog"));
 
 
+namespace wbc_robotlog_plugin {
+
 WLog::
 WLog(std::string const & outfname,
      wbc::RobotAPI * robot,
@@ -224,4 +226,6 @@ dumpHelp(std::string const & prefix, std::ostream & os) const
   os << prefix << "spec = filename : subspec\n"
      << prefix << "  default filename = `wlog.xml'\n"
      << prefix << "  subspec is the spec of the robot which should be logged\n";
+}
+
 }

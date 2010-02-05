@@ -137,7 +137,11 @@ namespace urdf_to_tao {
 
 #include "dump.hpp"
 #include <wbc/core/BranchingRepresentation.hpp>
+
+// Quick hack around build sys bug: urdf_to_tao depends on ROS, which has log4cxx.
+#define HAVE_LOG4CXX
 #include <wbcnet/log.hpp>
+
 #include <tao/utility/TaoDeMassProp.h>
 #include <tao/dynamics/taoNode.h>
 #include <tao/dynamics/taoJoint.h>

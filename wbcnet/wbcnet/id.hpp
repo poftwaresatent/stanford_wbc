@@ -47,11 +47,19 @@ namespace wbcnet {
   
   typedef uint16_t unique_id_t;
   
-  
+
+  /**
+     A draft of an idea for assigning unique IDs to names at
+     runtime. Never really caught on though, it would probably be
+     better to use checksums of some sort.
+  */
   class IDLookup
   {
   public:
+    /** An exception due to a problem with a name. */
     struct name_error: public std::runtime_error { name_error(std::string const & name); };
+    
+    /** An exception due to a problem with an ID. */
     struct id_error: public std::runtime_error { id_error(unique_id_t id); };
     
     explicit IDLookup(bool auto_assign);
@@ -83,7 +91,10 @@ namespace wbcnet {
   
   namespace idl {
     
+    /** An exception due to a lack of initialization. */
     struct not_initialized: public std::runtime_error { not_initialized(); };
+    
+    /** An exception caused by a conflict during initialization. */
     struct init_conflict: public std::runtime_error { init_conflict(); };
     
     void CreateSingleton() throw(init_conflict);

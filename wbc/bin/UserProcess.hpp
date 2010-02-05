@@ -37,7 +37,14 @@ namespace wbcnet {
 namespace wbc {
   
   /**
-     Do not forget to call UserProcess::Cleanup() at exit.
+     A process that handles user input via a shell-like
+     interface. There is a key-press mode based on (n)curses which
+     allows simple yet effective direct interaction with running
+     behaviors in the servo. If available, it can also enter an XMLRPC
+     mode, where it spawns an XMLRPC server and then serves as a
+     bridge between WBC and the XMLRPC requests.
+     
+     \note Do not forget to call UserProcess::Cleanup() at exit.
   */
   class UserProcess
     : public Process

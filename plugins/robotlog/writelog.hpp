@@ -33,7 +33,12 @@ namespace wbc {
   class Extensions;
 }
 
+namespace wbc_robotlog_plugin {
 
+  /**
+     A wbc::RobotAPI that wraps another one and writes a log file of
+     all its calls.
+  */
 class WLog
   : public wbc::RobotAPI
 {
@@ -63,6 +68,9 @@ protected:
 };
 
 
+  /**
+     A factory for wbc_robotlog_plugin::WLog instances.
+  */
 struct WLogFactory
   : public wbc::RobotFactory
 {
@@ -73,5 +81,7 @@ struct WLogFactory
   
   wbc::Extensions & ext;
 };
+
+}
 
 #endif // WBC_PLUGIN_WRITELOG_HPP

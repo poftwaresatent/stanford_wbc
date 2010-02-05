@@ -34,6 +34,7 @@
 #include <wbcnet/strutil.hpp>
 #include <wbcnet/log.hpp>
 #include <iostream>
+#include <vector>
 
 using namespace std;
 
@@ -71,10 +72,26 @@ namespace wbcnet {
   }
   
   
+  wbcnet::Channel * TCPServerNetConfig::
+  CreateChannel(std::string const & connection_spec) const
+    throw(std::runtime_error)
+  {
+    throw runtime_error("wbcnet::TCPServerNetConfig::CreateChannel(): no networking support");
+  }
+  
+  
   wbcnet::Channel * TCPClientNetConfig::
   CreateChannel(process_t from_process,
 		process_t to_process) const
     throw(runtime_error)
+  {
+    throw runtime_error("wbcnet::TCPClientNetConfig::CreateChannel(): no networking support");
+  }
+  
+  
+  wbcnet::Channel * TCPClientNetConfig::
+  CreateChannel(std::string const & connection_spec) const
+    throw(std::runtime_error)
   {
     throw runtime_error("wbcnet::TCPClientNetConfig::CreateChannel(): no networking support");
   }
@@ -173,6 +190,78 @@ namespace wbcnet {
     
     return sos;
   }
+  
+  
+  wbcnet::Channel * TCPServerNetConfig::
+  CreateChannel(std::string const & connection_spec) const
+    throw(std::runtime_error)
+  {
+    vector<string> token;
+    sfl::tokenize(connection_spec, ':', token);
+    
+    in_port_t port;
+    if ( ! sfl::token_to(token, 0, port)) {
+      throw runtime_error("TCPServerNetConfig::CreateChannel(" + connection_spec
+			  + "): give me at least a port number to use!");
+    }
+    string bind_ip;
+    sfl::token_to(token, 1, bind_ip);
+    if (bind_ip.empty()) {
+      bind_ip = "*";
+    }
+    bool blocking(true);
+    if (token.size() > 2) {
+      if (("b" == token[2]) || ("" == token[2])) {
+	blocking = true;
+      }
+      else if ("n" == token[2]) {
+	blocking = false;
+      }
+      else {
+	throw runtime_error("TCPServerNetConfig::CreateChannel(" + connection_spec
+			    + "): invalid mode_spec \"" + token[2]
+			    + "\" (say 'b', 'n', or '')");
+      }
+    }
+    
+    wbcnet::SoServer * sos(new wbcnet::SoServer(0, -1));    
+    LOG_TRACE (logger,
+	       "TCPServerNetConfig::CreateChannel(" << connection_spec << "): calling sos->Open("
+	       << port << ", " << sfl::to_string(! blocking) << ", " << bind_ip << ")");
+    if ( ! sos->Open(port, ! blocking, bind_ip)) {
+      delete sos;
+      throw runtime_error("TCPServerNetConfig::CreateChannel(" + connection_spec + "): sos->Open("
+			  + sfl::to_string(port) + ", " + sfl::to_string(! blocking) + ", "
+			  + bind_ip + ") failed");
+    }
+    
+    LOG_TRACE (logger,
+	       "TCPServerNetConfig::CreateChannel(" << connection_spec
+	       << "): calling sos->BindListen(1)");
+    if ( ! sos->BindListen(1)) {
+      delete sos; 
+      throw runtime_error("TCPServerNetConfig::CreateChannel(" + connection_spec
+			  + "): sos->BindListen(1) failed");
+    }
+    
+    cout << "TCPServerNetConfig::CreateChannel(" << connection_spec << "): accepting " << flush;
+    wbcnet::com_status cs(sos->Accept());
+    while (wbcnet::COM_TRY_AGAIN == cs) {
+      cout << "." << flush;
+      usleep(250000);
+      cs = sos->Accept();
+    }
+    if (wbcnet::COM_OK != cs) {
+      LOG_TRACE (logger,
+		 "TCPServerNetConfig::CreateChannel(" << connection_spec << "): sos->Accept() POOPOO");
+      delete sos;
+      throw runtime_error("TCPServerNetConfig::CreateChannel(" + connection_spec
+			  + "): Accept() failed with " + wbcnet::com_status_str(cs));
+    }
+    cout << "OK\n";
+    
+    return sos;
+  }
 
 
   wbcnet::Channel * TCPClientNetConfig::
@@ -207,6 +296,68 @@ namespace wbcnet {
       throw runtime_error("TCPClientNetConfig::CreateChannel(" + sfl::to_string(from_process) + ", "
 			  + sfl::to_string(to_process) + "): soc->Connect() failed with "
 			  + wbcnet::com_status_str(cs));
+    }
+    cout << "OK\n";
+    
+    return soc;
+  }
+
+
+  wbcnet::Channel * TCPClientNetConfig::
+  CreateChannel(std::string const & connection_spec) const
+    throw(runtime_error)
+  {
+    vector<string> token;
+    sfl::tokenize(connection_spec, ':', token);
+    
+    in_port_t port;
+    if ( ! sfl::token_to(token, 0, port)) {
+      throw runtime_error("TCPClientNetConfig::CreateChannel(" + connection_spec
+			  + "): give me at least a port number to use!");
+    }
+    string server_ip;
+    sfl::token_to(token, 1, server_ip);
+    if (server_ip.empty()) {
+      server_ip = "127.0.0.1";
+    }
+    bool blocking(true);
+    if (token.size() > 2) {
+      if (("b" == token[2]) || ("" == token[2])) {
+	blocking = true;
+      }
+      else if ("n" == token[2]) {
+	blocking = false;
+      }
+      else {
+	throw runtime_error("TCPClientNetConfig::CreateChannel(" + connection_spec
+			    + "): invalid mode_spec \"" + token[2]
+			    + "\" (say 'b', 'n', or '')");
+      }
+    }
+    
+    wbcnet::SoClient * soc(new wbcnet::SoClient(0, -1));
+    if ( ! soc->Open(port, ! blocking, server_ip)) {
+      delete soc;
+      throw runtime_error("TCPClientNetConfig::CreateChannel(" + connection_spec
+			  + "): soc->Open(" + sfl::to_string(port)
+			  + ", " + sfl::to_string(! blocking) + ", " + server_ip
+			  + ") failed");
+    }
+    
+    cout << "TCPClientNetConfig::CreateChannel(" << connection_spec << "): connecting " << flush;
+    wbcnet::com_status cs(soc->Connect());
+    while ((wbcnet::COM_TRY_AGAIN == cs) || (wbcnet::COM_OTHER_ERROR == cs)) {
+      if (wbcnet::COM_TRY_AGAIN == cs)
+	cout << "." << flush;
+      else
+	cout << "x" << flush;      
+      usleep(250000);
+      cs = soc->Connect();
+    }
+    if (wbcnet::COM_OK != cs) {
+      delete soc;
+      throw runtime_error("TCPClientNetConfig::CreateChannel(" + connection_spec
+			  + "): soc->Connect() failed with " + wbcnet::com_status_str(cs));
     }
     cout << "OK\n";
     

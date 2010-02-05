@@ -69,6 +69,9 @@ namespace wbcnet {
   };
   
   
+  /**
+     Write memory area byte for byte to hexadecimal.
+  */
   std::string hexdump_buffer(char const * buffer, int nbytes);
   
   
@@ -155,6 +158,10 @@ namespace wbcnet {
     };
   
   
+  /**
+     Specialization of VectorStorageAPI when the underlying element
+     type is known.
+  */
   template<typename element_t>
   class VectorAPI
     : public VectorStorageAPI
@@ -256,6 +263,10 @@ namespace wbcnet {
   };
   
   
+  /**
+     Specialization of MatrixStorageAPI when the underlying element
+     type is known.
+  */
   template<typename element_t>
   class MatrixAPI
     : public MatrixStorageAPI
@@ -337,6 +348,10 @@ namespace wbcnet {
   };
   
   
+  /**
+     An implementation of a type-aware VectorStorageAPI that uses a
+     Buffer as data store.
+  */
   template<typename value_t>
   class Vector
     : public VectorAPI<value_t>
@@ -384,6 +399,10 @@ namespace wbcnet {
   };
   
   
+  /**
+     An implementation of a type-aware MatrixStorageAPI that uses a
+     Buffer as data store.
+  */
   template<typename value_t>
   class Matrix
     : public MatrixAPI<value_t>

@@ -19,6 +19,7 @@
  */
 
 /**
+   \file RawController.hpp
    \author Roland Philippsen
 */
 
@@ -27,8 +28,11 @@
 
 #include <wbc/core/RawControllerAPI.hpp>
 
-namespace fake {
+namespace wbc_fake_plugin {
   
+  
+  /** An example "raw" controller that simply creates sinusoidal
+      torques on each joint. */
   class RawController
     : public wbc::RawControllerAPI
   {

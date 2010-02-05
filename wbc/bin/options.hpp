@@ -32,8 +32,8 @@
 namespace wbc {
   
   /**
-     A collection of options that are useful for the standalone model
-     and servo processes.
+     A collection of options that are useful for \c wbcmodel and \c
+     wbcservo. Used to initialize wbcnet::attributes instances.
   */
   struct options {
     options();
@@ -71,9 +71,7 @@ namespace wbc {
     */
     virtual void specific_usage(std::ostream & os) const {}
     
-#ifdef DISABLE_NETWORKING
-//# warning 'Networking is DISABLED, skipping over networking support code.'
-#else // DISABLE_NETWORKING
+#ifndef DISABLE_NETWORKING
     std::string communication;
 #endif // DISABLE_NETWORKING
     

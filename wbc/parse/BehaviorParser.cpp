@@ -24,7 +24,9 @@
 */
 
 #include "BehaviorParser.hpp"
+#include <wbc/core/BehaviorDescription.hpp>
 #include <wbc/core/BehaviorFactory.hpp>
+#include <wbcnet/log.hpp>
 #include <iostream>
 #include <sstream>
 
@@ -33,6 +35,9 @@ extern "C" {
 #include <string.h>
 #include <sys/types.h>
 }
+
+static wbcnet::logger_t logger(wbcnet::get_logger("wbc"));
+
 
 using namespace std;
 
@@ -50,9 +55,12 @@ namespace wbc {
   
   
   void DebugBehaviorConstructionCallback::
-  operator () (std::string const & name) const throw(std::runtime_error)
+  operator () (dictionary_t const & params) const throw(std::runtime_error)
   {
-    cout << "DebugBehaviorConstructionCallback: " << name << "\n";
+    cout << "DebugBehaviorConstructionCallback\n";
+    for (dictionary_t::const_iterator ii(params.begin()); ii != params.end(); ++ii) {
+      cout << "  " << ii->first << " = " << ii->second << "\n";
+    }
   }
   
   
@@ -66,9 +74,39 @@ namespace wbc {
   
   
   void StdBehaviorConstructionCallback::
-  operator () (std::string const & name) const throw(std::runtime_error)
+  operator () (dictionary_t const & params) const throw(std::runtime_error)
   {
-    m_bvec.push_back(m_breg.Create(name));
+    dictionary_t::const_iterator ii(params.find("type"));
+    if (params.end() == ii) {
+      throw runtime_error("wbc::StdBehaviorConstructionCallback(): no type in parameter dictionary");
+    }
+    std::string const & name(ii->second);
+    ++ii;
+    if ((params.end() != ii) && ("type" == ii->second)) {
+      throw runtime_error("wbc::StdBehaviorConstructionCallback(): multiple types in parameter dictionary");
+    }
+    BehaviorDescription * behavior(m_breg.Create(name));
+    try {
+      for (ii = params.begin(); ii != params.end(); ++ii) {
+	if ("type" != ii->first) {
+	  if (behavior->handleInit(ii->first, ii->second)) {
+	    LOG_DEBUG (logger,
+		       "wbc::StdBehaviorConstructionCallback(): OK parameter " << ii->first << " = " << ii->second
+		       << " handled by behavior " << name);
+	  }
+	  else {
+	    LOG_WARN (logger,
+		      "wbc::StdBehaviorConstructionCallback(): parameter " << ii->first << " = " << ii->second
+		      << " not handled by behavior " << name);
+	  }
+	}
+      }
+    }
+    catch (std::runtime_error const & ee) {
+      delete behavior;
+      throw ee;
+    }
+    m_bvec.push_back(behavior);
   }
   
   
@@ -77,7 +115,6 @@ namespace wbc {
     : parser(0),
       buffer(0),
       in_behavior(false),
-      in_type(false),
       filename("/dev/null"),
       file(0),
       bufsize(128),
@@ -101,7 +138,6 @@ namespace wbc {
 	BehaviorConstructionCallback const & callback) throw(std::runtime_error)
   {
     in_behavior = false;
-    in_type = false;
     
     if (parser)
       XML_ParserFree(parser);
@@ -115,6 +151,9 @@ namespace wbc {
     if (file)
       delete file;
     file = new File(filename.c_str(), "r");
+    
+    params.clear();		// probably totally redundant
+    param_key = "";		// likewise
     
     while (true) {
       void * buf(XML_GetBuffer(parser, bufsize));
@@ -177,13 +216,6 @@ void start_element_handler(void * userData,
 {
   wbc::BehaviorParser * bp(reinterpret_cast<wbc::BehaviorParser *>(userData));
   
-  if (bp->in_type) {
-    ostringstream os;
-    os << bp->filename.c_str() << ":" << XML_GetCurrentLineNumber(bp->parser)
-       << ": behavior types cannot contain tags";
-    throw runtime_error(os.str());
-  }
-  
   string const tag(name);
 
   if ("behavior" == tag) {
@@ -194,16 +226,17 @@ void start_element_handler(void * userData,
       throw runtime_error(os.str());
     }
     bp->in_behavior = true;
+    return;
   }
-
-  else if (bp->in_behavior && ("type" == tag)) {
-    if (bp->in_type) {
+  
+  if (bp->in_behavior) {
+    if ( ! bp->param_key.empty()) {
       ostringstream os;
       os << bp->filename.c_str() << ":" << XML_GetCurrentLineNumber(bp->parser)
-	 << ": behavior types cannot be nested";
+	 << ": nested behavior parameters are not supported";
       throw runtime_error(os.str());
     }
-    bp->in_type = true;
+    bp->param_key = tag;
     if (bp->buffer)
       delete bp->buffer;
     bp->buffer = new wbc::StringBuffer<XML_Char>();
@@ -217,40 +250,30 @@ void end_element_handler(void * userData,
 {
   wbc::BehaviorParser * bp(reinterpret_cast<wbc::BehaviorParser *>(userData));
   
-  if (( ! bp->in_behavior) && ( ! bp->in_type))
+  if ( ! bp->in_behavior)
     return;
   
   string const tag(name);
+  
   if ("behavior" == tag) {
-    if ( ! bp->in_behavior) {
-      ostringstream os;
-      os << bp->filename.c_str() << ":" << XML_GetCurrentLineNumber(bp->parser)
-	 << ": behaviors cannot be nested";
-      throw runtime_error(os.str());
-    }
+    (*bp->callback)(bp->params);
     bp->in_behavior = false;
+    bp->params.clear();
+    return;
   }
   
-  else if ("type" == tag) {
-    if ( ! bp->in_type) {
-      ostringstream os;
-      os << bp->filename.c_str() << ":" << XML_GetCurrentLineNumber(bp->parser)
-	 << ": behavior types cannot be nested";
-      throw runtime_error(os.str());
-    }
-    bp->in_type = false;
-    
-    if ((0 == bp->buffer) || bp->buffer->Empty()) {
-      ostringstream os;
-      os << bp->filename.c_str() << ":" << XML_GetCurrentLineNumber(bp->parser)
-	 << ": empty behavior type";
-      throw runtime_error(os.str());
-    }
-    (*bp->callback)(bp->buffer->GetString());
-    
-    delete bp->buffer;
-    bp->buffer = 0;
+  if (tag != bp->param_key) {
+    ostringstream os;
+    os << bp->filename.c_str() << ":" << XML_GetCurrentLineNumber(bp->parser)
+       << ": whoopsie, this must be a bug --- tag " << tag
+       << " is not the same as param_key " << bp->param_key;
+    throw runtime_error(os.str());
   }
+  
+  bp->params.insert(make_pair(tag, bp->buffer->GetString()));
+  bp->param_key = "";
+  delete bp->buffer;
+  bp->buffer = 0;
 }
 
 

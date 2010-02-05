@@ -33,6 +33,7 @@
 #include <wbcnet/MQWrap.hpp>
 #include <wbcnet/strutil.hpp>
 #include <wbcnet/log.hpp>
+#include <vector>
 
 using namespace std;
 
@@ -90,10 +91,11 @@ namespace wbcnet {
   
   
   MQNetConfig::
-  MQNetConfig(size_t _msg_size, std::string const & _prefix)
+  MQNetConfig(bool blocking, size_t msg_size, std::string const & prefix)
     : NetConfig(),
-      msg_size(_msg_size),
-      prefix(_prefix)
+      m_blocking(blocking),
+      m_msg_size(msg_size),
+      m_prefix(prefix)
   {
   }
   
@@ -111,6 +113,15 @@ namespace wbcnet {
   }
   
   
+  wbcnet::Channel * MQNetConfig::
+  CreateChannel(std::string const & connection_spec) const
+    throw(std::runtime_error)
+  {
+    throw runtime_error("wbcnet::MQNetConfig::CreateChannel(): POSIX message queues not supported");
+    return 0;
+  }
+  
+  
 #else // WBCNET_HAVE_MQUEUE
   
   
@@ -118,7 +129,8 @@ namespace wbcnet {
 				       NetConfig::process_t from_process,
 				       NetConfig::process_t to_process,
 				       size_t msg_size,
-				       wbcnet::MQWrap::mode_t mode)
+				       wbcnet::MQWrap::mode_t mode,
+				       bool blocking)
     throw(runtime_error)
   {
     long maxmsg(1);
@@ -142,14 +154,22 @@ namespace wbcnet {
       default:
 	msg << "OOPS dunno that mode (" << mode << ")"; break;
       }
+      if (blocking) {
+	msg << " in BLOCKING mode";
+      }
+      else {
+	msg << " in NON-blocking mode";
+      }
       LOG_TRACE (logger, msg.str());
     }
     
     wbcnet::MQWrap * mqw(new wbcnet::MQWrap(true, true));
-    if ( ! mqw->Open(mq_name, mode, maxmsg, msg_size, true)) {
+    if ( ! mqw->Open(mq_name, mode, maxmsg, msg_size, ! blocking)) {
       delete mqw;
       throw runtime_error("MQNetConfig::CreateMQWrap(): mqw->Open(" + mq_name
-			  + ",...) failed");
+			  + ", " + sfl::to_string(mode) + ", " + sfl::to_string(maxmsg)
+			  + ", " + sfl::to_string(msg_size) + ", " + sfl::to_string( ! blocking)
+			  + ") failed");
     }
     return mqw;
   }
@@ -160,11 +180,11 @@ namespace wbcnet {
 		process_t to_process) const
     throw(runtime_error)
   {
-    wbcnet::Sink * sink(CreateMQWrap(prefix, from_process, to_process, msg_size,
-				     wbcnet::MQWrap::WRITE_ONLY));
+    wbcnet::Sink * sink(CreateMQWrap(m_prefix, from_process, to_process, m_msg_size,
+				     wbcnet::MQWrap::WRITE_ONLY, m_blocking));
     try {
-      wbcnet::Source * source(CreateMQWrap(prefix, to_process, from_process, msg_size,
-					   wbcnet::MQWrap::READ_ONLY));
+      wbcnet::Source * source(CreateMQWrap(m_prefix, to_process, from_process, m_msg_size,
+					   wbcnet::MQWrap::READ_ONLY, m_blocking));
       return new wbcnet::ProxyChannel(sink, true, source, true);
     }
     catch (runtime_error const & ee) {
@@ -174,6 +194,71 @@ namespace wbcnet {
     return 0;
   }
   
+  
+  wbcnet::Channel * MQNetConfig::
+  CreateChannel(std::string const & connection_spec) const
+    throw(std::runtime_error)
+  {
+    LOG_DEBUG (logger, "MQNetConfig::CreateChannel(" << connection_spec << ") ");
+    
+    vector<string> token;
+    sfl::tokenize(connection_spec, ':', token);
+    
+    string name_wr;
+    sfl::token_to(token, 0, name_wr);
+    if (name_wr.empty()) {
+      throw runtime_error("MQNetConfig::CreateChannel(" + connection_spec
+			  + "): invalid connection_spec, I need at least a queue name to work with here...");
+    }
+    string name_rd;
+    sfl::token_to(token, 1, name_rd);
+    if (name_rd.empty()) {
+      name_rd = name_wr;
+    }
+    long maxmsg(-1);
+    sfl::token_to(token, 2, maxmsg);
+    if (maxmsg < 0) {
+      maxmsg = 10;
+    }
+    
+    wbcnet::MQWrap::mode_t mode(wbcnet::MQWrap::READ_WRITE);
+    if (name_wr != name_rd) {
+      mode = wbcnet::MQWrap::WRITE_ONLY;
+    }
+    
+    name_wr = MQ_NAME_ROOT + m_prefix + "_" + name_wr;
+    name_rd = MQ_NAME_ROOT + m_prefix + "_" + name_rd;
+    
+    wbcnet::MQWrap * sink(new wbcnet::MQWrap(true, true));
+    if ( ! sink->Open(name_wr, mode, maxmsg, m_msg_size, ! m_blocking)) {
+      delete sink;
+      ostringstream msg;
+      msg << "MQNetConfig::CreateChannel(): sink->Open(" << name_wr << ", " << mode << ", " << maxmsg
+	  << ", " << m_msg_size << ", " << sfl::to_string(! m_blocking) << ") FAILED";
+      throw runtime_error(msg.str());
+    }
+    LOG_INFO (logger,
+	      "MQNetConfig::CreateChannel(): sink->Open(" << name_wr << ", " << mode << ", " << maxmsg
+	      << ", " << m_msg_size << ", " << sfl::to_string(! m_blocking) << ") succeeded");
+    
+    if (name_wr != name_rd) {
+      mode = wbcnet::MQWrap::READ_ONLY;
+    }
+    wbcnet::MQWrap * source(new wbcnet::MQWrap(true, true));
+    if ( ! source->Open(name_rd, mode, maxmsg, m_msg_size, ! m_blocking)) {
+      delete sink;
+      delete source;
+      ostringstream msg;
+      msg << "MQNetConfig::CreateChannel(): source->Open(" << name_rd << ", " << mode << ", " << maxmsg
+	  << ", " << m_msg_size << ", " << sfl::to_string(! m_blocking) << ") FAILED";
+      throw runtime_error(msg.str());
+    }
+    LOG_INFO (logger,
+	      "MQNetConfig::CreateChannel(): source->Open(" << name_rd << ", " << mode << ", " << maxmsg
+	      << ", " << m_msg_size << ", " << sfl::to_string(! m_blocking) << ") succeeded");
+    
+    return new wbcnet::ProxyChannel(sink, true, source, true);
+  }
   
 #endif // WBCRUN_HAVE_MQUEUE
   

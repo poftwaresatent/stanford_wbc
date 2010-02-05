@@ -33,7 +33,6 @@
 #include <wbcnet/log.hpp>
 #include <errno.h>
 #include <string.h>
-////#include <iostream>
 
 static wbcnet::logger_t logger(wbcnet::get_logger("wbcnet"));
 
@@ -42,8 +41,9 @@ namespace wbcnet {
 
 
   NetSink::
-  NetSink(int bufsize, int max_bufsize)
-    : buffer(bufsize, max_bufsize)
+  NetSink(int bufsize, int max_bufsize, bool skip_length_header)
+    : buffer(bufsize, max_bufsize),
+      m_skip_length_header(skip_length_header)
   {
     Reset();
   }
@@ -77,7 +77,12 @@ namespace wbcnet {
       m_length_nremain = sizeof(m_length);
       m_data_wip = buffer.GetData();
       m_data_nremain = buffer.GetSize();
-      m_state = WRITE_LENGTH;
+      if (m_skip_length_header) {
+	m_state = WRITE_DATA;
+      }
+      else {
+	m_state = WRITE_LENGTH;
+      }
     }
     
     if (WRITE_LENGTH == m_state) {
@@ -128,8 +133,9 @@ namespace wbcnet {
 
 
   NetSource::
-  NetSource(int bufsize, int max_bufsize)
-    : buffer(bufsize, max_bufsize)
+  NetSource(int bufsize, int max_bufsize, bool skip_length_header)
+    : buffer(bufsize, max_bufsize),
+      m_skip_length_header(skip_length_header)
   {
     Reset();
   }
@@ -168,7 +174,15 @@ namespace wbcnet {
     if (READY == m_state) {
       m_length_wip = (char*) &m_length;
       m_length_nremain = sizeof(m_length);
-      m_state = READ_LENGTH;
+      if (m_skip_length_header) {
+	m_length = buffer.GetSize();
+	m_data_wip = buffer.GetData();
+	m_data_nremain = m_length;
+	m_state = READ_DATA;
+      }
+      else {
+	m_state = READ_LENGTH;
+      }
     }
     
     if (READ_LENGTH == m_state) {
