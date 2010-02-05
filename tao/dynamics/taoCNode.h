@@ -47,6 +47,7 @@ public:
 	 *	\note	for taoNode, this is the same frame getFrameGraphics()
 	 */
 	virtual deFrame* frameGlobal() = 0;
+	virtual deFrame const * frameGlobal() const = 0;
 	//!	global frame for graphics display
 	/*!
 	 *	\note	for taoNodeRB, this is the graphics origin frame without the offset.

@@ -46,6 +46,7 @@ public:
 	virtual void sync(deFrame* local);
 
 	virtual taoJoint* getJointList() { return _jointList; }
+	virtual taoJoint const * getJointList() const { return _jointList; }
 
 	/*!
 	 *	\remarks	expressed in local frame
@@ -60,6 +61,7 @@ public:
 	virtual deFrame* frameHome() { return &_frameHome; }
 	virtual deFrame* frameLocal() { return &_frameLocal; }
 	virtual deFrame* frameGlobal() { return &_frameGlobal; }
+	virtual deFrame const * frameGlobal() const { return &_frameGlobal; }
 	virtual deFloat* mass() { return &_mass; }
 	virtual deVector3* center() { return &_center; }
 	virtual deMatrix3* inertia() { return &_inertia; }
@@ -78,6 +80,7 @@ public:
 	
 	virtual void setDParent(taoDNode* n) { _parent = n; }
 	virtual taoDNode* getDParent() { return _parent; }
+	virtual taoDNode const * getDParent() const { return _parent; }
 	virtual void setDChild(taoDNode* n) { _child = (taoNode*)n; }
 	virtual taoDNode* getDChild() { return _child; }
 	virtual taoDNode const* getDChild() const { return _child; }
@@ -146,6 +149,7 @@ public:
 	virtual void sync(deFrame* local) { _frameGlobal = *local; } 
 
 	virtual taoJoint* getJointList() { return NULL; }
+	virtual taoJoint const * getJointList() const { return NULL; }
 
 	virtual deVector6* velocity();
 	virtual deVector6* acceleration();
@@ -154,6 +158,7 @@ public:
 	virtual deFrame* frameHome() { return &_frameGlobal; }
 	virtual deFrame* frameLocal() { return &_frameGlobal; }
 	virtual deFrame* frameGlobal() { return &_frameGlobal; }
+	virtual deFrame const * frameGlobal() const { return &_frameGlobal; }
 	virtual deFloat* mass() { return &_zero; } // YYY
 	virtual deVector3* center() { return NULL; }
 	virtual deMatrix3* inertia() { return NULL; }
@@ -165,6 +170,7 @@ public:
 	virtual void integrate(deFloat dt) {}
 
 	virtual taoDNode* getDParent() { return NULL; }
+	virtual taoDNode const * getDParent() const { return NULL; }
 	virtual void setDChild(taoDNode* n) { _child = (taoNode*)n; }
 	virtual taoDNode* getDChild() { return _child; }
 	virtual taoDNode const* getDChild() const { return _child; }
