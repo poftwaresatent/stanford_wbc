@@ -1,4 +1,30 @@
+/*
+ * Stanford Whole-Body Control Framework http://stanford-wbc.sourceforge.net/
+ *
+ * Copyright (c) 2010 Stanford University. All rights reserved.
+ *
+ * This program is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation, either version 3 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/>
+ */
+
+/**
+   \file jspace/Model.hpp
+   \author Roland Philippsen, inspired by wbc/core code of Luis Sentis
+*/
+
 #include <jspace/State.hpp>
+#include <saimatrix/SAITransform.h>
 
 // Clients of Model never really need to worry about what exactly lies
 // behind TAO, they can treat this as an opaque pointer type.
@@ -38,7 +64,7 @@ namespace jspace {
     
     /** Retrieve the state passed to setState() (or update(), for that
 	matter). */
-    void getState(State & state) const;
+    inline State const & getState() const { return state_; }
     
     //////////////////////////////////////////////////
     // Bare tree accessors.
@@ -83,97 +109,102 @@ namespace jspace {
     /** Computes the node origins wrt the global frame. */
     void updateKinematics();
     
-    /** Retrieve the translation and rotation of a node origin. The
-	translation is returned into a three-dimensional vector, and
-	the rotation into a quaternion with elements x, y, z, and w.
-	
-	\note If you pass NULL as one of the \c vector_t parameters,
-	that piece of information is discarded. For example, if you
-	are only interested in a position, you can pass \c rotation=0,
-	thus avoiding an unnecessary variable.
+    /** Retrieve the frame (translation and rotation) of a node
+	origin.
 	
 	\return True on success. The only possible failure stems from
 	an invalid node, so if you got that using getNode() or one of
 	the related methods you can safely ignore the return value. */
     bool getGlobalFrame(taoDNode const * node,
-			vector_t * translation,
-			vector_t * rotation) const;
+			SAITransform & global_transform) const;
     
-    /** Compute the global translation and rotation corresponding to a
-	frame expressed wrt the origin of a given node. The
-	translation is returned into a three-dimensional vector, and
-	the rotation into a quaternion with elements x, y, z, and w.
-	
-	\note If you pass NULL as one of the \c vector_t parameters,
-	that piece of information is discarded. For example, if you
-	are only interested in a position, you can pass \c rotation=0,
-	thus avoiding an unnecessary variable. Similarly, if you can
-	pass \c local_rotation=0.
+    /** Compute the global frame (translation and rotation)
+	corresponding to a local frame expressed wrt the origin of a
+	given node.
 	
 	\return True on success. The only possible failure stems from
 	an invalid node, so if you got that using getNode() or one of
 	the related methods you can safely ignore the return value. */
     bool computeGlobalFrame(taoDNode const * node,
-			    vector_t const * local_translation,
-			    vector_t const * local_rotation,
-			    vector_t * translation,
-			    vector_t * rotation) const;
+			    SAITransform const & local_transform,
+			    SAITransform & global_transform) const;
     
-    /** Compute the global Jacobian for a point given in global
-	coordinates. */
-    void computeJacobian(vector_t const & global_point,
-			 matrix_t & jacobian) const;
-    
-    /** Compute the global Jacobian at the origin of a given node.
+    /** Compute the Jacobian (J_v over J_omega) at the origin of a
+	given node.
 	
-	\return True on success. The only possible failure stems from
-	an invalid node, so if you got that using getNode() or one of
-	the related methods you can safely ignore the return value. */
-    bool computeJacobian(taoDNode const * node,
-			 matrix_t & jacobian) const;
-    
-    /** Compute the global Jacobian at a point expressed wrt to the
-	origin of a given node.
+	\todo Reimplement this "properly" using the explicit form.
 	
-	\return True on success. The only possible failure stems from
-	an invalid node, so if you got that using getNode() or one of
-	the related methods you can safely ignore the return value. */
+	\return True on success. There are two possible failures: an
+	invalid node, or an unsupported joint type. If you got the
+	node using getNode() or one of the related methods, then you
+	need to extend this implementation when it returns false. */
     bool computeJacobian(taoDNode const * node,
-			 vector_t const & local_point,
-			 matrix_t & jacobian) const;
+			 SAIMatrix & jacobian) const;
+    
+    /** Compute the Jacobian (J_v over J_omega) for a given node, at a
+	point expressed wrt to the global frame. If you have the
+	expression of the point in the local frame, call
+	computeGlobalFrame() and use the translational part of the
+	resulting frame.
+	
+	\todo Reimplement this "properly" using the explicit form.
+	
+	\return True on success. There are two possible failures: an
+	invalid node, or an unsupported joint type. If you got the
+	node using getNode() or one of the related methods, then you
+	need to extend this implementation when it returns false. */
+    bool computeJacobian(taoDNode const * node,
+			 SAIVector const & global_point,
+			 SAIMatrix & jacobian) const;
     
     //////////////////////////////////////////////////
     // dynamics facet
     
     /** Calls computeGravity(), computeCoriolisCentrifugal(),
-	computeMassInertia(), and computeInverseMassInertia(). */
+	computeMassInertia(), and computeInverseMassInertia().
+	
+	\todo At the moment, this just calls onUpdate() on the wrapped
+	wbc::Dynamics instance.
+    */
     void updateDynamics();
     
-    /** Compute the gravity joint-torque vector. */
+    /** Compute the gravity joint-torque vector.
+	
+	\todo At the moment, this is a no-op because
+	updateDynamics() actually does it for us. */
     void computeGravity();
     
     /** Retrieve the gravity joint-torque vector. */
-    void getGravity(vector_t & gravity) const;
+    void getGravity(SAIVector & gravity) const;
     
-    /** Compute the Coriolis and contrifugal joint-torque vector. */
+    /** Compute the Coriolis and contrifugal joint-torque vector.
+	
+	\todo At the moment, this is a no-op because
+	updateDynamics() actually does it for us. */
     void computeCoriolisCentrifugal();
     
     /** Retrieve the Coriolis and contrifugal joint-torque vector. */
-    void getCoriolisCentrifugal(vector_t & coriolis_centrifugal) const;
+    void getCoriolisCentrifugal(SAIVector & coriolis_centrifugal) const;
     
     /** Compute the joint-space mass-inertia matrix, a.k.a. the
-	kinetic energy matrix. */
+	kinetic energy matrix.
+	
+	\todo At the moment, this is a no-op because
+	updateDynamics() actually does it for us. */
     void computeMassInertia();
     
     /** Retrieve the joint-space mass-inertia matrix, a.k.a. the
 	kinetic energy matrix. */
-    void getMassInertia(matrix_t & mass_inertia) const;
+    void getMassInertia(SAIMatrix & mass_inertia) const;
     
-    /** Compute the inverse joint-space mass-inertia matrix. */
+    /** Compute the inverse joint-space mass-inertia matrix.
+	
+	\todo At the moment, this is a no-op because
+	updateDynamics() actually does it for us. */
     void computeInverseMassInertia();
     
     /** Retrieve the inverse joint-space mass-inertia matrix. */
-    void getInverseMassInertia(matrix_t & inverse_mass_inertia) const;
+    void getInverseMassInertia(SAIMatrix & inverse_mass_inertia) const;
     
     
   private:

@@ -1,7 +1,34 @@
+/*
+ * Stanford Whole-Body Control Framework http://stanford-wbc.sourceforge.net/
+ *
+ * Copyright (c) 2010 Stanford University. All rights reserved.
+ *
+ * This program is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation, either version 3 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/>
+ */
+
+/**
+   \file jspace/Model.cpp
+   \author Roland Philippsen, inspired by wbc/core code of Luis Sentis
+*/
+
+#include "Model.hpp"
 #include <wbc/core/RobotControlModel.hpp>
 #include <wbc/core/BranchingRepresentation.hpp>
 #include <wbc/core/Kinematics.hpp>
 #include <wbc/core/Dynamics.hpp>
+#include <tao/dynamics/taoNode.h>
 
 
 namespace jspace {
@@ -9,10 +36,17 @@ namespace jspace {
   
   Model::
   Model(wbc::RobotControlModel * robmodel)
-    : robmodel_(robmodel),
-      state_tick_(0),
-      robmodel_tick_(0)
+    : robmodel_(robmodel)
   {
+  }
+  
+  
+  void Model::
+  update(State const & state)
+  {
+    setState(state);
+    updateKinematics();
+    updateDynamics();
   }
   
   
@@ -20,66 +54,94 @@ namespace jspace {
   setState(State const & state)
   {
     state_ = state;
-    ++state_tick_;
   }
   
   
   int Model::
-  getNNodes()
+  getNNodes() const
   {
     return robmodel_->branching()->idToNodeMap().size();
   }
   
   
   int Model::
-  getNJoints()
+  getNJoints() const
   {
     return robmodel_->branching()->numJoints();
   }
   
   
+  int Model::
+  getNDOF() const
+  {
+    return robmodel_->branching()->numActuatedJoints();
+  }
+  
+  
   taoDNode * Model::
-  getNode(int id)
+  getNode(int id) const
   {
     return robmodel_->branching()->idToNodeMap()[id];
   }
   
   
   taoDNode * Model::
-  getNode(std::string const & name_or_alias)
+  getNodeByName(std::string const & name_or_alias) const
   {
-    return robmodel_->branching()->findNode(name_or_alias);
+    return robmodel_->branching()->findLink(name_or_alias);
   }
   
   
   taoDNode * Model::
-  getJoint
+  getNodeByJointName(std::string const & name_or_alias) const
   {
     return robmodel_->branching()->findJoint(name_or_alias);
   }
   
   
-  int Model::
-  getNodeID(taoDNode const * node)
+  void Model::
+  updateKinematics()
   {
-    return node->getID();
+    robmodel_->kinematics()->onUpdate(state_.joint_angles_, state_.joint_velocities_);
   }
   
   
   bool Model::
-  computeTransformation(taoDNode const * from_node,
-			taoDNode const * to_node,
-			SAITransform & out_transform)
+  getGlobalFrame(taoDNode const * node,
+		 SAITransform & global_transform) const
   {
-    cerr << "IMPLEMENT jspace::Model::computeTransformation()\n";
-    out_transform.identity();
-    return false;
+    if ( ! node) {
+      return false;
+    }
+    
+    deFrame const * tao_frame(node->frameGlobal());
+    deQuaternion const & tao_quat(tao_frame->rotation());
+    deVector3 const & tao_trans(tao_frame->translation());
+    
+    global_transform.rotation().values(tao_quat[3], tao_quat[0], tao_quat[1], tao_quat[2]);
+    global_transform.translation().values(tao_trans[0], tao_trans[1], tao_trans[2]);
+    
+    return true;
   }
   
   
   bool Model::
-  computeLinkJacobian(taoDNode const * node,
-		      SAIMatrix & jacobian)
+  computeGlobalFrame(taoDNode const * node,
+		     SAITransform const & local_transform,
+		     SAITransform & global_transform) const
+  {
+    SAITransform tmp;
+    if ( ! getGlobalFrame(node, tmp)) {
+      return false;
+    }
+    tmp.multiply(local_transform, global_transform);
+    return true;
+  }
+  
+  
+  bool Model::
+  computeJacobian(taoDNode const * node,
+		  SAIMatrix & jacobian) const
   {
     if ( ! node) {
       return false;
@@ -88,67 +150,87 @@ namespace jspace {
     static SAIVector const null(0);
     // wastes a tmp object...
     jacobian = robmodel_->kinematics()->JacobianAtPoint(node, null);
+    
     return true;
   }
   
   
   bool Model::
-  computePointJacobian(taoDNode const * node,
-		       SAITransform const * frame,
-		       SAIVector const & point,
-		       SAIMatrix & jacobian)
+  computeJacobian(taoDNode const * node,
+		  SAIVector const & global_point,
+		  SAIMatrix & jacobian) const
   {
-    if (0 != frame) {
-      std::cerr << "IMPLEMENT non-global frame handling for jspace::Model::computePointJacobian()\n";
-      return false;
-    }
-    
     if ( ! node) {
       return false;
     }
     
     // wastes a tmp object...
-    jacobian = robmodel_->kinematics()->JacobianAtPoint(node, point);
+    jacobian = robmodel_->kinematics()->JacobianAtPoint(node, global_point);
+    
     return true;
+  }
+  
+  
+  void Model::
+  updateDynamics()
+  {
+    robmodel_->dynamics()->onUpdate(state_.joint_angles_, state_.joint_velocities_);
+  }
+  
+  
+  void Model::
+  computeGravity()
+  {
+    // for the time being, updateDynamics() does it for us
   }
   
   
   void Model::
   getGravity(SAIVector & gravity) const
   {
+    gravity = robmodel_->dynamics()->gravityForce();
+  }
+  
+  
+  void Model::
+  computeCoriolisCentrifugal()
+  {
+    // for the time being, updateDynamics() does it for us
+  }
+  
+  
+  void Model::
+  getCoriolisCentrifugal(SAIVector & coriolis_centrifugal) const
+  {
+    coriolis_centrifugal = robmodel_->dynamics()->coriolisCentrifugalForce();
+  }
+  
+  
+  void Model::
+  computeMassInertia()
+  {
+    // for the time being, updateDynamics() does it for us
+  }
+  
+  
+  void Model::
+  getMassInertia(SAIMatrix & mass_inertia) const
+  {
+    mass_inertia = robmodel_->dynamics()->massInertia();
+  }
+  
+  
+  void Model::
+  computeInverseMassInertia()
+  {
+    // for the time being, updateDynamics() does it for us
+  }
+  
+  
+  void Model::
+  getInverseMassInertia(SAIMatrix & inverse_mass_inertia) const
+  {
+    inverse_mass_inertia = robmodel_->dynamics()->invMassInertia();
   }
 
-
-#error "mais on s'en tape"
-    
-    /** Compute (or retrieve from the cache) the Coriolis and
-	contrifugal joint-torque vector. */
-    void Model::
-  getCoriolisCentrifugal(SAIVector & coriolis_centrifugal) const;
-    
-    /** Compute (or retrieve from the cache) the joint-space
-	mass-inertia matrix, a.k.a. the kinetic energy matrix. */
-    void Model::
-  getMassInertia(SAIMatrix & mass_inertia) const;
-    
-    /** Computed (or retrieve from the cache) the inverse joint-space
-	mass-inertia matrix. */
-    void Model::
-  getInverseMassInertia(SAIMatrix & inverse_mass_inertia) const;
-    
-    
-  protected:
-    typedef std::map<std::string, taoDNode*> name_to_node_t;
-    typedef std::map<taoDNode*, std::string> node_to_name_t;
-    typedef std::map<int, taoDNode*> id_to_node_t;
-    
-    taoNodeRoot * tao_root_;
-    name_to_node_t name_to_node_;
-    node_to_name_t node_to_name_;
-    id_to_node_t id_to_node_;
-    
-    // Probably some more supporting attributes, but will try to hide
-    // TAO from the clients.
-  };
-  
 }
