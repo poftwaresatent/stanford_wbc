@@ -119,7 +119,7 @@ namespace wbc {
     }
     
     int const ndof(robModel()->branching()->numJoints());
-    int const index(static_cast<int>(rint(gains[0])));
+    int index(static_cast<int>(rint(gains[0])));
     bool reset_others(false);
     if (index < 0) {
       reset_others = true;
