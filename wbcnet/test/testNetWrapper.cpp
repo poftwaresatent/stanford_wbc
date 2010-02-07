@@ -317,7 +317,7 @@ void parse_options(int argc, char ** argv)
 	
       case 'v':
 	dbgos = &cerr;
-	wbcnet::get_logger("wbcnet")->setLevel(log4cxx::Level::getTrace());
+	wbcnet::get_logger("wbcnet")->setLevel(wbcnet::Level::getTrace());
 	break;
 	
       case 's':
