@@ -28,6 +28,9 @@
 #include <wbc/parse/BRParser.hpp>
 #include <tao/dynamics/taoDNode.h>
 #include <jspace/Model.hpp>
+#include <wbcnet/strutil.hpp>
+#include <iostream>
+#include <fstream>
 #include <gtest/gtest.h>
 #include <errno.h>
 #include <string.h>
@@ -35,14 +38,17 @@
 using namespace std;
 
 
+static std::string create_tmp(char const * fname_template, char const * contents) throw(runtime_error);
 static std::string create_tmp_xml() throw(runtime_error);
+static std::string create_tmp_frames() throw(runtime_error);
 static wbc::BranchingRepresentation * create_brep() throw(runtime_error);
 static jspace::Model * create_model() throw(runtime_error);
 
 static string xml_filename("");
+static string frames_filename("");
 
 
-TEST (basic, state)
+TEST (jspaceModel, state)
 {
   jspace::Model * model(0);
   try {
@@ -76,7 +82,7 @@ TEST (basic, state)
 }
 
 
-TEST (basic, branching)
+TEST (jspaceModel, branching)
 {
   jspace::Model * model(0);
   try {
@@ -120,6 +126,115 @@ TEST (basic, branching)
 }
 
 
+TEST (jspaceModel, kinematics)
+{
+  jspace::Model * model(0);
+  try {
+    model = create_model();
+    int const ndof(model->getNDOF());
+    jspace::State state(ndof, ndof);
+    
+    if (frames_filename.empty()) {
+      frames_filename = create_tmp_frames();
+    }
+    ifstream is(frames_filename.c_str());
+
+    string line;
+    int joint_positions_count(0);
+    int link_origins_count(0);
+    int line_count(0);
+
+    while (getline(is, line)) {
+      ++line_count;
+
+      if (line.empty() || ('=' == line[0])) {
+	continue;
+      }
+      vector<string> token;
+      if (1 > sfl::tokenize(line, ':', token)) {
+	continue;
+      }
+      
+      if ("joint_positions" == token[0]) {
+	if (2 > token.size()) {
+	  FAIL () << frames_filename << ": line " << line_count << ": no joint positions, expected " << ndof;
+	}
+	istringstream ipos(token[1]);
+	for (int ii(0); ii < ndof; ++ii) {
+	  ipos >> state.joint_angles_[ii];
+	}
+	if ( ! ipos) {
+	  FAIL () << frames_filename << ": line " << line_count << ": not enough joint positions, expected " << ndof;
+	}
+	model->update(state);
+	++joint_positions_count;
+	continue;
+      }
+      
+      if ("link_origins" == token[0]) {
+	++link_origins_count;
+	continue;
+      }
+      
+      if (4 > token.size()) {
+	FAIL () << frames_filename << ": line " << line_count << ": expected ID-frame entry";
+      }
+      
+      if (joint_positions_count != link_origins_count) {
+	FAIL () << frames_filename << ": line " << line_count << ": joint_positions_count != link_origins_count";
+      }
+      
+      int id;
+      float rx, ry, rz, rw, tx, ty, tz;
+      if (8 != sscanf(line.c_str(),
+		      " ID %d: r: { %f %f %f %f } t: { %f %f %f }",
+		      &id, &rx, &ry, &rz, &rw, &tx, &ty, &tz)) {
+	FAIL () << frames_filename << ": line " << line_count << ": could not parse ID-frame entry";
+      }
+      if (ndof <= id) {
+	FAIL () << frames_filename << ": line " << line_count << ": ID-frame entry " << id << " exceeds NDOF " << ndof;
+      }
+      
+      SAITransform transform;
+      if ( ! model->getGlobalFrame(model->getNode(id), transform)) {
+	FAIL() << frames_filename << ": line " << line_count << ": could not get global frame " << id << " from model";
+      }
+      EXPECT_TRUE (transform.rotation().equal(SAIQuaternion(rw, rx, ry, rz), 1e-6))
+	<< "rotation mismatch\n"
+	<< "  entry: " << joint_positions_count << "\n"
+	<< "  pos: " << state.joint_angles_ << "\n"
+	<< "  ID: " << id << "\n"
+	<< "  expected: " << SAIQuaternion(rw, rx, ry, rz) << "\n"
+	<< "  computed: " << transform.rotation();
+      EXPECT_TRUE (transform.translation().equal(SAIVector3(tx, ty, tz), 1e-6))
+	<< "translation mismatch\n"
+	<< "  entry: " << joint_positions_count << "\n"
+	<< "  pos: " << state.joint_angles_ << "\n"
+	<< "  ID: " << id << "\n"
+	<< "  expected: " << SAIVector3(tx, ty, tz) << "\n"
+	<< "  computed: " << transform.translation();
+      
+#ifdef VERBOSE
+      cout << "PASSED transform check\n"
+	   << "  entry: " << joint_positions_count << "\n"
+	   << "  pos: " << state.joint_angles_ << "\n"
+	   << "  ID: " << id << "\n"
+	   << "  rotation:\n"
+	   << "    expected: " << SAIQuaternion(rw, rx, ry, rz) << "\n"
+	   << "    computed: " << transform.rotation() << "\n"
+	   << "  translation:\n"
+	   << "    expected: " << SAIVector3(tx, ty, tz) << "\n"
+	   << "    computed: " << transform.translation() << "\n";
+#endif // VERBOSE
+    }
+  }
+  catch (std::exception const & ee) {
+    ADD_FAILURE () << "exception " << ee.what();
+  }
+  delete model;
+}
+
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
@@ -127,16 +242,33 @@ int main(int argc, char ** argv)
 }
 
 
-std::string create_tmp_xml() throw(runtime_error)
+std::string create_tmp(char const * fname_template, char const * contents) throw(runtime_error)
 {
-  static char tmpname[64];
-  memset(tmpname, '\0', 64);
-  strncpy(tmpname, "puma.xml.XXXXXX", 63);
-  int const tmpfd(mkstemp(tmpname));
-  if (-1 == tmpfd) {
-    throw runtime_error("create_tmp_xml(): mkstemp(): " + string(strerror(errno)));
+  if (strlen(fname_template) >= 64) {
+    throw runtime_error("create_tmp(): fname_template is too long (max 63 characters)");
   }
   
+  static char tmpname[64];
+  memset(tmpname, '\0', 64);
+  strncpy(tmpname, fname_template, 63);
+  int const tmpfd(mkstemp(tmpname));
+  if (-1 == tmpfd) {
+    throw runtime_error("create_tmp(): mkstemp(): " + string(strerror(errno)));
+  }
+  
+  size_t const len(strlen(contents));
+  if (len != write(tmpfd, contents, len)) {
+    throw runtime_error("create_tmp(): write(): " + string(strerror(errno)));
+  }
+  close(tmpfd);
+  
+  string result(tmpname);
+  return result;
+}
+
+
+std::string create_tmp_xml() throw(runtime_error)
+{
   static char const * xml = 
     "<?xml version=\"1.0\" ?>\n"
     "<dynworld>\n"
@@ -245,12 +377,240 @@ std::string create_tmp_xml() throw(runtime_error)
     "    </jointNode>\n"
     "  </baseNode>\n"
     "</dynworld>\n";
-  size_t const len(strlen(xml));
-  if (len != write(tmpfd, xml, len)) {
-    throw runtime_error("create_tmp_xml(): write(): " + string(strerror(errno)));
-  }
-  close(tmpfd);
-  string result(tmpname);
+  std::string result(create_tmp("puma.xml.XXXXXX", xml));
+  return result;
+}
+
+
+std::string create_tmp_frames() throw(runtime_error)
+{
+  static char const * frames = 
+    "==================================================\n"
+    "joint_positions:	0	0	0	0	0	0	\n"
+    "link_origins:\n"
+    "  ID 0: r: { 0  0  0  1 }  t: { 0  0  0 }\n"
+    "  ID 1: r: { -0.707107  0  0  0.707107 }  t: { 0  0.2435  0 }\n"
+    "  ID 2: r: { -0.707107  0  0  0.707107 }  t: { 0.4318  0.1501  -2.0739e-17 }\n"
+    "  ID 3: r: { 0  0  0  1 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "  ID 4: r: { -0.707107  0  0  0.707107 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "  ID 5: r: { 0  0  0  1 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "==================================================\n"
+    "joint_positions:	0.7854	0	0	0	0	0	\n"
+    "link_origins:\n"
+    "  ID 0: r: { 0  0  0.382684  0.923879 }  t: { 0  0  0 }\n"
+    "  ID 1: r: { -0.653281  -0.270599  0.270599  0.653281 }  t: { -0.172181  0.17218  0 }\n"
+    "  ID 2: r: { -0.653281  -0.270599  0.270599  0.653281 }  t: { 0.199191  0.411466  -2.77556e-17 }\n"
+    "  ID 3: r: { 0  0  0.382684  0.923879 }  t: { 0.184837  0.397112  0.4331 }\n"
+    "  ID 4: r: { -0.653281  -0.270599  0.270599  0.653281 }  t: { 0.184837  0.397112  0.4331 }\n"
+    "  ID 5: r: { 0  0  0.382684  0.923879 }  t: { 0.184837  0.397112  0.4331 }\n"
+    "==================================================\n"
+    "joint_positions:	0	0.7854	0	0	0	0	\n"
+    "link_origins:\n"
+    "  ID 0: r: { 0  0  0  1 }  t: { 0  0  0 }\n"
+    "  ID 1: r: { -0.653281  0.270599  0.270599  0.653281 }  t: { 0  0.2435  0 }\n"
+    "  ID 2: r: { -0.653281  0.270599  0.270599  0.653281 }  t: { 0.305328  0.1501  -0.305329 }\n"
+    "  ID 3: r: { 0  0.382684  8.32667e-17  0.923879 }  t: { 0.597222  0.1501  0.0152724 }\n"
+    "  ID 4: r: { -0.653281  0.270599  0.270599  0.653281 }  t: { 0.597222  0.1501  0.0152724 }\n"
+    "  ID 5: r: { 0  0.382684  8.32667e-17  0.923879 }  t: { 0.597222  0.1501  0.0152724 }\n"
+    "==================================================\n"
+    "joint_positions:	0	0	0.7854	0	0	0	\n"
+    "link_origins:\n"
+    "  ID 0: r: { 0  0  0  1 }  t: { 0  0  0 }\n"
+    "  ID 1: r: { -0.707107  0  0  0.707107 }  t: { 0  0.2435  0 }\n"
+    "  ID 2: r: { -0.653281  0.270599  0.270599  0.653281 }  t: { 0.4318  0.1501  -2.0739e-17 }\n"
+    "  ID 3: r: { 0  0.382684  8.32667e-17  0.923879 }  t: { 0.723694  0.1501  0.320602 }\n"
+    "  ID 4: r: { -0.653281  0.270599  0.270599  0.653281 }  t: { 0.723694  0.1501  0.320602 }\n"
+    "  ID 5: r: { 0  0.382684  8.32667e-17  0.923879 }  t: { 0.723694  0.1501  0.320602 }\n"
+    "==================================================\n"
+    "joint_positions:	0	0	0	0.7854	0	0	\n"
+    "link_origins:\n"
+    "  ID 0: r: { 0  0  0  1 }  t: { 0  0  0 }\n"
+    "  ID 1: r: { -0.707107  0  0  0.707107 }  t: { 0  0.2435  0 }\n"
+    "  ID 2: r: { -0.707107  0  0  0.707107 }  t: { 0.4318  0.1501  -2.0739e-17 }\n"
+    "  ID 3: r: { 0  0  0.382684  0.923879 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "  ID 4: r: { -0.653281  -0.270599  0.270599  0.653281 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "  ID 5: r: { 0  0  0.382684  0.923879 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "==================================================\n"
+    "joint_positions:	0	0	0	0	0.7854	0	\n"
+    "link_origins:\n"
+    "  ID 0: r: { 0  0  0  1 }  t: { 0  0  0 }\n"
+    "  ID 1: r: { -0.707107  0  0  0.707107 }  t: { 0  0.2435  0 }\n"
+    "  ID 2: r: { -0.707107  0  0  0.707107 }  t: { 0.4318  0.1501  -2.0739e-17 }\n"
+    "  ID 3: r: { 0  0  0  1 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "  ID 4: r: { -0.653281  0.270599  0.270599  0.653281 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "  ID 5: r: { 0  0.382684  8.32667e-17  0.923879 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "==================================================\n"
+    "joint_positions:	0	0	0	0	0	0.7854	\n"
+    "link_origins:\n"
+    "  ID 0: r: { 0  0  0  1 }  t: { 0  0  0 }\n"
+    "  ID 1: r: { -0.707107  0  0  0.707107 }  t: { 0  0.2435  0 }\n"
+    "  ID 2: r: { -0.707107  0  0  0.707107 }  t: { 0.4318  0.1501  -2.0739e-17 }\n"
+    "  ID 3: r: { 0  0  0  1 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "  ID 4: r: { -0.707107  0  0  0.707107 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "  ID 5: r: { 0  0  0.382684  0.923879 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "==================================================\n"
+    "joint_positions:	-0.7854	0	0	0	0	0	\n"
+    "link_origins:\n"
+    "  ID 0: r: { 0  0  -0.382684  0.923879 }  t: { 0  0  0 }\n"
+    "  ID 1: r: { -0.653281  0.270599  -0.270599  0.653281 }  t: { 0.172181  0.17218  0 }\n"
+    "  ID 2: r: { -0.653281  0.270599  -0.270599  0.653281 }  t: { 0.411465  -0.199193  -2.77556e-17 }\n"
+    "  ID 3: r: { 0  0  -0.382684  0.923879 }  t: { 0.397111  -0.184838  0.4331 }\n"
+    "  ID 4: r: { -0.653281  0.270599  -0.270599  0.653281 }  t: { 0.397111  -0.184838  0.4331 }\n"
+    "  ID 5: r: { 0  0  -0.382684  0.923879 }  t: { 0.397111  -0.184838  0.4331 }\n"
+    "==================================================\n"
+    "joint_positions:	0	-0.7854	0	0	0	0	\n"
+    "link_origins:\n"
+    "  ID 0: r: { 0  0  0  1 }  t: { 0  0  0 }\n"
+    "  ID 1: r: { -0.653281  -0.270599  -0.270599  0.653281 }  t: { 0  0.2435  0 }\n"
+    "  ID 2: r: { -0.653281  -0.270599  -0.270599  0.653281 }  t: { 0.305328  0.1501  0.305329 }\n"
+    "  ID 3: r: { 0  -0.382684  -8.32667e-17  0.923879 }  t: { -0.0152746  0.1501  0.597222 }\n"
+    "  ID 4: r: { -0.653281  -0.270599  -0.270599  0.653281 }  t: { -0.0152746  0.1501  0.597222 }\n"
+    "  ID 5: r: { 0  -0.382684  -8.32667e-17  0.923879 }  t: { -0.0152746  0.1501  0.597222 }\n"
+    "==================================================\n"
+    "joint_positions:	0	0	-0.7854	0	0	0	\n"
+    "link_origins:\n"
+    "  ID 0: r: { 0  0  0  1 }  t: { 0  0  0 }\n"
+    "  ID 1: r: { -0.707107  0  0  0.707107 }  t: { 0  0.2435  0 }\n"
+    "  ID 2: r: { -0.653281  -0.270599  -0.270599  0.653281 }  t: { 0.4318  0.1501  -2.0739e-17 }\n"
+    "  ID 3: r: { 0  -0.382684  -8.32667e-17  0.923879 }  t: { 0.111197  0.1501  0.291893 }\n"
+    "  ID 4: r: { -0.653281  -0.270599  -0.270599  0.653281 }  t: { 0.111197  0.1501  0.291893 }\n"
+    "  ID 5: r: { 0  -0.382684  -8.32667e-17  0.923879 }  t: { 0.111197  0.1501  0.291893 }\n"
+    "==================================================\n"
+    "joint_positions:	0	0	0	-0.7854	0	0	\n"
+    "link_origins:\n"
+    "  ID 0: r: { 0  0  0  1 }  t: { 0  0  0 }\n"
+    "  ID 1: r: { -0.707107  0  0  0.707107 }  t: { 0  0.2435  0 }\n"
+    "  ID 2: r: { -0.707107  0  0  0.707107 }  t: { 0.4318  0.1501  -2.0739e-17 }\n"
+    "  ID 3: r: { 0  0  -0.382684  0.923879 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "  ID 4: r: { -0.653281  0.270599  -0.270599  0.653281 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "  ID 5: r: { 0  0  -0.382684  0.923879 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "==================================================\n"
+    "joint_positions:	0	0	0	0	-0.7854	0	\n"
+    "link_origins:\n"
+    "  ID 0: r: { 0  0  0  1 }  t: { 0  0  0 }\n"
+    "  ID 1: r: { -0.707107  0  0  0.707107 }  t: { 0  0.2435  0 }\n"
+    "  ID 2: r: { -0.707107  0  0  0.707107 }  t: { 0.4318  0.1501  -2.0739e-17 }\n"
+    "  ID 3: r: { 0  0  0  1 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "  ID 4: r: { -0.653281  -0.270599  -0.270599  0.653281 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "  ID 5: r: { 0  -0.382684  -8.32667e-17  0.923879 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "==================================================\n"
+    "joint_positions:	0	0	0	0	0	-0.7854	\n"
+    "link_origins:\n"
+    "  ID 0: r: { 0  0  0  1 }  t: { 0  0  0 }\n"
+    "  ID 1: r: { -0.707107  0  0  0.707107 }  t: { 0  0.2435  0 }\n"
+    "  ID 2: r: { -0.707107  0  0  0.707107 }  t: { 0.4318  0.1501  -2.0739e-17 }\n"
+    "  ID 3: r: { 0  0  0  1 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "  ID 4: r: { -0.707107  0  0  0.707107 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "  ID 5: r: { 0  0  -0.382684  0.923879 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "==================================================\n"
+    "joint_positions:	1.5708	0	0	0	0	0	\n"
+    "link_origins:\n"
+    "  ID 0: r: { 0  0  0.707108  0.707105 }  t: { 0  0  0 }\n"
+    "  ID 1: r: { -0.499999  -0.500001  0.500001  0.499999 }  t: { -0.2435  -8.94425e-07  0 }\n"
+    "  ID 2: r: { -0.499999  -0.500001  0.500001  0.499999 }  t: { -0.150102  0.431799  -5.55112e-17 }\n"
+    "  ID 3: r: { 0  0  0.707108  0.707105 }  t: { -0.150102  0.411499  0.4331 }\n"
+    "  ID 4: r: { -0.499999  -0.500001  0.500001  0.499999 }  t: { -0.150102  0.411499  0.4331 }\n"
+    "  ID 5: r: { 0  0  0.707108  0.707105 }  t: { -0.150102  0.411499  0.4331 }\n"
+    "==================================================\n"
+    "joint_positions:	0	1.5708	0	0	0	0	\n"
+    "link_origins:\n"
+    "  ID 0: r: { 0  0  0  1 }  t: { 0  0  0 }\n"
+    "  ID 1: r: { -0.499999  0.500001  0.500001  0.499999 }  t: { 0  0.2435  0 }\n"
+    "  ID 2: r: { -0.499999  0.500001  0.500001  0.499999 }  t: { -1.58609e-06  0.1501  -0.4318 }\n"
+    "  ID 3: r: { 0  0.707108  1.11022e-16  0.707105 }  t: { 0.433098  0.1501  -0.411502 }\n"
+    "  ID 4: r: { -0.499999  0.500001  0.500001  0.499999 }  t: { 0.433098  0.1501  -0.411502 }\n"
+    "  ID 5: r: { 0  0.707108  1.11022e-16  0.707105 }  t: { 0.433098  0.1501  -0.411502 }\n"
+    "==================================================\n"
+    "joint_positions:	0	0	1.5708	0	0	0	\n"
+    "link_origins:\n"
+    "  ID 0: r: { 0  0  0  1 }  t: { 0  0  0 }\n"
+    "  ID 1: r: { -0.707107  0  0  0.707107 }  t: { 0  0.2435  0 }\n"
+    "  ID 2: r: { -0.499999  0.500001  0.500001  0.499999 }  t: { 0.4318  0.1501  -2.0739e-17 }\n"
+    "  ID 3: r: { 0  0.707108  1.11022e-16  0.707105 }  t: { 0.8649  0.1501  0.0202984 }\n"
+    "  ID 4: r: { -0.499999  0.500001  0.500001  0.499999 }  t: { 0.8649  0.1501  0.0202984 }\n"
+    "  ID 5: r: { 0  0.707108  1.11022e-16  0.707105 }  t: { 0.8649  0.1501  0.0202984 }\n"
+    "==================================================\n"
+    "joint_positions:	0	0	0	1.5708	0	0	\n"
+    "link_origins:\n"
+    "  ID 0: r: { 0  0  0  1 }  t: { 0  0  0 }\n"
+    "  ID 1: r: { -0.707107  0  0  0.707107 }  t: { 0  0.2435  0 }\n"
+    "  ID 2: r: { -0.707107  0  0  0.707107 }  t: { 0.4318  0.1501  -2.0739e-17 }\n"
+    "  ID 3: r: { 0  0  0.707108  0.707105 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "  ID 4: r: { -0.499999  -0.500001  0.500001  0.499999 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "  ID 5: r: { 0  0  0.707108  0.707105 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "==================================================\n"
+    "joint_positions:	0	0	0	0	1.5708	0	\n"
+    "link_origins:\n"
+    "  ID 0: r: { 0  0  0  1 }  t: { 0  0  0 }\n"
+    "  ID 1: r: { -0.707107  0  0  0.707107 }  t: { 0  0.2435  0 }\n"
+    "  ID 2: r: { -0.707107  0  0  0.707107 }  t: { 0.4318  0.1501  -2.0739e-17 }\n"
+    "  ID 3: r: { 0  0  0  1 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "  ID 4: r: { -0.499999  0.500001  0.500001  0.499999 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "  ID 5: r: { 0  0.707108  1.11022e-16  0.707105 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "==================================================\n"
+    "joint_positions:	0	0	0	0	0	1.5708	\n"
+    "link_origins:\n"
+    "  ID 0: r: { 0  0  0  1 }  t: { 0  0  0 }\n"
+    "  ID 1: r: { -0.707107  0  0  0.707107 }  t: { 0  0.2435  0 }\n"
+    "  ID 2: r: { -0.707107  0  0  0.707107 }  t: { 0.4318  0.1501  -2.0739e-17 }\n"
+    "  ID 3: r: { 0  0  0  1 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "  ID 4: r: { -0.707107  0  0  0.707107 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "  ID 5: r: { 0  0  0.707108  0.707105 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "==================================================\n"
+    "joint_positions:	-1.5708	0	0	0	0	0	\n"
+    "link_origins:\n"
+    "  ID 0: r: { 0  0  -0.707108  0.707105 }  t: { 0  0  0 }\n"
+    "  ID 1: r: { -0.499999  0.500001  -0.500001  0.499999 }  t: { 0.2435  -8.94425e-07  0 }\n"
+    "  ID 2: r: { -0.499999  0.500001  -0.500001  0.499999 }  t: { 0.150098  -0.431801  2.77556e-17 }\n"
+    "  ID 3: r: { 0  0  -0.707108  0.707105 }  t: { 0.150098  -0.411501  0.4331 }\n"
+    "  ID 4: r: { -0.499999  0.500001  -0.500001  0.499999 }  t: { 0.150098  -0.411501  0.4331 }\n"
+    "  ID 5: r: { 0  0  -0.707108  0.707105 }  t: { 0.150098  -0.411501  0.4331 }\n"
+    "==================================================\n"
+    "joint_positions:	0	-1.5708	0	0	0	0	\n"
+    "link_origins:\n"
+    "  ID 0: r: { 0  0  0  1 }  t: { 0  0  0 }\n"
+    "  ID 1: r: { -0.499999  -0.500001  -0.500001  0.499999 }  t: { 0  0.2435  0 }\n"
+    "  ID 2: r: { -0.499999  -0.500001  -0.500001  0.499999 }  t: { -1.58609e-06  0.1501  0.4318 }\n"
+    "  ID 3: r: { 0  -0.707108  -1.11022e-16  0.707105 }  t: { -0.433102  0.1501  0.411498 }\n"
+    "  ID 4: r: { -0.499999  -0.500001  -0.500001  0.499999 }  t: { -0.433102  0.1501  0.411498 }\n"
+    "  ID 5: r: { 0  -0.707108  -1.11022e-16  0.707105 }  t: { -0.433102  0.1501  0.411498 }\n"
+    "==================================================\n"
+    "joint_positions:	0	0	-1.5708	0	0	0	\n"
+    "link_origins:\n"
+    "  ID 0: r: { 0  0  0  1 }  t: { 0  0  0 }\n"
+    "  ID 1: r: { -0.707107  0  0  0.707107 }  t: { 0  0.2435  0 }\n"
+    "  ID 2: r: { -0.499999  -0.500001  -0.500001  0.499999 }  t: { 0.4318  0.1501  -2.0739e-17 }\n"
+    "  ID 3: r: { 0  -0.707108  -1.11022e-16  0.707105 }  t: { -0.00129993  0.1501  -0.0203016 }\n"
+    "  ID 4: r: { -0.499999  -0.500001  -0.500001  0.499999 }  t: { -0.00129993  0.1501  -0.0203016 }\n"
+    "  ID 5: r: { 0  -0.707108  -1.11022e-16  0.707105 }  t: { -0.00129993  0.1501  -0.0203016 }\n"
+    "==================================================\n"
+    "joint_positions:	0	0	0	-1.5708	0	0	\n"
+    "link_origins:\n"
+    "  ID 0: r: { 0  0  0  1 }  t: { 0  0  0 }\n"
+    "  ID 1: r: { -0.707107  0  0  0.707107 }  t: { 0  0.2435  0 }\n"
+    "  ID 2: r: { -0.707107  0  0  0.707107 }  t: { 0.4318  0.1501  -2.0739e-17 }\n"
+    "  ID 3: r: { 0  0  -0.707108  0.707105 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "  ID 4: r: { -0.499999  0.500001  -0.500001  0.499999 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "  ID 5: r: { 0  0  -0.707108  0.707105 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "==================================================\n"
+    "joint_positions:	0	0	0	0	-1.5708	0	\n"
+    "link_origins:\n"
+    "  ID 0: r: { 0  0  0  1 }  t: { 0  0  0 }\n"
+    "  ID 1: r: { -0.707107  0  0  0.707107 }  t: { 0  0.2435  0 }\n"
+    "  ID 2: r: { -0.707107  0  0  0.707107 }  t: { 0.4318  0.1501  -2.0739e-17 }\n"
+    "  ID 3: r: { 0  0  0  1 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "  ID 4: r: { -0.499999  -0.500001  -0.500001  0.499999 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "  ID 5: r: { 0  -0.707108  -1.11022e-16  0.707105 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "==================================================\n"
+    "joint_positions:	0	0	0	0	0	-1.5708	\n"
+    "link_origins:\n"
+    "  ID 0: r: { 0  0  0  1 }  t: { 0  0  0 }\n"
+    "  ID 1: r: { -0.707107  0  0  0.707107 }  t: { 0  0.2435  0 }\n"
+    "  ID 2: r: { -0.707107  0  0  0.707107 }  t: { 0.4318  0.1501  -2.0739e-17 }\n"
+    "  ID 3: r: { 0  0  0  1 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "  ID 4: r: { -0.707107  0  0  0.707107 }  t: { 0.4115  0.1501  0.4331 }\n"
+    "  ID 5: r: { 0  0  -0.707108  0.707105 }  t: { 0.4115  0.1501  0.4331 }\n";
+  std::string result(create_tmp("puma.frames.XXXXXX", frames));
   return result;
 }
 

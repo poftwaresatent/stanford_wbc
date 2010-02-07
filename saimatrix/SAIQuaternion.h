@@ -139,6 +139,9 @@ public:
   // Basic arithmetic operations
   // -----------------------------------------------------------------
 
+  /** Like operator==() but you can specify a precision. */
+  bool equal(SAIQuaternion const & rhs, Float precision) const;
+  
   int operator==( const SAIQuaternion& rhs );
 
   SAIQuaternion operator-() const;
