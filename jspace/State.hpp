@@ -31,10 +31,23 @@ namespace jspace {
   class State
   {
   public:
+    typedef enum {
+      COMPARE_ACQUISITION_TIME = 0x1,
+      COMPARE_JOINT_ANGLES     = 0x2,
+      COMPARE_JOINT_VELOCITIES = 0x4,
+      COMPARE_ALL              = 0x7
+    } compare_flags_t;
+    
     State();
+    State(State const & orig);
     State(int npos, int nvel);
     
     void init(int npos, int nvel);
+    
+    bool equal(State const & rhs,
+	       int flags = COMPARE_JOINT_ANGLES | COMPARE_JOINT_VELOCITIES,
+	       double precision = 1e-3) const;
+    
     State & operator = (State const & rhs);
     
     timeval acquisition_time_;

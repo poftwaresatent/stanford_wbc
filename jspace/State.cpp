@@ -36,6 +36,14 @@ namespace jspace {
   
   
   State::
+  State(State const & orig)
+  {
+    init(0, 0);
+    *this = orig;
+  }
+  
+  
+  State::
   State(int npos, int nvel)
   {
     init(npos, nvel);
@@ -63,6 +71,34 @@ namespace jspace {
     joint_angles_ = rhs.joint_angles_;
     joint_velocities_ = rhs.joint_velocities_;
     return *this;
+  }
+  
+  
+  bool State::
+  equal(State const & rhs, int flags, double precision) const
+  {
+    if (&rhs == this) {
+      return true;
+    }
+    if (flags & COMPARE_ACQUISITION_TIME) {
+      if (acquisition_time_.tv_sec != rhs.acquisition_time_.tv_sec) {
+	return false;
+      }
+      if (acquisition_time_.tv_usec != rhs.acquisition_time_.tv_usec) {
+	return false;
+      }
+    }
+    if (flags & COMPARE_JOINT_ANGLES) {
+      if ( ! joint_angles_.equal(rhs.joint_angles_, precision)) {
+	return false;
+      }
+    }
+    if (flags & COMPARE_JOINT_VELOCITIES) {
+      if ( ! joint_velocities_.equal(rhs.joint_velocities_, precision)) {
+	return false;
+      }
+    }
+    return true;
   }
   
 }

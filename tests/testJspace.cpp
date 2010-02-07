@@ -46,12 +46,27 @@ TEST (basic, state)
   jspace::Model * model(0);
   try {
     model = create_model();
-  // EXPECT_LT (fabs(check_mass - M), 1e-6)
-  //   << "total mass: expected = " << M << " received = " << check_mass;
-  // for (int ii(0); ii < 3; ++ii) {
-  //   EXPECT_LT (fabs(check_center[ii] - com[ii]), 1e-6)
-  //     << "com[" << ii << "]: expected = " << com[ii] << " received = " << check_center[ii];
-  // }
+    int const ndof(model->getNDOF());
+    jspace::State state_in(ndof, ndof);
+    if (0 != gettimeofday(&state_in.acquisition_time_, 0)) {
+      FAIL () << "gettimeofday(): " << strerror(errno);
+    }
+    for (int ii(0); ii < ndof; ++ii) {
+      state_in.joint_angles_[ii] = -3 + ii * 0.5;
+      state_in.joint_velocities_[ii] = 3 - ii * 0.25;
+    }
+    model->setState(state_in);
+    {
+      jspace::State state_out(ndof, ndof);
+      state_out = model->getState();
+      EXPECT_TRUE (state_out.equal(state_in, jspace::State::COMPARE_ALL, 1e-6))
+	<< "jspace::State assignment or jspace::Model::getState() is buggy";
+    }
+    {
+      jspace::State state_out(model->getState());
+      EXPECT_TRUE (state_out.equal(state_in, jspace::State::COMPARE_ALL, 1e-6))
+	<< "jspace::State copy ctor or jspace::Model::getState() is buggy";
+    }
   }
   catch (std::exception const & ee) {
     delete model;
