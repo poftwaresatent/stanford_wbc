@@ -1,5 +1,7 @@
 /*
- * Copyright (c) 2009 Stanford University
+ * ROS support for Stanford-WBC http://stanford-wbc.sourceforge.net/
+ *
+ * Copyright (c) 2010 Stanford University. All rights reserved.
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -17,46 +19,37 @@
  */
 
 /**
-   \file attributes.hpp
+   \file wbc/ros_support/BehaviorLibrary.hpp
    \author Roland Philippsen
 */
 
-#ifndef WBC_ATTRIBUTES_HPP
-#define WBC_ATTRIBUTES_HPP
+#ifndef WBCROS_BEHAVIOR_LIBRARY_HPP
+#define WBCROS_BEHAVIOR_LIBRARY_HPP
 
-#include <string>
-#include <vector>
-#include <stdexcept>
-
-namespace wbcnet {
-  class NetConfig;
-}
+#include <wbc/ros/Model.hpp>
 
 namespace wbc {
-  
-  struct options;
-  class RobotControlModel;
   class BehaviorDescription;
-  class Extensions;
-  class PluginRegistry;
+  class BehaviorFactoryRegistry;
+}
+
+namespace wbcros {
   
-  
-  /**
-     Container for things that are required by \c wbcservo and \c wbcmodel.
-  */
-  struct attributes
+  class BehaviorLibrary
   {
-    attributes();
-    ~attributes();
+  public:
+    std::string behaviors_param_name_;
+    std::vector<wbc::BehaviorDescription*> behavior_;
     
-    static attributes * create(options const & opt) throw(std::runtime_error);
+    BehaviorLibrary(std::string const & param_prefix);
+    ~BehaviorLibrary();
     
-    wbc::Extensions * extensions;
-    wbcnet::NetConfig const * netcfg;
-    RobotControlModel * robmodel;
-    std::vector<wbc::BehaviorDescription*> behavior;
+    void initDummy(Model & model);
+    
+    void initFromParam(Model & model, ros::NodeHandle &nn,
+		       wbc::BehaviorFactoryRegistry const & breg) throw(std::runtime_error);
   };
   
 }
 
-#endif // WBC_ATTRIBUTES_HPP
+#endif // WBCROS_BEHAVIOR_LIBRARY_HPP

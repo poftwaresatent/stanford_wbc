@@ -50,7 +50,8 @@ namespace netrob {
   public:
     Robot(/** Will be deleted in the dtor */
 	  wbcnet::NetConfig * net_config,
-	  std::string const & channel_spec);
+	  std::string const & channel_spec,
+	  bool blocking);
     
     virtual ~Robot();
     
@@ -63,7 +64,35 @@ namespace netrob {
 			      SAIMatrix const * opt_force);
     virtual bool readCommand(SAIVector & command);
     
+    /**
+       Check if outgoing communication was successful. Useful in
+       non-blocking mode, if you need to know whether data has
+       actually gone out.
+       
+       \return True if the last sent message went through. This refers
+       to either writeCommand() or writeSensors(), whichever you
+       called before.
+    */
+    inline bool sendOk() const { return m_send_ok; }
+    
+    /**
+       Check if incoming communication was successful. Useful in
+       non-blocking mode, if you need to know whether data has
+       actually come in.
+       
+       \return True if the last attempt to receive a message was
+       successful. This refers to either readSensors() or
+       readCommand(), whichever you called before.
+    */
+    inline bool receiveOk() const { return m_receive_ok; }
+    
+    
+  protected:
+    friend class MessageHandler;
+    
     bool lazyCreateChannel();
+    
+    bool const m_blocking;
     
     wbc::msg::RobotState * m_robot_state;
     wbc::msg::ServoCommand * m_servo_command;
@@ -71,6 +100,8 @@ namespace netrob {
     wbcnet::NetConfig * m_net_config;
     std::string const m_channel_spec;
     wbcnet::Channel * m_channel;
+    bool m_send_ok;
+    bool m_receive_ok;
   };
   
   

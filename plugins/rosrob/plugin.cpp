@@ -1,5 +1,7 @@
 /*
- * Copyright (c) 2010 Stanford University
+ * ROS support for Stanford-WBC http://stanford-wbc.sourceforge.net/
+ *
+ * Copyright (c) 2010 Stanford University. All rights reserved.
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -17,31 +19,28 @@
  */
 
 /**
-   \file TaskSpec.hpp
+   \file plugins/rosrob/plugin.cpp
    \author Roland Philippsen
 */
 
-#ifndef WBC_MSG_TASK_SPEC_HPP
-#define WBC_MSG_TASK_SPEC_HPP
+#include "Robot.hpp"
+#include <wbc/core/Plugin.hpp>
 
-#include <wbcnet/msg/TaskSpec.hpp>
-#include <wbcnet/message_id.hpp>
+using namespace std;
 
-namespace wbc {
+namespace wbc_rosrob_plugin {
   
-  namespace msg {
-    
-    /**
-       Instantiation of wbcnet::msg::TaskSpec that simply adds a
-       hardcoded message ID.
-    */
-    class TaskSpec : public wbcnet::msg::TaskSpec {
-    public:
-      TaskSpec() : wbcnet::msg::TaskSpec(wbcnet::msg::TASK_SPEC) {}
-    };
+  class Plugin: public wbc::Plugin {
+  public:
+    virtual void Init(wbc::Extensions & extensions) throw(std::runtime_error)
+    {
+      extensions.AddRobot("ros", new Factory());
+    }
+  };
 
-  }
-  
 }
 
-#endif // WBC_MSG_TASK_SPEC_HPP
+wbcnet::Module * wbcnet_create_module()
+{
+  return new wbc_rosrob_plugin::Plugin();
+}

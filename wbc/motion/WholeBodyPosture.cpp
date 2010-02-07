@@ -32,7 +32,8 @@
 namespace wbc {
 
   WholeBodyPosture::WholeBodyPosture(std::string const & name)
-    : TaskDescription(name, 400, 40, 0.1, 0)
+    : TaskDescription(name, 400, 40, 0.1, 0),
+      enable_vsat_(false)
   {}
 
 
@@ -50,8 +51,31 @@ namespace wbc {
 
     config_ = unactuationMatrix_ * robModel_->kinematics()->jointPositions();
     velocity_ = globalJacobian_ * robModel_->kinematics()->jointVelocities();
-    servoUpdate();
-  } 
+    
+    if (0 == test_kp.size()) {
+      servoUpdate();
+    }
+    else {
+      if (test_kp.size() != config_.size()) {
+	int const oldsize(test_kp.size());
+	test_kp.setSize(config_.size(), false);
+	for (int ii(oldsize); ii < test_kp.size(); ++ii) {
+	  test_kp[ii] = 0;
+	}
+      }
+      if (test_kd.size() != test_kp.size()) {
+	int const oldsize(test_kd.size());
+	test_kd.setSize(test_kp.size(), false);
+	for (int ii(oldsize); ii < test_kd.size(); ++ii) {
+	  test_kd[ii] = 0;
+	}
+      }
+      commandAccel_.setSize(config_.size(), true);
+      for (int ii(0); ii < config_.size(); ++ii) {
+	commandAccel_[ii] = (goalConfig_[ii] -  config_[ii]) * test_kp[ii] - velocity_[ii] * test_kd[ii];
+      }
+    }
+  }
 
   void 
   WholeBodyPosture::servoUpdate() {
@@ -62,7 +86,7 @@ namespace wbc {
     //config_.display("actual posture");
 
     // Saturating upon velocity limits
-    if( m_diffGain != 0 ) {
+    if (enable_vsat_ && (m_diffGain != 0)) {
       double satFactor = desDiff.abs() / ( m_maxVel * m_diffGain );
       if( satFactor > 1 ) desDiff.multiply( 1/satFactor );
     }

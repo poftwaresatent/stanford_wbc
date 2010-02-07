@@ -40,7 +40,7 @@ class RobotFake
   : public wbc::BidirectionalRobotAPI
 {
 public:
-  RobotFake(int extra_usleep);
+  RobotFake(int extra_usleep, int drift);
   
   virtual bool readSensors(SAIVector & jointAngles, SAIVector & jointVelocities,
 			   timeval & acquisition_time, SAIMatrix * opt_force);
@@ -52,7 +52,9 @@ public:
   virtual bool readCommand(SAIVector & command);
 
 protected:
-  int const extra_usleep;
+  int const m_extra_usleep;
+  int const m_drift;
+  int m_tick;
 };
 
 

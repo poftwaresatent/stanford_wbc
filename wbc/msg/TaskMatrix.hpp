@@ -32,6 +32,11 @@ namespace wbc {
   
   namespace msg {
     
+    /**
+       Instantiation of wbcnet::msg::TaskMatrixWrap that specifies
+       maximum possible matrix dimensions and hardcodes the message
+       ID.
+    */
     class TaskMatrix : public wbcnet::msg::TaskMatrixWrap
     {
     public:

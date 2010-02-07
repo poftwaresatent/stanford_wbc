@@ -148,6 +148,8 @@ namespace wbcnet {
   
   void manual_logging_verbosity(int verbosity)
   {
+#ifndef DISABLE_LOGGING
+# ifdef HAVE_LOG4CXX
     if (verbosity > 0) {
       wbcnet::logger_t rootLogger(wbcnet::get_root_logger());
       if (verbosity > 2) {
@@ -163,6 +165,8 @@ namespace wbcnet {
 	  rootLogger->setLevel(log4cxx::Level::getInfo());
       }
     }
+# endif // HAVE_LOG4CXX
+#endif // DISABLE_LOGGING
   }
   
 }

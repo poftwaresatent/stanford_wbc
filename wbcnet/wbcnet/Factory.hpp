@@ -36,6 +36,12 @@
 
 namespace wbcnet {
   
+  
+  /**
+     A factory is something that has a Create() method. The type of
+     thing returned (or at least a superclass of it) must be known at
+     compile time.
+  */
   template<typename root_t>
   class FactoryAPI {
   public:
@@ -44,6 +50,13 @@ namespace wbcnet {
   };
   
   
+  /**
+     Specialization of FactoryAPI for any default-constructible
+     type. In order to support runtime polymorphism at compile time,
+     you have to pass two types to this template: the type of the
+     superclass in \c root_t and the type of the subclass in \c
+     leaf_t.
+  */
   template<typename leaf_t, typename root_t>
   class Factory : public FactoryAPI<root_t> {
   public:
@@ -51,6 +64,14 @@ namespace wbcnet {
   };
   
   
+  /**
+     A factory registry allows you to create subclass instances by
+     name. It is implemented here as a collection of named
+     factories. Use the Registry::Add() method to register
+     factories. In this instantiation, the pointers passed to
+     Registry::Add() get deleted for you when the registry is
+     destroyed.
+  */
   template<typename value_t>
   class FactoryRegistry
     : public Registry<FactoryAPI<value_t>*,

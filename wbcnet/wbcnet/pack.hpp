@@ -290,6 +290,9 @@ namespace wbcnet {
   
   struct timestamp;
   
+  /**
+     Makes a timestamp packable.
+  */
   class TimestampPack
     : public Packable
   {

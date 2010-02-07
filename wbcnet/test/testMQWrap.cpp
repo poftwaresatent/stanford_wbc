@@ -87,7 +87,7 @@ int main(int argc, char ** argv)
   if (0 != atexit(cleanup))
     errx(EXIT_FAILURE, "atexit() failed");
   idl::CreateSingleton();
-  wbcnet::get_logger("wbcnet")->setLevel(log4cxx::Level::getTrace());
+  wbcnet::get_logger("wbcnet")->setLevel(wbcnet::Level::getTrace());
 
   static const int npos(5);
   static const int nvel(4);

@@ -38,6 +38,15 @@ namespace wbcnet {
   
   class SPQueue;
   
+  
+  /**
+     A NetConfig that creates an SPQueue for you. This does not make
+     all that much sense because an SPQueue is just an in-process
+     queue of buffers, and if you have a single process application
+     you either do not use wbcnet or you know that it's single-process
+     and instantiate SPQueue instances directly. It's useful for
+     testing though!
+  */
   class SPQNetConfig
     : public NetConfig
   {

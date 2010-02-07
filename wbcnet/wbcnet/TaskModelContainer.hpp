@@ -43,6 +43,11 @@ namespace wbcnet {
   
   class MatrixStorageAPI;
   
+  /**
+     Default traits for TaskModelContainer instantiations. By default,
+     matrices are deleted at destruction time, and the container
+     automatically grows its storage when required.
+  */
   struct task_model_container_default_traits {
     static bool delete_matrices() { return true; }
     static bool auto_grow() { return true; }
@@ -50,7 +55,10 @@ namespace wbcnet {
   
   
   /**
-     There are three types of model matrices:
+     Container of the actual storage of task model matrices. See
+     TaskModelAPI and TaskModel for the task model interface you
+     probably actually care about.  There are three types of model
+     matrices:
      - Some are only dependent on the robot structure, the robot
        state, and/or some general relation to the environment. These
        are stored in TaskModelContainer::indep_mx. Examples are

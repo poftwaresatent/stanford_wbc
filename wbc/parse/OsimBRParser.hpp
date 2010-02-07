@@ -33,12 +33,13 @@
 namespace wbc {
 
   /**
-     \todo
-     - Properly parse and initialize
-       BranchingRepresentation::defaultJointPosVec_,
-       BranchingRepresentation::upperJointLimitVec_, and
-       BranchingRepresentation::lowerJointLimitVec_.
-     - shouldn't we call taoDynamics::initialize() somewhere?
+     A parser that reads OpenSim XML files and translates them into a
+     wbc::BranchingRepresentation.
+     
+     \todo Properly parse and initialize
+     BranchingRepresentation::defaultJointPosVec_,
+     BranchingRepresentation::upperJointLimitVec_, and
+     BranchingRepresentation::lowerJointLimitVec_.
   */
   class OsimBRParser
     : public BRParser

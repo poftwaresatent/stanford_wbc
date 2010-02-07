@@ -37,6 +37,10 @@
 namespace wbcnet {
   
   
+  /**
+     A NetConfig that creates an SoServer for you. This allows you to
+     communicate via TCP/IP, if that is available on your platform.
+  */
   class TCPServerNetConfig
     : public NetConfig
   {
@@ -57,6 +61,10 @@ namespace wbcnet {
   };
   
   
+  /**
+     A NetConfig that creates an SoClient for you. This allows you to
+     communicate via TCP/IP, if that is available on your platform.
+  */
   class TCPClientNetConfig
     : public NetConfig
   {

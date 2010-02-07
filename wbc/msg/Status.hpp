@@ -31,6 +31,9 @@ namespace wbc {
 
   namespace msg {
     
+    /**
+       Interpretation for status messages.
+    */
     typedef enum {
       VOID_STATUS,
       COMPUTE_MODEL,		// servo --> model: please compute matrices
@@ -38,6 +41,10 @@ namespace wbc {
       MODEL_SUCCESS		// model --> servo: sent all updated matrices
     } status_id_t;
     
+    /**
+       Instantiation of wbcnet::msg::Status that simply hardcodes the
+       message ID.
+    */
     class Status : public wbcnet::msg::Status {
     public:
       Status() : wbcnet::msg::Status(wbcnet::msg::STATUS) { status = VOID_STATUS; }

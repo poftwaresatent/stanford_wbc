@@ -51,7 +51,7 @@ static void loop();
 
 static int pskip(1);
 static int ndof(30);
-static string in_robot_type("fake");
+static string in_robot_type("fake:100000:10");
 static vector<string> out_robot_type;
 static bool verbose(false);
 static bool skip_first_half(false);
@@ -230,8 +230,8 @@ void usage(ostream & os)
     ////     << "   -H          help on registered RobotAPI factories\n"
      << "   -v          verbose mode (debug messages)\n"
      << "   -P          skip first half of first iteration (to pretend we're a servo)\n"
-     << "   -i <spec>   input RobotAPI spec for readSensors and writeTorques (default fake)\n"
-     << "   -o <spec>   output RobotAPI spec for writeSensor and readTorques (default fake)\n"
+     << "   -i <spec>   input RobotAPI spec for readSensors and writeTorques (default fake:100000:10)\n"
+     << "   -o <spec>   output RobotAPI spec for writeSensor and readTorques (default fake:100000:10)\n"
      << "               NOTE: you can specify more than one output robot by repeating -o\n"
      << "   -p <skip>   print status every skip loops (default = 1, so every loop)\n"
      << "   -n <NDOF>   override NDOF (default == 30)\n"
@@ -362,7 +362,7 @@ void init()
   }
   
   if (out_robot_type.empty())
-    out_robot_type.push_back("fake");
+    out_robot_type.push_back("fake:100000:10");
   for (size_t ii(0); ii < out_robot_type.size(); ++ii) {
     BidirectionalRobotAPI * out(extensions->robot_registry->parseCreateBidirectional(out_robot_type[ii], NULL));
     if ( ! out)

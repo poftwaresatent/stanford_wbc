@@ -92,7 +92,7 @@ namespace wbcnet {
   
 }
 
-namespace log4cxx {
+namespace wbcnet {
 
   /**
      Looks like a subset of log4cxx::Level, but does not do

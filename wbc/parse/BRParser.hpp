@@ -33,6 +33,17 @@ namespace wbc {
 
   class BranchingRepresentation;
   
+  
+  /**
+     Facade for the various parsers that can exist in the
+     system. Actually, it hardcodes a mapping of strings to parsers:
+     "sai" gets mapped to wbc::TiXmlBRParser and "osim" gets mapped to
+     wbc::OsimBRParser, both of which are subclasses of BRParser.
+     
+     \note The idea is to make this extensible at runtime using the
+     wbc::Plugin mechanism... and to start using BRBuilder for an easy
+     to reuse and simple component for implementing new parsers.
+  */
   class BRParser {
   public:
     virtual ~BRParser() {}

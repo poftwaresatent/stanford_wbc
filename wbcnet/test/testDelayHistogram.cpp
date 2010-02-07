@@ -32,6 +32,7 @@
 #include <wbcnet/DelayHistogram.hpp>
 #include <iostream>
 #include <unistd.h>
+#include <stdio.h>
 
 using namespace wbcnet;
 using namespace std;
@@ -47,4 +48,5 @@ int main(int argc, char ** argv)
     }
     dh.DumpAll(cout);
   }
+  dh.DumpTable(stdout);
 }

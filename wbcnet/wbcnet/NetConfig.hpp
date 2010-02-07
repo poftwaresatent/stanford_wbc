@@ -39,6 +39,15 @@ namespace wbcnet {
 
   class Channel;
   
+  
+  /**
+     Runtime-configurable creation of communication channels. You pass
+     a string \c comspec to the static Create() method, out comes
+     (some subclass of a) NetConfig, which you can then use to
+     CreateChannel() either based on a pair of deprecated process_t
+     tags, or a string-based \c connection_spec. Very useful for
+     choosing the communication mode from the command line!
+  */
   class NetConfig
   {
   public:

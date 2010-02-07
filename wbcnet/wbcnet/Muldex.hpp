@@ -62,6 +62,31 @@ namespace wbcnet {
 	struct muldex_status {
     typedef enum {
       SUCCESS,
+      /**
+	 BEWARE: non-blocking communication status is signaled
+	 inconsistently, sometimes as COM_ERROR and sometimes as
+	 TRY_AGAIN. The best way to check for TRY_AGAIN in
+	 non-blocking communication modes is to see if \c
+	 muldex_status::com==COM_TRY_AGAIN
+	 
+	 Example code:
+	 \code
+	 wbcnet::muldex_status const ms(m_muldex.DemuxOne(m_channel));
+	 if (ms.com == wbcnet::COM_TRY_AGAIN) {
+	   cout << "We have a COM_TRY_AGAIN status on our muldex!\n";
+	 }
+	 else if (ms.muldex != wbcnet::muldex_status::SUCCESS) {
+	   cout << "Our muldex is seriously shot!\n";
+	 }
+	 else {
+	   cout << "Check out these freshly demuxed data!\n";
+	 }
+	 \endcode
+	 
+	 \todo Find a better way of fusing things into muldex_status,
+	 or at least introduce two kinds of TRY_AGAIN, namely
+	 COM_TRY_AGAIN and OTHER_TRY_AGAIN.
+      */
       TRY_AGAIN,
       /** look at muldex_status::com for more details */
       COM_ERROR,

@@ -31,6 +31,10 @@ namespace wbc {
   
   namespace msg {
     
+    /**
+       Instantiation of wbcnet::msg::ServoCommand compatible with both
+       saimatrix and wbcnet.
+    */
     class ServoCommand
       : public wbcnet::msg::ServoCommand<wbc::SAIVectorAPI>
     {

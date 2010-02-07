@@ -228,13 +228,21 @@ namespace wbcnet {
       
       void InitSetBehavior(int behaviorID);
       
-      void InitSetGoal(double const * goal_coordinates, size_t n_coordinates);
-      void InitSetGains(double const * gains, size_t n_gains);
+      void InitSetGoal(/** set the ID to -1 to select the current behavior*/
+		       int behaviorID,
+		       double const * goal_coordinates, size_t n_coordinates);
+      
+      void InitSetGains(/** set the ID to -1 to select the current behavior*/
+			int behaviorID,
+			double const * gains, size_t n_gains);
   
       void InitGetPositions();
       void InitGetVelocities();
       void InitGetTorques();
-      void InitGetJacobian(/** set the ID to -1 to select the current behavior*/ int behaviorID);
+      
+      void InitGetJacobian(/** set the ID to -1 to select the current behavior*/
+			   int behaviorID);
+      
       void InitFloat();
       void InitActivate();
       

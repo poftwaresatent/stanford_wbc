@@ -44,7 +44,7 @@ namespace wbc {
   {
     Extensions * extensions(new Extensions(robmodel));
     try {
-      LOG_INFO (logger, "wbc::load_extensions(): adding builtin model factories");
+      LOG_DEBUG (logger, "wbc::load_extensions(): adding builtin model factories");
       extensions->AddTaskModel("mobile", new MobileManipulatorTaskModelFactory());
       extensions->AddServoBehaviors("mobile", new ServoBehaviorsFactory<MobileManipulatorServoBehaviors>());
     }
@@ -58,16 +58,16 @@ namespace wbc {
     
 #ifdef DISABLE_PLUGINS
     
-    LOG_INFO (logger, "wbc::load_extensions(): dynamic loading of plugins disabled, using static extensions");
+    LOG_DEBUG (logger, "wbc::load_extensions(): dynamic loading of plugins disabled, using static extensions");
     wbc_add_builtin_plugins(extensions);
     
 #else // DISABLE_PLUGINS
 
     // XXXX registry should be deleted after use (when the program exits)
     PluginRegistry * plugin_reg(new PluginRegistry(*extensions));
-    LOG_INFO (logger, "wbc::load_extensions(): loading plugins...");
+    LOG_DEBUG (logger, "wbc::load_extensions(): loading plugins...");
     size_t const nplugins(plugin_reg->SearchAndLoadPlugins());
-    LOG_INFO (logger, "wbc::load_extensions(): loaded " << nplugins << " plugins");
+    LOG_DEBUG (logger, "wbc::load_extensions(): loaded " << nplugins << " plugins");
 
 #endif // DISABLE_PLUGINS
     
