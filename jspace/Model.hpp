@@ -44,7 +44,13 @@ namespace jspace {
   public:
     /** For the moment we are wrapping the existing code. Later we'll
 	cleanly reimplement it with direct access to TAO. */
-    explicit Model(wbc::RobotControlModel * robmodel);
+    Model(/** The existing robot model that we are wrapping. */
+	  wbc::RobotControlModel * robmodel,
+	  /** If true, then the jspace::Model destructor deletes the
+	      robmodel. Otherwise, it is left alone. */
+	  bool cleanup_robmodel);
+    
+    ~Model();
     
     //////////////////////////////////////////////////
     // fire-and-forget facet
@@ -213,6 +219,7 @@ namespace jspace {
     // point we can probably change these fields to protected instead
     // of private, to make it easier to extend this model.
     wbc::RobotControlModel * robmodel_;
+    bool cleanup_robmodel_;
     
     State state_;
   };

@@ -35,9 +35,20 @@ namespace jspace {
   
   
   Model::
-  Model(wbc::RobotControlModel * robmodel)
-    : robmodel_(robmodel)
+  Model(wbc::RobotControlModel * robmodel,
+	bool cleanup_robmodel)
+    : robmodel_(robmodel),
+      cleanup_robmodel_(cleanup_robmodel)
   {
+  }
+
+
+  Model::
+  ~Model()
+  {
+    if (cleanup_robmodel_) {
+      delete robmodel_;
+    }
   }
   
   
