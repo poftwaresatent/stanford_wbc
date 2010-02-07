@@ -26,6 +26,7 @@
 #include <wbc/core/RobotControlModel.hpp>
 #include <wbc/core/BranchingRepresentation.hpp>
 #include <wbc/parse/BRParser.hpp>
+#include <tao/dynamics/taoDNode.h>
 #include <jspace/Model.hpp>
 #include <gtest/gtest.h>
 #include <errno.h>
@@ -69,9 +70,53 @@ TEST (basic, state)
     }
   }
   catch (std::exception const & ee) {
-    delete model;
     ADD_FAILURE () << "exception " << ee.what();
   }
+  delete model;
+}
+
+
+TEST (basic, branching)
+{
+  jspace::Model * model(0);
+  try {
+    model = create_model();
+    EXPECT_EQ (model->getNNodes(), 7) << "Puma should have 7 nodes";
+    EXPECT_EQ (model->getNJoints(), 6) << "Puma should have 6 joints";
+    EXPECT_EQ (model->getNDOF(), 6) << "Puma should have 6 DOF";
+    char const * node_name[] = {
+      "base",
+      "upper_arm",
+      "lower_arm",
+      "wrist-hand",
+      "wrist-finger",
+      "end-effector"
+    };
+    char const * joint_name[] = {
+      "shoulder-yaw",
+      "shoulder-pitch",
+      "elbow",
+      "wrist-roll1",
+      "wrist-pitch",
+      "wrist-roll2"
+    };
+    for (int ii(0); ii < 6; ++ii) {
+      EXPECT_NE ((void*)0, model->getNode(ii))
+	<< "Could not get node " << ii;
+      EXPECT_NE ((void*)0, model->getNodeByName(node_name[ii]))
+	<< "Could not get node by name \"" << node_name[ii] << "\"";
+      EXPECT_EQ (ii, model->getNodeByName(node_name[ii])->getID())
+	<< "Node with name \"" << node_name[ii] << "\" should have ID " << ii;
+      EXPECT_NE ((void*)0, model->getNodeByJointName(joint_name[ii]))
+	<< "Could not get node by joint name \"" << joint_name[ii] << "\"";
+      EXPECT_EQ (ii, model->getNodeByJointName(joint_name[ii])->getID())
+	<< "Node with joint name \"" << joint_name[ii] << "\" should have ID " << ii;
+    }
+  }
+  catch (std::exception const & ee) {
+    ADD_FAILURE () << "exception " << ee.what();
+  }
+  delete model;
 }
 
 
