@@ -23,6 +23,9 @@
    \author Roland Philippsen
 */
 
+#define PR_DOUBLE_PRECISION
+#include "puma/pumaDynamics.h"
+
 #include <wbc/core/RobotControlModel.hpp>
 #include <wbc/core/BranchingRepresentation.hpp>
 #include <wbc/parse/BRParser.hpp>
@@ -31,6 +34,7 @@
 #include <wbcnet/strutil.hpp>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <gtest/gtest.h>
 #include <errno.h>
 #include <string.h>
@@ -226,6 +230,185 @@ TEST (jspaceModel, kinematics)
 	   << "    expected: " << SAIVector3(tx, ty, tz) << "\n"
 	   << "    computed: " << transform.translation() << "\n";
 #endif // VERBOSE
+    }
+  }
+  catch (std::exception const & ee) {
+    ADD_FAILURE () << "exception " << ee.what();
+  }
+  delete model;
+}
+
+
+static bool check_matrix(char const * name,
+			 PrMatrix const & want,
+			 SAIMatrix const & have,
+			 double precision,
+			 std::ostringstream & msg)
+{
+  int const nrows(want.row());
+  if (nrows != have.row()) {
+    msg << "check_matrix(" << name << ") size mismatch: have " << have.row()
+	<< " rows but want " << nrows << "\n";
+    return false;
+  }
+  int const ncolumns(want.column());
+  if (ncolumns != have.column()) {
+    msg << "check_matrix(" << name << ") size mismatch: have " << have.column()
+	<< " columns but want " << ncolumns << "\n";
+    return false;
+  }
+  
+  precision = fabs(precision);
+  double maxdelta(0);
+  for (int ii(0); ii < nrows; ++ii) {
+    for (int jj(0); jj < ncolumns; ++jj) {
+      double const delta(fabs(have[ii][jj] - want[ii][jj]));
+      if (delta > precision) {
+	maxdelta = delta;
+      }
+    }
+  }
+  double const halfmax(0.5 * maxdelta);
+  double const tenprecision(10 * precision);
+  
+  if (maxdelta <= precision) {
+    msg << "check_matrix(" << name << ") OK\n";
+  }
+  else {
+    std::string const wtf(name);
+    msg << "check_matrix(";
+    msg << wtf;
+    msg << ") FAILED\n";
+  }
+  msg << "  precision = " << precision << "\n"
+      << "  maxdelta = " << maxdelta << "\n";
+  for (int ii(nrows-1); ii >= 0; --ii) {
+    msg << "    ";
+    for (int jj(0); jj < ncolumns; ++jj) {
+      double const delta(fabs(have[ii][jj] - want[ii][jj]));
+      if (delta <= precision) {
+	if (delta < halfmax) {
+	  msg << ".";
+	}
+	else {
+	  msg << "o";
+	}
+      }
+      else if (delta >= tenprecision) {
+	msg << "#";
+      }
+      else {
+	msg << "*";
+      }
+    }
+    msg << "\n";
+  }
+  
+  return maxdelta <= precision;
+}
+
+
+static bool check_vector(char const * name,
+			 PrVector const & want,
+			 SAIVector const & have,
+			 double precision,
+			 std::ostream & msg)
+{
+  int const nelems(want.size());
+  if (nelems != have.size()) {
+    msg << "check_matrix(" << name << ") size mismatch: have " << have.size()
+	<< " elements but want " << nelems << "\n";
+    return false;
+  }
+  
+  precision = fabs(precision);
+  double maxdelta(0);
+  for (int ii(0); ii < nelems; ++ii) {
+    double const delta(fabs(have[ii] - want[ii]));
+    if (delta > precision) {
+      maxdelta = delta;
+    }
+  }
+  double const halfmax(0.5 * maxdelta);
+  double const tenprecision(10 * precision);
+  
+  if (maxdelta <= precision) {
+    msg << "check_vector(" << name << ") OK\n";
+  }
+  else {
+    msg << "check_vector(" << name << ") FAILED\n";
+  }
+  msg << "  precision = " << precision << "\n"
+      << "  maxdelta = " << maxdelta << "\n"
+      << "    ";
+  for (int ii(0); ii < nelems; ++ii) {
+    double const delta(fabs(have[ii] - want[ii]));
+    if (delta <= precision) {
+      if (delta < halfmax) {
+	msg << ".";
+      }
+      else {
+	msg << "o";
+      }
+    }
+    else if (delta >= tenprecision) {
+      msg << "#";
+    }
+    else {
+      msg << "*";
+    }
+  }
+  msg << "\n";
+  
+  return maxdelta <= precision;
+}
+
+
+TEST (jspaceModel, dynamics)
+{
+  jspace::Model * model(0);
+  try {
+    model = create_model();
+    taoDNode * ee(model->getNode(5));
+    ASSERT_NE ((void*)0, ee) << "no end effector (node ID 5)";
+    jspace::State state(6, 6);
+    SAIVector tB(6), tG(6);
+    SAIMatrix tJ(6, 6), tA(6, 6);
+    PrVector mq(6), mdq(6), mB(6), mG(6);
+    PrMatrix mJ(6, 6), mdJ(6, 6), mA(6, 6);
+    state.joint_velocities_.zero();
+    mdq.zero();
+    for (mq[0] = -0.1; mq[0] < 0.11; mq[0] += 0.1) {
+      state.joint_angles_[0] = mq[0];
+      for (mq[1] = -0.1; mq[1] < 0.11; mq[1] += 0.1) {
+	state.joint_angles_[1] = mq[1];
+	for (mq[2] = -0.1; mq[2] < 0.11; mq[2] += 0.1) {
+	  state.joint_angles_[2] = mq[2];
+	  for (mq[3] = -0.1; mq[3] < 0.11; mq[3] += 0.1) {
+	    state.joint_angles_[3] = mq[3];
+	    for (mq[4] = -0.1; mq[4] < 0.11; mq[4] += 0.1) {
+	      state.joint_angles_[4] = mq[4];
+	      for (mq[5] = -0.1; mq[5] < 0.11; mq[5] += 0.1) {
+		state.joint_angles_[5] = mq[5];
+		getPumaDynamics(mq, mdq, mJ, mdJ, mA, mB, mG);
+		model->update(state);
+		ASSERT_TRUE (model->computeJacobian(ee, tJ)) << "computeJacobian failed";
+		model->getMassInertia(tA);
+		model->getCoriolisCentrifugal(tB);
+		model->getGravity(tG);
+		std::ostringstream msg;
+
+		msg << "wtf???\n";
+		
+		EXPECT_TRUE (check_matrix("Jacobian", mJ, tJ, 1e-3, msg)) << msg.str();
+		EXPECT_TRUE (check_matrix("mass inertia", mA, tA, 1e-3, msg)) << msg.str();
+		EXPECT_TRUE (check_vector("Coriolis centrifugal", mB, tB, 1e-3, msg)) << msg.str();
+		EXPECT_TRUE (check_vector("gravity", mG, tG, 1e-3, msg)) << msg.str();
+	      }
+	    }
+	  }
+	}
+      }
     }
   }
   catch (std::exception const & ee) {
