@@ -31,9 +31,25 @@
 #include <string>
 #include <tinyxml/tinyxml.h>
 
-namespace lotus {
+//Include the data structures
+#include <wbc/robarch/glob_rob_ds/SControllerRobotLink.hpp>
+#include <wbc/robarch/glob_rob_ds/SGlobalRobotDS.hpp>
 
+namespace lotusarchitect {
 
+class CLotusTiXmlParser
+{
+private:
+
+public:
+  CLotusTiXmlParser() {}
+  ~CLotusTiXmlParser() {}
+
+  //Reads single links
+  static bool readLink(const TiXmlHandle & arg_link_txml, robotarchitect::SControllerRobotLink* arg_link_ds, bool arg_is_root);
+  static bool readGlobalData(const TiXmlHandle &arg_glob_data_txml, robotarchitect::SGlobalRobotDS* arg_glob_ds);
+  
+};
 
 }
 #endif /* CLOTUSTIXMLPARSER_H_ */

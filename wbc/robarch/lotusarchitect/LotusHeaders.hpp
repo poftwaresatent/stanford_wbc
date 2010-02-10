@@ -30,7 +30,11 @@
 
 #include <cassert>
 
-namespace lotusparser {
+#include <wbcnet/log.hpp>
+
+namespace lotusarchitect {
+
+static wbcnet::logger_t logger(wbcnet::get_logger("lotusparser"));
 
 const int _max_path=200;
 }

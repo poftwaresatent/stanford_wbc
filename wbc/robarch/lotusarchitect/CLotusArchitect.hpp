@@ -28,24 +28,20 @@
 #define COSIMARCHITECT_HPP_
 
 #include <wbc/robarch/CRobotArchitect.hpp>
-#include <wbc/robarch/lotusarchitect/tixml_parser/CLotusTiXmlParser.hpp>
 
-//Include the data structures
+//The data structures
 #include <wbc/robarch/glob_rob_ds/SControllerRobotLink.hpp>
-#include <wbc/robarch/glob_rob_ds/SGraphicsRobotLink.hpp>
 #include <wbc/robarch/glob_rob_ds/SGlobalRobotDS.hpp>
 
-namespace robotarchitect {
+namespace lotusarchitect {
 
 class CLotusArchitect: public robotarchitect::CRobotArchitect {
-  
 public:
   CLotusArchitect(){}
   virtual ~CLotusArchitect(){}
   /**Reads the lotus file and adds its links to crRobotDef
    * and grRobotDef which are inherited from CRobotArchitect*/
-  bool readRobotDefinition(const string arg_file, CRobotDefinition<SControllerRobotLink> & arg_cr_robdef);
-  bool readRobotDefinition(const string arg_file, CRobotDefinition<SGraphicsRobotLink> & arg_gr_robdef);
+  bool readRobotDefinition(const std::string arg_file);
 };
 
 }

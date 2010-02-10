@@ -28,29 +28,94 @@
 #endif 
 
 #include "CLotusArchitect.hpp"
-#include <wbcnet/log.hpp>
 
-static wbcnet::logger_t logger(wbcnet::get_logger("robotarchitect"));
+#include <tinyxml/tinyxml.h>
 
-namespace robotarchitect {
+//The general header (contains the logger etc.)
+#include <wbc/robarch/lotusarchitect/LotusHeaders.hpp>
+//And the tinyxml parser for lotus xml files
+#include <wbc/robarch/lotusarchitect/tixml_parser/CLotusTiXmlParser.hpp>
 
-bool CLotusArchitect::readRobotDefinition(const string arg_file, CRobotDefinition<SControllerRobotLink> & arg_cr_robdef)
+namespace lotusarchitect {
+
+using namespace robotarchitect;
+
+bool CLotusArchitect::readRobotDefinition(const string arg_file)
 {
-  bool flag = true;
-  buildCrRobot = true;
+  robot_initialized_ = true;
+  TiXmlDocument _file(arg_file.c_str());
+  
+  //Check if file opened properly
+  robot_initialized_ = _file.LoadFile();
+  if(true!=robot_initialized_)
+  {
+    LOG_FATAL(logger, "CLotusArchitect::readRobotDefinition() Fatal Error. Could not open xml file to read controller definition.");
+    goto END;
+  }
+  else
+  {
+    LOG_DEBUG(logger, "Reading controller robot definition from file:");
+    LOG_DEBUG(logger, arg_file);
+  }
 
-  return flag;
-}
+  printf("\n\nNow parsing the file.... 0% done\n");
 
+  robdef_ = new CRobotDefinition<SControllerRobotLink>(true); //true deferences all pointers when this is destroyed  
+  
+  //Get handles to the tinyxml loaded ds
+  TiXmlHandle _file_handle( &_file );
+  TiXmlHandle _world = _file_handle.FirstChildElement( "lotus_world" );
 
+  //1. Read the global data
+  TiXmlHandle _global_settings = _world.FirstChildElement( "globals" );
+  robot_initialized_ = CLotusTiXmlParser::readGlobalData(_global_settings, robdef_->getGlobData());
+  if(false == robot_initialized_) goto END ;
 
-//Read in the graphics data from the xml file
-bool CLotusArchitect::readRobotDefinition(const string arg_file, CRobotDefinition<SGraphicsRobotLink> & arg_gr_robdef)
-{
-  bool flag = true;
-  buildGrRobot = true;
+  //2. Read in the links.
+  TiXmlElement* _robot_element = _world.FirstChildElement( "robot" ).ToElement();
+  //Iterating with TiXmlElement is faster than TiXmlHandle
+	for( _robot_element; _robot_element; _robot_element=_robot_element->NextSiblingElement("robot") )
+	{
+    TiXmlHandle _robot_handle(_robot_element); //Back to handles
 
-  return flag;
+    //Read robot name
+    std::string robot_name;
+    robot_name = _robot_handle.FirstChildElement("robot_name").ToElement()->FirstChild()->Value();
+
+    //Parse the root node		
+    SControllerRobotLink *tmp_link_ds = new SControllerRobotLink();
+    tmp_link_ds->robot_name_ = robot_name;
+    robot_initialized_ = CLotusTiXmlParser::readLink(_robot_handle.FirstChildElement("root_link"), tmp_link_ds, true);
+    if(false == robot_initialized_) goto END ; 
+    //Add the root node to the robdef
+    robdef_->addLink(*tmp_link_ds, true, tmp_link_ds->link_name_);
+    delete tmp_link_ds;
+
+    //Now parse the child nodes
+    TiXmlElement* _child_link_element = _robot_handle.FirstChildElement( "link" ).ToElement();
+    for( _child_link_element; _child_link_element; _child_link_element=_child_link_element->NextSiblingElement("link") )
+	  {
+      TiXmlHandle _child_link_handle(_child_link_element); //Back to handles
+      tmp_link_ds = new SControllerRobotLink();
+      tmp_link_ds->robot_name_ = robot_name;
+      robot_initialized_ = CLotusTiXmlParser::readLink(_child_link_handle, tmp_link_ds, false);
+      if(false == robot_initialized_) goto END ;
+      //Add the root node to the robdef
+      robdef_->addLink(*tmp_link_ds, false, tmp_link_ds->link_name_);
+      delete tmp_link_ds;
+    }
+	}//End of loop over robots in the xml file.
+
+  //3. Build the robots
+  robot_initialized_ = buildRobotsFromLinks();
+  
+END:
+  if(robot_initialized_ == false) 
+  {//Incorrect initialization. Abort.
+    delete robdef_; 
+    robdef_ = NULL;
+  }
+  return robot_initialized_;
 }
 
 }
