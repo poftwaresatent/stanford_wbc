@@ -94,10 +94,10 @@ static const Float Izz6c = 0.02;
 // four sections to get the effective values of L6, R6, M6, and Izz6.
 
 // (1) No force sensor or gripper
-//    static const Float L6   = L6a;
-//    static const Float M6   = M6a;
-//    static const Float R6   = M6a;
-//    static const Float Izz6 = Izz6a;
+   static const Float L6   = L6a;
+   static const Float M6   = M6a;
+   static const Float R6   = M6a;
+   static const Float Izz6 = Izz6a;
 
 // (2) Force sensor only
 //    static const Float L6   = L6a + L6b;
@@ -108,12 +108,12 @@ static const Float Izz6c = 0.02;
 //                              M6b * (L6a+R6b-R6) * (L6a+R6b-R6);
 
 // (3) Gripper only
-    static const Float L6   = L6a + L6c;
-    static const Float M6   = M6a + M6c;
-    static const Float R6   = (M6a*R6a + M6c*(L6a+R6c)) / M6;
-    static const Float Izz6 = Izz6a + Izz6c +
-                              M6a * (R6a-R6) * (R6a-R6) +
-                              M6c * (L6a+R6c-R6) * (L6a+R6c-R6);
+//     static const Float L6   = L6a + L6c;
+//     static const Float M6   = M6a + M6c;
+//     static const Float R6   = (M6a*R6a + M6c*(L6a+R6c)) / M6;
+//     static const Float Izz6 = Izz6a + Izz6c +
+//                               M6a * (R6a-R6) * (R6a-R6) +
+//                               M6c * (L6a+R6c-R6) * (L6a+R6c-R6);
 
 // (4) Force sensor and gripper
 /*static const Float L6 = L6a + L6b + L6c;
