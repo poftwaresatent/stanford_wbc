@@ -238,6 +238,15 @@ TEST (jspaceModel, kinematics)
 }
 
 
+static double smart_delta(double have, double want)
+{
+  if (fabs(want) > 1e-6) {
+    return (have - want) / want;
+  }
+  return have;
+}
+
+
 static bool check_matrix(char const * name,
 			 SAIMatrix const & want,
 			 SAIMatrix const & have,
@@ -261,7 +270,7 @@ static bool check_matrix(char const * name,
   double maxdelta(0);
   for (int ii(0); ii < nrows; ++ii) {
     for (int jj(0); jj < ncolumns; ++jj) {
-      double const delta(fabs(have[ii][jj] - want[ii][jj]));
+      double const delta(fabs(smart_delta(have[ii][jj], want[ii][jj])));
       if (delta > precision) {
 	maxdelta = delta;
       }
@@ -274,17 +283,14 @@ static bool check_matrix(char const * name,
     msg << "check_matrix(" << name << ") OK\n";
   }
   else {
-    std::string const wtf(name);
-    msg << "check_matrix(";
-    msg << wtf;
-    msg << ") FAILED\n";
+    msg << "check_matrix(" << name << ") FAILED\n";
   }
   msg << "  precision = " << precision << "\n"
       << "  maxdelta = " << maxdelta << "\n";
   for (int ii(nrows-1); ii >= 0; --ii) {
     msg << "    ";
     for (int jj(0); jj < ncolumns; ++jj) {
-      double const delta(fabs(have[ii][jj] - want[ii][jj]));
+      double const delta(fabs(smart_delta(have[ii][jj], want[ii][jj])));
       if (delta <= precision) {
 	if (delta < halfmax) {
 	  msg << ".";
@@ -323,7 +329,7 @@ static bool check_vector(char const * name,
   precision = fabs(precision);
   double maxdelta(0);
   for (int ii(0); ii < nelems; ++ii) {
-    double const delta(fabs(have[ii] - want[ii]));
+    double const delta(fabs(smart_delta(have[ii], want[ii])));
     if (delta > precision) {
       maxdelta = delta;
     }
@@ -341,7 +347,7 @@ static bool check_vector(char const * name,
       << "  maxdelta = " << maxdelta << "\n"
       << "    ";
   for (int ii(0); ii < nelems; ++ii) {
-    double const delta(fabs(have[ii] - want[ii]));
+    double const delta(fabs(smart_delta(have[ii], want[ii])));
     if (delta <= precision) {
       if (delta < halfmax) {
 	msg << ".";
@@ -373,39 +379,39 @@ TEST (jspaceModel, dynamics)
     jspace::State state(6, 6);
     SAIVector tB(6), tG(6);
     SAIMatrix tJ(6, 6), tA(6, 6);
-    SAIVector mq(6), mdq(6), mB(6), mG(6);
+    SAIVector mB(6), mG(6);
     SAIMatrix mJ(6, 6), mdJ(6, 6), mA(6, 6);
     state.joint_velocities_.zero();
-    mdq.zero();
-    for (mq[0] = -0.1; mq[0] < 0.11; mq[0] += 0.1) {
-      state.joint_angles_[0] = mq[0];
-      for (mq[1] = -0.1; mq[1] < 0.11; mq[1] += 0.1) {
-	state.joint_angles_[1] = mq[1];
-	for (mq[2] = -0.1; mq[2] < 0.11; mq[2] += 0.1) {
-	  state.joint_angles_[2] = mq[2];
-	  for (mq[3] = -0.1; mq[3] < 0.11; mq[3] += 0.1) {
-	    state.joint_angles_[3] = mq[3];
-	    for (mq[4] = -0.1; mq[4] < 0.11; mq[4] += 0.1) {
-	      state.joint_angles_[4] = mq[4];
-	      for (mq[5] = -0.1; mq[5] < 0.11; mq[5] += 0.1) {
-		state.joint_angles_[5] = mq[5];
-		getPumaDynamics(mq, mdq, mJ, mdJ, mA, mB, mG);
-		model->update(state);
-		ASSERT_TRUE (model->computeJacobian(ee, tJ)) << "computeJacobian failed";
-		model->getMassInertia(tA);
-		model->getCoriolisCentrifugal(tB);
-		model->getGravity(tG);
-		std::ostringstream msg;
-
-		msg << "wtf???\n";
-		
-		EXPECT_TRUE (check_matrix("Jacobian", mJ, tJ, 1e-3, msg)) << msg.str();
-		EXPECT_TRUE (check_matrix("mass inertia", mA, tA, 1e-3, msg)) << msg.str();
-		EXPECT_TRUE (check_vector("Coriolis centrifugal", mB, tB, 1e-3, msg)) << msg.str();
-		EXPECT_TRUE (check_vector("gravity", mG, tG, 1e-3, msg)) << msg.str();
-	      }
-	    }
-	  }
+    for (double qq(-0.1); qq < 0.11; qq += 0.1) {
+      for (int ii(0); ii < 6; ++ii) {
+	state.joint_angles_.zero();
+	state.joint_angles_[ii] = qq;
+	getPumaDynamics(state.joint_angles_, state.joint_velocities_,
+			mJ, mdJ, mA, mB, mG);
+	model->update(state);
+	ASSERT_TRUE (model->computeJacobian(ee, tJ)) << "computeJacobian failed for q = " << state.joint_angles_;
+	model->getMassInertia(tA);
+	model->getCoriolisCentrifugal(tB);
+	model->getGravity(tG);
+	{
+	  std::ostringstream msg;
+	  msg << "Checking for q = "  << state.joint_angles_ << "\n";
+	  EXPECT_TRUE (check_matrix("Jacobian", mJ, tJ, 1e-1, msg)) << msg.str();
+	}
+	{
+	  std::ostringstream msg;
+	  msg << "Checking for q = "  << state.joint_angles_ << "\n";
+	  EXPECT_TRUE (check_matrix("mass inertia", mA, tA, 1e-1, msg)) << msg.str();
+	}
+	{
+	  std::ostringstream msg;
+	  msg << "Checking for q = "  << state.joint_angles_ << "\n";
+	  EXPECT_TRUE (check_vector("Coriolis centrifugal", mB, tB, 1e-1, msg)) << msg.str();
+	}
+	{
+	  std::ostringstream msg;
+	  msg << "Checking for q = "  << state.joint_angles_ << "\n";
+	  EXPECT_TRUE (check_vector("gravity", mG, tG, 1e-1, msg)) << msg.str();
 	}
       }
     }
