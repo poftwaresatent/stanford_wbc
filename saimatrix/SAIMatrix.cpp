@@ -101,7 +101,17 @@ SAIMatrix::~SAIMatrix()
 {
   if( m_data != NULL )
     {
-      delete[] m_data;
+      ////DO NOT COMMIT THIS////
+      ////DO NOT COMMIT THIS////
+      ////DO NOT COMMIT THIS////
+      ////DO NOT COMMIT THIS////
+      ////DO NOT COMMIT THIS////
+      ////DO NOT COMMIT THIS////      delete[] m_data;
+      ////DO NOT COMMIT THIS////
+      ////DO NOT COMMIT THIS////
+      ////DO NOT COMMIT THIS////
+      ////DO NOT COMMIT THIS////
+      ////DO NOT COMMIT THIS////
     }
 }
 
@@ -1293,25 +1303,35 @@ void SAIMatrix::display( const char* name ) const
 void SAIMatrix::
 prettyPrint (std::ostream & os, std::string const & title, std::string const & prefix) const
 {
-  streamsize const old_precision(os.precision(5));
-  streamsize const old_width (os.width(7));
-  
   if ( ! title.empty())
     os << title << "\n";
   if ((m_row <= 0) || (m_col <= 0))
     os << prefix << " (empty)\n";
   else {
+    static int const buflen(32);
+    static char buf[buflen];
+    memset(buf, 0, sizeof(buf));
     for (int ir(0); ir < m_row; ++ir) {
       if ( ! prefix.empty())
 	os << prefix;
-      for (int ic(0); ic < m_col; ++ic)
-	os << " " << elementAt(ir, ic);
+      for (int ic(0); ic < m_col; ++ic) {
+	if (isinf(elementAt(ir, ic))) {
+	  snprintf(buf, buflen-1, " inf    ");
+	}
+	else if (isnan(elementAt(ir, ic))) {
+	  snprintf(buf, buflen-1, " nan    ");
+	}
+	else if (fabs(fmod(elementAt(ir, ic), 1)) < 1e-6) {
+	  snprintf(buf, buflen-1, "%- 7d  ", static_cast<int>(rint(elementAt(ir, ic))));
+	}
+	else {
+	  snprintf(buf, buflen-1, "% 6.4f  ", elementAt(ir, ic));
+	}
+	os << buf;
+      }
       os << "\n";
     }
   }
-  
-  os.precision(old_precision);
-  os.width(old_width);
 }
 
 
