@@ -23,7 +23,6 @@
    \author Roland Philippsen
 */
 
-#define PR_DOUBLE_PRECISION
 #include "puma/pumaDynamics.h"
 
 #include <wbc/core/RobotControlModel.hpp>
@@ -240,7 +239,7 @@ TEST (jspaceModel, kinematics)
 
 
 static bool check_matrix(char const * name,
-			 PrMatrix const & want,
+			 SAIMatrix const & want,
 			 SAIMatrix const & have,
 			 double precision,
 			 std::ostringstream & msg)
@@ -309,7 +308,7 @@ static bool check_matrix(char const * name,
 
 
 static bool check_vector(char const * name,
-			 PrVector const & want,
+			 SAIVector const & want,
 			 SAIVector const & have,
 			 double precision,
 			 std::ostream & msg)
@@ -374,8 +373,8 @@ TEST (jspaceModel, dynamics)
     jspace::State state(6, 6);
     SAIVector tB(6), tG(6);
     SAIMatrix tJ(6, 6), tA(6, 6);
-    PrVector mq(6), mdq(6), mB(6), mG(6);
-    PrMatrix mJ(6, 6), mdJ(6, 6), mA(6, 6);
+    SAIVector mq(6), mdq(6), mB(6), mG(6);
+    SAIMatrix mJ(6, 6), mdJ(6, 6), mA(6, 6);
     state.joint_velocities_.zero();
     mdq.zero();
     for (mq[0] = -0.1; mq[0] < 0.11; mq[0] += 0.1) {
