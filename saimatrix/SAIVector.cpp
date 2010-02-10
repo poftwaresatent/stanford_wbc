@@ -586,22 +586,33 @@ void SAIVector::display( const char* name ) const
 void SAIVector::
 prettyPrint (std::ostream & os, std::string const & title, std::string const & prefix) const
 {
-  streamsize const old_precision(os.precision(5));
-  streamsize const old_width (os.width(7));
-  
   if ( ! title.empty())
     os << title << "\n";
   if ( ! prefix.empty())
     os << prefix;
   if (m_size <= 0)
     os << " (empty)";
-  else
-    for (int ii(0); ii < m_size; ++ii)
-      os << " " << m_data[ii];
+  else {
+    static int const buflen(32);
+    static char buf[buflen];
+    memset(buf, 0, sizeof(buf));
+    for (int ii(0); ii < m_size; ++ii) {
+      if (isinf(m_data[ii])) {
+	snprintf(buf, buflen-1, " inf    ");
+      }
+      else if (isnan(m_data[ii])) {
+	snprintf(buf, buflen-1, " nan    ");
+      }
+      else if (fabs(fmod(m_data[ii], 1)) < 1e-6) {
+	snprintf(buf, buflen-1, "%- 7d  ", static_cast<int>(rint(m_data[ii])));
+      }
+      else {
+	snprintf(buf, buflen-1, "% 6.4f  ", m_data[ii]);
+      }
+      os << buf;
+    }
+  }
   os << "\n";
-  
-  os.precision(old_precision);
-  os.width(old_width);
 }
 
 

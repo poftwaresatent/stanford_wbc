@@ -336,6 +336,21 @@ void SAIQuaternion::column( int col, SAIVector& dest ) const
   }
 }
 
+
+// ===================================================================
+// Compare two unit quaternions to see if they create
+// the same rotation, with a roundoff tolerance of
+// precision.
+//
+// Note that -q produces the same rotation as +q, so this method will
+// say they are identical.
+// ===================================================================
+bool SAIQuaternion::equal(SAIQuaternion const & rhs, Float precision) const
+{
+  return fabs(dot(rhs)) > 1 - precision;
+}
+
+
 // ===================================================================
 // operator==(): Compare two unit quaternions to see if they create
 // the same rotation, with a roundoff tolerance of

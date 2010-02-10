@@ -168,7 +168,7 @@ namespace wbc {
 
 
   SAIMatrix
-  Kinematics::JacobianAtPoint( taoDNode* node, const SAIVector & globalPointOnLink ) {
+  Kinematics::JacobianAtPoint( taoDNode const * node, const SAIVector & globalPointOnLink ) {
     SAIMatrix J(6,noj_);
     SAIVector node_trans(3);
 
@@ -196,12 +196,12 @@ namespace wbc {
     // compute Jacobian wrt the global frame with zero displacement.
     while( node->getDParent() != NULL ) {
 
-      taoJoint* joint = node->getJointList();
+      taoJoint const * joint = node->getJointList();
       taoJointType jointType = joint->getType();
 
       if (( jointType == TAO_JOINT_REVOLUTE ) || ( jointType == TAO_JOINT_PRISMATIC )) {
         // Obtain the jacobian of the velocity at the op point wrt the global ref frame
-        deVector6 deVector = (static_cast<taoJointDOF1*>(joint))->getJg();
+        deVector6 deVector = (static_cast<taoJointDOF1 const *>(joint))->getJg();
 
         int id = node->getID();
 

@@ -51,10 +51,11 @@ public:
 	virtual taoDVar* getDVar() { return _var; }
 
 	void setType(taoJointType t) { _type = t; }
-	taoJointType getType() { return _type; }
+	taoJointType getType() const { return _type; }
 
 	void setABJoint(taoABJoint* joint) { _abJoint = joint; }
 	taoABJoint* getABJoint() { return _abJoint; }
+	taoABJoint const * getABJoint() const { return _abJoint; }
 
 	void setJCParam(taoJCParam* jcp) { _jcp = jcp; }
 	taoJCParam* getJCParam() { return _jcp; }
@@ -232,7 +233,7 @@ public:
 	    joint version returns a pointer to a 3x3
 	    matrix... whatever that is supposed to mean.
 	*/
-	virtual deVector6& getJg();
+	virtual deVector6& getJg() const;
 
 private:
 	taoAxis _axis;

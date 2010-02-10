@@ -57,6 +57,7 @@ public:
 	virtual deInt isParentRoot() { return (isRoot() || getDParent()->isRoot()); }
 
 	virtual taoJoint* getJointList() = 0;
+	virtual taoJoint const * getJointList() const = 0;
 
 	//!	gets _abNode
 	virtual taoABNode* getABNode() { return _abNode; }
@@ -95,6 +96,7 @@ public:
 
 	//!	\return	parent node
 	virtual taoDNode* getDParent() = 0;
+	virtual taoDNode const * getDParent() const = 0;
 	virtual void setDChild(taoDNode* n) = 0;
 	//!	\return	first child node
 	virtual taoDNode* getDChild() = 0;

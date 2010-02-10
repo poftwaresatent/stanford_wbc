@@ -109,7 +109,7 @@ deMatrix3* taoJointSpherical::getJg()
 	return ((taoABJointSpherical*)getABJoint())->Jg();
 }
 
-deVector6& taoJointDOF1::getJg()
+deVector6& taoJointDOF1::getJg() const
 {
 	return ((taoABJointDOF1*)getABJoint())->Jg();
 }

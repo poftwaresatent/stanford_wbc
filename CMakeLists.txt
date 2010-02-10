@@ -94,6 +94,7 @@ endif (NETWRAP_DIR)
 ### go into subdirs
 
 subdirs (
+  jspace
   wbc_tinyxml
   saimatrix
   tao
