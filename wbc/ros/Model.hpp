@@ -61,7 +61,7 @@ namespace wbcros {
     wbc::BranchingRepresentation * branching_; // filled in by conversion function
     std::vector<std::string> link_name_; // filled in by conversion function
     std::vector<std::string> joint_name_; // filled in by conversion function
-    wbc::RobotControlModel * control_model_;
+    wbc::RobotControlModel * control_model_; // NOTE: gets deleted by ~Model()
     std::vector<wbc::TaskModelBase*> task_model_pool_;
     
     size_t ndof_, ndof_actuated_, nvel_, contact_nrows_, contact_ncols_;
