@@ -25,10 +25,10 @@
 // which can be used to generate a mass matrix, B matrix, gravity
 // vector, and so on.
 // *******************************************************************
-#ifndef PARAM_H
-#define PARAM_H
+#ifndef PUMA_PARAM_H
+#define PUMA_PARAM_H
 
-#include "PrGlobalDefn.h"
+#include <saimatrix/SAIGlobalDefn.h>
 
 // Force of gravity
 
@@ -125,4 +125,4 @@ static const Float Izz6 = Izz6a + Izz6b + Izz6c +
                           M6c * (L6a+L6b+R6c-R6) * (L6a+L6b+R6c-R6);
 */
 
-#endif // PARAM_H
+#endif // PUMA_PARAM_H

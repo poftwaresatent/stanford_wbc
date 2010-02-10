@@ -29,14 +29,14 @@
 #ifndef PUMA_DYNAMICS_H
 #define PUMA_DYNAMICS_H
 
-#include "PrVector.h"
-#include "PrMatrix.h"
+#include <saimatrix/SAIVector.h>
+#include <saimatrix/SAIMatrix.h>
 
-void getPumaDynamics( const PrVector& q, const PrVector& dq,
-                      PrMatrix& J, PrMatrix& dJ,
-                      PrMatrix& A, PrVector& B, PrVector& G );
+void getPumaDynamics( const SAIVector& q, const SAIVector& dq,
+                      SAIMatrix& J, SAIMatrix& dJ,
+                      SAIMatrix& A, SAIVector& B, SAIVector& G );
 
-void getPumaSingularities( Float sbound, const PrVector& q,
+void getPumaSingularities( Float sbound, const SAIVector& q,
                            bool& headLock, bool& elbowLock, bool& wristLock );
 
 #endif // PUMA_DYNAMICS_H

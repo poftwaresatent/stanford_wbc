@@ -27,13 +27,13 @@
 
 int main(int argc, char ** argv)
 {
-  PrVector m_q(6);
-  PrVector m_dq(6);
-  PrMatrix m_J(6, 6);
-  PrMatrix m_dJ(6, 6);
-  PrMatrix m_A(6, 6);
-  PrVector m_B(6);
-  PrVector m_G(6);
+  SAIVector m_q(6);
+  SAIVector m_dq(6);
+  SAIMatrix m_J(6, 6);
+  SAIMatrix m_dJ(6, 6);
+  SAIMatrix m_A(6, 6);
+  SAIVector m_B(6);
+  SAIVector m_G(6);
   
   for (double qq(-0.1); qq <= 0.11; qq += 0.1) {
     for (int ii(0); ii < 6; ++ii) {

@@ -28,12 +28,12 @@
 // *******************************************************************
 
 #include "param.h"
-#include "PrMatrix6.h"
+#include <saimatrix/SAIMatrix6.h>
 #include "pumaDynamics.h"
 
-void getPumaDynamics( const PrVector& q, const PrVector& dq,
-                      PrMatrix& J, PrMatrix& dJ,
-                      PrMatrix& A, PrVector& B, PrVector& G )
+void getPumaDynamics( const SAIVector& q, const SAIVector& dq,
+                      SAIMatrix& J, SAIMatrix& dJ,
+                      SAIMatrix& A, SAIVector& B, SAIVector& G )
 {
    Float q1 = q[0];
    Float q2 = q[1];
@@ -124,7 +124,7 @@ void getPumaDynamics( const PrVector& q, const PrVector& dq,
    // Derivative of Jacobian with respect to q1...q6.  Used to find dJ.
    // ****************************************************************
 
-   static PrMatrix6 dJ1;  // dJ/dq1
+   static SAIMatrix6 dJ1;  // dJ/dq1
 
    dJ1[0][0] = -c1*(L2*c2 + (L3+L6*c5)*s23 + L6*c23*c4*s5) + s1*(L1+L6*s4*s5);
    dJ1[0][1] = -s1*(c23*(L3 + L6*c5) - L2*s2 - L6*c4*s23*s5);
@@ -168,7 +168,7 @@ void getPumaDynamics( const PrVector& q, const PrVector& dq,
    dJ1[5][4] = 0;
    dJ1[5][5] = 0;
 
-   static PrMatrix6 dJ2; // ddJ/dq2
+   static SAIMatrix6 dJ2; // ddJ/dq2
 
    dJ2[0][0] = -s1*(c23*(L3 + L6*c5) - L2*s2 - L6*c4*s23*s5);
    dJ2[0][1] = -c1*(L2*c2 + (L3 + L6*c5)*s23 + L6*c23*c4*s5);
@@ -212,7 +212,7 @@ void getPumaDynamics( const PrVector& q, const PrVector& dq,
    dJ2[5][4] = c23*s4;
    dJ2[5][5] = -c5*s23 - c23*c4*s5;
 
-   static PrMatrix6 dJ3; // ddJ/dq3
+   static SAIMatrix6 dJ3; // ddJ/dq3
 
    dJ3[0][0] = s1*(-c23*(L3 + L6*c5) + L6*c4*s23*s5);
    dJ3[0][1] = c1*(-(L3 + L6*c5)*s23 - L6*c23*c4*s5);
@@ -256,7 +256,7 @@ void getPumaDynamics( const PrVector& q, const PrVector& dq,
    dJ3[5][4] = c23*s4;
    dJ3[5][5] = -c5*s23 - c23*c4*s5;
 
-   static PrMatrix6 dJ4; // ddJ/dq4
+   static SAIMatrix6 dJ4; // ddJ/dq4
 
    dJ4[0][0] = L6*(-c1*c4 + c23*s1*s4)*s5;
    dJ4[0][1] = L6*c1*s23*s4*s5;
@@ -300,7 +300,7 @@ void getPumaDynamics( const PrVector& q, const PrVector& dq,
    dJ4[5][4] = c4*s23;
    dJ4[5][5] = s23*s4*s5;
 
-   static PrMatrix6 dJ5; // ddJ/dq5
+   static SAIMatrix6 dJ5; // ddJ/dq5
 
    dJ5[0][0] = -L6*c5*(c23*c4*s1 + c1*s4) + L6*s1*s23*s5;
    dJ5[0][1] = -L6*c1*(c4*c5*s23 + c23*s5);
@@ -344,7 +344,7 @@ void getPumaDynamics( const PrVector& q, const PrVector& dq,
    dJ5[5][4] = 0;
    dJ5[5][5] = -c4*c5*s23 - c23*s5;
 
-   static PrMatrix6 dJ6; // ddJ/dq6
+   static SAIMatrix6 dJ6; // ddJ/dq6
 
    dJ6[0][0] = 0;
    dJ6[0][1] = 0;
@@ -700,7 +700,7 @@ void getPumaDynamics( const PrVector& q, const PrVector& dq,
    G *= -GRAVITY;
 }
 
-void getPumaSingularities( Float sbound, const PrVector& q,
+void getPumaSingularities( Float sbound, const SAIVector& q,
                            bool& headLock, bool& elbowLock, bool& wristLock )
 {
    Float q2  = q[1];
