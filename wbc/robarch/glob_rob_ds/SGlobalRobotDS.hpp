@@ -21,6 +21,8 @@
 #ifndef SGLOBALROBOTDS_HPP_
 #define SGLOBALROBOTDS_HPP_
 
+#include <string>
+
 namespace wbc_tinyxml {
 class TiXmlElement;
 }
@@ -44,6 +46,14 @@ typedef enum {
 	JT_PRISMATIC = 0, JT_REVOLUTE = 1, JT_SPHERICAL = 2,
 	JT_MAX = 3, JT_NOTASSIGNED = -1}JointType;
 
+struct SCameraDS
+{
+  wbcFloat pos_[3];
+  wbcFloat lookat_[3];
+  wbcFloat up_[3];
+  std::string name_;
+};
+
 /**This structure contains all the non-robot specification
  * information required to construct a robotic world.
  * Individual robot definitions are required in addition to this
@@ -56,8 +66,10 @@ public:
 	//Constructor@End of the class:
 
 	//***********************
-  //Link-specific data:
+  //Global data:
 	wbcFloat gravity_[3];
+
+  SCameraDS camera_;
 };
 }
 

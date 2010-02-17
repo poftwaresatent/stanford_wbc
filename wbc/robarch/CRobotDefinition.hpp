@@ -44,7 +44,7 @@ using namespace std;
  * The entire class definition is in this file since templates have
  * to be created in a single file.
  * */
-template <typename robot_link>
+template <typename robot_link_ds>
 class CRobotDefinition
 {
 public:
@@ -63,35 +63,35 @@ private:
 	 * The number of robots specified in the data should be equal to
 	 * the number of root links
 	 */
-	std::vector<robot_link*>* rootLinkVector;
+	std::vector<robot_link_ds*>* root_link_vector_;
 	
 	/**
 	 * Stores the child links. The child links are connected to the
 	 * root links by the RobotArchitect
 	 */
-	std::vector<robot_link*>* childLinkVector;
+	std::vector<robot_link_ds*>* child_link_vector_;
 	
 	/**Map to contain the final linked robotic branching representation
 	 * Links are addressable by their names.
 	 */
-	std::map<string,robot_link*>* linkName2LinkMap;
+	std::map<string,robot_link_ds*>* link_name_to_link_map_;
 	
 	/**If this is true then dereference all pointers in the destructor;
 	 */
-	bool derefPtrs;
+	bool deref_owned_ptrs_;
 	
 private:
 	CRobotDefinition();
 public:
-	CRobotDefinition(bool arg_derefPtrs);
+	CRobotDefinition(bool arg_deref_ptrs);
 	virtual ~CRobotDefinition();
 	
-	void addLink(const robot_link & arg_link2add, const bool isRoot, const string arg_name);
+	void addLink(const robot_link_ds & arg_link2add, const bool isRoot, const string arg_name);
 	void addGlobalData(SGlobalRobotDS* arg_globData){  globalRobData_ = arg_globData;  }
 	//NOTE TODO Consider implementing removeLink as well
-	std::vector<robot_link*>* getRootLinkVector(){	return rootLinkVector;	}
-	std::vector<robot_link*>* getChildLinkVector(){	return childLinkVector;	}
-	std::map<string,robot_link*>* getName2LinkMap(){	return linkName2LinkMap;	}
+	std::vector<robot_link_ds*>* getRootLinkVector(){	return root_link_vector_;	}
+	std::vector<robot_link_ds*>* getChildLinkVector(){	return child_link_vector_;	}
+	std::map<string,robot_link_ds*>* getName2LinkMap(){	return link_name_to_link_map_;	}
 	SGlobalRobotDS* getGlobData(){ return &globalRobData_;  }
 };
 
@@ -99,13 +99,13 @@ public:
 /**
  * Initializes the vectors. 
  */
-template <typename robot_link>
-CRobotDefinition<robot_link>::CRobotDefinition(bool arg_derefPtrs)
+template <typename robot_link_ds>
+CRobotDefinition<robot_link_ds>::CRobotDefinition(bool arg_deref_ptrs)
 {
-	derefPtrs = arg_derefPtrs;
-	rootLinkVector = new std::vector<robot_link*>();
-	childLinkVector = new std::vector<robot_link*>();
-	linkName2LinkMap = new std::map<string,robot_link*>();
+	deref_owned_ptrs_ = arg_deref_ptrs;
+	root_link_vector_ = new std::vector<robot_link_ds*>();
+	child_link_vector_ = new std::vector<robot_link_ds*>();
+	link_name_to_link_map_ = new std::map<string,robot_link_ds*>();
 }
 
 /**
@@ -114,15 +114,15 @@ CRobotDefinition<robot_link>::CRobotDefinition(bool arg_derefPtrs)
  * If the vectors have been returned, they have to be deallocated
  * by the RobotArchitect.
  */
-template <typename robot_link>
-CRobotDefinition<robot_link>::~CRobotDefinition()
+template <typename robot_link_ds>
+CRobotDefinition<robot_link_ds>::~CRobotDefinition()
 {
-	if(derefPtrs)
+	if(deref_owned_ptrs_)
 	{
-		delete linkName2LinkMap;
+		delete link_name_to_link_map_;
 		//NOTE TODO GO into the vectors and delete each node individually. 
-		delete rootLinkVector;
-	  delete childLinkVector;	  
+		delete root_link_vector_;
+	  delete child_link_vector_;	  
 	}
 }
 
@@ -130,21 +130,21 @@ CRobotDefinition<robot_link>::~CRobotDefinition()
  * Adds a link to the root or child link vectors depending on the 
  * type of link to be added.
  */
-template <typename robot_link>
-void CRobotDefinition<robot_link>::addLink(const robot_link& arg_link2add, const bool isRoot, const string arg_name)
+template <typename robot_link_ds>
+void CRobotDefinition<robot_link_ds>::addLink(const robot_link_ds& arg_link2add, const bool isRoot, const string arg_name)
 {	
-	robot_link* tLnk;
+	robot_link_ds* tLnk;
 	if(isRoot)
 	{
-		tLnk = new robot_link(arg_link2add);
-		rootLinkVector->push_back(tLnk);
-		linkName2LinkMap->insert( pair<string,robot_link*>(arg_name, tLnk) );
+		tLnk = new robot_link_ds(arg_link2add);
+		root_link_vector_->push_back(tLnk);
+		link_name_to_link_map_->insert( pair<string,robot_link_ds*>(arg_name, tLnk) );
 	}
 	else
 	{
-		tLnk = new robot_link(arg_link2add);
-		childLinkVector->push_back(tLnk);		
-		linkName2LinkMap->insert( pair<string,robot_link*>(arg_name, tLnk) );
+		tLnk = new robot_link_ds(arg_link2add);
+		child_link_vector_->push_back(tLnk);		
+		link_name_to_link_map_->insert( pair<string,robot_link_ds*>(arg_name, tLnk) );
 	}		
 }
 

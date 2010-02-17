@@ -40,8 +40,7 @@ public:
   virtual ~COsimArchitect();
   /**Reads the osim file and adds its links to crRobotDef
    * and grRobotDef which are inherited from CRobotArchitect*/
-  bool readRobotDefinition(const string arg_file,
-      const bool buildControllerRobot, const bool buildGraphicsRobot);
+  bool readRobotDefinition(const string arg_file);
 };
 
 }

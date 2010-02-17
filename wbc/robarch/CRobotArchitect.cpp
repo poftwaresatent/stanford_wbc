@@ -22,6 +22,7 @@
 
 #ifdef TESTING_FUNCTIONS_ON
 #include <iostream>
+using namespace std;
 #endif
 
 namespace robotarchitect
@@ -32,17 +33,14 @@ namespace robotarchitect
 CRobotArchitect::CRobotArchitect()
 {
 	//NOTE TODO The "true" constructor argument is hard-wired for now
-	crRobotDef = NULL;
-	grRobotDef = NULL;
-	buildCrRobot = false;	
-	buildGrRobot = false;	
+	robdef_ = NULL;
+	robot_initialized_ = false;	
 }
 
+/* Destructor: Does nothing.
+ */
 CRobotArchitect::~CRobotArchitect()
-{
-	delete crRobotDef;
-	delete grRobotDef;
-}
+{}
 
 
 /**Adds a link to the Controller robot definition
@@ -51,117 +49,68 @@ bool CRobotArchitect::addLink(const SControllerRobotLink &arg_link2add)
 {
 	//bool isLinkConsistent = false;	
 	//NOTE TODO Check isLinkConsistent (if necessary-low pri)	
-	crRobotDef->addLink(arg_link2add,arg_link2add.is_root, arg_link2add.linkName_);
+	robdef_->addLink(arg_link2add,arg_link2add.is_root_, arg_link2add.link_name_);
 	return true; //return isLinkConsistent;
 }
-
-/**Adds a link to the Graphics robot definition
- */
-bool CRobotArchitect::addLink(const SGraphicsRobotLink &arg_link2add)
-{
-	//bool isLinkConsistent = false;	
-	//NOTE TODO Check isLinkConsistent (if necessary-low pri)	
-	grRobotDef->addLink(arg_link2add,arg_link2add.is_root, arg_link2add.name);
-	return true; //return isLinkConsistent;
-}	
 
 /**Builds a set of robots based on the specifications in the links
  * Returns:
- * 0 = Success
- * 1 = Both robots failed
- * 2 = Controller robot(s) failed
- * 3 = Graphics robot(s) failed * 
+ * true = Success
+ * false = Failure (describe)
  */
-int CRobotArchitect::buildRobotsFromLinks()
-{
-	bool crflag = false, grflag = false;
-	int retval = 1;
-	
-	//Build the robots -> Cr and Gr are separate subsystems and require different objects
-	if(buildCrRobot)
-	{	crflag = buildControllerRobots();	}
-	if(buildGrRobot)
-	{	grflag = buildGraphicsRobots();		}
-	
-	if(!crflag&&!grflag)
-	{	retval = 1;	}
-	else if(!crflag)
-	{	retval = 2;	}
-	else if(!grflag)
-	{	retval = 3;	}
-	else
-	{	retval = 0;	}
-	
-	return retval;	 
-}
-
-/*This function will build the controller robots from crRobotDef
- */
-bool CRobotArchitect::buildControllerRobots()
+bool CRobotArchitect::buildRobotsFromLinks()
 {
 	bool flag = true;
 	
-	//Connect the links in CRobotDefinition<SControllerRobotLink> crRobotDef;
+	//Connect the links in CRobotDefinition<SControllerRobotLink> robdef_;
 	
 	//Vars to connect the robot links in the robot definition
 	SControllerRobotLink* parentLinkAddr; //Parent link address 
 	std::vector<SControllerRobotLink*>* rootLinkVec, * childLinkVec; //Pointers to link vectors
 	std::map<string,SControllerRobotLink*>* robotName2LinkMap; //Pointer to the link-linkName_ map
 	
-	rootLinkVec = crRobotDef->getRootLinkVector();
+	rootLinkVec = robdef_->getRootLinkVector();
 	if( ((int)rootLinkVec->size()) == 0)
 	{//No robots present in file 
 		return false;		
 	}
-	childLinkVec = crRobotDef->getChildLinkVector();
-	robotName2LinkMap = crRobotDef->getName2LinkMap();
+	childLinkVec = robdef_->getChildLinkVector();
+	robotName2LinkMap = robdef_->getName2LinkMap();
 	
 	//NOTE TODO: Loop over the root links and assign ids (all -1 for now) to them.
   std::vector<SControllerRobotLink*>::iterator clink, clinke;
-  for(clink = crRobotDef->getRootLinkVector()->begin(),
-     clinke = crRobotDef->getRootLinkVector()->end();
+  for(clink = robdef_->getRootLinkVector()->begin(),
+     clinke = robdef_->getRootLinkVector()->end();
      clink != clinke; ++clink)
   {
-    (*clink)->parentAddr = NULL;
-    (*clink)->link_id =  -1;
-    (*clink)->parent_link_id =  -1;
-    cout<<" "<<(*clink)->link_id<<" ";
+    (*clink)->parent_addr_ = NULL;
+    (*clink)->link_id_ =  -1;
+    (*clink)->parent_link_id_ =  -1;
+    cout<<" "<<(*clink)->link_id_<<" ";
   }
 
 	//Loop over the child links, connect them to their parents and assign ids
-	for(clink = crRobotDef->getChildLinkVector()->begin(),
-     clinke = crRobotDef->getChildLinkVector()->end();
+	for(clink = robdef_->getChildLinkVector()->begin(),
+     clinke = robdef_->getChildLinkVector()->end();
      clink != clinke; ++clink)
   {
-  	string tstr = (*clink)->parentName_;
+    string tstr = (*clink)->parent_link_name_;
   	parentLinkAddr = (SControllerRobotLink*)((*robotName2LinkMap)[tstr]);		
-		(*clink)->parentAddr = parentLinkAddr;
-		parentLinkAddr->childAddrVector.push_back((*robotName2LinkMap)[(*clink)->linkName_]);
-		(*clink)->link_id =  clink - crRobotDef->getChildLinkVector()->begin();
-		cout<<" "<<(*clink)->link_id<<" ";
+		(*clink)->parent_addr_ = parentLinkAddr;
+		parentLinkAddr->child_addr_vector_.push_back((*robotName2LinkMap)[(*clink)->link_name_]);
+		(*clink)->link_id_ =  clink - robdef_->getChildLinkVector()->begin(); //diff between iterators gives id
+		cout<<" "<<(*clink)->link_id_<<" ";
   }
 
 	//Parent ids need to be assigned in another loop to handle unordered link trees
-	for(clink = crRobotDef->getChildLinkVector()->begin(),
-	     clinke = crRobotDef->getChildLinkVector()->end();
+	for(clink = robdef_->getChildLinkVector()->begin(),
+	     clinke = robdef_->getChildLinkVector()->end();
 	     clink != clinke; ++clink)
   {
-    string tstr = (*clink)->parentName_;
+    string tstr = (*clink)->parent_link_name_;
     parentLinkAddr = (SControllerRobotLink*)((*robotName2LinkMap)[tstr]);
-    (*clink)->parent_link_id = parentLinkAddr->link_id;
+    (*clink)->parent_link_id_ = parentLinkAddr->link_id_;
   }
-	return flag;
-}
-
-/*This function will build the graphics robots from grRobotDef
- */
-bool CRobotArchitect::buildGraphicsRobots()
-{
-	bool flag = false;
-	
-	//NOTE TODO connect the links in CRobotDefinition<SGraphicsRobotLink> grRobotDef;
-	// This needs a copy paste from  buildControllerRobots and will be done once the
-	// controller code has been tested.
 	return flag;
 }
 
@@ -169,13 +118,7 @@ bool CRobotArchitect::buildGraphicsRobots()
  * for all the robots defined in the xml file 
  * Note: Please call buildRobotsFromLinks() before using this */
 CRobotDefinition<SControllerRobotLink>* CRobotArchitect::returnControllerRobot()
-{	return crRobotDef;	}
-
-/*This function returns a vector containing "Graphics" branching representations 
- * for all the robots defined in the xml file 
- * Note: Please call buildRobotsFromLinks() before using this */
-CRobotDefinition<SGraphicsRobotLink>* CRobotArchitect::returnGraphicsRobot()
-{	return grRobotDef;	}
+{	return robdef_;	}
 
 
 #ifdef TESTING_FUNCTIONS_ON
@@ -201,8 +144,8 @@ CRobotDefinition<SGraphicsRobotLink>* CRobotArchitect::returnGraphicsRobot()
 	{
 		cout<<"\nPrint Root Links\n";
 		std::vector<SControllerRobotLink*>::iterator rlink, rlinke;
-		for(rlink = crRobotDef->getRootLinkVector()->begin(),
-	     rlinke = crRobotDef->getRootLinkVector()->end();
+		for(rlink = robdef_->getRootLinkVector()->begin(),
+	     rlinke = robdef_->getRootLinkVector()->end();
 	     rlink != rlinke; ++rlink)
 	  {
 	  	cout<<"Link: "<<(*rlink)->linkName_<<", Parent:"<<(*rlink)->parentName_<<", Depth:"<<0<<endl;	  	
@@ -210,8 +153,8 @@ CRobotDefinition<SGraphicsRobotLink>* CRobotArchitect::returnGraphicsRobot()
 		
 		cout<<"\n\nPrint Child Links\n";
 		std::vector<SControllerRobotLink*>::iterator clink, clinke;
-		for(clink = crRobotDef->getChildLinkVector()->begin(),
-	     clinke = crRobotDef->getChildLinkVector()->end();
+		for(clink = robdef_->getChildLinkVector()->begin(),
+	     clinke = robdef_->getChildLinkVector()->end();
 	     clink != clinke; ++clink)
 	  {
 	  	cout<<"Link: "<<(*clink)->linkName_<<", Parent:"<<(*clink)->parentName_<<", Depth:"<<0<<endl;	  	
@@ -219,8 +162,8 @@ CRobotDefinition<SGraphicsRobotLink>* CRobotArchitect::returnGraphicsRobot()
 		
 		cout<<"\n\nPrint Tree\n";
 		//Print tree
-		for(rlink = crRobotDef->getRootLinkVector()->begin(),
-	     rlinke = crRobotDef->getRootLinkVector()->end();
+		for(rlink = robdef_->getRootLinkVector()->begin(),
+	     rlinke = robdef_->getRootLinkVector()->end();
 	     rlink != rlinke; ++rlink)
 	  {	  	
 	  	cout<<"Link: "<<(*rlink)->linkName_<<", Parent:"<<(*rlink)->parentName_<<", Depth:"<<0<<endl;

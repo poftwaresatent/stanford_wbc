@@ -31,7 +31,6 @@
 
 //Data structures passed to the template
 #include "glob_rob_ds/SGlobalRobotDS.hpp"
-#include "glob_rob_ds/SGraphicsRobotLink.hpp"
 #include "glob_rob_ds/SControllerRobotLink.hpp"
 
 namespace robotarchitect
@@ -49,18 +48,10 @@ using namespace std;
 		/***********************
 		 * Controller robot data
 		 ***********************/
-		bool buildCrRobot;
+		bool robot_initialized_;
 	    /**The controller robot definition contains a root link vector and
 	    * a child link vector */
-		CRobotDefinition<SControllerRobotLink>* crRobotDef;
-		
-		/*********************
-		 * Graphics robot data
-		 *********************/
-		bool buildGrRobot;
-		/**The graphics robot definition contains a root link vector and
-		   * a child link vector */
-		CRobotDefinition<SGraphicsRobotLink>* grRobotDef;	
+		CRobotDefinition<SControllerRobotLink>* robdef_;
 	
 	public:
 		CRobotArchitect();
@@ -75,38 +66,22 @@ using namespace std;
 		 * CRobotArchitect 
 		 * DEPRACATED...
 		 */
-		virtual bool readRobotDefinition(const string arg_file, const bool buildControllerRobot, 
-			const bool buildGraphicsRobot){ return false;}
+		virtual bool readRobotDefinition(const string arg_file){ return false;}
 		//These functions will replace the legacy readRobotDefinition() function. They must be implemented by
 		//the subclass.
 		virtual bool readRobotDefinition(const string arg_file, CRobotDefinition<SControllerRobotLink> & arg_cr_robdef)
-    {return false;}
-		virtual bool readRobotDefinition(const string arg_file, CRobotDefinition<SGraphicsRobotLink> & arg_gr_robdef)
     {return false;}
 								 
 		/**Adds a link to the Controller robot definition	 */
 		bool addLink(const SControllerRobotLink &arg_link2add);
 		
-		/**Adds a link to the Graphics robot definition	 */
-		bool addLink(const SGraphicsRobotLink &arg_link2add);
-		
 		/**Builds a set of robots based on the specifications in the links */
-		int buildRobotsFromLinks();
-		
-	protected:
-		/*This function will build the controller robots from crRobotDef */
-		bool buildControllerRobots();
-		
-		/*This function will build the graphics robots from grRobotDef */
-		bool buildGraphicsRobots();
+		bool buildRobotsFromLinks();
 		
 	public:
 		/** Return the controller robot definition
 		 * Note: Please call buildRobotsFromLinks() before using this */ 
 		CRobotDefinition<SControllerRobotLink>* returnControllerRobot();
-		/** Return the graphics robot definition
-		 * Note: Please call buildRobotsFromLinks() before using this */
-		CRobotDefinition<SGraphicsRobotLink>* returnGraphicsRobot();
 		
 		#ifdef TESTING_FUNCTIONS_ON
 		void printRobotTree(const SControllerRobotLink link, int depth);
