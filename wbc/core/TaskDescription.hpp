@@ -75,7 +75,7 @@ namespace wbc {
     inline double maxVel()   const { return m_maxVel; }
     inline double maxAccel() const { return m_maxAccel; }
   
-    typedef enum{ Contact_Task, Non_Contact_Task, Null_Task } TaskType;
+    typedef enum{ Contact_Task, Non_Contact_Task, Null_Task, Hybrid_Pos_Force_Task, Virtual_Linkage_Task, Test_Task } TaskType;
     typedef enum{ Undefined_Task, Right_Foot_Contact_Task, Left_Foot_Contact_Task } TaskTag;
  
     virtual const TaskType taskType() const {return Null_Task;} 

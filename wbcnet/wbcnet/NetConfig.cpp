@@ -164,9 +164,9 @@ namespace wbcnet {
   Help(std::string const & prefix, std::ostream & os)
   {
 #ifdef WBCNET_HAVE_MQUEUE
-    os << prefix << "mq [ : prefix [ : msg_size ]]\n"
+    os << prefix << "mq [ : blocking [ : prefix [ : msg_size ]]]\n"
        << prefix << "   use POSIX message queues\n"
-       << prefix << "   defaults: prefix=message_queue msg_size=2048\n";
+       << prefix << "   defaults: blocking=true, prefix=${USER}, msg_size=2048\n";
 #endif // WBCNET_HAVE_MQUEUE
 
 #ifndef DISABLE_NETWORKING

@@ -30,7 +30,7 @@
  */
 
 #include "MQWrap.hpp"
-#include <wbcnet/data.hpp>
+#include "data.hpp"
 #include <wbcnet/log.hpp>
 #include <errno.h>
 #include <string.h>
@@ -151,6 +151,9 @@ namespace wbcnet {
     case EBADF: // The descriptor was invalid.
       return COM_NOT_CONNECTED;
     case EMSGSIZE: // msg_len was greater than the mq_msgsize attribute
+      LOG_ERROR (logger,
+		 "wbcnet::MQWrap::Send(): EMSGSIZE, message size " << buffer.GetSize()
+		 << " exceeds mq_msgsize " << m_msgsize << " on queue " << m_name);
       return COM_SIZE_MISMATCH;
     case EINTR: // The call was interrupted by a signal handler.
       return COM_INTERRUPTED;
