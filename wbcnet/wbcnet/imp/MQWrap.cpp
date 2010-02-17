@@ -30,7 +30,7 @@
  */
 
 #include "MQWrap.hpp"
-#include "data.hpp"
+#include <wbcnet/data.hpp>
 #include <wbcnet/log.hpp>
 #include <errno.h>
 #include <string.h>
