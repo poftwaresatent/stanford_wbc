@@ -53,7 +53,7 @@ namespace wbc {
       throw runtime_error("wbc::OsimBRParser::parse(): empty filename");
     
     robotarchitect::COsimArchitect tmp_RobArch;
-    tmp_RobArch.readRobotDefinition(fileName, true, false);
+    tmp_RobArch.readRobotDefinition(fileName);
     tmp_RobArch.buildRobotsFromLinks();
     robotDefinition_ = tmp_RobArch.returnControllerRobot();
 
@@ -83,8 +83,8 @@ namespace wbc {
     
     // build the various maps and other sugar
 //#warning 'XXXX this only works if the Osim file contains just one root, otherwise we need tree traversal starting at the root that represents our robot.'
-    typedef vector<robotarchitect::SControllerRobotLink*> linkvec_t;
-    linkvec_t * linkvec(arg_robdef_p->getChildLinkVector());
+    //typedef vector<robotarchitect::SControllerRobotLink*> vector<robotarchitect::SControllerRobotLink*>;
+    vector<robotarchitect::SControllerRobotLink*> * linkvec(arg_robdef_p->getChildLinkVector());
     ret_brRep_p->numJoints_ = linkvec->size();
     ret_brRep_p->totalMass_ = 0;
     ret_brRep_p->grav_ = SAIVector(3);
@@ -99,38 +99,38 @@ namespace wbc {
     vector<int> actuation;
     int id(0);
     LOG_DEBUG (logger, "BranchingRepresentation::create(): creating branching sugar");
-    for (linkvec_t::const_iterator ii(linkvec->begin()), iend(linkvec->end());
+    for (vector<robotarchitect::SControllerRobotLink*>::const_iterator ii(linkvec->begin()), iend(linkvec->end());
 	 ii != iend; ++ii, ++id) {
-      string const linktag(ret_brRep_p->canonicalLinkName((*ii)->linkName_));
-      string jointtag(ret_brRep_p->canonicalJointName((*ii)->jointName_));
-      taoDNode * node((*ii)->taoNodeAddr);
+      string const linktag(ret_brRep_p->canonicalLinkName((*ii)->link_name_));
+      string jointtag(ret_brRep_p->canonicalJointName((*ii)->joint_name_));
+      taoDNode * node((*ii)->tao_node_addr_);
       
       LOG_DEBUG (logger,
 		     "  " << id << ": " << node
-		     << "  " << (*ii)->linkName_ << ": " << linktag
-		     << "  " << (*ii)->jointName_ << ": " << jointtag
-		     << ((*ii)->jointIsFree_ ? "  free-floating" : "  controlled"));
+		     << "  " << (*ii)->link_name_ << ": " << linktag
+		     << "  " << (*ii)->joint_name_ << ": " << jointtag
+		     << ((*ii)->joint_is_free_ ? "  free-floating" : "  controlled"));
       
       ret_brRep_p->idToNodeMap_[id] = node;
       node->setID(id);
       
-      LOG_DEBUG (logger, "  setting id:"<<id<<" for link:"<<(*ii)->linkName_);
+      LOG_DEBUG (logger, "  setting id:"<<id<<" for link:"<<(*ii)->link_name_);
       
       //Joint limits
-      ret_brRep_p->upperJointLimitVec_[id] = (*ii)->joint_limit_upper;
-      ret_brRep_p->lowerJointLimitVec_[id] = (*ii)->joint_limit_lower;
+      ret_brRep_p->upperJointLimitVec_[id] = (*ii)->joint_limit_upper_;
+      ret_brRep_p->lowerJointLimitVec_[id] = (*ii)->joint_limit_lower_;
   	
-      ret_brRep_p->linkNameToNodeMap_[(*ii)->linkName_] = node;
+      ret_brRep_p->linkNameToNodeMap_[(*ii)->link_name_] = node;
       ret_brRep_p->linkNameToNodeMap_[linktag] = node;
       //       ret_brRep_p->linkTagToIDMap_[linktag] = id;
       //       ret_brRep_p->IDToLinkTagMap_[id] = linktag;
-      ret_brRep_p->jointNameToNodeMap_[(*ii)->jointName_] = node;
+      ret_brRep_p->jointNameToNodeMap_[(*ii)->joint_name_] = node;
       ret_brRep_p->jointNameToNodeMap_[jointtag] = node;
       //      ret_brRep_p->jointTagToIDMap_[jointtag] = id;
       // XXXX maybe add something for "forceSensor" and "surfaceDepth"
       
       ret_brRep_p->totalMass_ += (*ii)->mass_;
-      if ( ! (*ii)->jointIsFree_)	// XXXX to do: maybe the other way around?
+      if ( ! (*ii)->joint_is_free_)	// XXXX to do: maybe the other way around?
 	actuation.push_back(id);
     }
 

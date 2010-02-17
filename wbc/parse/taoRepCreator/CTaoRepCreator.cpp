@@ -77,23 +77,23 @@ taoNodeRoot* CTaoRepCreator::taoRootRepCreator(
 
 	//Step 2b: Create the corresponding root tao node
 	//Root node's home frame rotation and translation
-	tmp_robdefRoot_p->homeFrame_.translation().zero();
-	tmp_robdefRoot_p->homeFrame_.rotation().set(tmp_robdefRoot_p->rotAxis_, tmp_robdefRoot_p->rotAngle_);
+	tmp_robdefRoot_p->home_frame_.translation().zero();
+	tmp_robdefRoot_p->home_frame_.rotation().set(tmp_robdefRoot_p->rot_axis_, tmp_robdefRoot_p->rot_angle_);
 
-	tmp_taoRoot_p = new taoNodeRoot(&tmp_robdefRoot_p->homeFrame_); //Define a new tao root node to return
-	tmp_taoRoot_p->setIsFixed(tmp_robdefRoot_p->linkIsFixed_); // Is the node fixed or not
+	tmp_taoRoot_p = new taoNodeRoot(&tmp_robdefRoot_p->home_frame_); //Define a new tao root node to return
+	tmp_taoRoot_p->setIsFixed(tmp_robdefRoot_p->link_is_fixed_); // Is the node fixed or not
 	tmp_taoRoot_p->setID((deInt) -1); //NOTE TODO What about the multiple robot case? Will all have rootId = -1
 
 	//Assign the newly created tao root to the robot definition's root
-	tmp_robdefRoot_p->taoNodeRootAddr = tmp_taoRoot_p;
-	tmp_robdefRoot_p->taoNodeAddr = NULL;
-	if (tmp_robdefRoot_p->parentAddr != NULL) {
+	tmp_robdefRoot_p->tao_node_root_addr_ = tmp_taoRoot_p;
+	tmp_robdefRoot_p->tao_node_addr_ = NULL;
+	if (tmp_robdefRoot_p->parent_addr_ != NULL) {
 	  LOG_WARN (logger, "@tapRepCreator: Root link has a parent -- setting to NULL.");
-		tmp_robdefRoot_p->parentAddr = NULL;
+		tmp_robdefRoot_p->parent_addr_ = NULL;
 	}
 
 	//Step 2c:
-	createChildTaoNodes(tmp_robdefRoot_p, tmp_robdefRoot_p->taoNodeRootAddr);
+	createChildTaoNodes(tmp_robdefRoot_p, tmp_robdefRoot_p->tao_node_root_addr_);
 
 	//********Step 3***********
 	//Initialize TaoDynamics and return the root of the tao tree
@@ -111,10 +111,10 @@ void CTaoRepCreator::createChildTaoNodes(
 		SControllerRobotLink* arg_parentLink_p, taoNodeRoot* arg_taoRoot) {
 	vector<SControllerRobotLink*>::iterator childAddrVecIter, childAddrVecIterE;
 	//Traverse the list of child links and create a taoNode for each one
-	for (childAddrVecIter = arg_parentLink_p->childAddrVector.begin(), childAddrVecIterE
-			= arg_parentLink_p->childAddrVector.end(); childAddrVecIter
+	for (childAddrVecIter = arg_parentLink_p->child_addr_vector_.begin(), childAddrVecIterE
+			= arg_parentLink_p->child_addr_vector_.end(); childAddrVecIter
 			!= childAddrVecIterE; ++childAddrVecIter) {
-		(*childAddrVecIter)->taoNodeRootAddr = arg_taoRoot;
+		(*childAddrVecIter)->tao_node_root_addr_ = arg_taoRoot;
 		createTaoNonRootNode((*childAddrVecIter));
 		createChildTaoNodes((*childAddrVecIter), arg_taoRoot);
 	}
@@ -132,23 +132,23 @@ void CTaoRepCreator::createChildTaoNodes(
  */
 void CTaoRepCreator::createTaoNonRootNode(
 		SControllerRobotLink* arg_thisLinkAddr) {
-	if (arg_thisLinkAddr->parentAddr == NULL) {
+	if (arg_thisLinkAddr->parent_addr_ == NULL) {
 		//Root Node -- Not to be initialized here.
-		arg_thisLinkAddr->taoNodeAddr = NULL;
+		arg_thisLinkAddr->tao_node_addr_ = NULL;
 		return;
 	} else {//Non-root Node
 		taoNode* new_tao_node;
-		if ((arg_thisLinkAddr->parentAddr->taoNodeAddr == NULL)
-				&& (arg_thisLinkAddr->parentAddr->taoNodeRootAddr != NULL)) {//CASE: Parent is a root node.
+		if ((arg_thisLinkAddr->parent_addr_->tao_node_addr_ == NULL)
+				&& (arg_thisLinkAddr->parent_addr_->tao_node_root_addr_ != NULL)) {//CASE: Parent is a root node.
 			//1. Create a new tao node and link it to its parent
 			new_tao_node = new taoNode(
-					(taoDNode*) arg_thisLinkAddr->parentAddr->taoNodeRootAddr,
-					&arg_thisLinkAddr->homeFrame_);
+					(taoDNode*) arg_thisLinkAddr->parent_addr_->tao_node_root_addr_,
+					&arg_thisLinkAddr->home_frame_);
 		} else {//CASE: Parent is a child node.
 			//1. Create a new tao node and link it to its parent
 			new_tao_node = new taoNode(
-					(taoDNode*) arg_thisLinkAddr->parentAddr->taoNodeAddr,
-					&arg_thisLinkAddr->homeFrame_);
+					(taoDNode*) arg_thisLinkAddr->parent_addr_->tao_node_addr_,
+					&arg_thisLinkAddr->home_frame_);
 		}
 		//			else
 		//			{
@@ -156,7 +156,7 @@ void CTaoRepCreator::createTaoNonRootNode(
 		//				//						<<" seems to be a root and a child node.";
 		//				assert(false);
 		//			}
-		new_tao_node->setID(arg_thisLinkAddr->link_id);
+		new_tao_node->setID(arg_thisLinkAddr->link_id_);
 		//2. Set up frame of reference
 		deFrame comFrameLocal; //Set up local frame of reference
 		comFrameLocal.identity();
@@ -175,20 +175,20 @@ void CTaoRepCreator::createTaoNonRootNode(
 
 		// Create new joint for the new child node
 		taoAxis tmp_axis; //The axis about which it rotates
-		if (arg_thisLinkAddr->jointAxis_ == 0) {
+		if (arg_thisLinkAddr->joint_axis_ == 0) {
 			tmp_axis = TAO_AXIS_X;
-		} else if (arg_thisLinkAddr->jointAxis_ == 1) {
+		} else if (arg_thisLinkAddr->joint_axis_ == 1) {
 			tmp_axis = TAO_AXIS_Y;
 		} else {
 			tmp_axis = TAO_AXIS_Z;
 		}
 
 		taoJointType tmp_type;
-		if (arg_thisLinkAddr->jointType_ == 0) {
+		if (arg_thisLinkAddr->joint_type_ == 0) {
 			tmp_type = TAO_JOINT_PRISMATIC;
-		} else if (arg_thisLinkAddr->jointType_ == 1) {
+		} else if (arg_thisLinkAddr->joint_type_ == 1) {
 			tmp_type = TAO_JOINT_REVOLUTE;
-		} else if (arg_thisLinkAddr->jointType_ == 2) {
+		} else if (arg_thisLinkAddr->joint_type_ == 2) {
 			tmp_type = TAO_JOINT_SPHERICAL;
 		} else {
 			tmp_type = TAO_JOINT_USER;
@@ -220,7 +220,7 @@ void CTaoRepCreator::createTaoNonRootNode(
 
 		new_tao_node->addABNode(); //Initialize geometry links
 
-		arg_thisLinkAddr->taoNodeAddr = new_tao_node; //Set the new tao node's address
+		arg_thisLinkAddr->tao_node_addr_ = new_tao_node; //Set the new tao node's address
 	}
 }
 
