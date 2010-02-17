@@ -26,6 +26,7 @@
 #ifdef TESTING_FUNCTIONS_ON
 #include <iostream>
 #endif 
+#define STUPID_GOTO_ERROR
 
 #include "CLotusArchitect.hpp"
 
@@ -42,6 +43,9 @@ using namespace robotarchitect;
 
 bool CLotusArchitect::readRobotDefinition(const string arg_file)
 {
+  TiXmlElement* _robot_element;
+  TiXmlHandle _global_settings(NULL), _file_handle(NULL), _world(NULL);
+
   robot_initialized_ = true;
   TiXmlDocument _file(arg_file.c_str());
   
@@ -63,16 +67,16 @@ bool CLotusArchitect::readRobotDefinition(const string arg_file)
   robdef_ = new CRobotDefinition<SControllerRobotLink>(true); //true deferences all pointers when this is destroyed  
   
   //Get handles to the tinyxml loaded ds
-  TiXmlHandle _file_handle( &_file );
-  TiXmlHandle _world = _file_handle.FirstChildElement( "lotus_world" );
+  _file_handle = TiXmlHandle( &_file );
+  _world = _file_handle.FirstChildElement( "lotus_world" );
 
   //1. Read the global data
-  TiXmlHandle _global_settings = _world.FirstChildElement( "globals" );
+  _global_settings = _world.FirstChildElement( "globals" );
   robot_initialized_ = CLotusTiXmlParser::readGlobalData(_global_settings, robdef_->getGlobData());
   if(false == robot_initialized_) goto END ;
 
   //2. Read in the links.
-  TiXmlElement* _robot_element = _world.FirstChildElement( "robot" ).ToElement();
+  _robot_element = _world.FirstChildElement( "robot" ).ToElement();
   //Iterating with TiXmlElement is faster than TiXmlHandle
 	for( _robot_element; _robot_element; _robot_element=_robot_element->NextSiblingElement("robot") )
 	{
