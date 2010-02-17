@@ -1,5 +1,6 @@
 /**
    \namespace wbc Whole-Body Control Framework
+   \namespace jspace joint-space dynamics library, a tool for implementing controllers
    \namespace wbc::msg concrete message classes for WBC, derived from wbcnet::msg
    \namespace wbcnet asynchronous non-blocking middleware for WBC
    \namespace wbcnet::msg semi-abstract message classes for WBC
