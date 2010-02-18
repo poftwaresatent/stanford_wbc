@@ -76,9 +76,15 @@ namespace jspace {
     // Bare tree accessors.
     
     /** Compute or retrieve the cached number of nodes in the
-	robot. Note that each node can have any number of joints, and
-	each joint can have any number of degrees of freedom, which is
-	why getNJoints() and getNDOF() might come in handy, too. */
+	robot.
+	
+	\note
+	- the root node is included in this count, so when iterating
+          over node IDs you should stop before getNNodes()-1
+	- each node can have any number of joints, and each joint can
+	  have any number of degrees of freedom, which is why
+	  getNJoints() and getNDOF() might come in handy, too.
+    */
     int getNNodes() const;
     
     /** Compute or retrieve the cached number of joints in the
@@ -91,6 +97,23 @@ namespace jspace {
 	of freedom, which is why this method might return something
 	else than getNJoints(). */
     int getNDOF() const;
+    
+    /** Retrieve the name of a node. id=-1 is the root node. Returns
+	an empty string in case the id is invalid. Use getNNodes() to
+	find out how many nodes there are but beware that that
+	includes the root node. */
+    std::string getNodeName(int id) const;
+    
+    /** Retrieve the name of a joint. Returns an empty string in case
+	the id is invalid. Use getNJoints() to find out how many
+	joints there are.
+	
+	\todo A joint can have any number of DOF, which means there
+	should be a way to get at them individually, but currently we
+	wrap wbc::BranchingRepresentation which only support 1-DOF
+	joints anyway.
+    */
+    std::string getJointName(int id) const;
     
     /** Retrieve a node by ID. */
     taoDNode * getNode(int id) const;

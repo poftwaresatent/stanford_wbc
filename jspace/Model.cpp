@@ -89,6 +89,36 @@ namespace jspace {
   }
   
   
+  std::string Model::
+  getNodeName(int id) const
+  {
+    std::string name("");
+    std::map<std::string, taoDNode*> const & node_names(robmodel_->branching()->linkNameToNodeMap());
+    for (std::map<std::string, taoDNode*>::const_iterator ii(node_names.begin()); ii != node_names.end(); ++ii) {
+      if (ii->second->getID() == id) {
+	name = ii->first;
+	break;
+      }
+    }
+    return name;
+  }
+  
+  
+  std::string Model::
+  getJointName(int id) const
+  {
+    std::string name("");
+    std::map<std::string, taoDNode*> const & node_names(robmodel_->branching()->jointNameToNodeMap());
+    for (std::map<std::string, taoDNode*>::const_iterator ii(node_names.begin()); ii != node_names.end(); ++ii) {
+      if (ii->second->getID() == id) {
+	name = ii->first;
+	break;
+      }
+    }
+    return name;
+  }
+  
+  
   taoDNode * Model::
   getNode(int id) const
   {
