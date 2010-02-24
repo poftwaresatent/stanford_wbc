@@ -30,6 +30,6 @@
 
 void wbc_add_builtin_plugins(wbc::Extensions * extensions) throw(std::runtime_error)
 {
-  extensions->AddRobot("fake", new FactoryFake());
-  extensions->AddBehavior("DebugBehavior", new wbc::BehaviorFactory<DebugBehavior>());
+  extensions->AddRobot("fake", new wbc_fake_plugin::FactoryFake());
+  extensions->AddBehavior("DebugBehavior", new wbc::BehaviorFactory<wbc_fake_plugin::DebugBehavior>());
 }

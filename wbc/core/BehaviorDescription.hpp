@@ -62,11 +62,6 @@ namespace wbc {
   
   public:
 
-    typedef enum {Null_Mode_Type, Actuation_Type} ModeType;
-    typedef enum {Null_Mode_Value, Overactuated_Value, Stabilization_Value} ModeValue;
-
-    virtual ModeValue mode( ModeType ) const {return Null_Mode_Value;}
-
     typedef std::vector<TaskSet*> task_set_vector;
   
     std::string const name;
