@@ -28,6 +28,12 @@ TOP_SRC_DIR= $(VPATH)
 ### override this variable.
 WBC_ADD_BUILTIN_PLUGINS_SRC= wbc/bin/example_wbc_add_builtin_plugins.cpp
 
+### You can add further library sources by overriding EXTRA_SRCS
+EXTRA_SRCS= 
+
+### You can add further preprocessor flags by overriding EXTRA_CPPFLAGS
+EXTRA_CPPFLAGS= 
+
 ### with GNU toolchain:
 # The -DDISABLE_PLUGINS ends up telling the plugin mechanism to not
 # actually look for dynamically loadable modules, but to call
@@ -35,7 +41,7 @@ WBC_ADD_BUILTIN_PLUGINS_SRC= wbc/bin/example_wbc_add_builtin_plugins.cpp
 # wbc/bin/example_wbc_add_builtin_plugins.cpp (which is used in this
 # minimal build setup).
 CXX= g++
-CPPFLAGS= -DLINUX -DWBCNET_HAVE_MQUEUE -DDISABLE_PLUGINS -I$(TOP_SRC_DIR) -I$(TOP_SRC_DIR)/wbcnet
+CPPFLAGS= -DLINUX -DWBCNET_HAVE_MQUEUE -DDISABLE_PLUGINS -I$(TOP_SRC_DIR) -I$(TOP_SRC_DIR)/wbcnet $(EXTRA_CPPFLAGS)
 CXXFLAGS= $(CPPFLAGS) -O0 -g -Wall -pipe
 
 ### this seems to work rather generally:
@@ -176,6 +182,8 @@ SRCS= wbcnet/wbcnet/msg/TaskMatrix.cpp \
       plugins/fake/RobotFake.cpp \
       plugins/fake/RawController.cpp \
       plugins/fake/DebugBehavior.cpp \
+      plugins/robotlog/readlog.cpp \
+      plugins/robotlog/writelog.cpp \
       wbc/robarch/CRobotArchitect.cpp \
       wbc/robarch/osimarchitect/COsimArchitect.cpp \
       wbc/robarch/osimarchitect/parser/SkeletonCoordinate.cpp \
@@ -200,7 +208,8 @@ SRCS= wbcnet/wbcnet/msg/TaskMatrix.cpp \
       jspace/State.cpp \
       jspace/Model.cpp \
       $(WBC_ADD_BUILTIN_PLUGINS_SRC) \
-      $(NET_SRCS)
+      $(NET_SRCS) \
+      $(EXTRA_SRCS) \
 
 OBJS= $(SRCS:.cpp=.o) 
 

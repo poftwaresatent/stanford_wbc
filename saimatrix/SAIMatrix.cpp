@@ -101,17 +101,7 @@ SAIMatrix::~SAIMatrix()
 {
   if( m_data != NULL )
     {
-      ////DO NOT COMMIT THIS////
-      ////DO NOT COMMIT THIS////
-      ////DO NOT COMMIT THIS////
-      ////DO NOT COMMIT THIS////
-      ////DO NOT COMMIT THIS////
-      ////DO NOT COMMIT THIS////      delete[] m_data;
-      ////DO NOT COMMIT THIS////
-      ////DO NOT COMMIT THIS////
-      ////DO NOT COMMIT THIS////
-      ////DO NOT COMMIT THIS////
-      ////DO NOT COMMIT THIS////
+      delete[] m_data;
     }
 }
 
