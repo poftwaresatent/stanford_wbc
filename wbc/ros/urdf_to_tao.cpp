@@ -24,17 +24,6 @@
 */
 
 #include "urdf_to_tao.hpp"
-
-
-//////////////////////////////////////////////////
-//////////////////////////////////////////////////
-//
-// stuff that does *not* depend on HAVE_URDF
-//
-//////////////////////////////////////////////////
-//////////////////////////////////////////////////
-
-
 #include <fstream>
 #include <limits>
 
@@ -88,54 +77,8 @@ namespace urdf_to_tao {
 }
 
 
-//////////////////////////////////////////////////
-//////////////////////////////////////////////////
-//
-// stuff that *does* depend on HAVE_URDF
-//
-//////////////////////////////////////////////////
-//////////////////////////////////////////////////
-
-
-#ifndef HAVE_URDF
-
-namespace urdf_to_tao {
-  
-  
-  bool DefaultLinkFilter::
-  isFixed(urdf::Link const & urdf_link) const
-  {
-    return false; // we do not HAVE_URDF, so we treat all joints as non-fixed
-  }
-  
-  
-  bool ActiveLinkFilter::
-  isFixed(urdf::Link const & urdf_link) const
-  {
-    return false; // we do not HAVE_URDF, so we treat all joints as non-fixed
-  }
-  
-  
-  taoNodeRoot * convert(urdf::Model const & urdf_model,
-			std::string const & tao_root_name,
-			LinkFilter const & link_filter,
-			std::vector<std::string> * tao_id_to_link_name_map,
-			std::vector<std::string> * tao_id_to_joint_name_map) throw(std::runtime_error)
-  {
-    throw std::runtime_error("urdf_to_tao::convert(): support for URDF not built in");
-  }
-  
-  
-}
-
-
-//////////////////////////////////////////////////
-// rest of the file...
-
-#else // HAVE_URDF
-
-
-#include "dump.hpp"
+#include "urdf_dump.hpp"
+#include <wbc/util/dump.hpp>
 #include <wbc/core/BranchingRepresentation.hpp>
 
 // Quick hack around build sys bug: urdf_to_tao depends on ROS, which has log4cxx.
@@ -886,5 +829,3 @@ namespace urdf_to_tao {
   }
   
 }
-
-#endif // HAVE_URDF

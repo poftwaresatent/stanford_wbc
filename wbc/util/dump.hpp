@@ -38,18 +38,6 @@ class deMassProp;
 class deMatrix3;
 class taoDNode;
 
-#ifdef HAVE_URDF
-
-namespace urdf {
-  class Vector3;
-  class Rotation;
-  class Pose;
-  class Inertial;
-  class Link;
-}
-
-#endif // HAVE_URDF
-
 
 namespace wbc {
 
@@ -72,10 +60,6 @@ namespace wbc {
 		     bool detailed,
 		     std::vector<std::string> * id_to_link_name,
 		     std::vector<std::string> * id_to_joint_name);
-  
-#ifdef HAVE_URDF
-  void dump_urdf_tree(std::ostream & os, urdf::Link const & urdf_root, std::string prefix, bool detailed);
-#endif // HAVE_URDF
 
 }
 
@@ -87,15 +71,6 @@ namespace std {
   ostream & operator << (ostream & os, deFrame const & frame);
   ostream & operator << (ostream & os, taoJoint /*const*/ & joint);
   ostream & operator << (ostream & os, deMassProp const & rhs);
-  
-#ifdef HAVE_URDF
-
-  ostream & operator << (ostream & os, urdf::Vector3 const & rhs);
-  ostream & operator << (ostream & os, urdf::Rotation const & rhs);
-  ostream & operator << (ostream & os, urdf::Pose const & rhs);
-  ostream & operator << (ostream & os, urdf::Inertial const & rhs);
-
-#endif // HAVE_URDF
   
 }
 

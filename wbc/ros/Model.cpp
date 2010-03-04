@@ -28,7 +28,7 @@
 #include <wbc/core/BranchingRepresentation.hpp>
 #include <wbc/core/RobotControlModel.hpp>
 #include <wbc/core/MobileManipulatorTaskModel.hpp>
-#include <wbc/util/urdf_to_tao.hpp>
+#include <wbc/ros/urdf_to_tao.hpp>
 #include <wbc/util/dump.hpp>
 #include <wbcnet/endian_mode.hpp>
 #include <saimatrix/SAIVector.h>

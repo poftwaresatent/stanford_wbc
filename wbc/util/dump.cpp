@@ -33,10 +33,6 @@
 #include <iostream>
 #include <sstream>
 
-#ifdef HAVE_URDF
-# include <urdf/model.h>
-#endif // HAVE_URDF
-
 
 static void dump_deFloat(std::ostream & os, deFloat const * arr, size_t len)
 {
@@ -114,52 +110,6 @@ std::string inertia_matrix_to_string(deMatrix3 const & mx)
       dump_tao_tree(os, child, prefix, detailed, id_to_link_name, id_to_joint_name);
   }
   
-  
-#ifdef HAVE_URDF
-  
-  void dump_urdf_tree(std::ostream & os, urdf::Link const & urdf_root, std::string prefix, bool detailed)
-  {
-    os << prefix << "* " << urdf_root.name << "\n";
-    urdf::Joint const * urdf_joint(urdf_root.parent_joint.get());
-    if ( ! urdf_joint) {
-      os << prefix << "    no joint\n";
-    }
-    else {
-
-      os << prefix << "    joint " << urdf_joint->name << ": ";
-      switch (urdf_joint->type) {
-      case urdf::Joint::UNKNOWN:    os << "UNKNOWN\n"; break;
-      case urdf::Joint::REVOLUTE:   os << "REVOLUTE\n"; break;
-      case urdf::Joint::CONTINUOUS: os << "CONTINUOUS\n"; break;
-      case urdf::Joint::PRISMATIC:  os << "PRISMATIC\n"; break;
-      case urdf::Joint::FLOATING:   os << "FLOATING\n"; break;
-      case urdf::Joint::PLANAR:     os << "PLANAR\n"; break;
-      case urdf::Joint::FIXED:      os << "FIXED\n"; break;
-      default:                      os << "<invalid:" << urdf_joint->type << ">\n";
-      }
-      if (detailed) {
-	os << prefix << "      home frame: " << urdf_joint->parent_to_joint_origin_transform << "\n"
-	   << prefix << "      axis:       " << urdf_joint->axis << "\n";
-      }
-    }
-    
-    if (detailed) {
-      if ( ! urdf_root.inertial) {
-	os << prefix << "    no inertia\n";
-      }
-      else {
-	os << prefix << "    inertia: " << *urdf_root.inertial << "\n";
-      }
-    }
-    
-    prefix += "  ";
-    for (size_t ii(0); ii < urdf_root.child_links.size(); ++ii) {
-      dump_urdf_tree(os, *urdf_root.child_links[ii], prefix, detailed);
-    }
-  }
-
-#endif // HAVE_URDF
-
 }
 
 namespace std {
@@ -247,37 +197,4 @@ namespace std {
     return os;
   }
   
-  
-#ifdef HAVE_URDF
-  
-  ostream & operator << (ostream & os, urdf::Vector3 const & rhs)
-  {
-    os << "{ " << rhs.x << "  " << rhs.y << "  " << rhs.z << " }";
-    return os;
-  }
-  
-
-  ostream & operator << (ostream & os, urdf::Rotation const & rhs)
-  {
-    os << "{ " << rhs.x << "  " << rhs.y << "  " << rhs.z << "  " << rhs.w << " }";
-    return os;
-  }
-  
-
-  ostream & operator << (ostream & os, urdf::Pose const & rhs)
-  {
-    os << "t: " << rhs.position << "  r: " << rhs.rotation;
-    return os;
-  }
-  
-
-  ostream & operator << (ostream & os, urdf::Inertial const & rhs)
-  {
-    os << "m: " << rhs.mass << "  COM: " << rhs.origin << "  I: { XX: " << rhs.ixx << "  xy: " << rhs.ixy
-       << "  xz: " << rhs.ixz << "  YY: " << rhs.iyy << "  yz: " << rhs.iyz << "  ZZ: " << rhs.izz << " }";
-    return os;
-  }
-
-#endif // HAVE_URDF
-
 }

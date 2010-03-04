@@ -65,7 +65,6 @@ list (APPEND SRCS
   util/DataLog.cpp
   util/RecorderImpl.cpp
   util/dump.cpp
-  util/urdf_to_tao.cpp
   util/File.cpp
   util/utc.cpp
   util/dtor_check.cpp
@@ -90,6 +89,8 @@ endif (HAVE_XMLRPC)
 
 if (HAVE_ROS)
   list (APPEND SRCS
+    ros/urdf_to_tao.cpp
+    ros/urdf_dump.cpp
     ros/Model.cpp
     ros/BehaviorLibrary.cpp
     )
