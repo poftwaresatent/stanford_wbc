@@ -25,6 +25,7 @@
 
 #include <jspace/State.hpp>
 #include <saimatrix/SAITransform.h>
+#include <vector>
 
 // Clients of Model never really need to worry about what exactly lies
 // behind TAO, they can treat this as an opaque pointer type.
@@ -131,6 +132,14 @@ namespace jspace {
 	number of joints, so you might have to search through them to
 	find the exact one you're looking for. */
     taoDNode * getNodeByJointName(std::string const & name_or_alias) const;
+    
+    /** Retrieve joint limit information. This method fills the
+	provided vectors with the lower and upper joint limits. In
+	case no joint limit information is available, it sets the
+	lower limit to \c std::numeric_limits<double>::min() and the
+	upper limit to \c std::numeric_limits<double>::max(). */
+    void getJointLimits(std::vector<double> & joint_limits_lower,
+			std::vector<double> & joint_limits_upper) const;
     
     //////////////////////////////////////////////////
     // kinematic facet

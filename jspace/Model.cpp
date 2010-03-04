@@ -141,6 +141,23 @@ namespace jspace {
   
   
   void Model::
+  getJointLimits(std::vector<double> & joint_limits_lower,
+		 std::vector<double> & joint_limits_upper) const
+  {
+    SAIVector const & lower(robmodel_->branching()->lowerJointLimits());
+    joint_limits_lower.resize(lower.size());
+    for (int ii(0); ii < lower.size(); ++ii) {
+      joint_limits_lower[ii] = lower[ii];
+    }
+    SAIVector const & upper(robmodel_->branching()->upperJointLimits());
+    joint_limits_upper.resize(upper.size());
+    for (int ii(0); ii < upper.size(); ++ii) {
+      joint_limits_upper[ii] = upper[ii];
+    }
+  }
+  
+  
+  void Model::
   updateKinematics()
   {
     robmodel_->kinematics()->onUpdate(state_.joint_angles_, state_.joint_velocities_);

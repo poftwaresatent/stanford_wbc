@@ -733,7 +733,7 @@ namespace urdf_to_tao {
       id_to_joint_name->push_back(urdf_joint->name);
     }
     if (joint_limit_lower) {
-      if ( ! urdf_joint->limits) {
+      if (( ! urdf_joint->limits) || (urdf::Joint::CONTINUOUS == urdf_joint->type)) {
 	joint_limit_lower->push_back(std::numeric_limits<double>::min());
       }
       else {
@@ -741,7 +741,7 @@ namespace urdf_to_tao {
       }
     }
     if (joint_limit_upper) {
-      if ( ! urdf_joint->limits) {
+      if (( ! urdf_joint->limits) || (urdf::Joint::CONTINUOUS == urdf_joint->type)) {
 	joint_limit_upper->push_back(std::numeric_limits<double>::max());
       }
       else {
