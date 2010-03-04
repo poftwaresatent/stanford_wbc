@@ -608,7 +608,9 @@ namespace urdf_to_tao {
   void create_tao_tree(taoDNode * tao_parent,
 		       element const * child,
 		       std::vector<std::string> & id_to_link_name,
-		       std::vector<std::string> * id_to_joint_name) throw(std::runtime_error)
+		       std::vector<std::string> * id_to_joint_name,
+		       std::vector<double> * joint_limit_lower,
+		       std::vector<double> * joint_limit_upper) throw(std::runtime_error)
   {
     std::string const & name(child->urdf_link->name);
     urdf::Joint const * urdf_joint(child->urdf_link->parent_joint.get());
@@ -730,6 +732,22 @@ namespace urdf_to_tao {
     if (id_to_joint_name) {
       id_to_joint_name->push_back(urdf_joint->name);
     }
+    if (joint_limit_lower) {
+      if ( ! urdf_joint->limits) {
+	joint_limit_lower->push_back(std::numeric_limits<double>::min());
+      }
+      else {
+	joint_limit_lower->push_back(urdf_joint->limits->lower);
+      }
+    }
+    if (joint_limit_upper) {
+      if ( ! urdf_joint->limits) {
+	joint_limit_upper->push_back(std::numeric_limits<double>::max());
+      }
+      else {
+	joint_limit_upper->push_back(urdf_joint->limits->upper);
+      }
+    }
     
     // Yes, this looks weird, doesn't it? Don't worry, it's just TAO's
     // way of copying mass properties.
@@ -745,7 +763,7 @@ namespace urdf_to_tao {
 	 grandchild != child->children.end();
 	 ++grandchild)
       {
-	create_tao_tree(tao_node, *grandchild, id_to_link_name, id_to_joint_name);
+	create_tao_tree(tao_node, *grandchild, id_to_link_name, id_to_joint_name, joint_limit_lower, joint_limit_upper);
       }
   }
   
@@ -783,15 +801,14 @@ namespace urdf_to_tao {
 			std::string const & tao_root_name,
 			LinkFilter const & link_filter,
 			std::vector<std::string> * tao_id_to_link_name_map,
-			std::vector<std::string> * tao_id_to_joint_name_map) throw(std::runtime_error)
+			std::vector<std::string> * tao_id_to_joint_name_map,
+			std::vector<double> * joint_limit_lower,
+			std::vector<double> * joint_limit_upper) throw(std::runtime_error)
   {
     Converter converter(link_filter);
     
-    ////  dump_urdf_tree(*urdf_model.getRoot(), "dbg input: ");
     element * unfused_root(converter.read_urdf_tree(0, urdf_model.getRoot()));
-    ////  dump_tree(unfused_root, "dbg unfused: ");
     element * fused_root(converter.copy_fuse_fixed(0, unfused_root));
-    ////  dump_tree(fused_root, "dbg fused: ");
     
     element * conversion_root(find_element_by_name(fused_root, tao_root_name));
     if ( ! conversion_root) {
@@ -821,9 +838,9 @@ namespace urdf_to_tao {
 	 child != conversion_root->children.end();
 	 ++child)
       {
-	create_tao_tree(tao_root, *child, *tao_id_to_link_name_map, tao_id_to_joint_name_map);
+	create_tao_tree(tao_root, *child, *tao_id_to_link_name_map,
+			tao_id_to_joint_name_map, joint_limit_lower, joint_limit_upper);
       }
-    ////  dump_tao_tree(cout, tao_root, "TAO tree rooted at " + tao_root_name + ": ");
     
     return tao_root;
   }

@@ -113,7 +113,9 @@ namespace wbcros {
 					  tao_root_name_,
 					  link_filter,
 					  &link_name_,
-					  &joint_name_);
+					  &joint_name_,
+					  &joint_limit_lower_,
+					  &joint_limit_upper_);
     /* XXXX to do: if info is enabled... */ {
       std::ostringstream msg;
       msg << "converted URDF to TAO\n";
@@ -127,7 +129,9 @@ namespace wbcros {
 						      0, // default unactuation matrix is identity
 						      tao_root_name_,
 						      &link_name_,
-						      &joint_name_);
+						      &joint_name_,
+						      &joint_limit_lower_,
+						      &joint_limit_upper_);
     if ( ! branching_) {
       throw runtime_error("weird, wbc::BranchingRepresentation::create() returned NULL");
     }

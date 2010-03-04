@@ -62,8 +62,10 @@ namespace wbc {
 	 SAIMatrix const * opt_unactuation_matrix,
 	 std::string const & opt_root_name,
 	 std::vector<std::string> const * opt_link_names,
-	 std::vector<std::string> const * opt_joint_names)
-  throw(std::runtime_error)
+	 std::vector<std::string> const * opt_joint_names,
+	 std::vector<double> const * opt_joint_limits_lower,
+	 std::vector<double> const * opt_joint_limits_upper)
+    throw(std::runtime_error)
   {
     BranchingRepresentation * robot(new BranchingRepresentation());
     
@@ -118,14 +120,36 @@ namespace wbc {
 	robot->setJointNames(*opt_joint_names);
       }
       
+      if (opt_joint_limits_lower && (opt_joint_limits_lower->size() != robot->numJoints_)) {
+	ostringstream msg;
+	msg << "wbc::BranchingRepresentation::create(): opt_joint_limits_lower has " << opt_joint_limits_lower->size()
+	    << " entries but the robot has "  << robot->numJoints_ << " joints";
+	throw runtime_error(msg.str());
+      }
+      if (opt_joint_limits_upper && (opt_joint_limits_upper->size() != robot->numJoints_)) {
+	ostringstream msg;
+	msg << "wbc::BranchingRepresentation::create(): opt_joint_limits_upper has " << opt_joint_limits_upper->size()
+	    << " entries but the robot has "  << robot->numJoints_ << " joints";
+	throw runtime_error(msg.str());
+      }
+      
       robot->defaultJointPosVec_.setSize(robot->numJoints_);
       robot->upperJointLimitVec_.setSize(robot->numJoints_);
       robot->lowerJointLimitVec_.setSize(robot->numJoints_);
       for (int count(0); count < robot->numJoints_; ++count) {
-	// XXXX to do: take default, upper, lower joint angles from (optional) args
 	robot->defaultJointPosVec_[count] = 0;
-	robot->upperJointLimitVec_[count] = std::numeric_limits<double>::max();
-	robot->lowerJointLimitVec_[count] = std::numeric_limits<double>::min();
+	if (opt_joint_limits_lower) {
+	  robot->lowerJointLimitVec_[count] = (*opt_joint_limits_lower)[count];
+	}
+	else {
+	  robot->lowerJointLimitVec_[count] = std::numeric_limits<double>::min();
+	}
+	if (opt_joint_limits_upper) {
+	  robot->upperJointLimitVec_[count] = (*opt_joint_limits_upper)[count];
+	}
+	else {
+	  robot->upperJointLimitVec_[count] = std::numeric_limits<double>::max();
+	}
       }
       
       taoDynamics::initialize(tao_root); // Does this break in case someone already called this earlier?

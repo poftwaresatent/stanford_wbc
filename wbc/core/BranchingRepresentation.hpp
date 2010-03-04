@@ -77,7 +77,11 @@ namespace wbc {
 	   /** optional array of link names (if non-NULL, we pass it to setLinkNames()) */
 	   std::vector<std::string> const * opt_link_names,
 	   /** optional array of link names (if non-NULL, we pass it to setJointNames()) */
-	   std::vector<std::string> const * opt_joint_names)
+	   std::vector<std::string> const * opt_joint_names,
+	   /** optional array of lower joint limits */
+	   std::vector<double> const * opt_joint_limits_lower,
+	   /** optional array of upper joint limits */
+	   std::vector<double> const * opt_joint_limits_upper)
       throw(std::runtime_error);
     
     

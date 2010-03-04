@@ -152,7 +152,11 @@ namespace urdf_to_tao {
      require that a joint alsways sits between two links, so here we
      can treat joint names just as link names by stuffing them into a
      \c std::vector.
-       
+     
+     The optional \c joint_limit_lower and \c joint_limit_upper
+     vectors, if non-NULL, will be filled with the lower and upper
+     joint limits.
+     
      \return The root of the freshly created TAO tree. An exception is
      thrown in case of errors. Typical errors are about invalid joint
      types. E.g. URDF has a notion of planar joint, which is lacking
@@ -164,7 +168,9 @@ namespace urdf_to_tao {
 			std::string const & tao_root_name,
 			LinkFilter const & link_filter,
 			std::vector<std::string> * tao_id_to_link_name_map,
-			std::vector<std::string> * tao_id_to_joint_name_map) throw(std::runtime_error);
+			std::vector<std::string> * tao_id_to_joint_name_map,
+			std::vector<double> * joint_limit_lower,
+			std::vector<double> * joint_limit_upper) throw(std::runtime_error);
   
 }
 
