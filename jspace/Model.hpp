@@ -26,6 +26,7 @@
 #include <jspace/State.hpp>
 #include <saimatrix/SAITransform.h>
 #include <vector>
+#include <set>
 
 // Clients of Model never really need to worry about what exactly lies
 // behind TAO, they can treat this as an opaque pointer type.
@@ -212,6 +213,18 @@ namespace jspace {
 	updateDynamics() actually does it for us. */
     void computeGravity();
     
+    /** Disable (or enable) gravity compensation for a given DOF
+	(specified using its index). If you set \c disable to \c true,
+	then getGravity() will knock out (set to zero) the
+	corresponding entry of the gravity joint-torque vector.
+	
+	\note Invalid indices are silently ignore, and \c true is
+	returned. Valid indices are \c 0<=index<getNDOF().
+	
+	\return The previous value of \c disable for this joint.
+    */
+    bool disableGravityCompensation(int index, bool disable);
+    
     /** Retrieve the gravity joint-torque vector. */
     void getGravity(SAIVector & gravity) const;
     
@@ -246,6 +259,9 @@ namespace jspace {
     
     
   private:
+    typedef std::set<int> dof_set_t;
+    dof_set_t gravity_disabled_;
+    
     // For the moment we are wrapping the existing code. Later we'll
     // cleanly migrate its joint-space-related parts to here. At that
     // point we can probably change these fields to protected instead

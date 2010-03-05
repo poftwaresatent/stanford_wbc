@@ -47,13 +47,14 @@ namespace wbcros {
   Model(std::string const & param_prefix)
     : tao_root_param_name_(param_prefix + "tao_root_name"),
       active_links_param_name_(param_prefix + "active_links"),
+      gravity_compensated_links_param_name_(param_prefix + "gravity_compensated_links"),
       tao_root_node_(0),
       branching_(0),
       control_model_(0)
   {
     gravity_[0] = 0;
     gravity_[1] = 0;
-    gravity_[2] = 0;
+    gravity_[2] = -9.81;
   }
   
   
@@ -122,6 +123,32 @@ namespace wbcros {
       msg << "converted URDF to TAO\n";
       wbc::dump_tao_tree(msg, tao_root_node_, "  ", false, &link_name_, &joint_name_);
       ROS_INFO (msg.str().c_str());
+    }
+    
+    XmlRpc::XmlRpcValue gravity_compensated_links_value;
+    if ( ! nn.getParam(gravity_compensated_links_param_name_, gravity_compensated_links_value)) {
+      throw std::runtime_error("wbcros::Model::initFromURDF(): invalid gravity_compensated_links_param_name_ \""
+			       + gravity_compensated_links_param_name_ + "\"");
+    }
+    try {
+      std::string foo;
+      for (int ii(0); ii < gravity_compensated_links_value.size(); ++ii) {
+	foo = static_cast<std::string const &>(gravity_compensated_links_value[ii]);
+	if (link_filter.HaveLink(foo)) {
+	  gravity_compensated_links_.push_back(foo);
+	  ROS_INFO ("gravity compensated link `%s'", foo.c_str());
+	}
+	else {
+	  ROS_WARN ("link `%s' not active, cannot flag it as gravity compensated", foo.c_str());
+	}
+      }
+    }
+    catch (XmlRpc::XmlRpcException const & ee) {
+      std::ostringstream msg;
+      msg << "wbcros::Model::initFromURDF():"
+	  << " XmlRpcException while reading gravity compensated links: "
+	  << ee.getMessage();
+      throw std::runtime_error(msg.str());
     }
     
     SAIVector const gravity(gravity_, 3);

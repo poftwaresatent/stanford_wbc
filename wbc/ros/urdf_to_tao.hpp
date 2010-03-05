@@ -84,6 +84,12 @@ namespace wbcros {
     void AddLink(std::string const & link_name);
     
     /**
+       \return True if a link is in the set of active links.
+    */
+    inline bool HaveLink(std::string const & link_name) const
+    { return m_active.end() != m_active.find(link_name); }
+    
+    /**
        \return True if the link is tagged urdf::Joint::FIXED or it has
        NOT been previously registered with AddLink().
     */

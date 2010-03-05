@@ -56,11 +56,13 @@ namespace wbcros {
     std::string tao_root_param_name_;	  // default: "tao_root_name"
     std::string tao_root_name_;
     std::string active_links_param_name_; // default: "active_links"
-    double gravity_[3];	// default: { 0, 0, 0 } because PR2 compensates for it
+    std::string gravity_compensated_links_param_name_; // default: "gravity_compensated_links"
+    double gravity_[3];	// default: { 0, 0, -9.81 }
     taoNodeRoot * tao_root_node_;
     wbc::BranchingRepresentation * branching_; // filled in by conversion function
     std::vector<std::string> link_name_; // filled in by conversion function
     std::vector<std::string> joint_name_; // filled in by conversion function
+    std::vector<std::string> gravity_compensated_links_; // from ROS parameters, checked against active links
     std::vector<double> joint_limit_lower_; // filled in by conversion function
     std::vector<double> joint_limit_upper_; // filled in by conversion function
     wbc::RobotControlModel * control_model_; // NOTE: gets deleted by ~Model()

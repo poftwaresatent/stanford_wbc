@@ -243,10 +243,42 @@ namespace jspace {
   }
   
   
+  bool Model::
+  disableGravityCompensation(int index, bool disable)
+  {
+    if ((0 > index) || (getNDOF() <= index)) {
+      return true;
+    }
+    
+    dof_set_t::const_iterator const idof(gravity_disabled_.find(index));
+    
+    if (idof == gravity_disabled_.end()) {
+      // currently not disabled
+      if (disable) {
+	gravity_disabled_.insert(index);
+      }
+      return false;
+    }
+    
+    // currently disabled
+    if ( ! disable) {
+      gravity_disabled_.erase(idof);
+    }
+    return true;
+  }
+  
+  
   void Model::
   getGravity(SAIVector & gravity) const
   {
     gravity = robmodel_->dynamics()->gravityForce();
+    
+    // knock out entries for which gravity is already accounted for
+    // somewhere else (e.g. mechanically on PR2)
+    for (dof_set_t::const_iterator idof(gravity_disabled_.begin());
+	 idof != gravity_disabled_.end(); ++idof) {
+      gravity[*idof] = 0;
+    }
   }
   
   
