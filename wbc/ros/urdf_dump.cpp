@@ -28,7 +28,7 @@
 #include <iostream>
 
 
-namespace wbc {
+namespace wbcros {
   
   void dump_urdf_tree(std::ostream & os, urdf::Link const & urdf_root, std::string prefix, bool detailed)
   {
@@ -69,6 +69,13 @@ namespace wbc {
     for (size_t ii(0); ii < urdf_root.child_links.size(); ++ii) {
       dump_urdf_tree(os, *urdf_root.child_links[ii], prefix, detailed);
     }
+  }
+  
+  
+  void dump_urdf_tree(std::ostream & os, urdf::Model const & urdf, std::string prefix, bool detailed)
+  {
+    urdf::Link const & root(*urdf.getRoot());
+    dump_urdf_tree(os, root, prefix, detailed);
   }
   
 }

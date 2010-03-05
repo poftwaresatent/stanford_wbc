@@ -24,11 +24,12 @@
 */
 
 #include "Model.hpp"
+#include "urdf_to_tao.hpp"
+#include "urdf_dump.hpp"
 #include <urdf/model.h>
 #include <wbc/core/BranchingRepresentation.hpp>
 #include <wbc/core/RobotControlModel.hpp>
 #include <wbc/core/MobileManipulatorTaskModel.hpp>
-#include <wbc/ros/urdf_to_tao.hpp>
 #include <wbc/util/dump.hpp>
 #include <wbcnet/endian_mode.hpp>
 #include <saimatrix/SAIVector.h>
@@ -89,7 +90,7 @@ namespace wbcros {
 			       + active_links_param_name_ + "\"");
     }
     
-    urdf_to_tao::ActiveLinkFilter link_filter;
+    ActiveLinkFilter link_filter;
     link_filter.AddLink(tao_root_name_);
     try {
       std::string foo;
@@ -109,7 +110,7 @@ namespace wbcros {
     
     link_name_.clear();
     joint_name_.clear();
-    tao_root_node_ = urdf_to_tao::convert(urdf,
+    tao_root_node_ = convert(urdf,
 					  tao_root_name_,
 					  link_filter,
 					  &link_name_,
@@ -143,7 +144,12 @@ namespace wbcros {
 	      branching_->numActuatedJoints(),
 	      branching_->totalMass());
     if (0 == branching_->numJoints()) {
-      throw runtime_error("wbcros::Model::initFromURDF(): no joints in wbc::BranchingRepresentation");
+      ostringstream msg;
+      msg << "wbcros::Model::initFromURDF(): no joints in wbc::BranchingRepresentation\n"
+	  << "  urdf:\n";
+      dump_urdf_tree(msg, urdf, "    ", false);
+      msg << "  TAO root name: " << tao_root_name_ << "\n";
+      throw runtime_error(msg.str());
     }
     if (branching_->numJoints() != branching_->numActuatedJoints()) {
       ostringstream msg;

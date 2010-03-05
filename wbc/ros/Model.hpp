@@ -19,7 +19,7 @@
  */
 
 /**
-   \file wbc/ros_support/Model.hpp
+   \file wbc/ros/Model.hpp
    \author Roland Philippsen
 */
 

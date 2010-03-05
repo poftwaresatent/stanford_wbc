@@ -38,7 +38,7 @@ namespace urdf {
   class Link;
 }
 
-namespace urdf_to_tao {
+namespace wbcros {
   
 
   /**

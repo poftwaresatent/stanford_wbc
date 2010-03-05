@@ -19,7 +19,7 @@
  */
 
 /**
-   \file wbc/ros_support/BehaviorLibrary.cpp
+   \file wbc/ros/BehaviorLibrary.cpp
    \author Roland Philippsen
 */
 

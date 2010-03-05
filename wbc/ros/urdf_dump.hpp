@@ -35,12 +35,14 @@ namespace urdf {
   class Pose;
   class Inertial;
   class Link;
+  class Model;
 
 }
 
-namespace wbc {
+namespace wbcros {
 
   void dump_urdf_tree(std::ostream & os, urdf::Link const & urdf_root, std::string prefix, bool detailed);
+  void dump_urdf_tree(std::ostream & os, urdf::Model const & urdf, std::string prefix, bool detailed);
 
 }
 

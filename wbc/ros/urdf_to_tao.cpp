@@ -30,9 +30,7 @@
 using namespace std;
 
 
-namespace urdf_to_tao {
-
-
+namespace wbcros {
 
 
   void ActiveLinkFilter::
@@ -98,7 +96,7 @@ static wbcnet::logger_t logger(wbcnet::get_logger("urdf_to_tao"));
 using wbc::inertia_matrix_to_string;
 
 
-namespace urdf_to_tao {
+namespace wbcros {
   
   
   bool DefaultLinkFilter::
@@ -113,7 +111,7 @@ namespace urdf_to_tao {
   bool ActiveLinkFilter::
   isFixed(urdf::Link const & urdf_link) const
   {
-    if (urdf_to_tao::DefaultLinkFilter::isFixed(urdf_link)) {
+    if (DefaultLinkFilter::isFixed(urdf_link)) {
       return true;
     }
     if (m_active.find(urdf_link.name) != m_active.end()) {
@@ -813,7 +811,7 @@ namespace urdf_to_tao {
     element * conversion_root(find_element_by_name(fused_root, tao_root_name));
     if ( ! conversion_root) {
       ostringstream msg;
-      msg << "urdf_to_tao::convert(): no link called `" << tao_root_name << "' in the fused URDF model\n"
+      msg << "wbcros::convert(): no link called `" << tao_root_name << "' in the fused URDF model\n"
 	  << "  Note that custom link filters might remove links during the fusion process\n"
 	  << "  Here's the fused tree:\n";
       dump_tree(msg, fused_root, "  ", false);
