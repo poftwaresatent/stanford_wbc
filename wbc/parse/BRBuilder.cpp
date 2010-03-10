@@ -65,7 +65,7 @@ namespace wbc {
     deFrame frame;
     frame.translation().set(frame_tx, frame_ty, frame_tz);
     frame.rotation().set(frame_rx, frame_ry, frame_rz, frame_ra);
-    taoNodeRoot * root(new taoNodeRoot(&frame));
+    taoNodeRoot * root(new taoNodeRoot(frame));
     root->setIsFixed(1);
     root->setID(-1);
     node_[-1] = root;

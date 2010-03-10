@@ -96,7 +96,7 @@ namespace wbc {
       nodeID_ = -1;
 
       // Create tao root node
-      robot_->rootNode_ = new taoNodeRoot(&homeF_);
+      robot_->rootNode_ = new taoNodeRoot(homeF_);
       robot_->rootNode_->setIsFixed(1);
       robot_->rootNode_->setID( (deInt) -1 );
       

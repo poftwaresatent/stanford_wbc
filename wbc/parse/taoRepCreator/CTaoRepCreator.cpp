@@ -80,7 +80,7 @@ taoNodeRoot* CTaoRepCreator::taoRootRepCreator(
 	tmp_robdefRoot_p->home_frame_.translation().zero();
 	tmp_robdefRoot_p->home_frame_.rotation().set(tmp_robdefRoot_p->rot_axis_, tmp_robdefRoot_p->rot_angle_);
 
-	tmp_taoRoot_p = new taoNodeRoot(&tmp_robdefRoot_p->home_frame_); //Define a new tao root node to return
+	tmp_taoRoot_p = new taoNodeRoot(tmp_robdefRoot_p->home_frame_); //Define a new tao root node to return
 	tmp_taoRoot_p->setIsFixed(tmp_robdefRoot_p->link_is_fixed_); // Is the node fixed or not
 	tmp_taoRoot_p->setID((deInt) -1); //NOTE TODO What about the multiple robot case? Will all have rootId = -1
 
