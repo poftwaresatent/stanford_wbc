@@ -65,7 +65,7 @@ public:
 	 *	\pre	q, dq, tau should be given
 	 *	\post	ddq is acceleration
 	 */
-	static void fwdDynamics(taoDNode* root, deVector3* gravity);
+	static void fwdDynamics(taoDNode* root, const deVector3* gravity);
 
 
 	//! computes Joint Space Inertia Matrix, \a A of size \a dof x \a dof

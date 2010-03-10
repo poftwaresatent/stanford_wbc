@@ -81,7 +81,7 @@ void taoDynamics::invDynamics(taoDNode* root, deVector3* gravity)
 	*root->acceleration() = A;
 }
 
-void taoDynamics::fwdDynamics(taoDNode* root, deVector3* gravity)
+void taoDynamics::fwdDynamics(taoDNode* root, const deVector3* gravity)
 {
 	taoABDynamics::updateLocalXTreeOut(root); // YYY
 	deVector3 g;
