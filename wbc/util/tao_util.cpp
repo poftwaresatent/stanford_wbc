@@ -92,5 +92,40 @@ namespace wbc {
     }
     return mass;
   }
-
+  
+  
+  tao_node_info_s::
+  tao_node_info_s(taoDNode * _node,
+		  std::string const & _link_name,
+		  std::string _joint_name,
+		  double _limit_lower,
+		  double _limit_upper)
+    : id(_node->getID()),
+      node(_node),
+      link_name(_link_name),
+      joint_name(_joint_name),
+      limit_lower(_limit_lower),
+      limit_upper(_limit_upper)
+  {
+  }
+  
+  
+  tao_node_info_s::
+  tao_node_info_s(tao_node_info_s const & orig)
+    : id(orig.id),
+      node(orig.node),
+      link_name(orig.link_name),
+      joint_name(orig.joint_name),
+      limit_lower(orig.limit_lower),
+      limit_upper(orig.limit_upper)
+  {
+  }
+  
+  
+  tao_tree_info_s::
+  ~tao_tree_info_s()
+  {
+    delete root;
+  }
+  
 }

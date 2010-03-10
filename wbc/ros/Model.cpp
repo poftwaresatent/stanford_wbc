@@ -65,9 +65,9 @@ namespace wbcros {
     }
     // Arghl how much time you can loose when people don't use boost::shared_ptr<>!
     delete control_model_;	// this dude also deletes branching_ for us...
-    for (size_t ii(0); ii < tao_roots_.size(); ++ii) {
+    for (size_t ii(0); ii < tao_trees_.size(); ++ii) {
       // delete branching_;
-      delete tao_roots_[ii]; // wbc::BranchingRepresentation dtor does not do this for us...
+      delete tao_trees_[ii]; // wbc::BranchingRepresentation dtor does not do this for us...
     }
   }
   
@@ -75,15 +75,15 @@ namespace wbcros {
   void Model::
   initFromURDF(ros::NodeHandle &nn, urdf::Model const & urdf,
 	       size_t task_model_pool_size,
-	       size_t n_tao_roots) throw(std::runtime_error)
+	       size_t n_tao_trees) throw(std::runtime_error)
   {
-    if (( ! tao_roots_.empty()) || branching_ || control_model_ || ( ! task_model_pool_.empty())) {
+    if (( ! tao_trees_.empty()) || branching_ || control_model_ || ( ! task_model_pool_.empty())) {
       throw std::runtime_error("wbcros::Model::initFromURDF(): already (partially?) initialized");
     }
     
-    if (1 > n_tao_roots) {
-      ROS_WARN ("resizing n_tao_roots to one");
-      n_tao_roots = 1;
+    if (1 > n_tao_trees) {
+      ROS_WARN ("resizing n_tao_trees to one");
+      n_tao_trees = 1;
     }
     
     if ( ! nn.getParam(tao_root_param_name_, tao_root_name_)) {
@@ -116,21 +116,15 @@ namespace wbcros {
       throw std::runtime_error(msg.str());
     }
     
-    link_name_.clear();
-    joint_name_.clear();
     convert_urdf_to_tao_n(urdf,
 			  tao_root_name_,
 			  link_filter,
-			  tao_roots_,
-			  n_tao_roots,
-			  &link_name_,
-			  &joint_name_,
-			  &joint_limit_lower_,
-			  &joint_limit_upper_);
+			  tao_trees_,
+			  n_tao_trees);
     /* XXXX to do: if info is enabled... */ {
       std::ostringstream msg;
       msg << "converted URDF to TAO\n";
-      wbc::dump_tao_tree(msg, tao_roots_[0], "  ", false, &link_name_, &joint_name_);
+      wbc::dump_tao_tree_info(msg, tao_trees_[0], "  ", false);
       ROS_INFO (msg.str().c_str());
     }
     
@@ -160,15 +154,28 @@ namespace wbcros {
       throw std::runtime_error(msg.str());
     }
     
-    SAIVector const gravity(gravity_, 3);
-    branching_ = wbc::BranchingRepresentation::create(tao_roots_[0],
-						      &gravity,
-						      0, // default unactuation matrix is identity
-						      tao_root_name_,
-						      &link_name_,
-						      &joint_name_,
-						      &joint_limit_lower_,
-						      &joint_limit_upper_);
+    {
+      // grr... old conversion hacks
+      SAIVector const gravity(gravity_, 3);
+      std::vector<std::string> link_name;
+      std::vector<std::string> joint_name;
+      std::vector<double> limit_lower;
+      std::vector<double> limit_upper;
+      for (size_t ii(0); ii < tao_trees_[0]->info.size(); ++ii) {
+	link_name.push_back(tao_trees_[0]->info[ii].link_name);
+	joint_name.push_back(tao_trees_[0]->info[ii].joint_name);
+	limit_lower.push_back(tao_trees_[0]->info[ii].limit_lower);
+	limit_upper.push_back(tao_trees_[0]->info[ii].limit_upper);
+      }
+      branching_ = wbc::BranchingRepresentation::create(tao_trees_[0]->root,
+							&gravity,
+							0, // default unactuation matrix is identity
+							tao_root_name_,
+							&link_name,
+							&joint_name,
+							&limit_lower,
+							&limit_upper);
+    }
     if ( ! branching_) {
       throw runtime_error("weird, wbc::BranchingRepresentation::create() returned NULL");
     }
@@ -211,7 +218,7 @@ namespace wbcros {
   void Model::
   initFromParam(ros::NodeHandle &nn, std::string const & urdf_param_name,
 		size_t task_model_pool_size,
-		size_t n_tao_roots) throw(std::runtime_error)
+		size_t n_tao_trees) throw(std::runtime_error)
   {
     std::string urdf_string;
     if ( ! nn.getParam(urdf_param_name, urdf_string)) {
@@ -230,7 +237,7 @@ namespace wbcros {
       throw runtime_error("wbcros::Model::initFromParam(): initXml() failed on urdf_param_name \""
 			  + urdf_param_name + "\"");
     }
-    initFromURDF(nn, urdf_model, task_model_pool_size, n_tao_roots);
+    initFromURDF(nn, urdf_model, task_model_pool_size, n_tao_trees);
   }
   
 }

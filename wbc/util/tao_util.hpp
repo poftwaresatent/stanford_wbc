@@ -22,11 +22,45 @@
 #define WBC_TAO_UTIL_H
 
 #include <stdexcept>
+#include <string>
+#include <vector>
 #include <map>
 
+
+class taoNodeRoot;
 class taoDNode;
 
+
 namespace wbc {
+  
+  /**
+     \note TAO supports multiple joints per link, but all use cases so
+     far seem to require that exactly one joint sits between two
+     links, so we treat joint names just as link names until further
+     notice.
+  */
+  struct tao_node_info_s {
+    tao_node_info_s(taoDNode * node, std::string const & link_name,
+		    std::string joint_name, double limit_lower, double limit_upper);
+    tao_node_info_s(tao_node_info_s const & orig);
+    
+    int id;
+    taoDNode * node;
+    std::string link_name;
+    std::string joint_name;
+    double limit_lower;
+    double limit_upper;
+  };
+  
+  
+  struct tao_tree_info_s {
+    /** deletes the taoNodeRoot. */
+    virtual ~tao_tree_info_s();
+    taoNodeRoot * root;
+    typedef std::vector<tao_node_info_s> node_info_t;
+    node_info_t info;
+  };
+  
   
   typedef std::map<int, taoDNode *> idToNodeMap_t;
   

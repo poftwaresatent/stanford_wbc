@@ -40,7 +40,9 @@ class taoDNode;
 
 
 namespace wbc {
-
+  
+  struct tao_tree_info_s;
+  
   std::string inertia_matrix_to_string(deMatrix3 const & mx);
   
   /**
@@ -60,7 +62,12 @@ namespace wbc {
 		     bool detailed,
 		     std::vector<std::string> * id_to_link_name,
 		     std::vector<std::string> * id_to_joint_name);
-
+  
+  /**
+     Similar to dump_tao_tree() but uses the more recent tao_tree_info_s structure.
+  */
+  void dump_tao_tree_info(std::ostream & os, tao_tree_info_s * tree, std::string prefix, bool detailed);
+  
 }
 
 namespace std {

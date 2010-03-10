@@ -24,6 +24,7 @@
 */
 
 #include "dump.hpp"
+#include "tao_util.hpp"
 
 #include <tao/dynamics/taoNode.h>
 #include <tao/dynamics/taoJoint.h>
@@ -108,6 +109,51 @@ std::string inertia_matrix_to_string(deMatrix3 const & mx)
     prefix += "  ";
     for (taoDNode * child(root->getDChild()); child != 0; child = child->getDSibling())
       dump_tao_tree(os, child, prefix, detailed, id_to_link_name, id_to_joint_name);
+  }
+  
+  
+  static void _dump_tao_tree_info(std::ostream & os, taoDNode * root, tao_tree_info_s::node_info_t const & info,
+				  std::string prefix, bool detailed)
+  {
+    int const id(root->getID());
+    if ((0 <= id) && (info.size() > static_cast<size_t>(id))) {
+      os << prefix << "* " << info[id].link_name
+	 << " (ID " << id << " at "<< (void*) root << ")\n";
+    }
+    else {
+      os << prefix << "* ID " << id << " at "<< (void*) root << "\n";
+    }
+    
+    os << prefix << "    home:         " << *root->frameHome() << "\n"
+       << prefix << "    center:       " << *root->center() << "\n"
+       << prefix << "    mass:         " << *root->mass() << "\n"
+       << prefix << "    inertia:      " << inertia_matrix_to_string(*root->inertia()) << "\n";
+    if (info.size() > static_cast<size_t>(id)) {
+      os << prefix << "    joint name:   " << info[id].joint_name << "\n"
+	 << prefix << "    lower limit:  " << info[id].limit_lower << "\n"
+	 << prefix << "    upper limit:  " << info[id].limit_upper << "\n";
+    }
+    for (taoJoint /*const*/ * jlist(root->getJointList()); jlist != 0; jlist = jlist->getNext()) {
+      os << prefix << "    joint:        " << *jlist << "\n";
+    }
+    
+    if (detailed) {
+      os << prefix << "    velocity:     " << *root->velocity() << "\n"
+	 << prefix << "    acceleration: " << *root->acceleration() << "\n"
+	 << prefix << "    force:        " << *root->force() << "\n"
+	 << prefix << "    local:        " << *root->frameLocal() << "\n"
+	 << prefix << "    global:       " << *root->frameGlobal() << "\n";
+    }
+    
+    prefix += "  ";
+    for (taoDNode * child(root->getDChild()); child != 0; child = child->getDSibling())
+      _dump_tao_tree_info(os, child, info, prefix, detailed);
+  }
+  
+  
+  void dump_tao_tree_info(std::ostream & os, tao_tree_info_s * tree, std::string prefix, bool detailed)
+  {
+    _dump_tao_tree_info(os, tree->root, tree->info, prefix, detailed);
   }
   
 }

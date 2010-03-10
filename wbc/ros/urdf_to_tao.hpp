@@ -26,12 +26,12 @@
 #ifndef WBC_URDF_TO_TAO_HPP
 #define WBC_URDF_TO_TAO_HPP
 
+
+#include <wbc/util/tao_util.hpp>
 #include <stdexcept>
 #include <vector>
 #include <set>
 
-
-class taoNodeRoot;
 
 namespace urdf {
   class Model;
@@ -144,58 +144,31 @@ namespace wbcros {
      connecting them to their parent) should be considered fixed. You
      can use the DefaultLinkFilter in order to strictly adhere to what
      is labelled as fixed in the URDF tree.
-       
-     The optional \c tao_id_to_link_name_map parameter, if non-NULL,
-     is filled in with the names of the URDF links that reside at
-     given TAO node IDs, which are numbered from 0 onward. The TAO
-     root node has an ID of -1 and is not included in this map
-     (because you provided it as the \c tao_root_name anyway).
      
-     Similarly to \c tao_id_to_link_name_map, the optional \c
-     tao_id_to_joint_name_map, if non-NULL, is filled in with the
-     names of the URDF joints that reside at given TAO node IDs. Note
-     that TAO supports multiple joints per link, but URDF seems to
-     require that a joint alsways sits between two links, so here we
-     can treat joint names just as link names by stuffing them into a
-     \c std::vector.
-     
-     The optional \c joint_limit_lower and \c joint_limit_upper
-     vectors, if non-NULL, will be filled with the lower and upper
-     joint limits.
-     
-     \return The root of the freshly created TAO tree. An exception is
+     \return A structure containung the root of a freshly created TAO
+     tree, along with some additional information that should make it
+     easier to work with the TAO tree structure. An exception is
      thrown in case of errors. Typical errors are about invalid joint
      types. E.g. URDF has a notion of planar joint, which is lacking
      in TAO, and the joint axes in URDF can be arbitrary, whereas TAO
      is limited to the principal coordinate axes. These limitations of
      TAO might very well be removed in the future though.
   */
-  taoNodeRoot * convert_urdf_to_tao(urdf::Model const & urdf_model,
-				    std::string const & tao_root_name,
-				    LinkFilter const & link_filter,
-				    std::vector<std::string> * tao_id_to_link_name_map,
-				    std::vector<std::string> * tao_id_to_joint_name_map,
-				    std::vector<double> * joint_limit_lower,
-				    std::vector<double> * joint_limit_upper) throw(std::runtime_error);
+  wbc::tao_tree_info_s * convert_urdf_to_tao(urdf::Model const & urdf_model,
+					     std::string const & tao_root_name,
+					     LinkFilter const & link_filter) throw(std::runtime_error);
   
   
   /**
      Convert a URDF to several (identical) TAO trees. This is the same
      as convert_urdf_to_tao() but repeats the whole process \c
-     n_tao_roots times. The optional external descriptions (if
-     non-NULL) get initialized only once: \c tao_id_to_link_name_map,
-     \c tao_id_to_joint_name_map, \c joint_limit_lower, and \c
-     joint_limit_upper.
+     n_tao_roots times.
   */
   void convert_urdf_to_tao_n(urdf::Model const & urdf_model,
 			     std::string const & tao_root_name,
 			     LinkFilter const & link_filter,
-			     std::vector<taoNodeRoot*> & tao_roots,
-			     size_t n_tao_roots,
-			     std::vector<std::string> * tao_id_to_link_name_map,
-			     std::vector<std::string> * tao_id_to_joint_name_map,
-			     std::vector<double> * joint_limit_lower,
-			     std::vector<double> * joint_limit_upper) throw(std::runtime_error);
+			     std::vector<wbc::tao_tree_info_s*> & tao_trees,
+			     size_t n_tao_trees) throw(std::runtime_error);
   
   
 }

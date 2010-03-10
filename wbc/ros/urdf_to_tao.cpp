@@ -603,12 +603,9 @@ namespace wbcros {
   
   /** \note In the fused tree, inertias are expressed wrt COM, but TAO
       wants them wrt link origin (after the joint). */
-  void create_tao_tree(taoDNode * tao_parent,
-		       element const * child,
-		       std::vector<std::string> & id_to_link_name,
-		       std::vector<std::string> * id_to_joint_name,
-		       std::vector<double> * joint_limit_lower,
-		       std::vector<double> * joint_limit_upper) throw(std::runtime_error)
+  static void create_tao_tree(taoDNode * tao_parent,
+			      element const * child,
+			      std::vector<wbc::tao_node_info_s> & info) throw(std::runtime_error)
   {
     std::string const & name(child->urdf_link->name);
     urdf::Joint const * urdf_joint(child->urdf_link->parent_joint.get());
@@ -723,29 +720,9 @@ namespace wbcros {
     // also is the reason why this function need not return the
     // freshly created instance).
     taoNode * tao_node(new taoNode(tao_parent, &(child->tao_home_frame)));
-    tao_node->setID(id_to_link_name.size());
-    id_to_link_name.push_back(name);
+    tao_node->setID(info.size()); // the info vector will be grown a bit further down
     tao_node->addJoint(tao_joint); 
     tao_node->addABNode();
-    if (id_to_joint_name) {
-      id_to_joint_name->push_back(urdf_joint->name);
-    }
-    if (joint_limit_lower) {
-      if (( ! urdf_joint->limits) || (urdf::Joint::CONTINUOUS == urdf_joint->type)) {
-	joint_limit_lower->push_back(std::numeric_limits<double>::min());
-      }
-      else {
-	joint_limit_lower->push_back(urdf_joint->limits->lower);
-      }
-    }
-    if (joint_limit_upper) {
-      if (( ! urdf_joint->limits) || (urdf::Joint::CONTINUOUS == urdf_joint->type)) {
-	joint_limit_upper->push_back(std::numeric_limits<double>::max());
-      }
-      else {
-	joint_limit_upper->push_back(urdf_joint->limits->upper);
-      }
-    }
     
     // Yes, this looks weird, doesn't it? Don't worry, it's just TAO's
     // way of copying mass properties.
@@ -757,11 +734,21 @@ namespace wbcros {
 				    *child->tao_mass_prop.mass(),
 				    *tao_node->inertia());
     
+    // Register the fresh node with the node_info_s vector
+    double limit_lower(std::numeric_limits<double>::min());
+    double limit_upper(std::numeric_limits<double>::max());
+    if (urdf_joint->limits && (urdf::Joint::CONTINUOUS != urdf_joint->type)) {
+      limit_lower = urdf_joint->limits->lower;
+      limit_upper = urdf_joint->limits->upper;
+    }
+    info.push_back(wbc::tao_node_info_s(tao_node, name, urdf_joint->name, limit_lower, limit_upper));
+    
+    // Recurse...
     for (forest_t::const_iterator grandchild(child->children.begin());
 	 grandchild != child->children.end();
 	 ++grandchild)
       {
-	create_tao_tree(tao_node, *grandchild, id_to_link_name, id_to_joint_name, joint_limit_lower, joint_limit_upper);
+	create_tao_tree(tao_node, *grandchild, info);
       }
   }
   
@@ -795,19 +782,12 @@ namespace wbcros {
   }
   
   
-  static taoNodeRoot * _convert_urdf_to_tao(deFrame const & global_frame,
-					    element const * conversion_root,
-					    std::vector<std::string> * tao_id_to_link_name_map,
-					    std::vector<std::string> * tao_id_to_joint_name_map,
-					    std::vector<double> * joint_limit_lower,
-					    std::vector<double> * joint_limit_upper)
+  static wbc::tao_tree_info_s * _convert_urdf_to_tao(deFrame const & global_frame,
+						     element const * conversion_root)
   {
-    taoNodeRoot * tao_root(new taoNodeRoot(global_frame));
-    tao_root->setID(-1);
-    
-    std::vector<std::string> id_to_link_name; // we need this anyway for assigning IDs
-    if (0 == tao_id_to_link_name_map)
-      tao_id_to_link_name_map = &id_to_link_name;
+    wbc::tao_tree_info_s * tao_tree(new wbc::tao_tree_info_s());
+    tao_tree->root = new taoNodeRoot(global_frame);
+    tao_tree->root->setID(-1);
     
     // We do not want the conversion_root itself to be descendend of the
     // TAO root, we want all its children to descend from it. Otherwise,
@@ -818,21 +798,16 @@ namespace wbcros {
 	 child != conversion_root->children.end();
 	 ++child)
       {
-	create_tao_tree(tao_root, *child, *tao_id_to_link_name_map,
-			tao_id_to_joint_name_map, joint_limit_lower, joint_limit_upper);
+	create_tao_tree(tao_tree->root, *child, tao_tree->info);
       }
     
-    return tao_root;
+    return tao_tree;
   }
   
   
-  taoNodeRoot * convert_urdf_to_tao(urdf::Model const & urdf_model,
-				    std::string const & tao_root_name,
-				    LinkFilter const & link_filter,
-				    std::vector<std::string> * tao_id_to_link_name_map,
-				    std::vector<std::string> * tao_id_to_joint_name_map,
-				    std::vector<double> * joint_limit_lower,
-				    std::vector<double> * joint_limit_upper) throw(std::runtime_error)
+  wbc::tao_tree_info_s * convert_urdf_to_tao(urdf::Model const & urdf_model,
+					     std::string const & tao_root_name,
+					     LinkFilter const & link_filter) throw(std::runtime_error)
   {
     Converter converter(link_filter);
     
@@ -842,7 +817,7 @@ namespace wbcros {
     element * conversion_root(find_element_by_name(fused_root, tao_root_name));
     if ( ! conversion_root) {
       ostringstream msg;
-      msg << "wbcros::convert(): no link called `" << tao_root_name << "' in the fused URDF model\n"
+      msg << "wbcros::convert_urdf_to_tao(): no link called `" << tao_root_name << "' in the fused URDF model\n"
 	  << "  Note that custom link filters might remove links during the fusion process\n"
 	  << "  Here's the fused tree:\n";
       dump_tree(msg, fused_root, "  ", false);
@@ -852,24 +827,15 @@ namespace wbcros {
     deFrame global_frame;
     compute_global_frame(conversion_root, global_frame);
     
-    return _convert_urdf_to_tao(global_frame,
-				conversion_root,
-				tao_id_to_link_name_map,
-				tao_id_to_joint_name_map,
-				joint_limit_lower,
-				joint_limit_upper);
+    return _convert_urdf_to_tao(global_frame, conversion_root);
   }
   
   
   void convert_urdf_to_tao_n(urdf::Model const & urdf_model,
 			     std::string const & tao_root_name,
 			     LinkFilter const & link_filter,
-			     std::vector<taoNodeRoot*> & tao_roots,
-			     size_t n_tao_roots,
-			     std::vector<std::string> * tao_id_to_link_name_map,
-			     std::vector<std::string> * tao_id_to_joint_name_map,
-			     std::vector<double> * joint_limit_lower,
-			     std::vector<double> * joint_limit_upper) throw(std::runtime_error)
+			     std::vector<wbc::tao_tree_info_s*> & tao_trees,
+			     size_t n_tao_trees) throw(std::runtime_error)
   {
     Converter converter(link_filter);
     
@@ -879,7 +845,7 @@ namespace wbcros {
     element * conversion_root(find_element_by_name(fused_root, tao_root_name));
     if ( ! conversion_root) {
       ostringstream msg;
-      msg << "wbcros::convert(): no link called `" << tao_root_name << "' in the fused URDF model\n"
+      msg << "wbcros::convert_urdf_to_tao_n(): no link called `" << tao_root_name << "' in the fused URDF model\n"
 	  << "  Note that custom link filters might remove links during the fusion process\n"
 	  << "  Here's the fused tree:\n";
       dump_tree(msg, fused_root, "  ", false);
@@ -889,25 +855,10 @@ namespace wbcros {
     deFrame global_frame;
     compute_global_frame(conversion_root, global_frame);
     
-    for (size_t ii(0); ii < n_tao_roots; ++ii) {
-      // careful to generate the various mappings only once...
-      if (0 == ii) {
-	tao_roots.push_back(_convert_urdf_to_tao(global_frame,
-						 conversion_root,
-						 tao_id_to_link_name_map,
-						 tao_id_to_joint_name_map,
-						 joint_limit_lower,
-						 joint_limit_upper));
-      }
-      else {
-	tao_roots.push_back(_convert_urdf_to_tao(global_frame,
-						 conversion_root,
-						 0,
-						 0,
-						 0,
-						 0));
-      }
+    for (size_t ii(0); ii < n_tao_trees; ++ii) {
+      tao_trees.push_back(_convert_urdf_to_tao(global_frame, conversion_root));
     }
   }
+  
   
 }

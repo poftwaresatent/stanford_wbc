@@ -39,16 +39,17 @@ namespace urdf {
 }
 
 namespace wbc {
+  // declared in <wbc/util/tao_util.hpp>
+  struct tao_tree_info_s;
+  
   class BranchingRepresentation;
   class RobotControlModel;
   class TaskModelBase;
 }
 
-class taoNodeRoot;
-
 
 namespace wbcros {
-  
+    
   
   class Model
   {
@@ -58,13 +59,9 @@ namespace wbcros {
     std::string active_links_param_name_; // default: "active_links"
     std::string gravity_compensated_links_param_name_; // default: "gravity_compensated_links"
     double gravity_[3];	// default: { 0, 0, -9.81 }
-    std::vector<taoNodeRoot*> tao_roots_;
-    wbc::BranchingRepresentation * branching_; // filled in by conversion function, using tao_roots_[0]
-    std::vector<std::string> link_name_; // filled in by conversion function
-    std::vector<std::string> joint_name_; // filled in by conversion function
+    std::vector<wbc::tao_tree_info_s*> tao_trees_;
+    wbc::BranchingRepresentation * branching_; // filled in by conversion function, using tao_trees_[0]->root
     std::vector<std::string> gravity_compensated_links_; // from ROS parameters, checked against active links
-    std::vector<double> joint_limit_lower_; // filled in by conversion function
-    std::vector<double> joint_limit_upper_; // filled in by conversion function
     wbc::RobotControlModel * control_model_; // NOTE: gets deleted by ~Model()
     std::vector<wbc::TaskModelBase*> task_model_pool_;
     
@@ -75,11 +72,11 @@ namespace wbcros {
     
     void initFromURDF(ros::NodeHandle &nn, urdf::Model const & urdf,
 		      size_t task_model_pool_size,
-		      size_t n_tao_roots) throw(std::runtime_error);
+		      size_t n_tao_trees) throw(std::runtime_error);
 
     void initFromParam(ros::NodeHandle &nn, std::string const & urdf_param_name,
 		       size_t task_model_pool_size,
-		       size_t n_tao_roots) throw(std::runtime_error);
+		       size_t n_tao_trees) throw(std::runtime_error);
   };
   
 }
