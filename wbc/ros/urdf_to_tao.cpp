@@ -795,32 +795,14 @@ namespace wbcros {
   }
   
   
-  taoNodeRoot * convert(urdf::Model const & urdf_model,
-			std::string const & tao_root_name,
-			LinkFilter const & link_filter,
-			std::vector<std::string> * tao_id_to_link_name_map,
-			std::vector<std::string> * tao_id_to_joint_name_map,
-			std::vector<double> * joint_limit_lower,
-			std::vector<double> * joint_limit_upper) throw(std::runtime_error)
+  static taoNodeRoot * _convert_urdf_to_tao(deFrame const & global_frame,
+					    element const * conversion_root,
+					    std::vector<std::string> * tao_id_to_link_name_map,
+					    std::vector<std::string> * tao_id_to_joint_name_map,
+					    std::vector<double> * joint_limit_lower,
+					    std::vector<double> * joint_limit_upper)
   {
-    Converter converter(link_filter);
-    
-    element * unfused_root(converter.read_urdf_tree(0, urdf_model.getRoot()));
-    element * fused_root(converter.copy_fuse_fixed(0, unfused_root));
-    
-    element * conversion_root(find_element_by_name(fused_root, tao_root_name));
-    if ( ! conversion_root) {
-      ostringstream msg;
-      msg << "wbcros::convert(): no link called `" << tao_root_name << "' in the fused URDF model\n"
-	  << "  Note that custom link filters might remove links during the fusion process\n"
-	  << "  Here's the fused tree:\n";
-      dump_tree(msg, fused_root, "  ", false);
-      throw runtime_error(msg.str());
-    }
-    
-    deFrame global_frame;
-    compute_global_frame(conversion_root, global_frame);
-    taoNodeRoot * tao_root(new taoNodeRoot(&global_frame));
+    taoNodeRoot * tao_root(new taoNodeRoot(global_frame));
     tao_root->setID(-1);
     
     std::vector<std::string> id_to_link_name; // we need this anyway for assigning IDs
@@ -841,6 +823,91 @@ namespace wbcros {
       }
     
     return tao_root;
+  }
+  
+  
+  taoNodeRoot * convert_urdf_to_tao(urdf::Model const & urdf_model,
+				    std::string const & tao_root_name,
+				    LinkFilter const & link_filter,
+				    std::vector<std::string> * tao_id_to_link_name_map,
+				    std::vector<std::string> * tao_id_to_joint_name_map,
+				    std::vector<double> * joint_limit_lower,
+				    std::vector<double> * joint_limit_upper) throw(std::runtime_error)
+  {
+    Converter converter(link_filter);
+    
+    element * unfused_root(converter.read_urdf_tree(0, urdf_model.getRoot()));
+    element * fused_root(converter.copy_fuse_fixed(0, unfused_root));
+    
+    element * conversion_root(find_element_by_name(fused_root, tao_root_name));
+    if ( ! conversion_root) {
+      ostringstream msg;
+      msg << "wbcros::convert(): no link called `" << tao_root_name << "' in the fused URDF model\n"
+	  << "  Note that custom link filters might remove links during the fusion process\n"
+	  << "  Here's the fused tree:\n";
+      dump_tree(msg, fused_root, "  ", false);
+      throw runtime_error(msg.str());
+    }
+    
+    deFrame global_frame;
+    compute_global_frame(conversion_root, global_frame);
+    
+    return _convert_urdf_to_tao(global_frame,
+				conversion_root,
+				tao_id_to_link_name_map,
+				tao_id_to_joint_name_map,
+				joint_limit_lower,
+				joint_limit_upper);
+  }
+  
+  
+  void convert_urdf_to_tao_n(urdf::Model const & urdf_model,
+			     std::string const & tao_root_name,
+			     LinkFilter const & link_filter,
+			     std::vector<taoNodeRoot*> & tao_roots,
+			     size_t n_tao_roots,
+			     std::vector<std::string> * tao_id_to_link_name_map,
+			     std::vector<std::string> * tao_id_to_joint_name_map,
+			     std::vector<double> * joint_limit_lower,
+			     std::vector<double> * joint_limit_upper) throw(std::runtime_error)
+  {
+    Converter converter(link_filter);
+    
+    element * unfused_root(converter.read_urdf_tree(0, urdf_model.getRoot()));
+    element * fused_root(converter.copy_fuse_fixed(0, unfused_root));
+    
+    element * conversion_root(find_element_by_name(fused_root, tao_root_name));
+    if ( ! conversion_root) {
+      ostringstream msg;
+      msg << "wbcros::convert(): no link called `" << tao_root_name << "' in the fused URDF model\n"
+	  << "  Note that custom link filters might remove links during the fusion process\n"
+	  << "  Here's the fused tree:\n";
+      dump_tree(msg, fused_root, "  ", false);
+      throw runtime_error(msg.str());
+    }
+    
+    deFrame global_frame;
+    compute_global_frame(conversion_root, global_frame);
+    
+    for (size_t ii(0); ii < n_tao_roots; ++ii) {
+      // careful to generate the various mappings only once...
+      if (0 == ii) {
+	tao_roots.push_back(_convert_urdf_to_tao(global_frame,
+						 conversion_root,
+						 tao_id_to_link_name_map,
+						 tao_id_to_joint_name_map,
+						 joint_limit_lower,
+						 joint_limit_upper));
+      }
+      else {
+	tao_roots.push_back(_convert_urdf_to_tao(global_frame,
+						 conversion_root,
+						 0,
+						 0,
+						 0,
+						 0));
+      }
+    }
   }
   
 }

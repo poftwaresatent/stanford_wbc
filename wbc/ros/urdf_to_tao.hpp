@@ -170,13 +170,33 @@ namespace wbcros {
      is limited to the principal coordinate axes. These limitations of
      TAO might very well be removed in the future though.
   */
-  taoNodeRoot * convert(urdf::Model const & urdf_model,
-			std::string const & tao_root_name,
-			LinkFilter const & link_filter,
-			std::vector<std::string> * tao_id_to_link_name_map,
-			std::vector<std::string> * tao_id_to_joint_name_map,
-			std::vector<double> * joint_limit_lower,
-			std::vector<double> * joint_limit_upper) throw(std::runtime_error);
+  taoNodeRoot * convert_urdf_to_tao(urdf::Model const & urdf_model,
+				    std::string const & tao_root_name,
+				    LinkFilter const & link_filter,
+				    std::vector<std::string> * tao_id_to_link_name_map,
+				    std::vector<std::string> * tao_id_to_joint_name_map,
+				    std::vector<double> * joint_limit_lower,
+				    std::vector<double> * joint_limit_upper) throw(std::runtime_error);
+  
+  
+  /**
+     Convert a URDF to several (identical) TAO trees. This is the same
+     as convert_urdf_to_tao() but repeats the whole process \c
+     n_tao_roots times. The optional external descriptions (if
+     non-NULL) get initialized only once: \c tao_id_to_link_name_map,
+     \c tao_id_to_joint_name_map, \c joint_limit_lower, and \c
+     joint_limit_upper.
+  */
+  void convert_urdf_to_tao_n(urdf::Model const & urdf_model,
+			     std::string const & tao_root_name,
+			     LinkFilter const & link_filter,
+			     std::vector<taoNodeRoot*> & tao_roots,
+			     size_t n_tao_roots,
+			     std::vector<std::string> * tao_id_to_link_name_map,
+			     std::vector<std::string> * tao_id_to_joint_name_map,
+			     std::vector<double> * joint_limit_lower,
+			     std::vector<double> * joint_limit_upper) throw(std::runtime_error);
+  
   
 }
 

@@ -58,8 +58,8 @@ namespace wbcros {
     std::string active_links_param_name_; // default: "active_links"
     std::string gravity_compensated_links_param_name_; // default: "gravity_compensated_links"
     double gravity_[3];	// default: { 0, 0, -9.81 }
-    taoNodeRoot * tao_root_node_;
-    wbc::BranchingRepresentation * branching_; // filled in by conversion function
+    std::vector<taoNodeRoot*> tao_roots_;
+    wbc::BranchingRepresentation * branching_; // filled in by conversion function, using tao_roots_[0]
     std::vector<std::string> link_name_; // filled in by conversion function
     std::vector<std::string> joint_name_; // filled in by conversion function
     std::vector<std::string> gravity_compensated_links_; // from ROS parameters, checked against active links
@@ -74,10 +74,12 @@ namespace wbcros {
     ~Model();
     
     void initFromURDF(ros::NodeHandle &nn, urdf::Model const & urdf,
-		      size_t task_model_pool_size) throw(std::runtime_error);
+		      size_t task_model_pool_size,
+		      size_t n_tao_roots) throw(std::runtime_error);
 
     void initFromParam(ros::NodeHandle &nn, std::string const & urdf_param_name,
-		       size_t task_model_pool_size) throw(std::runtime_error);
+		       size_t task_model_pool_size,
+		       size_t n_tao_roots) throw(std::runtime_error);
   };
   
 }

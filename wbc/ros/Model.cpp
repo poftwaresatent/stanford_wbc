@@ -48,7 +48,6 @@ namespace wbcros {
     : tao_root_param_name_(param_prefix + "tao_root_name"),
       active_links_param_name_(param_prefix + "active_links"),
       gravity_compensated_links_param_name_(param_prefix + "gravity_compensated_links"),
-      tao_root_node_(0),
       branching_(0),
       control_model_(0)
   {
@@ -66,17 +65,25 @@ namespace wbcros {
     }
     // Arghl how much time you can loose when people don't use boost::shared_ptr<>!
     delete control_model_;	// this dude also deletes branching_ for us...
-    // delete branching_;
-    delete tao_root_node_; // wbc::BranchingRepresentation dtor does not do this for us...
+    for (size_t ii(0); ii < tao_roots_.size(); ++ii) {
+      // delete branching_;
+      delete tao_roots_[ii]; // wbc::BranchingRepresentation dtor does not do this for us...
+    }
   }
   
   
   void Model::
   initFromURDF(ros::NodeHandle &nn, urdf::Model const & urdf,
-	       size_t task_model_pool_size) throw(std::runtime_error)
+	       size_t task_model_pool_size,
+	       size_t n_tao_roots) throw(std::runtime_error)
   {
-    if (tao_root_node_ || branching_ || control_model_ || ( ! task_model_pool_.empty())) {
+    if (( ! tao_roots_.empty()) || branching_ || control_model_ || ( ! task_model_pool_.empty())) {
       throw std::runtime_error("wbcros::Model::initFromURDF(): already (partially?) initialized");
+    }
+    
+    if (1 > n_tao_roots) {
+      ROS_WARN ("resizing n_tao_roots to one");
+      n_tao_roots = 1;
     }
     
     if ( ! nn.getParam(tao_root_param_name_, tao_root_name_)) {
@@ -111,17 +118,19 @@ namespace wbcros {
     
     link_name_.clear();
     joint_name_.clear();
-    tao_root_node_ = convert(urdf,
-					  tao_root_name_,
-					  link_filter,
-					  &link_name_,
-					  &joint_name_,
-					  &joint_limit_lower_,
-					  &joint_limit_upper_);
+    convert_urdf_to_tao_n(urdf,
+			  tao_root_name_,
+			  link_filter,
+			  tao_roots_,
+			  n_tao_roots,
+			  &link_name_,
+			  &joint_name_,
+			  &joint_limit_lower_,
+			  &joint_limit_upper_);
     /* XXXX to do: if info is enabled... */ {
       std::ostringstream msg;
       msg << "converted URDF to TAO\n";
-      wbc::dump_tao_tree(msg, tao_root_node_, "  ", false, &link_name_, &joint_name_);
+      wbc::dump_tao_tree(msg, tao_roots_[0], "  ", false, &link_name_, &joint_name_);
       ROS_INFO (msg.str().c_str());
     }
     
@@ -152,7 +161,7 @@ namespace wbcros {
     }
     
     SAIVector const gravity(gravity_, 3);
-    branching_ = wbc::BranchingRepresentation::create(tao_root_node_,
+    branching_ = wbc::BranchingRepresentation::create(tao_roots_[0],
 						      &gravity,
 						      0, // default unactuation matrix is identity
 						      tao_root_name_,
@@ -201,7 +210,8 @@ namespace wbcros {
   
   void Model::
   initFromParam(ros::NodeHandle &nn, std::string const & urdf_param_name,
-		size_t task_model_pool_size) throw(std::runtime_error)
+		size_t task_model_pool_size,
+		size_t n_tao_roots) throw(std::runtime_error)
   {
     std::string urdf_string;
     if ( ! nn.getParam(urdf_param_name, urdf_string)) {
@@ -220,7 +230,7 @@ namespace wbcros {
       throw runtime_error("wbcros::Model::initFromParam(): initXml() failed on urdf_param_name \""
 			  + urdf_param_name + "\"");
     }
-    initFromURDF(nn, urdf_model, task_model_pool_size);
+    initFromURDF(nn, urdf_model, task_model_pool_size, n_tao_roots);
   }
   
 }

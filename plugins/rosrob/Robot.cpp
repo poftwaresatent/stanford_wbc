@@ -62,7 +62,7 @@ namespace wbc_rosrob_plugin {
       m_model(param_prefix)
   {
     try {
-      m_model.initFromParam(ros_node, urdf_param_name, 0);
+      m_model.initFromParam(ros_node, urdf_param_name, 0, 1);
       m_subscriber = ros_node.subscribe(joint_states_topic_name, 1, joint_states_callback);
       for (size_t ii(0); ii < m_model.joint_name_.size(); ++ii) {
 	m_joint_index_map.insert(make_pair(m_model.joint_name_[ii], ii));
