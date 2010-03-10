@@ -162,7 +162,7 @@ taoNodeRoot* taoGroup::unlinkFixed(taoNodeRoot* root, taoNode* node)
 		root->getController()->deleteParamTree(node);
 #endif
 
-	taoNodeRoot* r = new taoNodeRoot(node->frameGlobal());
+	taoNodeRoot* r = new taoNodeRoot(*node->frameGlobal());
 
 	node->unlink();
 
@@ -191,7 +191,7 @@ taoNodeRoot* taoGroup::unlinkFree(taoNodeRoot* root, taoNode* node, deFloat iner
 #endif
 
 	deVector6 v = *node->velocity();
-	taoNodeRoot* r = new taoNodeRoot(node->frameGlobal());
+	taoNodeRoot* r = new taoNodeRoot(*node->frameGlobal());
 
 	node->unlink();
 

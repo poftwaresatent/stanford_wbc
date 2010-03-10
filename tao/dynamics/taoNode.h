@@ -142,7 +142,7 @@ private:
 class taoNodeRoot : public taoDNode
 {
 public:
-	taoNodeRoot(deFrame* global);
+	taoNodeRoot(deFrame const & global);
 
 	virtual ~taoNodeRoot();
 

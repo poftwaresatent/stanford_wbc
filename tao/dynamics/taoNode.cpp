@@ -250,10 +250,10 @@ deVector6* taoNodeRoot::acceleration()
 	return getABNode()->A();
 }
 
-taoNodeRoot::taoNodeRoot(deFrame* global)
+taoNodeRoot::taoNodeRoot(deFrame const & global)
 { 
 	_zero = 0;
-	_frameGlobal = *global;
+	_frameGlobal = global;
 
 	_group = NULL;
 	_controller = NULL;

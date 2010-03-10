@@ -24,7 +24,7 @@
 #define _deFrame_inl
 	
 DE_MATH_API void deFrame::identity() { _q.identity(); _v.zero(); }
-DE_MATH_API void deFrame::operator=(const deFrame f) { _q = f._q; _v = f._v; } 
+DE_MATH_API void deFrame::operator=(const deFrame & f) { _q = f._q; _v = f._v; } 
 //! this = f1 * f2 = [r1,p1][r2,p2] = [r1*r2, r1*p2 + p1]
 DE_MATH_API void deFrame::multiply(const deFrame& f1, const deFrame& f2) {
 	_q.multiply(f1.rotation(), f2.rotation());

@@ -52,7 +52,7 @@ public:
 	//! this = identity matrix
 	DE_MATH_API void identity();
 	//! this = f
-	DE_MATH_API void operator=(const deFrame f);
+	DE_MATH_API void operator=(const deFrame & f);
 
   /**
      Combine two frame transformations: \c f2 gets rotated and
