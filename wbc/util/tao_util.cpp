@@ -19,9 +19,12 @@
  */
 
 #include "tao_util.hpp"
+#include <tao/dynamics/taoNode.h>
 #include <tao/dynamics/taoDNode.h>
 #include <tao/dynamics/taoJoint.h>
 #include <wbcnet/strutil.hpp>
+#include <wbc/core/BranchingRepresentation.hpp>
+
 
 namespace wbc {
   
@@ -95,6 +98,18 @@ namespace wbc {
   
   
   tao_node_info_s::
+  tao_node_info_s()
+    : id(-2),
+      node(0),
+      link_name(""),
+      joint_name(""),
+      limit_lower(0),
+      limit_upper(0)
+  {
+  }
+  
+  
+  tao_node_info_s::
   tao_node_info_s(taoDNode * _node,
 		  std::string const & _link_name,
 		  std::string _joint_name,
@@ -126,6 +141,33 @@ namespace wbc {
   ~tao_tree_info_s()
   {
     delete root;
+  }
+  
+  
+  tao_tree_info_s * create_tao_tree_info(BranchingRepresentation & branching)
+  {
+    tao_tree_info_s * tree(new tao_tree_info_s());
+    tree->root = branching.rootNode();
+    typedef idToNodeMap_t foo_t;
+    foo_t const & foo(branching.idToNodeMap());
+    int maxid(0);
+    for (foo_t::const_iterator ifoo(foo.begin()); ifoo != foo.end(); ++ifoo) {
+      if (ifoo->first > maxid) {
+	maxid = ifoo->first;
+      }
+    }
+    tree->info.resize(maxid+1);
+    for (foo_t::const_iterator ifoo(foo.begin()); ifoo != foo.end(); ++ifoo) {
+      if (ifoo->first >= 0) {
+	tree->info[ifoo->first].id = ifoo->first;
+	tree->info[ifoo->first].node = ifoo->second;
+	tree->info[ifoo->first].link_name = "(not included in this quick hack)";
+	tree->info[ifoo->first].joint_name = "(not included in this quick hack)";
+	tree->info[ifoo->first].limit_lower = -1234.567;
+	tree->info[ifoo->first].limit_upper = +1234.567;
+      }
+    }
+    return tree;
   }
   
 }

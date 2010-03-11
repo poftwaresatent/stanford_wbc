@@ -32,6 +32,8 @@ class taoDNode;
 
 
 namespace wbc {
+
+  class BranchingRepresentation;
   
   /**
      \note TAO supports multiple joints per link, but all use cases so
@@ -40,6 +42,7 @@ namespace wbc {
      notice.
   */
   struct tao_node_info_s {
+    tao_node_info_s();
     tao_node_info_s(taoDNode * node, std::string const & link_name,
 		    std::string joint_name, double limit_lower, double limit_upper);
     tao_node_info_s(tao_node_info_s const & orig);
@@ -60,6 +63,8 @@ namespace wbc {
     typedef std::vector<tao_node_info_s> node_info_t;
     node_info_t info;
   };
+
+  tao_tree_info_s * create_tao_tree_info(BranchingRepresentation & branching);
   
   
   typedef std::map<int, taoDNode *> idToNodeMap_t;
