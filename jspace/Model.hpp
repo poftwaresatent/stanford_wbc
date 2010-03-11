@@ -33,9 +33,7 @@
 class taoDNode;
 
 namespace wbc {
-  // For the moment we are wrapping the existing code. Later we'll
-  // cleanly migrate its joint-space-related parts to here.
-  class RobotControlModel;
+  struct tao_tree_info_s;
 }
 
 namespace jspace {
@@ -44,20 +42,19 @@ namespace jspace {
   class Model
   {
   public:
-    /** For the moment we are wrapping the existing code. Later we'll
-	cleanly reimplement it with direct access to TAO. */
-    Model(/** The existing robot model that we are wrapping. */
-	  wbc::RobotControlModel * robmodel,
-	  /** If true, then the jspace::Model destructor deletes the
-	      robmodel. Otherwise, it is left alone. */
-	  bool cleanup_robmodel);
+    Model(/** TAO tree info used for computing kinematics and the
+	      gravity torque vector. */
+	  wbc::tao_tree_info_s * kg_tree,
+	  /** TAO tree info for computing Coriolis and centrifugal
+	      torques. */
+	  wbc::tao_tree_info_s * cc_tree);
     
     ~Model();
     
     //////////////////////////////////////////////////
     // fire-and-forget facet
     
-    /** Call setState(), updateKinematics(), and
+    /** Calls setState(), updateKinematics(), and
 	updateDynamics(). After calling the update() method, you can
 	use any of the other methods without worrying whether you have
 	already called the corresponding computeFoo() method. */
@@ -81,30 +78,28 @@ namespace jspace {
 	robot.
 	
 	\note
-	- the root node is included in this count, so when iterating
-          over node IDs you should stop before getNNodes()-1
-	- each node can have any number of joints, and each joint can
-	  have any number of degrees of freedom, which is why
-	  getNJoints() and getNDOF() might come in handy, too.
+	- the root node is NOT included in this count.
+	- in principle, each node can have any number of joints, and
+	  each joint can have any number of degrees of freedom, which
+	  is why getNJoints() and getNDOF() might come in handy, too.
     */
-    int getNNodes() const;
+    size_t getNNodes() const;
     
     /** Compute or retrieve the cached number of joints in the
 	robot. Note that each joint can have any number of degrees of
 	freedom, which is why getNDOF() might come in handy, too. */
-    int getNJoints() const;
+    size_t getNJoints() const;
     
     /** Compute or retrieve the cached number of degrees of freedom of
 	the robot. Note that each joint can have any number of degrees
 	of freedom, which is why this method might return something
 	else than getNJoints(). */
-    int getNDOF() const;
+    size_t getNDOF() const;
     
-    /** Retrieve the name of a node. id=-1 is the root node. Returns
-	an empty string in case the id is invalid. Use getNNodes() to
-	find out how many nodes there are but beware that that
-	includes the root node. */
-    std::string getNodeName(int id) const;
+    /** Retrieve the name of a node. Returns an empty string in case
+	the id is invalid. Use getNNodes() to find out how many nodes
+	there are. */
+    std::string getNodeName(size_t id) const;
     
     /** Retrieve the name of a joint. Returns an empty string in case
 	the id is invalid. Use getNJoints() to find out how many
@@ -112,13 +107,12 @@ namespace jspace {
 	
 	\todo A joint can have any number of DOF, which means there
 	should be a way to get at them individually, but currently we
-	wrap wbc::BranchingRepresentation which only support 1-DOF
-	joints anyway.
+	only support exactly one 1-DOF joints per node.
     */
-    std::string getJointName(int id) const;
+    std::string getJointName(size_t id) const;
     
     /** Retrieve a node by ID. */
-    taoDNode * getNode(int id) const;
+    taoDNode * getNode(size_t id) const;
     
     /** Retrieve a node by its name or registered alias. A typical
 	alias would be "end-effector" or "End_Effector" or so, which
@@ -171,7 +165,7 @@ namespace jspace {
     /** Compute the Jacobian (J_v over J_omega) at the origin of a
 	given node.
 	
-	\todo Reimplement this "properly" using the explicit form.
+	\todo IMPLEMENT THIS!!!
 	
 	\return True on success. There are two possible failures: an
 	invalid node, or an unsupported joint type. If you got the
@@ -186,7 +180,7 @@ namespace jspace {
 	computeGlobalFrame() and use the translational part of the
 	resulting frame.
 	
-	\todo Reimplement this "properly" using the explicit form.
+	\todo IMPLEMENT THIS!!!
 	
 	\return True on success. There are two possible failures: an
 	invalid node, or an unsupported joint type. If you got the
@@ -200,17 +194,10 @@ namespace jspace {
     // dynamics facet
     
     /** Calls computeGravity(), computeCoriolisCentrifugal(),
-	computeMassInertia(), and computeInverseMassInertia().
-	
-	\todo At the moment, this just calls onUpdate() on the wrapped
-	wbc::Dynamics instance.
-    */
+	computeMassInertia(), and computeInverseMassInertia(). */
     void updateDynamics();
     
-    /** Compute the gravity joint-torque vector.
-	
-	\todo At the moment, this is a no-op because
-	updateDynamics() actually does it for us. */
+    /** Compute the gravity joint-torque vector. */
     void computeGravity();
     
     /** Disable (or enable) gravity compensation for a given DOF
@@ -223,15 +210,12 @@ namespace jspace {
 	
 	\return The previous value of \c disable for this joint.
     */
-    bool disableGravityCompensation(int index, bool disable);
+    bool disableGravityCompensation(size_t index, bool disable);
     
     /** Retrieve the gravity joint-torque vector. */
     void getGravity(SAIVector & gravity) const;
     
-    /** Compute the Coriolis and contrifugal joint-torque vector.
-	
-	\todo At the moment, this is a no-op because
-	updateDynamics() actually does it for us. */
+    /** Compute the Coriolis and contrifugal joint-torque vector. */
     void computeCoriolisCentrifugal();
     
     /** Retrieve the Coriolis and contrifugal joint-torque vector. */
@@ -240,8 +224,7 @@ namespace jspace {
     /** Compute the joint-space mass-inertia matrix, a.k.a. the
 	kinetic energy matrix.
 	
-	\todo At the moment, this is a no-op because
-	updateDynamics() actually does it for us. */
+	\todo IMPLEMENT THIS!!! */
     void computeMassInertia();
     
     /** Retrieve the joint-space mass-inertia matrix, a.k.a. the
@@ -250,8 +233,7 @@ namespace jspace {
     
     /** Compute the inverse joint-space mass-inertia matrix.
 	
-	\todo At the moment, this is a no-op because
-	updateDynamics() actually does it for us. */
+	\todo IMPLEMENT THIS!!! */
     void computeInverseMassInertia();
     
     /** Retrieve the inverse joint-space mass-inertia matrix. */
@@ -259,17 +241,15 @@ namespace jspace {
     
     
   private:
-    typedef std::set<int> dof_set_t;
+    typedef std::set<size_t> dof_set_t;
     dof_set_t gravity_disabled_;
     
-    // For the moment we are wrapping the existing code. Later we'll
-    // cleanly migrate its joint-space-related parts to here. At that
-    // point we can probably change these fields to protected instead
-    // of private, to make it easier to extend this model.
-    wbc::RobotControlModel * robmodel_;
-    bool cleanup_robmodel_;
+    wbc::tao_tree_info_s * kg_tree_;
+    wbc::tao_tree_info_s * cc_tree_;
     
     State state_;
+    std::vector<double> g_torque_;
+    std::vector<double> cc_torque_;
   };
   
 }

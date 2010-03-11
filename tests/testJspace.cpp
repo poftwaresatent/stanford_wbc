@@ -90,7 +90,7 @@ TEST (jspaceModel, branching)
   jspace::Model * model(0);
   try {
     model = create_model();
-    EXPECT_EQ (model->getNNodes(), 7) << "Puma should have 7 nodes";
+    EXPECT_EQ (model->getNNodes(), 6) << "Puma should have 6 nodes";
     EXPECT_EQ (model->getNJoints(), 6) << "Puma should have 6 joints";
     EXPECT_EQ (model->getNDOF(), 6) << "Puma should have 6 DOF";
     char const * node_name[] = {
@@ -114,12 +114,16 @@ TEST (jspaceModel, branching)
 	<< "Could not get node " << ii;
       EXPECT_NE ((void*)0, model->getNodeByName(node_name[ii]))
 	<< "Could not get node by name \"" << node_name[ii] << "\"";
-      EXPECT_EQ (ii, model->getNodeByName(node_name[ii])->getID())
-	<< "Node with name \"" << node_name[ii] << "\" should have ID " << ii;
+      if (model->getNodeByName(node_name[ii])) {
+	EXPECT_EQ (ii, model->getNodeByName(node_name[ii])->getID())
+	  << "Node with name \"" << node_name[ii] << "\" should have ID " << ii;
+      }
       EXPECT_NE ((void*)0, model->getNodeByJointName(joint_name[ii]))
 	<< "Could not get node by joint name \"" << joint_name[ii] << "\"";
-      EXPECT_EQ (ii, model->getNodeByJointName(joint_name[ii])->getID())
-	<< "Node with joint name \"" << joint_name[ii] << "\" should have ID " << ii;
+      if (model->getNodeByJointName(joint_name[ii])) {
+	EXPECT_EQ (ii, model->getNodeByJointName(joint_name[ii])->getID())
+	  << "Node with joint name \"" << joint_name[ii] << "\" should have ID " << ii;
+      }
     }
   }
   catch (std::exception const & ee) {
@@ -835,6 +839,14 @@ wbc::BranchingRepresentation * create_brep() throw(runtime_error)
 
 jspace::Model * create_model() throw(runtime_error)
 {
-  jspace::Model * model(new jspace::Model(new wbc::RobotControlModel(create_brep()), true));
+  wbc::BranchingRepresentation * kg_brep(create_brep());
+  wbc::tao_tree_info_s * kg_tree(create_tao_tree_info(*kg_brep));
+  delete kg_brep;
+  
+  wbc::BranchingRepresentation * cc_brep(create_brep());
+  wbc::tao_tree_info_s * cc_tree(create_tao_tree_info(*cc_brep));
+  delete cc_brep;
+  
+  jspace::Model * model(new jspace::Model(kg_tree, cc_tree));
   return model;
 }

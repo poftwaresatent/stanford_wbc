@@ -24,21 +24,19 @@
 */
 
 #include "Model.hpp"
-#include <wbc/core/RobotControlModel.hpp>
-#include <wbc/core/BranchingRepresentation.hpp>
-#include <wbc/core/Kinematics.hpp>
-#include <wbc/core/Dynamics.hpp>
+#include <wbc/util/tao_util.hpp>
 #include <tao/dynamics/taoNode.h>
+#include <tao/dynamics/taoJoint.h>
+#include <tao/dynamics/taoDynamics.h>
 
 
 namespace jspace {
   
   
   Model::
-  Model(wbc::RobotControlModel * robmodel,
-	bool cleanup_robmodel)
-    : robmodel_(robmodel),
-      cleanup_robmodel_(cleanup_robmodel)
+  Model(wbc::tao_tree_info_s * kg_tree,
+	wbc::tao_tree_info_s * cc_tree)
+    : kg_tree_(kg_tree), cc_tree_(cc_tree)
   {
   }
 
@@ -46,9 +44,8 @@ namespace jspace {
   Model::
   ~Model()
   {
-    if (cleanup_robmodel_) {
-      delete robmodel_;
-    }
+    delete kg_tree_;
+    delete cc_tree_;
   }
   
   
@@ -65,78 +62,99 @@ namespace jspace {
   setState(State const & state)
   {
     state_ = state;
+    for (size_t ii(0); ii < kg_tree_->info.size(); ++ii) {
+      taoJoint * joint(kg_tree_->info[ii].node->getJointList());
+      joint->setQ(&state.joint_angles_[ii]);
+      joint->zeroDQ();
+      joint->zeroDDQ();
+      joint->zeroTau();
+    }
+    for (size_t ii(0); ii < cc_tree_->info.size(); ++ii) {
+      taoJoint * joint(cc_tree_->info[ii].node->getJointList());
+      joint->setQ(&state.joint_angles_[ii]);
+      joint->setDQ(&state.joint_velocities_[ii]);
+      joint->zeroDDQ();
+      joint->zeroTau();
+    }
   }
   
   
-  int Model::
+  size_t Model::
   getNNodes() const
   {
-    return robmodel_->branching()->idToNodeMap().size();
+    return kg_tree_->info.size();
   }
   
   
-  int Model::
+  size_t Model::
   getNJoints() const
   {
-    return robmodel_->branching()->numJoints();
+    // one day this will be different...
+    return getNNodes();
   }
   
   
-  int Model::
+  size_t Model::
   getNDOF() const
   {
-    return robmodel_->branching()->numActuatedJoints();
+    // one day this will be different...
+    return getNNodes();
   }
   
   
   std::string Model::
-  getNodeName(int id) const
+  getNodeName(size_t id) const
   {
     std::string name("");
-    std::map<std::string, taoDNode*> const & node_names(robmodel_->branching()->linkNameToNodeMap());
-    for (std::map<std::string, taoDNode*>::const_iterator ii(node_names.begin()); ii != node_names.end(); ++ii) {
-      if (ii->second->getID() == id) {
-	name = ii->first;
-	break;
-      }
+    if (kg_tree_->info.size() > id) {
+      name = kg_tree_->info[id].link_name;
     }
     return name;
   }
   
   
   std::string Model::
-  getJointName(int id) const
+  getJointName(size_t id) const
   {
     std::string name("");
-    std::map<std::string, taoDNode*> const & node_names(robmodel_->branching()->jointNameToNodeMap());
-    for (std::map<std::string, taoDNode*>::const_iterator ii(node_names.begin()); ii != node_names.end(); ++ii) {
-      if (ii->second->getID() == id) {
-	name = ii->first;
-	break;
-      }
+    if (kg_tree_->info.size() > id) {
+      name = kg_tree_->info[id].joint_name;
     }
     return name;
   }
   
   
   taoDNode * Model::
-  getNode(int id) const
+  getNode(size_t id) const
   {
-    return robmodel_->branching()->idToNodeMap()[id];
+    if (kg_tree_->info.size() > id) {
+      return kg_tree_->info[id].node;
+    }
+    return 0;
   }
   
   
   taoDNode * Model::
   getNodeByName(std::string const & name_or_alias) const
   {
-    return robmodel_->branching()->findLink(name_or_alias);
+    for (size_t ii(0); ii < kg_tree_->info.size(); ++ii) {
+      if (name_or_alias == kg_tree_->info[ii].link_name) {
+	return  kg_tree_->info[ii].node;
+      }
+    }
+    return 0;
   }
   
   
   taoDNode * Model::
   getNodeByJointName(std::string const & name_or_alias) const
   {
-    return robmodel_->branching()->findJoint(name_or_alias);
+    for (size_t ii(0); ii < kg_tree_->info.size(); ++ii) {
+      if (name_or_alias == kg_tree_->info[ii].joint_name) {
+	return  kg_tree_->info[ii].node;
+      }
+    }
+    return 0;
   }
   
   
@@ -144,15 +162,11 @@ namespace jspace {
   getJointLimits(std::vector<double> & joint_limits_lower,
 		 std::vector<double> & joint_limits_upper) const
   {
-    SAIVector const & lower(robmodel_->branching()->lowerJointLimits());
-    joint_limits_lower.resize(lower.size());
-    for (int ii(0); ii < lower.size(); ++ii) {
-      joint_limits_lower[ii] = lower[ii];
-    }
-    SAIVector const & upper(robmodel_->branching()->upperJointLimits());
-    joint_limits_upper.resize(upper.size());
-    for (int ii(0); ii < upper.size(); ++ii) {
-      joint_limits_upper[ii] = upper[ii];
+    joint_limits_lower.resize(kg_tree_->info.size());
+    joint_limits_upper.resize(kg_tree_->info.size());
+    for (size_t ii(0); ii < kg_tree_->info.size(); ++ii) {
+      joint_limits_lower[ii] = kg_tree_->info[ii].limit_lower;
+      joint_limits_upper[ii] = kg_tree_->info[ii].limit_upper;
     }
   }
   
@@ -160,7 +174,7 @@ namespace jspace {
   void Model::
   updateKinematics()
   {
-    robmodel_->kinematics()->onUpdate(state_.joint_angles_, state_.joint_velocities_);
+    taoDynamics::updateTransformation(kg_tree_->root);
   }
   
   
@@ -204,12 +218,8 @@ namespace jspace {
     if ( ! node) {
       return false;
     }
-    
-    static SAIVector const null(0);
-    // wastes a tmp object...
-    jacobian = robmodel_->kinematics()->JacobianAtPoint(node, null);
-    
-    return true;
+    cerr << "IMPLEMENT jspace::Model::computeJacobian()!!!\n";
+    return false;
   }
   
   
@@ -221,32 +231,36 @@ namespace jspace {
     if ( ! node) {
       return false;
     }
-    
-    // wastes a tmp object...
-    jacobian = robmodel_->kinematics()->JacobianAtPoint(node, global_point);
-    
-    return true;
+    cerr << "IMPLEMENT jspace::Model::computeJacobian() with global point!!!\n";
+    return false;
   }
   
   
   void Model::
   updateDynamics()
   {
-    robmodel_->dynamics()->onUpdate(state_.joint_angles_, state_.joint_velocities_);
+    computeGravity();
+    computeCoriolisCentrifugal();
   }
   
   
   void Model::
   computeGravity()
   {
-    // for the time being, updateDynamics() does it for us
+    static deVector3 const earth_gravity(0, 0, -9.81);
+    g_torque_.resize(kg_tree_->info.size());
+    taoDynamics::invDynamics(kg_tree_->root, &earth_gravity);
+    for (size_t ii(0); ii < kg_tree_->info.size(); ++ii) {
+      taoJoint * joint(kg_tree_->info[ii].node->getJointList());
+      joint->getTau(&g_torque_[ii]);
+    }
   }
   
   
   bool Model::
-  disableGravityCompensation(int index, bool disable)
+  disableGravityCompensation(size_t index, bool disable)
   {
-    if ((0 > index) || (getNDOF() <= index)) {
+    if (getNDOF() <= index) {
       return true;
     }
     
@@ -271,13 +285,13 @@ namespace jspace {
   void Model::
   getGravity(SAIVector & gravity) const
   {
-    gravity = robmodel_->dynamics()->gravityForce();
-    
-    // knock out entries for which gravity is already accounted for
-    // somewhere else (e.g. mechanically on PR2)
-    for (dof_set_t::const_iterator idof(gravity_disabled_.begin());
-	 idof != gravity_disabled_.end(); ++idof) {
-      gravity[*idof] = 0;
+    gravity.setSize(g_torque_.size(), true);
+    for (size_t ii(0); ii < g_torque_.size(); ++ii) {
+      // Only copy over the gravity torque in case it has NOT been
+      // DISabled for this index...
+      if (gravity_disabled_.end() == gravity_disabled_.find(ii)) {
+	gravity[ii] = g_torque_[ii];
+      }
     }
   }
   
@@ -285,42 +299,59 @@ namespace jspace {
   void Model::
   computeCoriolisCentrifugal()
   {
-    // for the time being, updateDynamics() does it for us
+    static deVector3 const zero_gravity(0, 0, 0);
+    cc_torque_.resize(cc_tree_->info.size());
+    taoDynamics::invDynamics(cc_tree_->root, &zero_gravity);
+    for (size_t ii(0); ii < cc_tree_->info.size(); ++ii) {
+      taoJoint * joint(cc_tree_->info[ii].node->getJointList());
+      joint->getTau(&cc_torque_[ii]);
+    }
   }
   
   
   void Model::
   getCoriolisCentrifugal(SAIVector & coriolis_centrifugal) const
   {
-    coriolis_centrifugal = robmodel_->dynamics()->coriolisCentrifugalForce();
+    coriolis_centrifugal.setSize(cc_torque_.size());
+    for (size_t ii(0); ii < cc_torque_.size(); ++ii) {
+      coriolis_centrifugal[ii] = cc_torque_[ii];
+    }
   }
   
   
   void Model::
   computeMassInertia()
   {
-    // for the time being, updateDynamics() does it for us
+    cerr << "IMPLEMENT jspace::Model::computeMassInertia()!!!\n";
   }
   
   
   void Model::
   getMassInertia(SAIMatrix & mass_inertia) const
   {
-    mass_inertia = robmodel_->dynamics()->massInertia();
+    // dummy: identity
+    mass_inertia.setSize(kg_tree_->info.size(), kg_tree_->info.size(), true);
+    for (size_t ii(0); ii < kg_tree_->info.size(); ++ii) {
+      mass_inertia.elementAt(ii, ii) = 1;
+    }
   }
   
   
   void Model::
   computeInverseMassInertia()
   {
-    // for the time being, updateDynamics() does it for us
+    cerr << "IMPLEMENT jspace::Model::computeInverseMassInertia()!!!\n";
   }
   
   
   void Model::
   getInverseMassInertia(SAIMatrix & inverse_mass_inertia) const
   {
-    inverse_mass_inertia = robmodel_->dynamics()->invMassInertia();
+    // dummy: identity
+    inverse_mass_inertia.setSize(kg_tree_->info.size(), kg_tree_->info.size(), true);
+    for (size_t ii(0); ii < kg_tree_->info.size(); ++ii) {
+      inverse_mass_inertia.elementAt(ii, ii) = 1;
+    }
   }
 
 }
