@@ -70,7 +70,7 @@ void taoDynamics::globalJacobian(taoDNode* root)
 	taoABDynamics::globalJacobianOut(root);
 }
 
-void taoDynamics::invDynamics(taoDNode* root, deVector3* gravity)
+void taoDynamics::invDynamics(taoDNode* root, const deVector3* gravity)
 {
 	taoABDynamics::updateLocalXTreeOut(root); // YYY
 	deVector3 g;

@@ -59,7 +59,7 @@ public:
 	 *	\pre	q, dq, ddq should be given, Fext
 	 *	\post	tau is computed torque
 	 */
-	static void invDynamics(taoDNode* root, deVector3* gravity);
+	static void invDynamics(taoDNode* root, const deVector3* gravity);
 	//! computes forward dynamics of the subtree with \a root under \a gravity
 	/*!
 	 *	\pre	q, dq, tau should be given
