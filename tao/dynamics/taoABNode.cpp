@@ -122,12 +122,12 @@ void taoABNodeNOJ::biasForce(deVector6& P, const deVector6& V, const deVector3& 
 
 	// P = Xc (Wc X Ic Vc) = [ 1 , 0; rx , 1] [ p0 ; p1] = [p0; rx p0 + p1]
 	tmpV6[0].multiply(_I[1][0], P[0]);
-
-	assert(mass > 0);
-
-	tmpV6[0] *= 1/mass;
-	P[1] += tmpV6[0];
-
+	
+	if (mass > 1e-9) { // otherwise these terms are (pretty darn near) zero anyway
+	  tmpV6[0] *= 1/mass;
+	  P[1] += tmpV6[0];
+	}
+	
 	//  I (W X V) = [I00,I01;I10,I11]*[WxV;0] = [I00*WxV;I10*WxV]
 	tmpV6[0].multiply(_I[0][0], WxV);
 	tmpV6[1].multiply(_I[1][0], WxV);
