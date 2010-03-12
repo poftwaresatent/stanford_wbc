@@ -165,7 +165,9 @@ namespace jspace {
     /** Compute the Jacobian (J_v over J_omega) at the origin of a
 	given node.
 	
-	\todo IMPLEMENT THIS!!!
+	\note This just ends up calling the other computeJacobian()
+	which takes a global point as argument, passing in the origin
+	of the given node.
 	
 	\return True on success. There are two possible failures: an
 	invalid node, or an unsupported joint type. If you got the
@@ -175,20 +177,25 @@ namespace jspace {
 			 SAIMatrix & jacobian) const;
     
     /** Compute the Jacobian (J_v over J_omega) for a given node, at a
-	point expressed wrt to the global frame. If you have the
-	expression of the point in the local frame, call
-	computeGlobalFrame() and use the translational part of the
-	resulting frame.
+	point expressed wrt to the global frame.
 	
-	\todo IMPLEMENT THIS!!!
+	\todo Implement support for more than one joint per node, and
+	more than one DOF per joint.
 	
 	\return True on success. There are two possible failures: an
 	invalid node, or an unsupported joint type. If you got the
 	node using getNode() or one of the related methods, then you
 	need to extend this implementation when it returns false. */
     bool computeJacobian(taoDNode const * node,
-			 SAIVector const & global_point,
+			 double gx, double gy, double gz,
 			 SAIMatrix & jacobian) const;
+    
+    /** Convenience method in case you are holding the global position
+	in a SAIVector. */
+    inline bool computeJacobian(taoDNode const * node,
+				SAIVector const & global_point,
+				SAIMatrix & jacobian) const
+    { return computeJacobian(node, global_point[0], global_point[1], global_point[2], jacobian); }
     
     //////////////////////////////////////////////////
     // dynamics facet

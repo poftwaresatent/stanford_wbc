@@ -175,6 +175,7 @@ namespace jspace {
   updateKinematics()
   {
     taoDynamics::updateTransformation(kg_tree_->root);
+    taoDynamics::globalJacobian(kg_tree_->root);
   }
   
   
@@ -218,21 +219,57 @@ namespace jspace {
     if ( ! node) {
       return false;
     }
-    cerr << "IMPLEMENT jspace::Model::computeJacobian()!!!\n";
-    return false;
+    deVector3 const & gpos(node->frameGlobal()->translation());
+    return computeJacobian(node, gpos[0], gpos[1], gpos[2], jacobian);
   }
   
   
   bool Model::
   computeJacobian(taoDNode const * node,
-		  SAIVector const & global_point,
+		  double gx, double gy, double gz,
 		  SAIMatrix & jacobian) const
   {
     if ( ! node) {
       return false;
     }
-    cerr << "IMPLEMENT jspace::Model::computeJacobian() with global point!!!\n";
-    return false;
+    
+    fprintf(stderr, "computeJacobian()\ng: [% 4.2f % 4.2f % 4.2f]\n", gx, gy, gz);
+    
+    // \todo Implement support for more than one joint per node, and
+    // 	more than one DOF per joint.
+    jacobian.setSize(6, getNDOF(), true);
+    for (size_t icol(0); icol < getNDOF(); ++icol) {
+      deVector6 Jg_col;	// in NDOF case, this will become an array of deVector6...
+      // in NOJ case, we will have to loop over all joints of a node...
+      kg_tree_->info[icol].node->getJointList()->getJgColumns(&Jg_col);
+      
+      fprintf(stderr, "iJg[%zu]: [ % 4.2f % 4.2f % 4.2f % 4.2f % 4.2f % 4.2f]\n",
+	      icol,
+	      Jg_col.elementAt(0), Jg_col.elementAt(1), Jg_col.elementAt(2),
+	      Jg_col.elementAt(3), Jg_col.elementAt(4), Jg_col.elementAt(5));
+      
+      for (size_t irow(0); irow < 6; ++irow) {
+	jacobian.elementAt(irow, icol) = Jg_col.elementAt(irow);
+      }
+      
+      // Add the effect of the joint rotation on the translational
+      // velocity at the global point (column-wise cross product with
+      // [gx;gy;gz]). Note that Jg_col.elementAt(3) is the
+      // contribution to omega_x etc, because the upper 3 elements of
+      // Jg_col are v_x etc.  (And don't ask me why we have to
+      // subtract the cross product, it probably got inverted
+      // somewhere)
+      jacobian.elementAt(0, icol) -= -gz * Jg_col.elementAt(4) + gy * Jg_col.elementAt(5);
+      jacobian.elementAt(1, icol) -=  gz * Jg_col.elementAt(3) - gx * Jg_col.elementAt(5);
+      jacobian.elementAt(2, icol) -= -gy * Jg_col.elementAt(3) + gx * Jg_col.elementAt(4);
+      
+      fprintf(stderr, "0Jg[%zu]: [ % 4.2f % 4.2f % 4.2f % 4.2f % 4.2f % 4.2f]\n",
+	      icol,
+	      jacobian.elementAt(0, icol), jacobian.elementAt(1, icol), jacobian.elementAt(2, icol),
+	      jacobian.elementAt(3, icol), jacobian.elementAt(4, icol), jacobian.elementAt(5, icol));
+      
+    }
+    return true;
   }
   
   

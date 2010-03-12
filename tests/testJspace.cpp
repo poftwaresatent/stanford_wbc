@@ -23,8 +23,6 @@
    \author Roland Philippsen
 */
 
-#include "puma/pumaDynamics.h"
-
 #include <wbc/core/RobotControlModel.hpp>
 #include <wbc/core/BranchingRepresentation.hpp>
 #include <wbc/parse/BRParser.hpp>
@@ -42,21 +40,16 @@
 using namespace std;
 
 
-static std::string create_tmp(char const * fname_template, char const * contents) throw(runtime_error);
-static std::string create_tmp_xml() throw(runtime_error);
-static std::string create_tmp_frames() throw(runtime_error);
-static wbc::BranchingRepresentation * create_brep() throw(runtime_error);
-static jspace::Model * create_model() throw(runtime_error);
-
-static string xml_filename("");
-static string frames_filename("");
+static std::string create_puma_frames() throw(runtime_error);
+static jspace::Model * create_puma_model() throw(runtime_error);
+static jspace::Model * create_double_pendulum_model() throw(runtime_error);
 
 
 TEST (jspaceModel, state)
 {
   jspace::Model * model(0);
   try {
-    model = create_model();
+    model = create_puma_model();
     int const ndof(model->getNDOF());
     jspace::State state_in(ndof, ndof);
     if (0 != gettimeofday(&state_in.acquisition_time_, 0)) {
@@ -90,7 +83,7 @@ TEST (jspaceModel, branching)
 {
   jspace::Model * model(0);
   try {
-    model = create_model();
+    model = create_puma_model();
     EXPECT_EQ (model->getNNodes(), 6) << "Puma should have 6 nodes";
     EXPECT_EQ (model->getNJoints(), 6) << "Puma should have 6 joints";
     EXPECT_EQ (model->getNDOF(), 6) << "Puma should have 6 DOF";
@@ -138,13 +131,11 @@ TEST (jspaceModel, kinematics)
 {
   jspace::Model * model(0);
   try {
-    model = create_model();
+    model = create_puma_model();
     int const ndof(model->getNDOF());
     jspace::State state(ndof, ndof);
     
-    if (frames_filename.empty()) {
-      frames_filename = create_tmp_frames();
-    }
+    string const frames_filename(create_puma_frames());
     ifstream is(frames_filename.c_str());
 
     string line;
@@ -377,75 +368,204 @@ static bool check_vector(char const * name,
 }
 
 
-static void check_dynamics(jspace::Model * model, jspace::State const & state, taoDNode const * end_effector)
+TEST (jspaceModel, Jacobian_R)
 {
-  SAIVector tB(6), tG(6);
-  SAIMatrix tJ(6, 6), tA(6, 6);
-  SAIVector mB(6), mG(6);
-  SAIMatrix mJ(6, 6), mdJ(6, 6), mA(6, 6);
-  
-  getPumaDynamics(state.joint_angles_, state.joint_velocities_,
-		  mJ, mdJ, mA, mB, mG);
-  model->update(state);
-  ASSERT_TRUE (model->computeJacobian(end_effector, tJ)) << "computeJacobian failed for q = " << state.joint_angles_;
-  model->getMassInertia(tA);
-  model->getCoriolisCentrifugal(tB);
-  model->getGravity(tG);
-  {
-    std::ostringstream msg;
-    msg << "Checking Jacobian for q = "  << state.joint_angles_ << "\n";
-    mJ.prettyPrint(msg, "  want", "    ");
-    tJ.prettyPrint(msg, "  have", "    ");
-    EXPECT_TRUE (check_matrix("Jacobian", mJ, tJ, 1e-1, msg)) << msg.str();
+  jspace::Model * model(0);
+  try {
+    model = create_double_pendulum_model();
+    taoDNode * ee(model->getNode(0));
+    ASSERT_NE ((void*)0, ee) << "no end effector (node ID 0)";
+    jspace::State state(2, 2);	// here we're only gonna test the first joint though
+    state.joint_angles_.zero();
+    state.joint_velocities_.zero();
+    SAITransform ee_lframe;
+    ee_lframe.translation().elementAt(1) = 1;
+    
+    for (double qq(-M_PI); qq <= M_PI; qq += 2 * M_PI / 7) {
+      state.joint_angles_[0] = qq;
+      model->update(state);
+      
+      double const q1(state.joint_angles_[0]);
+      double const c1(cos(q1));
+      double const s1(sin(q1));
+      
+      SAITransform ee_gframe;
+      ASSERT_TRUE (model->computeGlobalFrame(ee, ee_lframe, ee_gframe));
+      SAIVector const & ee_gpos(ee_gframe.translation());
+      {
+	SAIVector ee_gpos_check(3);
+	ee_gpos_check.elementAt(1) = c1;
+	ee_gpos_check.elementAt(2) = s1;
+	std::ostringstream msg;
+	msg << "Verifying end-effector frame (position only) for q = " << state.joint_angles_ << "\n";
+	ee_gpos_check.prettyPrint(msg, "  want", "    ");
+	ee_gpos.prettyPrint(msg, "  have", "    ");
+	bool const gpos_ok(check_vector("ee_pos", ee_gpos_check, ee_gpos, 1e-3, msg));
+	EXPECT_TRUE (gpos_ok) << msg.str();
+	if ( ! gpos_ok) {
+	  continue;		// no use checking Jg as well, it'll be off
+	}
+      }
+      
+      SAIMatrix Jg_all(6, 2);
+      ASSERT_TRUE (model->computeJacobian(ee, ee_gpos, Jg_all));
+      SAIMatrix const Jg(Jg_all.submatrix(0, 0, 6, 1));
+      {
+	SAIMatrix Jg_check(6, 1);
+	Jg_check.elementAt(1, 0) = -s1;
+	Jg_check.elementAt(2, 0) =  c1;
+	Jg_check.elementAt(3, 0) =  1;
+	std::ostringstream msg;
+	msg << "Checking Jacobian for q = " << state.joint_angles_ << "\n";
+	Jg_check.prettyPrint(msg, "  want", "    ");
+	Jg.prettyPrint(msg, "  have", "    ");
+	EXPECT_TRUE (check_matrix("Jacobian", Jg_check, Jg, 1e-3, msg)) << msg.str();
+      }
+    }
   }
-  {
-    std::ostringstream msg;
-    msg << "Checking mass inertia for q = "  << state.joint_angles_ << "\n";
-    mA.prettyPrint(msg, "  want", "    ");
-    tA.prettyPrint(msg, "  have", "    ");
-    EXPECT_TRUE (check_matrix("mass inertia", mA, tA, 1e-1, msg)) << msg.str();
+  catch (std::exception const & ee) {
+    ADD_FAILURE () << "exception " << ee.what();
   }
-  {
-    std::ostringstream msg;
-    msg << "Checking Coriolis centrifugal for q = "  << state.joint_angles_ << "\n";
-    mB.prettyPrint(msg, "  want", "    ");
-    tB.prettyPrint(msg, "  have", "    ");
-    EXPECT_TRUE (check_vector("Coriolis centrifugal", mB, tB, 1e-1, msg)) << msg.str();
-  }
-  {
-    std::ostringstream msg;
-    msg << "Checking gravity for q = "  << state.joint_angles_ << "\n";
-    mG.prettyPrint(msg, "  want", "    ");
-    tG.prettyPrint(msg, "  have", "    ");
-    EXPECT_TRUE (check_vector("gravity", mG, tG, 1e-1, msg)) << msg.str();
-  }
+  delete model;
 }
 
 
-// TEST (jspaceModel, dynamics)
-// {
-//   jspace::Model * model(0);
-//   try {
-//     model = create_model();
-//     taoDNode * ee(model->getNode(5));
-//     ASSERT_NE ((void*)0, ee) << "no end effector (node ID 5)";
-//     jspace::State state(6, 6);
-//     state.joint_angles_.zero();
-//     state.joint_velocities_.zero();
-//     check_dynamics(model, state, ee);    
-//     for (double qq(-0.1); qq < 0.11; qq += 0.1) {
-//       for (int ii(0); ii < 6; ++ii) {
-// 	state.joint_angles_.zero();
-// 	state.joint_angles_[ii] = qq;
-// 	check_dynamics(model, state, ee);    
-//       }
-//     }
-//   }
-//   catch (std::exception const & ee) {
-//     ADD_FAILURE () << "exception " << ee.what();
-//   }
-//   delete model;
-// }
+TEST (jspaceModel, Jacobian_RR)
+{
+  jspace::Model * model(0);
+  try {
+    model = create_double_pendulum_model();
+    taoDNode * ee(model->getNode(1));
+    ASSERT_NE ((void*)0, ee) << "no end effector (node ID 1)";
+    jspace::State state(2, 2);
+    state.joint_velocities_.zero();
+    SAITransform ee_lframe;
+    ee_lframe.translation().elementAt(1) = 1;
+    
+    for (double q1(-M_PI); q1 <= M_PI; q1 += 2 * M_PI / 7) {
+      for (double q2(-M_PI); q2 <= M_PI; q2 += 2 * M_PI / 7) {
+ 	state.joint_angles_[0] = q1;
+ 	state.joint_angles_[1] = q2;
+	model->update(state);
+	
+	double const c1(cos(q1));
+	double const c12(cos(q1+q2));
+	double const s1(sin(q1));
+	double const s12(sin(q1+q2));
+	
+	SAITransform ee_gframe;
+	ASSERT_TRUE (model->computeGlobalFrame(ee, ee_lframe, ee_gframe));
+	SAIVector const & ee_gpos(ee_gframe.translation());
+	{
+	  SAIVector ee_gpos_check(3);
+	  ee_gpos_check.elementAt(1) = c1 + c12;
+	  ee_gpos_check.elementAt(2) = s1 + s12;
+	  std::ostringstream msg;
+	  msg << "Verifying end-effector frame (position only) for q = " << state.joint_angles_ << "\n";
+	  ee_gpos_check.prettyPrint(msg, "  want", "    ");
+	  ee_gpos.prettyPrint(msg, "  have", "    ");
+	  bool const gpos_ok(check_vector("ee_pos", ee_gpos_check, ee_gpos, 1e-3, msg));
+	  EXPECT_TRUE (gpos_ok) << msg.str();
+	  if ( ! gpos_ok) {
+	    continue;		// no use checking Jg as well, it'll be off
+	  }
+	}
+	
+	SAIMatrix Jg(6, 2);
+	ASSERT_TRUE (model->computeJacobian(ee, ee_gpos, Jg));
+	{
+	  SAIMatrix Jg_check(6, 2);
+	  Jg_check.elementAt(1, 0) = -s1 - s12;
+	  Jg_check.elementAt(2, 0) =  c1 + c12;
+	  Jg_check.elementAt(3, 0) =  1;
+	  Jg_check.elementAt(1, 1) = -s12;
+	  Jg_check.elementAt(2, 1) =  c12;
+	  Jg_check.elementAt(3, 1) =  1;
+	  std::ostringstream msg;
+	  msg << "Checking Jacobian for q = " << state.joint_angles_ << "\n";
+	  Jg_check.prettyPrint(msg, "  want", "    ");
+	  Jg.prettyPrint(msg, "  have", "    ");
+	  EXPECT_TRUE (check_matrix("Jacobian", Jg_check, Jg, 1e-3, msg)) << msg.str();
+	}
+      }
+    }
+  }
+  catch (std::exception const & ee) {
+    ADD_FAILURE () << "exception " << ee.what();
+  }
+  delete model;
+}
+
+
+// // static void check_dynamics(jspace::Model * model, jspace::State const & state, taoDNode const * end_effector)
+// // {
+// //   SAIVector tB(6), tG(6);
+// //   SAIMatrix tJ(6, 6), tA(6, 6);
+// //   SAIVector mB(6), mG(6);
+// //   SAIMatrix mJ(6, 6), mdJ(6, 6), mA(6, 6);
+  
+// //   getPumaDynamics(state.joint_angles_, state.joint_velocities_,
+// // 		  mJ, mdJ, mA, mB, mG);
+// //   model->update(state);
+// //   ASSERT_TRUE (model->computeJacobian(end_effector, tJ)) << "computeJacobian failed for q = " << state.joint_angles_;
+// //   model->getMassInertia(tA);
+// //   model->getCoriolisCentrifugal(tB);
+// //   model->getGravity(tG);
+// //   {
+// //     std::ostringstream msg;
+// //     msg << "Checking Jacobian for q = "  << state.joint_angles_ << "\n";
+// //     mJ.prettyPrint(msg, "  want", "    ");
+// //     tJ.prettyPrint(msg, "  have", "    ");
+// //     EXPECT_TRUE (check_matrix("Jacobian", mJ, tJ, 1e-1, msg)) << msg.str();
+// //   }
+// //   {
+// //     std::ostringstream msg;
+// //     msg << "Checking mass inertia for q = "  << state.joint_angles_ << "\n";
+// //     mA.prettyPrint(msg, "  want", "    ");
+// //     tA.prettyPrint(msg, "  have", "    ");
+// //     EXPECT_TRUE (check_matrix("mass inertia", mA, tA, 1e-1, msg)) << msg.str();
+// //   }
+// //   {
+// //     std::ostringstream msg;
+// //     msg << "Checking Coriolis centrifugal for q = "  << state.joint_angles_ << "\n";
+// //     mB.prettyPrint(msg, "  want", "    ");
+// //     tB.prettyPrint(msg, "  have", "    ");
+// //     EXPECT_TRUE (check_vector("Coriolis centrifugal", mB, tB, 1e-1, msg)) << msg.str();
+// //   }
+// //   {
+// //     std::ostringstream msg;
+// //     msg << "Checking gravity for q = "  << state.joint_angles_ << "\n";
+// //     mG.prettyPrint(msg, "  want", "    ");
+// //     tG.prettyPrint(msg, "  have", "    ");
+// //     EXPECT_TRUE (check_vector("gravity", mG, tG, 1e-1, msg)) << msg.str();
+// //   }
+// // }
+
+
+// // TEST (jspaceModel, dynamics)
+// // {
+// //   jspace::Model * model(0);
+// //   try {
+// //     model = create_model();
+// //     taoDNode * ee(model->getNode(5));
+// //     ASSERT_NE ((void*)0, ee) << "no end effector (node ID 5)";
+// //     jspace::State state(6, 6);
+// //     state.joint_angles_.zero();
+// //     state.joint_velocities_.zero();
+// //     check_dynamics(model, state, ee);    
+// //     for (double qq(-0.1); qq < 0.11; qq += 0.1) {
+// //       for (int ii(0); ii < 6; ++ii) {
+// // 	state.joint_angles_.zero();
+// // 	state.joint_angles_[ii] = qq;
+// // 	check_dynamics(model, state, ee);    
+// //       }
+// //     }
+// //   }
+// //   catch (std::exception const & ee) {
+// //     ADD_FAILURE () << "exception " << ee.what();
+// //   }
+// //   delete model;
+// // }
 
 
 int main(int argc, char ** argv)
@@ -455,10 +575,10 @@ int main(int argc, char ** argv)
 }
 
 
-std::string create_tmp(char const * fname_template, char const * contents) throw(runtime_error)
+static std::string create_tmpfile(char const * fname_template, char const * contents) throw(runtime_error)
 {
   if (strlen(fname_template) >= 64) {
-    throw runtime_error("create_tmp(): fname_template is too long (max 63 characters)");
+    throw runtime_error("create_tmpfile(): fname_template is too long (max 63 characters)");
   }
   
   static char tmpname[64];
@@ -466,12 +586,12 @@ std::string create_tmp(char const * fname_template, char const * contents) throw
   strncpy(tmpname, fname_template, 63);
   int const tmpfd(mkstemp(tmpname));
   if (-1 == tmpfd) {
-    throw runtime_error("create_tmp(): mkstemp(): " + string(strerror(errno)));
+    throw runtime_error("create_tmpfile(): mkstemp(): " + string(strerror(errno)));
   }
   
   size_t const len(strlen(contents));
   if (len != write(tmpfd, contents, len)) {
-    throw runtime_error("create_tmp(): write(): " + string(strerror(errno)));
+    throw runtime_error("create_tmpfile(): write(): " + string(strerror(errno)));
   }
   close(tmpfd);
   
@@ -480,7 +600,7 @@ std::string create_tmp(char const * fname_template, char const * contents) throw
 }
 
 
-std::string create_tmp_xml() throw(runtime_error)
+static std::string create_puma_xml() throw(runtime_error)
 {
   static char const * xml = 
     "<?xml version=\"1.0\" ?>\n"
@@ -590,12 +710,12 @@ std::string create_tmp_xml() throw(runtime_error)
     "    </jointNode>\n"
     "  </baseNode>\n"
     "</dynworld>\n";
-  std::string result(create_tmp("puma.xml.XXXXXX", xml));
+  std::string result(create_tmpfile("puma.xml.XXXXXX", xml));
   return result;
 }
 
 
-std::string create_tmp_frames() throw(runtime_error)
+std::string create_puma_frames() throw(runtime_error)
 {
   static char const * frames = 
     "==================================================\n"
@@ -823,28 +943,94 @@ std::string create_tmp_frames() throw(runtime_error)
     "  ID 3: r: { 0  0  0  1 }  t: { 0.4115  0.1501  0.4331 }\n"
     "  ID 4: r: { -0.707107  0  0  0.707107 }  t: { 0.4115  0.1501  0.4331 }\n"
     "  ID 5: r: { 0  0  -0.707108  0.707105 }  t: { 0.4115  0.1501  0.4331 }\n";
-  std::string result(create_tmp("puma.frames.XXXXXX", frames));
+  std::string result(create_tmpfile("puma.frames.XXXXXX", frames));
   return result;
 }
 
 
-wbc::BranchingRepresentation * create_brep() throw(runtime_error)
+static wbc::BranchingRepresentation * create_puma_brep() throw(runtime_error)
 {
+  static string xml_filename("");
   if (xml_filename.empty()) {
-    xml_filename = create_tmp_xml();
+    xml_filename = create_puma_xml();
   }
   wbc::BranchingRepresentation * brep(wbc::BRParser::parse("sai", xml_filename));
   return brep;
 }
 
 
-jspace::Model * create_model() throw(runtime_error)
+jspace::Model * create_puma_model() throw(runtime_error)
 {
-  wbc::BranchingRepresentation * kg_brep(create_brep());
+  wbc::BranchingRepresentation * kg_brep(create_puma_brep());
   wbc::tao_tree_info_s * kg_tree(create_tao_tree_info(*kg_brep));
   delete kg_brep;
   
-  wbc::BranchingRepresentation * cc_brep(create_brep());
+  wbc::BranchingRepresentation * cc_brep(create_puma_brep());
+  wbc::tao_tree_info_s * cc_tree(create_tao_tree_info(*cc_brep));
+  delete cc_brep;
+  
+  //   cout << "created jspace::Model:\n";
+  //   wbc::dump_tao_tree_info(cout, kg_tree, "  ", false);
+  
+  jspace::Model * model(new jspace::Model(kg_tree, cc_tree));
+  return model;
+}
+
+
+static std::string create_double_pendulum_xml() throw(runtime_error)
+{
+  static char const * xml = 
+    "<?xml version=\"1.0\" ?>\n"
+    "<dynworld>\n"
+    "  <baseNode>\n"
+    "    <gravity>0, 0, -9.81</gravity>\n"
+    "    <pos>0, 0, 0</pos>\n"
+    "    <rot>1, 0, 0, 0</rot>\n"
+    "    <jointNode>\n"
+    "      <ID>0</ID>\n"
+    "      <type>R</type>\n"
+    "      <axis>X</axis>\n"
+    "      <mass>1</mass>\n"
+    "      <inertia>0, 0, 0</inertia>\n"
+    "      <com>0, 1, 0</com>\n"
+    "      <pos>0, 0, 0</pos>\n"
+    "      <rot>0, 0, 1, 0</rot>\n"
+    "      <jointNode>\n"
+    "        <ID>1</ID>\n"
+    "        <type>R</type>\n"
+    "        <axis>X</axis>\n"
+    "        <mass>1</mass>\n"
+    "        <inertia>0, 0, 0</inertia>\n"
+    "        <com>0, 1, 0</com>\n"
+    "        <pos>0, 1, 0</pos>\n"
+    "        <rot>0, 0, 1, 0</rot>\n"
+    "      </jointNode>\n"
+    "    </jointNode>\n"
+    "  </baseNode>\n"
+    "</dynworld>\n";
+  std::string result(create_tmpfile("double_pendulum.xml.XXXXXX", xml));
+  return result;
+}
+
+
+static wbc::BranchingRepresentation * create_double_pendulum_brep() throw(runtime_error)
+{
+  static string xml_filename("");
+  if (xml_filename.empty()) {
+    xml_filename = create_double_pendulum_xml();
+  }
+  wbc::BranchingRepresentation * brep(wbc::BRParser::parse("sai", xml_filename));
+  return brep;
+}
+
+
+jspace::Model * create_double_pendulum_model() throw(runtime_error)
+{
+  wbc::BranchingRepresentation * kg_brep(create_double_pendulum_brep());
+  wbc::tao_tree_info_s * kg_tree(create_tao_tree_info(*kg_brep));
+  delete kg_brep;
+  
+  wbc::BranchingRepresentation * cc_brep(create_double_pendulum_brep());
   wbc::tao_tree_info_s * cc_tree(create_tao_tree_info(*cc_brep));
   delete cc_brep;
   
