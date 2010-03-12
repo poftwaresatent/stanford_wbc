@@ -110,13 +110,21 @@ namespace wbc {
     */
     void setJointNames(std::vector<std::string> const & joint_names) throw(std::runtime_error);
     
+    /** Loops over all registered link and joint names and injects
+	them as well as their canonical counterparts into
+	linkNameToNodeMapWithAliases_ and
+	jointNameToNodeMapWithAliases_. This is called lazily from
+	within linkNameToNodeMap() and jointNameToNodeMap() when you
+	call it with \c withAliases=true (which is the default). */
+    void createCanonicalAliases() const;
+    
     inline taoNodeRoot* rootNode() {return rootNode_; };  
   
     inline idToNodeMap_t & idToNodeMap() { return idToNodeMap_; }
     inline taoDNode* node(int nodeID) { return idToNodeMap_[nodeID];}
     
-    inline std::map<std::string, taoDNode*> const & linkNameToNodeMap() const { return linkNameToNodeMap_; }
-    inline std::map<std::string, taoDNode*> const & jointNameToNodeMap() const { return jointNameToNodeMap_; }
+    std::map<std::string, taoDNode*> const & linkNameToNodeMap(bool withAliases = true) const;
+    std::map<std::string, taoDNode*> const & jointNameToNodeMap(bool withAliases = true) const;
     
     taoDNode * findLink( std::string const & name );
     taoDNode * findJoint( std::string const & name );
@@ -145,6 +153,8 @@ namespace wbc {
     idToNodeMap_t idToNodeMap_; 
     std::map<std::string, taoDNode*> linkNameToNodeMap_;
     std::map<std::string, taoDNode*> jointNameToNodeMap_;
+    mutable std::map<std::string, taoDNode*> linkNameToNodeMapWithAliases_;
+    mutable std::map<std::string, taoDNode*> jointNameToNodeMapWithAliases_;
     std::map<taoDNode const *, SAIVector> linkToSensorMap_;
     std::map<taoDNode const *, double> linkToSurfaceDepthMap_;
     int numJoints_;
@@ -167,8 +177,8 @@ namespace wbc {
     /** \return tao node from ID. */
     taoDNode* findNodeID( taoDNode*, int);
 
-    static std::string canonicalJointName( const std::string & );
-    static std::string canonicalLinkName( const std::string & );
+    static std::string __canonicalJointName( const std::string & );
+    static std::string __canonicalLinkName( const std::string & );
   };
 
 }

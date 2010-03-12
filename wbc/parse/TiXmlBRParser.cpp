@@ -445,15 +445,8 @@ namespace wbc {
 
     new_child_node->addABNode();
 
-    string const canonLinkName(BranchingRepresentation::canonicalLinkName(linkName));
     robot_->linkNameToNodeMap_[ linkName ] = new_child_node;
-    robot_->linkNameToNodeMap_[ canonLinkName ] = new_child_node;
-    //     robot_->linkTagToIDMap_[ robot_->linkTag_ ] = nodeID;
-    //     robot_->IDToLinkTagMap_[ nodeID ] = robot_->linkTag_;
-    string const canonJointName(BranchingRepresentation::canonicalJointName(jointName));
     robot_->jointNameToNodeMap_[ jointName_ ] = new_child_node;
-    robot_->jointNameToNodeMap_[ canonJointName ] = new_child_node;
-    //    robot_->jointTagToIDMap_[ robot_->jointTag_ ] = nodeID;
   }
   
 }

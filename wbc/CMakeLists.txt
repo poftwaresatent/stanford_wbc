@@ -52,7 +52,6 @@ list (APPEND SRCS
   robarch/osimarchitect/parser/SkeletonMarker.cpp
   robarch/osimarchitect/parser/CMuscleDefinition.cpp
 
-  parse/BRBuilder.cpp
   parse/BRParser.cpp
   parse/BehaviorParser.cpp
   parse/OsimBRParser.cpp

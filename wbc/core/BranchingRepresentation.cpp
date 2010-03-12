@@ -204,9 +204,9 @@ namespace wbc {
      \todo Reimplement with a dictionary.
   */
   string
-  BranchingRepresentation::canonicalJointName( const string &jointName ) {
+  BranchingRepresentation::__canonicalJointName( const string &jointName ) {
 
-    string tag("Null_Joint_Tag");
+    string tag("");
 
     if( jointName == "shoulder-yaw" )
       tag = "Shoulder_Yaw";
@@ -225,9 +225,9 @@ namespace wbc {
      \todo Reimplement with a dictionary.
   */
   string
-  BranchingRepresentation::canonicalLinkName( const string &linkName ) {
+  BranchingRepresentation::__canonicalLinkName( const string &linkName ) {
 
-    string tag("Null_Link_Tag");
+    string tag("");
 
     if( linkName == "upper-arm" )
       tag = "Upper_Arm";
@@ -257,8 +257,8 @@ namespace wbc {
   taoDNode * BranchingRepresentation::
   findLink( std::string const & name )
   {
-    std::map<std::string, taoDNode*>::iterator ii(linkNameToNodeMap_.find(name));
-    if (ii == linkNameToNodeMap_.end())
+    std::map<std::string, taoDNode*>::iterator ii(linkNameToNodeMapWithAliases_.find(name));
+    if (ii == linkNameToNodeMapWithAliases_.end())
       return 0;
     return ii->second;
   }
@@ -267,8 +267,8 @@ namespace wbc {
   taoDNode * BranchingRepresentation::
   findJoint( std::string const & name )
   {
-    std::map<std::string, taoDNode*>::iterator ii(jointNameToNodeMap_.find(name));
-    if (ii == jointNameToNodeMap_.end())
+    std::map<std::string, taoDNode*>::iterator ii(jointNameToNodeMapWithAliases_.find(name));
+    if (ii == jointNameToNodeMapWithAliases_.end())
       return 0;
     return ii->second;
   }
@@ -283,7 +283,11 @@ namespace wbc {
       throw runtime_error("wbc::BranchingRepresentation::setRootName(" + root_name + "): no root node");
     }
     linkNameToNodeMap_[root_name] = node->second;
-    linkNameToNodeMap_[canonicalLinkName(root_name)] = node->second;
+    linkNameToNodeMapWithAliases_[root_name] = node->second;
+    string const canonical_name(__canonicalLinkName(root_name));
+    if ( ! canonical_name.empty()) {
+      linkNameToNodeMapWithAliases_[canonical_name] = node->second;
+    }
   }
   
   
@@ -291,6 +295,8 @@ namespace wbc {
   setLinkNames(std::vector<std::string> const & link_names)
     throw(std::runtime_error)
   {
+    linkNameToNodeMap_.clear();
+    linkNameToNodeMapWithAliases_.clear();
     for (size_t ii(0); ii < link_names.size(); ++ii) {
       idToNodeMap_t::const_iterator node(idToNodeMap_.find(ii));
       if (idToNodeMap_.end() == node) {
@@ -299,7 +305,6 @@ namespace wbc {
 	throw runtime_error(msg.str());
       }
       linkNameToNodeMap_[link_names[ii]] = node->second;
-      linkNameToNodeMap_[canonicalLinkName(link_names[ii])] = node->second;
     }
   }
   
@@ -308,6 +313,8 @@ namespace wbc {
   setJointNames(std::vector<std::string> const & joint_names)
     throw(std::runtime_error)
   {
+    jointNameToNodeMap_.clear();
+    jointNameToNodeMapWithAliases_.clear();
     for (size_t ii(0); ii < joint_names.size(); ++ii) {
       idToNodeMap_t::const_iterator node(idToNodeMap_.find(ii));
       if (idToNodeMap_.end() == node) {
@@ -316,8 +323,54 @@ namespace wbc {
 	throw runtime_error(msg.str());
       }
       jointNameToNodeMap_[joint_names[ii]] = node->second;
-      jointNameToNodeMap_[canonicalJointName(joint_names[ii])] = node->second;
     }
+  }
+  
+  
+  void BranchingRepresentation::
+  createCanonicalAliases() const
+  {
+    typedef std::map<std::string, taoDNode*> foot_t;
+    for (foot_t::const_iterator ifoo(linkNameToNodeMap_.begin()); ifoo != linkNameToNodeMap_.end(); ++ifoo) {
+      linkNameToNodeMapWithAliases_[ifoo->first] = ifoo->second;
+      string const canonical_name(__canonicalLinkName(ifoo->first));
+      if ( ! canonical_name.empty()) {
+	linkNameToNodeMapWithAliases_[canonical_name] = ifoo->second;
+      }
+    }
+    for (foot_t::const_iterator ifoo(jointNameToNodeMap_.begin()); ifoo != jointNameToNodeMap_.end(); ++ifoo) {
+      jointNameToNodeMapWithAliases_[ifoo->first] = ifoo->second;
+      string const canonical_name(__canonicalJointName(ifoo->first));
+      if ( ! canonical_name.empty()) {
+	jointNameToNodeMapWithAliases_[canonical_name] = ifoo->second;
+      }
+    }
+  }
+  
+  
+  std::map<std::string, taoDNode*> const & BranchingRepresentation::
+  linkNameToNodeMap(bool withAliases) const
+  {
+    if (withAliases) {
+      if (linkNameToNodeMapWithAliases_.empty() && ( ! linkNameToNodeMap_.empty())) {
+	createCanonicalAliases();
+      }
+      return linkNameToNodeMapWithAliases_;
+    }
+    return linkNameToNodeMap_;
+  }
+  
+  
+  std::map<std::string, taoDNode*> const & BranchingRepresentation::
+  jointNameToNodeMap(bool withAliases) const
+  {
+    if (withAliases) {
+      if (jointNameToNodeMapWithAliases_.empty() && ( ! jointNameToNodeMap_.empty())) {
+	createCanonicalAliases();
+      }
+      return jointNameToNodeMapWithAliases_;
+    }
+    return jointNameToNodeMap_;
   }
   
 }

@@ -1,8 +1,6 @@
 ### included via subdir() command in top-level CMakeLists.txt
 
 if (HAVE_GTEST)
-  add_executable (testBRBuilder testBRBuilder.cpp)
-  target_link_libraries (testBRBuilder Stanford_WBC gtest)
   add_executable (testTAO testTAO.cpp)
   target_link_libraries (testTAO TAO_Dynamics_Engine gtest)
   subdirs (puma)

@@ -101,15 +101,13 @@ namespace wbc {
     LOG_DEBUG (logger, "BranchingRepresentation::create(): creating branching sugar");
     for (vector<robotarchitect::SControllerRobotLink*>::const_iterator ii(linkvec->begin()), iend(linkvec->end());
 	 ii != iend; ++ii, ++id) {
-      string const linktag(ret_brRep_p->canonicalLinkName((*ii)->link_name_));
-      string jointtag(ret_brRep_p->canonicalJointName((*ii)->joint_name_));
       taoDNode * node((*ii)->tao_node_addr_);
       
       LOG_DEBUG (logger,
-		     "  " << id << ": " << node
-		     << "  " << (*ii)->link_name_ << ": " << linktag
-		     << "  " << (*ii)->joint_name_ << ": " << jointtag
-		     << ((*ii)->joint_is_free_ ? "  free-floating" : "  controlled"));
+		 "  " << id << ": " << node
+		 << "  " << (*ii)->link_name_
+		 << "  " << (*ii)->joint_name_
+		 << ((*ii)->joint_is_free_ ? "  free-floating" : "  controlled"));
       
       ret_brRep_p->idToNodeMap_[id] = node;
       node->setID(id);
@@ -121,13 +119,7 @@ namespace wbc {
       ret_brRep_p->lowerJointLimitVec_[id] = (*ii)->joint_limit_lower_;
   	
       ret_brRep_p->linkNameToNodeMap_[(*ii)->link_name_] = node;
-      ret_brRep_p->linkNameToNodeMap_[linktag] = node;
-      //       ret_brRep_p->linkTagToIDMap_[linktag] = id;
-      //       ret_brRep_p->IDToLinkTagMap_[id] = linktag;
       ret_brRep_p->jointNameToNodeMap_[(*ii)->joint_name_] = node;
-      ret_brRep_p->jointNameToNodeMap_[jointtag] = node;
-      //      ret_brRep_p->jointTagToIDMap_[jointtag] = id;
-      // XXXX maybe add something for "forceSensor" and "surfaceDepth"
       
       ret_brRep_p->totalMass_ += (*ii)->mass_;
       if ( ! (*ii)->joint_is_free_)	// XXXX to do: maybe the other way around?

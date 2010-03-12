@@ -28,6 +28,7 @@
 #include <wbc/core/RobotControlModel.hpp>
 #include <wbc/core/BranchingRepresentation.hpp>
 #include <wbc/parse/BRParser.hpp>
+#include <wbc/util/dump.hpp>
 #include <tao/dynamics/taoDNode.h>
 #include <jspace/Model.hpp>
 #include <wbcnet/strutil.hpp>
@@ -421,30 +422,30 @@ static void check_dynamics(jspace::Model * model, jspace::State const & state, t
 }
 
 
-TEST (jspaceModel, dynamics)
-{
-  jspace::Model * model(0);
-  try {
-    model = create_model();
-    taoDNode * ee(model->getNode(5));
-    ASSERT_NE ((void*)0, ee) << "no end effector (node ID 5)";
-    jspace::State state(6, 6);
-    state.joint_angles_.zero();
-    state.joint_velocities_.zero();
-    check_dynamics(model, state, ee);    
-    for (double qq(-0.1); qq < 0.11; qq += 0.1) {
-      for (int ii(0); ii < 6; ++ii) {
-	state.joint_angles_.zero();
-	state.joint_angles_[ii] = qq;
-	check_dynamics(model, state, ee);    
-      }
-    }
-  }
-  catch (std::exception const & ee) {
-    ADD_FAILURE () << "exception " << ee.what();
-  }
-  delete model;
-}
+// TEST (jspaceModel, dynamics)
+// {
+//   jspace::Model * model(0);
+//   try {
+//     model = create_model();
+//     taoDNode * ee(model->getNode(5));
+//     ASSERT_NE ((void*)0, ee) << "no end effector (node ID 5)";
+//     jspace::State state(6, 6);
+//     state.joint_angles_.zero();
+//     state.joint_velocities_.zero();
+//     check_dynamics(model, state, ee);    
+//     for (double qq(-0.1); qq < 0.11; qq += 0.1) {
+//       for (int ii(0); ii < 6; ++ii) {
+// 	state.joint_angles_.zero();
+// 	state.joint_angles_[ii] = qq;
+// 	check_dynamics(model, state, ee);    
+//       }
+//     }
+//   }
+//   catch (std::exception const & ee) {
+//     ADD_FAILURE () << "exception " << ee.what();
+//   }
+//   delete model;
+// }
 
 
 int main(int argc, char ** argv)
@@ -846,6 +847,9 @@ jspace::Model * create_model() throw(runtime_error)
   wbc::BranchingRepresentation * cc_brep(create_brep());
   wbc::tao_tree_info_s * cc_tree(create_tao_tree_info(*cc_brep));
   delete cc_brep;
+  
+  //   cout << "created jspace::Model:\n";
+  //   wbc::dump_tao_tree_info(cout, kg_tree, "  ", false);
   
   jspace::Model * model(new jspace::Model(kg_tree, cc_tree));
   return model;
