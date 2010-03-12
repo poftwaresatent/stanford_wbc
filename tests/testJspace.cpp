@@ -42,7 +42,8 @@ using namespace std;
 
 static std::string create_puma_frames() throw(runtime_error);
 static jspace::Model * create_puma_model() throw(runtime_error);
-static jspace::Model * create_double_pendulum_model() throw(runtime_error);
+static jspace::Model * create_unit_RR_model() throw(runtime_error);
+static jspace::Model * create_unit_RP_model() throw(runtime_error);
 
 
 TEST (jspaceModel, state)
@@ -372,7 +373,7 @@ TEST (jspaceModel, Jacobian_R)
 {
   jspace::Model * model(0);
   try {
-    model = create_double_pendulum_model();
+    model = create_unit_RR_model();
     taoDNode * ee(model->getNode(0));
     ASSERT_NE ((void*)0, ee) << "no end effector (node ID 0)";
     jspace::State state(2, 2);	// here we're only gonna test the first joint though
@@ -434,7 +435,7 @@ TEST (jspaceModel, Jacobian_RR)
 {
   jspace::Model * model(0);
   try {
-    model = create_double_pendulum_model();
+    model = create_unit_RR_model();
     taoDNode * ee(model->getNode(1));
     ASSERT_NE ((void*)0, ee) << "no end effector (node ID 1)";
     jspace::State state(2, 2);
@@ -481,6 +482,71 @@ TEST (jspaceModel, Jacobian_RR)
 	  Jg_check.elementAt(1, 1) = -s12;
 	  Jg_check.elementAt(2, 1) =  c12;
 	  Jg_check.elementAt(3, 1) =  1;
+	  std::ostringstream msg;
+	  msg << "Checking Jacobian for q = " << state.joint_angles_ << "\n";
+	  Jg_check.prettyPrint(msg, "  want", "    ");
+	  Jg.prettyPrint(msg, "  have", "    ");
+	  EXPECT_TRUE (check_matrix("Jacobian", Jg_check, Jg, 1e-3, msg)) << msg.str();
+	}
+      }
+    }
+  }
+  catch (std::exception const & ee) {
+    ADD_FAILURE () << "exception " << ee.what();
+  }
+  delete model;
+}
+
+
+TEST (jspaceModel, Jacobian_RP)
+{
+  jspace::Model * model(0);
+  try {
+    model = create_unit_RP_model();
+    taoDNode * ee(model->getNode(1));
+    ASSERT_NE ((void*)0, ee) << "no end effector (node ID 1)";
+    jspace::State state(2, 2);
+    state.joint_velocities_.zero();
+    SAITransform ee_lframe;
+    ee_lframe.translation().elementAt(1) = 1;
+    
+    for (double q1(-M_PI); q1 <= M_PI; q1 += 2 * M_PI / 7) {
+      for (double q2(-1); q2 <= 1; q2 += 2.0 / 7) {
+ 	state.joint_angles_[0] = q1;
+ 	state.joint_angles_[1] = q2;
+	model->update(state);
+	
+	double const c1(cos(q1));
+	double const s1(sin(q1));
+	
+	SAITransform ee_gframe;
+	ASSERT_TRUE (model->computeGlobalFrame(ee, ee_lframe, ee_gframe));
+	SAIVector const & ee_gpos(ee_gframe.translation());
+	{
+	  SAIVector ee_gpos_check(3);
+	  ee_gpos_check.elementAt(1) = c1 - s1 * q2;
+	  ee_gpos_check.elementAt(2) = s1 + c1 * q2;
+	  std::ostringstream msg;
+	  msg << "Verifying end-effector frame (position only) for q = " << state.joint_angles_ << "\n";
+	  ee_gpos_check.prettyPrint(msg, "  want", "    ");
+	  ee_gpos.prettyPrint(msg, "  have", "    ");
+	  bool const gpos_ok(check_vector("ee_pos", ee_gpos_check, ee_gpos, 1e-3, msg));
+	  EXPECT_TRUE (gpos_ok) << msg.str();
+	  if ( ! gpos_ok) {
+	    continue;		// no use checking Jg as well, it'll be off
+	  }
+	}
+	
+	SAIMatrix Jg(6, 2);
+	ASSERT_TRUE (model->computeJacobian(ee, ee_gpos, Jg));
+	{
+	  SAIMatrix Jg_check(6, 2);
+	  Jg_check.elementAt(1, 0) = -s1 - c1 * q2;
+	  Jg_check.elementAt(2, 0) =  c1 - s1 * q2;
+	  Jg_check.elementAt(3, 0) =  1;
+	  Jg_check.elementAt(1, 1) = -s1;
+	  Jg_check.elementAt(2, 1) =  c1;
+	  Jg_check.elementAt(3, 1) =  0;
 	  std::ostringstream msg;
 	  msg << "Checking Jacobian for q = " << state.joint_angles_ << "\n";
 	  Jg_check.prettyPrint(msg, "  want", "    ");
@@ -977,7 +1043,7 @@ jspace::Model * create_puma_model() throw(runtime_error)
 }
 
 
-static std::string create_double_pendulum_xml() throw(runtime_error)
+static std::string create_unit_RR_xml() throw(runtime_error)
 {
   static char const * xml = 
     "<?xml version=\"1.0\" ?>\n"
@@ -1008,29 +1074,94 @@ static std::string create_double_pendulum_xml() throw(runtime_error)
     "    </jointNode>\n"
     "  </baseNode>\n"
     "</dynworld>\n";
-  std::string result(create_tmpfile("double_pendulum.xml.XXXXXX", xml));
+  std::string result(create_tmpfile("unit_RR.xml.XXXXXX", xml));
   return result;
 }
 
 
-static wbc::BranchingRepresentation * create_double_pendulum_brep() throw(runtime_error)
+static wbc::BranchingRepresentation * create_unit_RR_brep() throw(runtime_error)
 {
   static string xml_filename("");
   if (xml_filename.empty()) {
-    xml_filename = create_double_pendulum_xml();
+    xml_filename = create_unit_RR_xml();
   }
   wbc::BranchingRepresentation * brep(wbc::BRParser::parse("sai", xml_filename));
   return brep;
 }
 
 
-jspace::Model * create_double_pendulum_model() throw(runtime_error)
+jspace::Model * create_unit_RR_model() throw(runtime_error)
 {
-  wbc::BranchingRepresentation * kg_brep(create_double_pendulum_brep());
+  wbc::BranchingRepresentation * kg_brep(create_unit_RR_brep());
   wbc::tao_tree_info_s * kg_tree(create_tao_tree_info(*kg_brep));
   delete kg_brep;
   
-  wbc::BranchingRepresentation * cc_brep(create_double_pendulum_brep());
+  wbc::BranchingRepresentation * cc_brep(create_unit_RR_brep());
+  wbc::tao_tree_info_s * cc_tree(create_tao_tree_info(*cc_brep));
+  delete cc_brep;
+  
+  //   cout << "created jspace::Model:\n";
+  //   wbc::dump_tao_tree_info(cout, kg_tree, "  ", false);
+  
+  jspace::Model * model(new jspace::Model(kg_tree, cc_tree));
+  return model;
+}
+
+
+static std::string create_unit_RP_xml() throw(runtime_error)
+{
+  static char const * xml = 
+    "<?xml version=\"1.0\" ?>\n"
+    "<dynworld>\n"
+    "  <baseNode>\n"
+    "    <gravity>0, 0, -9.81</gravity>\n"
+    "    <pos>0, 0, 0</pos>\n"
+    "    <rot>1, 0, 0, 0</rot>\n"
+    "    <jointNode>\n"
+    "      <ID>0</ID>\n"
+    "      <type>R</type>\n"
+    "      <axis>X</axis>\n"
+    "      <mass>1</mass>\n"
+    "      <inertia>0, 0, 0</inertia>\n"
+    "      <com>0, 1, 0</com>\n"
+    "      <pos>0, 0, 0</pos>\n"
+    "      <rot>0, 0, 1, 0</rot>\n"
+    "      <jointNode>\n"
+    "        <ID>1</ID>\n"
+    "        <type>P</type>\n"
+    "        <axis>Z</axis>\n"
+    "        <mass>1</mass>\n"
+    "        <inertia>0, 0, 0</inertia>\n"
+    "        <com>0, 0, 0</com>\n"
+    "        <pos>0, 0, 0</pos>\n"
+    "        <rot>0, 0, 1, 0</rot>\n"
+    "      </jointNode>\n"
+    "    </jointNode>\n"
+    "  </baseNode>\n"
+    "</dynworld>\n";
+  std::string result(create_tmpfile("unit_RP.xml.XXXXXX", xml));
+  return result;
+}
+
+
+static wbc::BranchingRepresentation * create_unit_RP_brep() throw(runtime_error)
+{
+  static string xml_filename("");
+  if (xml_filename.empty()) {
+    xml_filename = create_unit_RP_xml();
+  }
+  wbc::BranchingRepresentation * brep(wbc::BRParser::parse("sai", xml_filename));
+  return brep;
+}
+
+
+jspace::Model * create_unit_RP_model() throw(runtime_error)
+{
+  wbc::BranchingRepresentation * kg_brep(create_unit_RP_brep());
+  wbc::tao_tree_info_s * kg_tree(create_tao_tree_info(*kg_brep));
+  delete kg_brep;
+  
+  wbc::BranchingRepresentation * cc_brep(create_unit_RP_brep());
   wbc::tao_tree_info_s * cc_tree(create_tao_tree_info(*cc_brep));
   delete cc_brep;
   
