@@ -107,6 +107,19 @@ public:
   /** \note pointer semantics to support more than one DOF */
 	virtual void getQ(deFloat* v) = 0;
 
+  /** Retrieve the column(s) of the global Jacobian due to this
+      joint. You have to pass in an array of deVector6 instances, the
+      number of instances must be at least getDOF(), and each of them
+      will be filled with the values of Jg_p (upper three entries) and
+      Jg_w (lower three entries).
+      
+      \note This method was retrofitted because TAO did not provide a
+      generic method of retrieving the global Jacobian. User were
+      forced to jump through hoops and use dynamic casts, which is
+      error prone and hard to maintain.
+  */
+  virtual void getJgColumns(deVector6 * Jg_columns) const = 0;
+  
 private:
 	taoJointType _type;
 	taoABJoint* _abJoint;
@@ -163,18 +176,47 @@ public:
 	    position components of the Jacobian are zero therefore, to
 	    build a 6x3 matrix the upper 3x3 needs to be set to zero
 	    and the lower needs to be set the return of this function".
-
-	    Looking at the taoJointDOF1 version, by analogy this
-	    method probably returns the Jacobian contribution of this
-	    joint, expressed in the global frame. But it beats me why
-	    this method returns a pointer to a 3x3 matrix whereas the
-	    1-DOF version returns a 6D vector (the latter should work
-	    in both cases, no?).
 	    
-	    Also: why is this method virtual? That's completely
-	    counter-intuitive...
+	    One thing the documentation did not say is that the
+	    returned pointer is an array with two elements. getJg()[0]
+	    contains something like (I'm still figuring it out from
+	    the code...) the contribution of the joint to the
+	    translational velocity, and getJg()[0] contains the
+	    rotational part, both dependent on whatever frame got
+	    passed to taoABJointSpherical::compute_Jg()
+	    previously. taoABJointSpherical::compute_Jg() gets called
+	    by taoABNodeNOJ1::globalJacobian() or
+	    taoABNodeNOJn::globalJacobian(), which get called by
+	    taoABDynamics::globalJacobianOut() and
+	    taoABDynamics::compute_Jg_Omega_H(), both of which pass
+	    taoDNode::frameGlobal() into it (it can get expressed in
+	    successively retracted frames though during the iteration
+	    over all the joints of a
+	    node). taoDynamics::globalJacobian() seems to be the
+	    top-level entry point for that chain of calls, so whatever
+	    node (and its global frame) you pass to it will be used
+	    throughout the recursion.
+	    
+	    \note This method is retained mainly for backwards
+	    compatibility, you should use getJgColumns() instead,
+	    which does the necessary operations to inject the
+	    positional components. Looking at the taoJointDOF1
+	    version, by analogy this method probably returns the
+	    Jacobian contribution of this joint, expressed in the
+	    global frame. Someone chose to return it as a 3x3 matrix
+	    because they thought it was neat from the point of view of
+	    this class, but it actually makes it hard to
+	    polymorphically mix joint types, making it completely
+	    pointless to declare this method virtual.
 	*/
 	virtual deMatrix3* getJg();
+  
+  /** You need to pass in an array of three deVector6 instances,
+      because spherical joints have three degrees of (velocity)
+      freedom. Note that getDOF() returns three, so you can use the
+      polymorphic form. */
+  virtual void getJgColumns(deVector6 * Jg_columns) const;
+  
 };
 
 /*!
@@ -228,13 +270,18 @@ public:
 	    and with rotations expressed as components around the
 	    global coordinate axes.
 	    
-	    \todo Why is this method virtual? That's completely
-	    counter-intuitive, especially given that the spherical
-	    joint version returns a pointer to a 3x3
-	    matrix... whatever that is supposed to mean.
+	    \note This method looks like a failed attempt at
+	    polymorphism -- see also taoJointSpherical::getJg() -- and
+	    is retained for backwards compatibility. You should use
+	    getJgColumns() instead.
 	*/
 	virtual deVector6& getJg() const;
-
+  
+  /** You need to pass in one deVector6 instance, because DOF1 joints
+      have one degree of (velocity) freedom. Note that getDOF()
+      returns one, so you can use the polymorphic form. */
+  virtual void getJgColumns(deVector6 * Jg_columns) const;
+  
 private:
 	taoAxis _axis;
 };

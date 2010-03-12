@@ -109,9 +109,29 @@ deMatrix3* taoJointSpherical::getJg()
 	return ((taoABJointSpherical*)getABJoint())->Jg();
 }
 
+void taoJointSpherical::getJgColumns(deVector6 * Jg_columns) const
+{
+  deMatrix3 const * Jg_p(((taoABJointSpherical*)getABJoint())->Jg());
+  deMatrix3 const * Jg_w(Jg_p + 1);
+  for (size_t icol(0); icol < 3; ++icol) {
+    deVector3 & col_p(Jg_columns[icol][0]);
+    deVector3 & col_w(Jg_columns[icol][1]);
+    for (size_t isubrow(0); isubrow < 3; ++isubrow) {
+      col_p[isubrow] = Jg_p->elementAt(isubrow, icol);
+      col_w[isubrow] = Jg_w->elementAt(isubrow, icol);
+    }
+  }
+}
+
 deVector6& taoJointDOF1::getJg() const
 {
 	return ((taoABJointDOF1*)getABJoint())->Jg();
+}
+
+void taoJointDOF1::getJgColumns(deVector6 * Jg_columns) const
+{
+  deVector6 const & Jg(((taoABJointDOF1*)getABJoint())->Jg());
+  *Jg_columns = Jg;
 }
 
 deVector6& taoJointDOF1::getS()
