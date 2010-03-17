@@ -44,7 +44,7 @@
 #ifndef WIN32
 # include <netinet/in.h>
 #else
-# include "win32/win32_compat.hpp"
+# include <wbcnet/win32/win32_compat.hpp>
 // This undef has to be above NetWrapper.h, because Windows (or one of
 // the headers included via win32/win32_compat.hpp) defines a preprocessor
 // symbol "SendMessage" which expands to "SendMessageA" and thus mucks

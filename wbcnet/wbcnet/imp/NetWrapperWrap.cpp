@@ -39,8 +39,8 @@
 #include <string.h>
 
 #ifdef WIN32
-# include "win32/win32_compat.hpp"
-#undef SendMessage
+# include <wbcnet/win32/win32_compat.hpp>
+# undef SendMessage
 #endif
 
 static wbcnet::logger_t logger(wbcnet::get_logger("wbcnet"));

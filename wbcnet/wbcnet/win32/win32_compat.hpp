@@ -6,8 +6,8 @@
 #endif
 
 #include <winsock.h>
-#include "win32/win32_stdint.hpp"
-#include "win32/win32_time.hpp"
+#include <wbcnet/win32/win32_stdint.hpp>
+#include <wbcnet/win32/win32_time.hpp>
 
 template<typename foo_t>
 void bzero (foo_t * foo, size_t nbytes)

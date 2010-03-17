@@ -597,6 +597,7 @@ prettyPrint (std::ostream & os, std::string const & title, std::string const & p
     static char buf[buflen];
     memset(buf, 0, sizeof(buf));
     for (int ii(0); ii < m_size; ++ii) {
+#ifndef WIN32
       if (isinf(m_data[ii])) {
 	snprintf(buf, buflen-1, " inf    ");
       }
@@ -609,6 +610,9 @@ prettyPrint (std::ostream & os, std::string const & title, std::string const & p
       else {
 	snprintf(buf, buflen-1, "% 6.4f  ", m_data[ii]);
       }
+#else
+	sprintf_s(buf, buflen-1, "% 6.4f  ", m_data[ii]);
+#endif // WIN32
       os << buf;
     }
   }

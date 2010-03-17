@@ -30,6 +30,10 @@
 #include <wbcnet/strutil.hpp>
 #include <sstream>
 
+#ifdef WIN32
+__inline const int rint(float xx) { return (xx+0.5); }
+#endif // WIN32
+
 static wbcnet::logger_t logger(wbcnet::get_logger("wbc"));
 
 

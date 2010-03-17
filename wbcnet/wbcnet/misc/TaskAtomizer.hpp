@@ -37,7 +37,7 @@
 #include <wbcnet/endian_mode.hpp>
 
 #ifdef WIN32
-# include "win32/win32_compat.hpp"
+# include <wbcnet/win32/win32_compat.hpp>
 #else
 # include <sys/time.h>
 # include <stdint.h>

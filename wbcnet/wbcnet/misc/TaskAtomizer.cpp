@@ -37,9 +37,9 @@
 #include <limits>
 
 #ifndef WIN32
-#include <strings.h>
+# include <strings.h>
 #else
-#include "win32/win32_compat.hpp"
+# include <wbcnet/win32/win32_compat.hpp>
 #endif
 
 static wbcnet::logger_t logger(wbcnet::get_logger("wbcnet"));

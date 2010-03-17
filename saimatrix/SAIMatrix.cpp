@@ -1305,6 +1305,7 @@ prettyPrint (std::ostream & os, std::string const & title, std::string const & p
       if ( ! prefix.empty())
 	os << prefix;
       for (int ic(0); ic < m_col; ++ic) {
+#ifndef WIN32
 	if (isinf(elementAt(ir, ic))) {
 	  snprintf(buf, buflen-1, " inf    ");
 	}
@@ -1317,6 +1318,9 @@ prettyPrint (std::ostream & os, std::string const & title, std::string const & p
 	else {
 	  snprintf(buf, buflen-1, "% 6.4f  ", elementAt(ir, ic));
 	}
+#else // WIN32
+	  sprintf_s(buf, buflen-1, "% 6.4f  ", elementAt(ir, ic));
+#endif // WIN32
 	os << buf;
       }
       os << "\n";
