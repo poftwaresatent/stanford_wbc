@@ -39,10 +39,17 @@ static deVector3 const earth_gravity(0, 0, -9.81);
 // Beware: no bound checks!
 size_t squareToTriangularIndex(size_t irow, size_t icol, size_t dim)
 {
-  if (irow > icol) {
-    return irow + (dim-1) * icol;
+  if (0 == irow) {
+    return icol;
   }
-  return icol + (dim-1) * irow;
+  if (0 == icol) {
+    return irow;
+  }
+  if (irow > icol) {
+    // should have a lookup table for icol * (icol + 1) / 2
+    return irow + dim * icol - icol * (icol + 1) / 2;
+  }
+  return icol + dim * irow - irow * (irow + 1) / 2;
 }
 
 
