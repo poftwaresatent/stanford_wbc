@@ -69,7 +69,7 @@ static void cleanup()
 
 int main(int argc, char*argv[])
 {
-  if ((0 != cleanup) && (0 != atexit(cleanup)))
+  if (0 != atexit(cleanup))
     err(EXIT_FAILURE, "atexit()");
   if (SIG_ERR == signal(SIGTERM, handle))
     err(EXIT_FAILURE, "signal(SIGTERM, ...)");

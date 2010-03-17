@@ -82,11 +82,13 @@ namespace wbcnet {
 	return 6789;
       throw runtime_error("get_tcp_port(USER, " + sfl::to_string(to_process)
 			  + "): invalid to_process");
+
+    default:
+      throw runtime_error("get_tcp_port(" + sfl::to_string(from_process)
+			  + ", " + sfl::to_string(to_process)
+			  + "): invalid from_process / to_process combination");
     }
     
-    throw runtime_error("get_tcp_port(" + sfl::to_string(from_process)
-			+ ", " + sfl::to_string(to_process)
-			+ "): invalid from_process / to_process combination");
     return 0;
   }
   

@@ -150,7 +150,7 @@ namespace {
     to.clear();			// "probably" redundant
     to.setSize(nelem);
     listing_t::const_iterator ifrom(from.begin());
-    for (int ii(0); ii < nelem; ++ii) {
+    for (size_t ii(0); ii < nelem; ++ii) {
       to[ii] = *ifrom;
       ++ifrom;
     }

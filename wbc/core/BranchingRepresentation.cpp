@@ -120,13 +120,13 @@ namespace wbc {
 	robot->setJointNames(*opt_joint_names);
       }
       
-      if (opt_joint_limits_lower && (opt_joint_limits_lower->size() != robot->numJoints_)) {
+      if (opt_joint_limits_lower && (opt_joint_limits_lower->size() != static_cast<size_t>(robot->numJoints_))) {
 	ostringstream msg;
 	msg << "wbc::BranchingRepresentation::create(): opt_joint_limits_lower has " << opt_joint_limits_lower->size()
 	    << " entries but the robot has "  << robot->numJoints_ << " joints";
 	throw runtime_error(msg.str());
       }
-      if (opt_joint_limits_upper && (opt_joint_limits_upper->size() != robot->numJoints_)) {
+      if (opt_joint_limits_upper && (opt_joint_limits_upper->size() != static_cast<size_t>(robot->numJoints_))) {
 	ostringstream msg;
 	msg << "wbc::BranchingRepresentation::create(): opt_joint_limits_upper has " << opt_joint_limits_upper->size()
 	    << " entries but the robot has "  << robot->numJoints_ << " joints";

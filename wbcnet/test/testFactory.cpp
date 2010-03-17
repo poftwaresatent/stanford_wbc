@@ -87,7 +87,8 @@ TEST (factory, creation)
 {
   FactoryRegistry<Foo> ff;
   try {
-    Foo * f1(ff.Create("1"));
+    Foo * f1;
+    f1 = ff.Create("1");
     ASSERT_TRUE (false) << "invoking non-existing factory should have thrown";
   }
   catch (...) {

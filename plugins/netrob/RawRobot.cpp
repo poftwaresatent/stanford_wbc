@@ -109,7 +109,7 @@ namespace netrob {
   bool RawRobot::
   writeCommand(SAIVector const & command)
   {
-    if (command.size() != m_command.ncom) {
+    if (static_cast<size_t>(command.size()) != m_command.ncom) {
       LOG_ERROR (logger,
 		 "netrob::RawRobot::writeCommand(): size mismatch, should be " << m_command.ncom
 		 << " but is " << command.size());
@@ -139,7 +139,8 @@ namespace netrob {
   writeSensors(SAIVector const & jointAngles, SAIVector const & jointVelocities,
 	       SAIMatrix const * opt_force)
   {
-    if ((jointAngles.size() != m_state.npos) || (jointVelocities.size() != m_state.nvel)) {
+    if ((static_cast<size_t>(jointAngles.size()) != m_state.npos)
+	|| (static_cast<size_t>(jointVelocities.size()) != m_state.nvel)) {
       LOG_ERROR (logger,
 		 "netrob::RawRobot::writeSensors(): size mismatch, should be [" << m_state.npos
 		 << ", " << m_state.nvel << " but is [" << jointAngles.size() << ", " << jointVelocities.size()

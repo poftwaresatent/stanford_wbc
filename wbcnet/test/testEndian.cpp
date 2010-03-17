@@ -81,7 +81,7 @@ int main(int argc, char ** argv)
       cout << "uint64_t passed\n";
     else {
       printf("uint64_t FAILED: expected 0xf0debc9a78563412 but got 0x%llx\n",
-	     (long unsigned int) aa);
+	     (long long unsigned int) aa);
       ok = false;
     }
   }

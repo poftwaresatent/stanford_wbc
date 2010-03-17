@@ -28,10 +28,6 @@
 #include "OsimBRParser.hpp"
 
 
-// just a quick hack for testing BRBuilder with a simple case
-static wbc::BranchingRepresentation * create_builtin_puma() throw(std::runtime_error);
-
-
 namespace wbc {
   
   BranchingRepresentation * BRParser::

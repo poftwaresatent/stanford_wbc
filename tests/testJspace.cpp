@@ -656,7 +656,7 @@ static std::string create_tmpfile(char const * fname_template, char const * cont
   }
   
   size_t const len(strlen(contents));
-  if (len != write(tmpfd, contents, len)) {
+  if (static_cast<ssize_t>(len) != write(tmpfd, contents, len)) {
     throw runtime_error("create_tmpfile(): write(): " + string(strerror(errno)));
   }
   close(tmpfd);
