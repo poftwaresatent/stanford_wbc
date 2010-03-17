@@ -42,9 +42,10 @@ namespace jspace {
   class Model
   {
   public:
-    Model(/** TAO tree info used for computing kinematics and the
-	      gravity torque vector. */
-	  wbc::tao_tree_info_s * kg_tree,
+    Model(/** TAO tree info used for computing kinematics, the gravity
+	      torque vector, the mass-inertia matrix, and its
+	      inverse. */
+	  wbc::tao_tree_info_s * kgm_tree,
 	  /** TAO tree info for computing Coriolis and centrifugal
 	      torques. */
 	  wbc::tao_tree_info_s * cc_tree);
@@ -81,8 +82,7 @@ namespace jspace {
 	- the root node is NOT included in this count.
 	- in principle, each node can have any number of joints, and
 	  each joint can have any number of degrees of freedom, which
-	  is why getNJoints() and getNDOF() might come in handy, too.
-    */
+	  is why getNJoints() and getNDOF() might come in handy, too. */
     size_t getNNodes() const;
     
     /** Compute or retrieve the cached number of joints in the
@@ -107,8 +107,7 @@ namespace jspace {
 	
 	\todo A joint can have any number of DOF, which means there
 	should be a way to get at them individually, but currently we
-	only support exactly one 1-DOF joints per node.
-    */
+	only support exactly one 1-DOF joints per node. */
     std::string getJointName(size_t id) const;
     
     /** Retrieve a node by ID. */
@@ -215,8 +214,7 @@ namespace jspace {
 	\note Invalid indices are silently ignore, and \c true is
 	returned. Valid indices are \c 0<=index<getNDOF().
 	
-	\return The previous value of \c disable for this joint.
-    */
+	\return The previous value of \c disable for this joint. */
     bool disableGravityCompensation(size_t index, bool disable);
     
     /** Retrieve the gravity joint-torque vector. */
@@ -229,34 +227,41 @@ namespace jspace {
     void getCoriolisCentrifugal(SAIVector & coriolis_centrifugal) const;
     
     /** Compute the joint-space mass-inertia matrix, a.k.a. the
-	kinetic energy matrix.
-	
-	\todo IMPLEMENT THIS!!! */
+	kinetic energy matrix. */
     void computeMassInertia();
     
     /** Retrieve the joint-space mass-inertia matrix, a.k.a. the
-	kinetic energy matrix. */
-    void getMassInertia(SAIMatrix & mass_inertia) const;
-    
-    /** Compute the inverse joint-space mass-inertia matrix.
+	kinetic energy matrix.
 	
-	\todo IMPLEMENT THIS!!! */
+	\return True on success. The only possibility of receiving
+	false is if you never called computeMassInertia(), which gets
+	called by updateDynamics(), which gets called by update(). */
+    bool getMassInertia(SAIMatrix & mass_inertia) const;
+    
+    /** Compute the inverse joint-space mass-inertia matrix. */
     void computeInverseMassInertia();
     
-    /** Retrieve the inverse joint-space mass-inertia matrix. */
-    void getInverseMassInertia(SAIMatrix & inverse_mass_inertia) const;
+    /** Retrieve the inverse joint-space mass-inertia matrix. 
+	
+	\return True on success. The only possibility of receiving
+	false is if you never called computeMassInertia(), which gets
+	called by updateDynamics(), which gets called by update(). */
+    bool getInverseMassInertia(SAIMatrix & inverse_mass_inertia) const;
     
     
   private:
     typedef std::set<size_t> dof_set_t;
     dof_set_t gravity_disabled_;
     
-    wbc::tao_tree_info_s * kg_tree_;
+    std::size_t const ndof_;
+    wbc::tao_tree_info_s * kgm_tree_;
     wbc::tao_tree_info_s * cc_tree_;
     
     State state_;
     std::vector<double> g_torque_;
     std::vector<double> cc_torque_;
+    std::vector<double> a_upper_triangular_;
+    std::vector<double> ainv_upper_triangular_;
   };
   
 }

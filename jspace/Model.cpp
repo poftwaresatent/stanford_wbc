@@ -30,13 +30,29 @@
 #include <tao/dynamics/taoDynamics.h>
 
 
+static deVector3 const zero_gravity(0, 0, 0);
+static deVector3 const earth_gravity(0, 0, -9.81);
+
+
+// Beware: no bound checks!
+size_t squareToTriangularIndex(size_t irow, size_t icol, size_t dim)
+{
+  if (irow > icol) {
+    return irow + (dim-1) * icol;
+  }
+  return icol + (dim-1) * irow;
+}
+
+
 namespace jspace {
   
   
   Model::
-  Model(wbc::tao_tree_info_s * kg_tree,
+  Model(wbc::tao_tree_info_s * kgm_tree,
 	wbc::tao_tree_info_s * cc_tree)
-    : kg_tree_(kg_tree), cc_tree_(cc_tree)
+    : ndof_(kgm_tree->info.size()), // XXXX only works for one joint per node and one DOF per joint
+      kgm_tree_(kgm_tree),
+      cc_tree_(cc_tree)
   {
   }
 
@@ -44,7 +60,7 @@ namespace jspace {
   Model::
   ~Model()
   {
-    delete kg_tree_;
+    delete kgm_tree_;
     delete cc_tree_;
   }
   
@@ -62,14 +78,14 @@ namespace jspace {
   setState(State const & state)
   {
     state_ = state;
-    for (size_t ii(0); ii < kg_tree_->info.size(); ++ii) {
-      taoJoint * joint(kg_tree_->info[ii].node->getJointList());
+    for (size_t ii(0); ii < ndof_; ++ii) {
+      taoJoint * joint(kgm_tree_->info[ii].node->getJointList());
       joint->setQ(&state.joint_angles_[ii]);
       joint->zeroDQ();
       joint->zeroDDQ();
       joint->zeroTau();
     }
-    for (size_t ii(0); ii < cc_tree_->info.size(); ++ii) {
+    for (size_t ii(0); ii < ndof_; ++ii) {
       taoJoint * joint(cc_tree_->info[ii].node->getJointList());
       joint->setQ(&state.joint_angles_[ii]);
       joint->setDQ(&state.joint_velocities_[ii]);
@@ -82,7 +98,7 @@ namespace jspace {
   size_t Model::
   getNNodes() const
   {
-    return kg_tree_->info.size();
+    return ndof_;
   }
   
   
@@ -90,7 +106,7 @@ namespace jspace {
   getNJoints() const
   {
     // one day this will be different...
-    return getNNodes();
+    return ndof_;
   }
   
   
@@ -98,7 +114,7 @@ namespace jspace {
   getNDOF() const
   {
     // one day this will be different...
-    return getNNodes();
+    return ndof_;
   }
   
   
@@ -106,8 +122,8 @@ namespace jspace {
   getNodeName(size_t id) const
   {
     std::string name("");
-    if (kg_tree_->info.size() > id) {
-      name = kg_tree_->info[id].link_name;
+    if (ndof_ > id) {
+      name = kgm_tree_->info[id].link_name;
     }
     return name;
   }
@@ -117,8 +133,8 @@ namespace jspace {
   getJointName(size_t id) const
   {
     std::string name("");
-    if (kg_tree_->info.size() > id) {
-      name = kg_tree_->info[id].joint_name;
+    if (ndof_ > id) {
+      name = kgm_tree_->info[id].joint_name;
     }
     return name;
   }
@@ -127,8 +143,8 @@ namespace jspace {
   taoDNode * Model::
   getNode(size_t id) const
   {
-    if (kg_tree_->info.size() > id) {
-      return kg_tree_->info[id].node;
+    if (ndof_ > id) {
+      return kgm_tree_->info[id].node;
     }
     return 0;
   }
@@ -137,9 +153,9 @@ namespace jspace {
   taoDNode * Model::
   getNodeByName(std::string const & name_or_alias) const
   {
-    for (size_t ii(0); ii < kg_tree_->info.size(); ++ii) {
-      if (name_or_alias == kg_tree_->info[ii].link_name) {
-	return  kg_tree_->info[ii].node;
+    for (size_t ii(0); ii < ndof_; ++ii) {
+      if (name_or_alias == kgm_tree_->info[ii].link_name) {
+	return  kgm_tree_->info[ii].node;
       }
     }
     return 0;
@@ -149,9 +165,9 @@ namespace jspace {
   taoDNode * Model::
   getNodeByJointName(std::string const & name_or_alias) const
   {
-    for (size_t ii(0); ii < kg_tree_->info.size(); ++ii) {
-      if (name_or_alias == kg_tree_->info[ii].joint_name) {
-	return  kg_tree_->info[ii].node;
+    for (size_t ii(0); ii < ndof_; ++ii) {
+      if (name_or_alias == kgm_tree_->info[ii].joint_name) {
+	return  kgm_tree_->info[ii].node;
       }
     }
     return 0;
@@ -162,11 +178,11 @@ namespace jspace {
   getJointLimits(std::vector<double> & joint_limits_lower,
 		 std::vector<double> & joint_limits_upper) const
   {
-    joint_limits_lower.resize(kg_tree_->info.size());
-    joint_limits_upper.resize(kg_tree_->info.size());
-    for (size_t ii(0); ii < kg_tree_->info.size(); ++ii) {
-      joint_limits_lower[ii] = kg_tree_->info[ii].limit_lower;
-      joint_limits_upper[ii] = kg_tree_->info[ii].limit_upper;
+    joint_limits_lower.resize(ndof_);
+    joint_limits_upper.resize(ndof_);
+    for (size_t ii(0); ii < ndof_; ++ii) {
+      joint_limits_lower[ii] = kgm_tree_->info[ii].limit_lower;
+      joint_limits_upper[ii] = kgm_tree_->info[ii].limit_upper;
     }
   }
   
@@ -174,8 +190,8 @@ namespace jspace {
   void Model::
   updateKinematics()
   {
-    taoDynamics::updateTransformation(kg_tree_->root);
-    taoDynamics::globalJacobian(kg_tree_->root);
+    taoDynamics::updateTransformation(kgm_tree_->root);
+    taoDynamics::globalJacobian(kgm_tree_->root);
   }
   
   
@@ -237,11 +253,11 @@ namespace jspace {
     
     // \todo Implement support for more than one joint per node, and
     // 	more than one DOF per joint.
-    jacobian.setSize(6, getNDOF(), true);
-    for (size_t icol(0); icol < getNDOF(); ++icol) {
+    jacobian.setSize(6, ndof_, true);
+    for (size_t icol(0); icol < ndof_; ++icol) {
       deVector6 Jg_col;	// in NDOF case, this will become an array of deVector6...
       // in NOJ case, we will have to loop over all joints of a node...
-      kg_tree_->info[icol].node->getJointList()->getJgColumns(&Jg_col);
+      kgm_tree_->info[icol].node->getJointList()->getJgColumns(&Jg_col);
       
       fprintf(stderr, "iJg[%zu]: [ % 4.2f % 4.2f % 4.2f % 4.2f % 4.2f % 4.2f]\n",
 	      icol,
@@ -278,17 +294,18 @@ namespace jspace {
   {
     computeGravity();
     computeCoriolisCentrifugal();
+    computeMassInertia();
+    computeInverseMassInertia();
   }
   
   
   void Model::
   computeGravity()
   {
-    static deVector3 const earth_gravity(0, 0, -9.81);
-    g_torque_.resize(kg_tree_->info.size());
-    taoDynamics::invDynamics(kg_tree_->root, &earth_gravity);
-    for (size_t ii(0); ii < kg_tree_->info.size(); ++ii) {
-      taoJoint * joint(kg_tree_->info[ii].node->getJointList());
+    g_torque_.resize(ndof_);
+    taoDynamics::invDynamics(kgm_tree_->root, &earth_gravity);
+    for (size_t ii(0); ii < ndof_; ++ii) {
+      taoJoint * joint(kgm_tree_->info[ii].node->getJointList());
       joint->getTau(&g_torque_[ii]);
     }
   }
@@ -297,7 +314,7 @@ namespace jspace {
   bool Model::
   disableGravityCompensation(size_t index, bool disable)
   {
-    if (getNDOF() <= index) {
+    if (ndof_ <= index) {
       return true;
     }
     
@@ -336,10 +353,9 @@ namespace jspace {
   void Model::
   computeCoriolisCentrifugal()
   {
-    static deVector3 const zero_gravity(0, 0, 0);
-    cc_torque_.resize(cc_tree_->info.size());
+    cc_torque_.resize(ndof_);
     taoDynamics::invDynamics(cc_tree_->root, &zero_gravity);
-    for (size_t ii(0); ii < cc_tree_->info.size(); ++ii) {
+    for (size_t ii(0); ii < ndof_; ++ii) {
       taoJoint * joint(cc_tree_->info[ii].node->getJointList());
       joint->getTau(&cc_torque_[ii]);
     }
@@ -359,36 +375,106 @@ namespace jspace {
   void Model::
   computeMassInertia()
   {
-    cerr << "IMPLEMENT jspace::Model::computeMassInertia()!!!\n";
+    if (a_upper_triangular_.empty()) {
+      a_upper_triangular_.resize(ndof_ * (ndof_ + 1) / 2);
+    }
+    
+    deFloat const one(1);
+    for (size_t irow(0); irow < ndof_; ++irow) {
+      taoJoint * joint(kgm_tree_->info[irow].node->getJointList());
+      
+      // Compute one column of A by solving inverse dynamics of the
+      // corresponding joint having a unit acceleration, while all the
+      // others remain fixed. This works on the kgm_tree because it
+      // has zero speeds, thus the Coriolis-centrifgual effects are
+      // zero, and by using zero gravity we get pure system dynamics:
+      // force = mass * acceleration (in matrix form).
+      joint->setDDQ(&one);
+      taoDynamics::invDynamics(kgm_tree_->root, &zero_gravity);
+      joint->zeroDDQ();
+      
+      // Retrieve the column of A by reading the joint torques
+      // required for the column-selecting unit acceleration (into a
+      // flattened upper triangular matrix).
+      for (size_t icol(0); icol <= irow; ++icol) {
+	joint = kgm_tree_->info[icol].node->getJointList();
+	joint->getTau(&a_upper_triangular_[squareToTriangularIndex(irow, icol, ndof_)]);
+      }
+    }
   }
   
   
-  void Model::
+  bool Model::
   getMassInertia(SAIMatrix & mass_inertia) const
   {
-    // dummy: identity
-    mass_inertia.setSize(kg_tree_->info.size(), kg_tree_->info.size(), true);
-    for (size_t ii(0); ii < kg_tree_->info.size(); ++ii) {
-      mass_inertia.elementAt(ii, ii) = 1;
+    if (a_upper_triangular_.empty()) {
+      return false;
     }
+    
+    mass_inertia.setSize(ndof_, ndof_, true);
+    for (size_t irow(0); irow < ndof_; ++irow) {
+      for (size_t icol(0); icol <= irow; ++icol) {
+	mass_inertia.elementAt(irow, icol) = a_upper_triangular_[squareToTriangularIndex(irow, icol, ndof_)];
+	if (irow != icol) {
+	  mass_inertia.elementAt(icol, irow) = mass_inertia.elementAt(irow, icol);
+	}
+      }
+    }
+    
+    return true;
   }
   
   
   void Model::
   computeInverseMassInertia()
   {
-    cerr << "IMPLEMENT jspace::Model::computeInverseMassInertia()!!!\n";
+    if (ainv_upper_triangular_.empty()) {
+      ainv_upper_triangular_.resize(ndof_ * (ndof_ + 1) / 2);
+    }
+    
+    deFloat const one(1);
+    for (size_t irow(0); irow < ndof_; ++irow) {
+      taoJoint * joint(kgm_tree_->info[irow].node->getJointList());
+      
+      // Compute one column of Ainv by solving forward dynamics of the
+      // corresponding joint having a unit torque, while all the
+      // others remain unactuated. This works on the kgm_tree because
+      // it has zero speeds, thus the Coriolis-centrifgual effects are
+      // zero, and by using zero gravity we get pure system dynamics:
+      // acceleration = mass_inv * force (in matrix form).
+      joint->setTau(&one);
+      taoDynamics::fwdDynamics(kgm_tree_->root, &zero_gravity);
+      joint->zeroTau();
+      
+      // Retrieve the column of Ainv by reading the joint
+      // accelerations generated by the column-selecting unit torque
+      // (into a flattened upper triangular matrix).
+      for (size_t icol(0); icol <= irow; ++icol) {
+	joint = kgm_tree_->info[icol].node->getJointList();
+	joint->getDDQ(&ainv_upper_triangular_[squareToTriangularIndex(irow, icol, ndof_)]);
+      }
+    }
   }
   
   
-  void Model::
+  bool Model::
   getInverseMassInertia(SAIMatrix & inverse_mass_inertia) const
   {
-    // dummy: identity
-    inverse_mass_inertia.setSize(kg_tree_->info.size(), kg_tree_->info.size(), true);
-    for (size_t ii(0); ii < kg_tree_->info.size(); ++ii) {
-      inverse_mass_inertia.elementAt(ii, ii) = 1;
+    if (ainv_upper_triangular_.empty()) {
+      return false;
     }
+    
+    inverse_mass_inertia.setSize(ndof_, ndof_, true);
+    for (size_t irow(0); irow < ndof_; ++irow) {
+      for (size_t icol(0); icol <= irow; ++icol) {
+	inverse_mass_inertia.elementAt(irow, icol) = ainv_upper_triangular_[squareToTriangularIndex(irow, icol, ndof_)];
+	if (irow != icol) {
+	  inverse_mass_inertia.elementAt(icol, irow) = inverse_mass_inertia.elementAt(irow, icol);
+	}
+      }
+    }
+    
+    return true;
   }
 
 }
