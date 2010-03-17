@@ -43,6 +43,7 @@ namespace wbc {
     if (0 == brp)
       throw runtime_error("wbc::BRParser::parse(): invalid parserName `" + parserName + "' (use `sai' or `osim')");
     BranchingRepresentation * br(brp->parse(fileName));
+    delete brp;
     return br;
   }
   
