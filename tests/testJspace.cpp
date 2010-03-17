@@ -633,77 +633,61 @@ TEST (jspaceModel, mass_inertia_RR)
 }
 
 
-
-
-// // static void check_dynamics(jspace::Model * model, jspace::State const & state, taoDNode const * end_effector)
-// // {
-// //   SAIVector tB(6), tG(6);
-// //   SAIMatrix tJ(6, 6), tA(6, 6);
-// //   SAIVector mB(6), mG(6);
-// //   SAIMatrix mJ(6, 6), mdJ(6, 6), mA(6, 6);
-  
-// //   getPumaDynamics(state.joint_angles_, state.joint_velocities_,
-// // 		  mJ, mdJ, mA, mB, mG);
-// //   model->update(state);
-// //   ASSERT_TRUE (model->computeJacobian(end_effector, tJ)) << "computeJacobian failed for q = " << state.joint_angles_;
-// //   model->getMassInertia(tA);
-// //   model->getCoriolisCentrifugal(tB);
-// //   model->getGravity(tG);
-// //   {
-// //     std::ostringstream msg;
-// //     msg << "Checking Jacobian for q = "  << state.joint_angles_ << "\n";
-// //     mJ.prettyPrint(msg, "  want", "    ");
-// //     tJ.prettyPrint(msg, "  have", "    ");
-// //     EXPECT_TRUE (check_matrix("Jacobian", mJ, tJ, 1e-1, msg)) << msg.str();
-// //   }
-// //   {
-// //     std::ostringstream msg;
-// //     msg << "Checking mass inertia for q = "  << state.joint_angles_ << "\n";
-// //     mA.prettyPrint(msg, "  want", "    ");
-// //     tA.prettyPrint(msg, "  have", "    ");
-// //     EXPECT_TRUE (check_matrix("mass inertia", mA, tA, 1e-1, msg)) << msg.str();
-// //   }
-// //   {
-// //     std::ostringstream msg;
-// //     msg << "Checking Coriolis centrifugal for q = "  << state.joint_angles_ << "\n";
-// //     mB.prettyPrint(msg, "  want", "    ");
-// //     tB.prettyPrint(msg, "  have", "    ");
-// //     EXPECT_TRUE (check_vector("Coriolis centrifugal", mB, tB, 1e-1, msg)) << msg.str();
-// //   }
-// //   {
-// //     std::ostringstream msg;
-// //     msg << "Checking gravity for q = "  << state.joint_angles_ << "\n";
-// //     mG.prettyPrint(msg, "  want", "    ");
-// //     tG.prettyPrint(msg, "  have", "    ");
-// //     EXPECT_TRUE (check_vector("gravity", mG, tG, 1e-1, msg)) << msg.str();
-// //   }
-// // }
-
-
-// // TEST (jspaceModel, dynamics)
-// // {
-// //   jspace::Model * model(0);
-// //   try {
-// //     model = create_model();
-// //     taoDNode * ee(model->getNode(5));
-// //     ASSERT_NE ((void*)0, ee) << "no end effector (node ID 5)";
-// //     jspace::State state(6, 6);
-// //     state.joint_angles_.zero();
-// //     state.joint_velocities_.zero();
-// //     check_dynamics(model, state, ee);    
-// //     for (double qq(-0.1); qq < 0.11; qq += 0.1) {
-// //       for (int ii(0); ii < 6; ++ii) {
-// // 	state.joint_angles_.zero();
-// // 	state.joint_angles_[ii] = qq;
-// // 	check_dynamics(model, state, ee);    
-// //       }
-// //     }
-// //   }
-// //   catch (std::exception const & ee) {
-// //     ADD_FAILURE () << "exception " << ee.what();
-// //   }
-// //   delete model;
-// // }
+TEST (jspaceModel, mass_inertia_RP)
+{
+  jspace::Model * model(0);
+  try {
+    model = create_unit_RP_model();
+    taoDNode * n1(model->getNode(0));
+    taoDNode * n2(model->getNode(1));
+    ASSERT_NE ((void*)0, n1);
+    ASSERT_NE ((void*)0, n2);
+    jspace::State state(2, 2);
+    state.joint_velocities_.zero();
+    
+    for (double q1(-M_PI); q1 <= M_PI; q1 += 2 * M_PI / 7) {
+      for (double q2(-1); q2 <= 1; q2 += 2.0 / 7) {
+ 	state.joint_angles_[0] = q1;
+ 	state.joint_angles_[1] = q2;
+	model->update(state);
+	
+	double const c1(cos(q1));
+	double const s1(sin(q1));
+	
+	SAIMatrix MM(2, 2);
+	model->getMassInertia(MM);
+	SAIMatrix MM_check(2, 2);
+	MM_check.elementAt(0, 0) = 1 + pow(s1 + c1 * q2, 2) + pow(c1 - s1 * q2, 2);
+	MM_check.elementAt(1, 0) = s1 * (s1 + c1 * q2) + c1 * (c1 - s1 * q2);
+	MM_check.elementAt(0, 1) = MM_check.elementAt(1, 0);
+	MM_check.elementAt(1, 1) = 1;
+	{
+	  std::ostringstream msg;
+	  msg << "Checking mass_inertia for q = " << state.joint_angles_ << "\n";
+	  MM_check.prettyPrint(msg, "  want", "    ");
+	  MM.prettyPrint(msg, "  have", "    ");
+	  EXPECT_TRUE (check_matrix("mass_inertia", MM_check, MM, 1e-3, msg)) << msg.str();
+	}
+	
+	SAIMatrix MMinv(2, 2);
+	model->getInverseMassInertia(MMinv);
+	SAIMatrix MMinv_check;
+	MM_check.inverse(MMinv_check);
+	{
+	  std::ostringstream msg;
+	  msg << "Checking inv_mass_inertia for q = " << state.joint_angles_ << "\n";
+	  MMinv_check.prettyPrint(msg, "  want", "    ");
+	  MMinv.prettyPrint(msg, "  have", "    ");
+	  EXPECT_TRUE (check_matrix("inv_mass_inertia", MMinv_check, MMinv, 1e-3, msg)) << msg.str();
+	}
+      }
+    }
+  }
+  catch (std::exception const & ee) {
+    ADD_FAILURE () << "exception " << ee.what();
+  }
+  delete model;
+}
 
 
 int main(int argc, char ** argv)
