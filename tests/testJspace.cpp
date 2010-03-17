@@ -588,17 +588,40 @@ TEST (jspaceModel, mass_inertia_RR)
 	
 	SAIMatrix MM(2, 2);
 	model->getMassInertia(MM);
+	SAIMatrix MM_check(2, 2);
+	MM_check.elementAt(0, 0) = 1 + pow(s1 + s12, 2) + pow(c1 + c12, 2);
+	MM_check.elementAt(1, 0) = s12 * (s1 + s12) + c12 * (c1 + c12);
+	MM_check.elementAt(0, 1) = MM_check.elementAt(1, 0);
+	MM_check.elementAt(1, 1) = 1;
 	{
-	  SAIMatrix MM_check(2, 2);
-	  MM_check.elementAt(0, 0) = 1 + pow(s1 + s12, 2) + pow(c1 + c12, 2);
-	  MM_check.elementAt(1, 0) = s12 * (s1 + s12) + c12 * (c1 + c12);
-	  MM_check.elementAt(0, 1) = MM_check.elementAt(1, 0);
-	  MM_check.elementAt(1, 1) = 1;
 	  std::ostringstream msg;
 	  msg << "Checking mass_inertia for q = " << state.joint_angles_ << "\n";
 	  MM_check.prettyPrint(msg, "  want", "    ");
 	  MM.prettyPrint(msg, "  have", "    ");
 	  EXPECT_TRUE (check_matrix("mass_inertia", MM_check, MM, 1e-3, msg)) << msg.str();
+	}
+	
+	SAIMatrix MMinv(2, 2);
+	model->getInverseMassInertia(MMinv);
+	SAIMatrix MMinv_check;
+	MM_check.inverse(MMinv_check);
+	{
+	  SAIMatrix id_check;
+	  id_check.identity(2);
+	  SAIMatrix id;
+	  id = MM_check * MMinv_check;
+	  std::ostringstream msg;
+	  msg << "Checking SAIMatrix::inverse() for q = " << state.joint_angles_ << "\n";
+	  id_check.prettyPrint(msg, "  want", "    ");
+	  id.prettyPrint(msg, "  have", "    ");
+	  EXPECT_TRUE (check_matrix("identity", id_check, id, 1e-3, msg)) << msg.str();
+	}
+	{
+	  std::ostringstream msg;
+	  msg << "Checking inv_mass_inertia for q = " << state.joint_angles_ << "\n";
+	  MMinv_check.prettyPrint(msg, "  want", "    ");
+	  MMinv.prettyPrint(msg, "  have", "    ");
+	  EXPECT_TRUE (check_matrix("inv_mass_inertia", MMinv_check, MMinv, 1e-3, msg)) << msg.str();
 	}
       }
     }

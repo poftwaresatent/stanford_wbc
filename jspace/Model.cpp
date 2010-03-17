@@ -29,6 +29,8 @@
 #include <tao/dynamics/taoJoint.h>
 #include <tao/dynamics/taoDynamics.h>
 
+#undef DEBUG
+
 
 static deVector3 const zero_gravity(0, 0, 0);
 static deVector3 const earth_gravity(0, 0, -9.81);
@@ -249,7 +251,9 @@ namespace jspace {
       return false;
     }
     
+#ifdef DEBUG
     fprintf(stderr, "computeJacobian()\ng: [% 4.2f % 4.2f % 4.2f]\n", gx, gy, gz);
+#endif // DEBUG
     
     // \todo Implement support for more than one joint per node, and
     // 	more than one DOF per joint.
@@ -259,10 +263,12 @@ namespace jspace {
       // in NOJ case, we will have to loop over all joints of a node...
       kgm_tree_->info[icol].node->getJointList()->getJgColumns(&Jg_col);
       
+#ifdef DEBUG
       fprintf(stderr, "iJg[%zu]: [ % 4.2f % 4.2f % 4.2f % 4.2f % 4.2f % 4.2f]\n",
 	      icol,
 	      Jg_col.elementAt(0), Jg_col.elementAt(1), Jg_col.elementAt(2),
 	      Jg_col.elementAt(3), Jg_col.elementAt(4), Jg_col.elementAt(5));
+#endif // DEBUG
       
       for (size_t irow(0); irow < 6; ++irow) {
 	jacobian.elementAt(irow, icol) = Jg_col.elementAt(irow);
@@ -279,10 +285,12 @@ namespace jspace {
       jacobian.elementAt(1, icol) -=  gz * Jg_col.elementAt(3) - gx * Jg_col.elementAt(5);
       jacobian.elementAt(2, icol) -= -gy * Jg_col.elementAt(3) + gx * Jg_col.elementAt(4);
       
+#ifdef DEBUG
       fprintf(stderr, "0Jg[%zu]: [ % 4.2f % 4.2f % 4.2f % 4.2f % 4.2f % 4.2f]\n",
 	      icol,
 	      jacobian.elementAt(0, icol), jacobian.elementAt(1, icol), jacobian.elementAt(2, icol),
 	      jacobian.elementAt(3, icol), jacobian.elementAt(4, icol), jacobian.elementAt(5, icol));
+#endif // DEBUG
       
     }
     return true;
@@ -401,6 +409,12 @@ namespace jspace {
 	joint->getTau(&a_upper_triangular_[squareToTriangularIndex(irow, icol, ndof_)]);
       }
     }
+    
+    // Reset all the torques.
+    for (size_t ii(0); ii < ndof_; ++ii) {
+      taoJoint * joint(kgm_tree_->info[ii].node->getJointList());
+      joint->zeroTau();
+    }
   }
   
   
@@ -453,6 +467,12 @@ namespace jspace {
 	joint = kgm_tree_->info[icol].node->getJointList();
 	joint->getDDQ(&ainv_upper_triangular_[squareToTriangularIndex(irow, icol, ndof_)]);
       }
+    }
+    
+    // Reset all the accelerations.
+    for (size_t ii(0); ii < ndof_; ++ii) {
+      taoJoint * joint(kgm_tree_->info[ii].node->getJointList());
+      joint->zeroDDQ();
     }
   }
   
