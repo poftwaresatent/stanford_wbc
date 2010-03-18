@@ -507,8 +507,6 @@ TEST (jspaceModel, Jacobian_RP)
     ASSERT_NE ((void*)0, ee) << "no end effector (node ID 1)";
     jspace::State state(2, 2);
     state.joint_velocities_.zero();
-    SAITransform ee_lframe;
-    ee_lframe.translation().elementAt(1) = 1;
     
     for (double q1(-M_PI); q1 <= M_PI; q1 += 2 * M_PI / 7) {
       for (double q2(-1); q2 <= 1; q2 += 2.0 / 7) {
@@ -519,10 +517,10 @@ TEST (jspaceModel, Jacobian_RP)
 	double const c1(cos(q1));
 	double const s1(sin(q1));
 	
-	SAITransform ee_gframe;
-	ASSERT_TRUE (model->computeGlobalFrame(ee, ee_lframe, ee_gframe));
-	SAIVector const & ee_gpos(ee_gframe.translation());
 	{
+	  SAITransform ee_gframe;
+	  ASSERT_TRUE (model->getGlobalFrame(ee, ee_gframe));
+	  SAIVector const & ee_gpos(ee_gframe.translation());
 	  SAIVector ee_gpos_check(3);
 	  ee_gpos_check.elementAt(1) = c1 - s1 * q2;
 	  ee_gpos_check.elementAt(2) = s1 + c1 * q2;
@@ -538,7 +536,7 @@ TEST (jspaceModel, Jacobian_RP)
 	}
 	
 	SAIMatrix Jg(6, 2);
-	ASSERT_TRUE (model->computeJacobian(ee, ee_gpos, Jg));
+	ASSERT_TRUE (model->computeJacobian(ee, Jg));
 	{
 	  SAIMatrix Jg_check(6, 2);
 	  Jg_check.elementAt(1, 0) = -s1 - c1 * q2;
@@ -671,14 +669,16 @@ TEST (jspaceModel, mass_inertia_RP)
 	
 	SAIMatrix MMinv(2, 2);
 	model->getInverseMassInertia(MMinv);
-	SAIMatrix MMinv_check;
-	MM_check.inverse(MMinv_check);
 	{
+	  SAIMatrix id_check;
+	  id_check.identity(2);
+	  SAIMatrix id;
+	  id = MM * MMinv;
 	  std::ostringstream msg;
-	  msg << "Checking inv_mass_inertia for q = " << state.joint_angles_ << "\n";
-	  MMinv_check.prettyPrint(msg, "  want", "    ");
-	  MMinv.prettyPrint(msg, "  have", "    ");
-	  EXPECT_TRUE (check_matrix("inv_mass_inertia", MMinv_check, MMinv, 1e-3, msg)) << msg.str();
+	  msg << "Checking A * Ainv = I for q = " << state.joint_angles_ << "\n";
+	  id_check.prettyPrint(msg, "  want", "    ");
+	  id.prettyPrint(msg, "  have", "    ");
+	  EXPECT_TRUE (check_matrix("identity", id_check, id, 1e-3, msg)) << msg.str();
 	}
       }
     }
@@ -1189,7 +1189,7 @@ static std::string create_unit_RP_xml() throw(runtime_error)
     "        <mass>1</mass>\n"
     "        <inertia>0, 0, 0</inertia>\n"
     "        <com>0, 0, 0</com>\n"
-    "        <pos>0, 0, 0</pos>\n"
+    "        <pos>0, 1, 0</pos>\n"
     "        <rot>0, 0, 1, 0</rot>\n"
     "      </jointNode>\n"
     "    </jointNode>\n"
@@ -1220,9 +1220,6 @@ jspace::Model * create_unit_RP_model() throw(runtime_error)
   wbc::BranchingRepresentation * cc_brep(create_unit_RP_brep());
   wbc::tao_tree_info_s * cc_tree(create_tao_tree_info(*cc_brep));
   delete cc_brep;
-  
-  //   cout << "created jspace::Model:\n";
-  //   wbc::dump_tao_tree_info(cout, kg_tree, "  ", false);
   
   jspace::Model * model(new jspace::Model(kg_tree, cc_tree));
   return model;
