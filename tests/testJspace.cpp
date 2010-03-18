@@ -42,8 +42,9 @@ using namespace std;
 
 static std::string create_puma_frames() throw(runtime_error);
 static jspace::Model * create_puma_model() throw(runtime_error);
-static jspace::Model * create_unit_RR_model() throw(runtime_error);
-static jspace::Model * create_unit_RP_model() throw(runtime_error);
+static jspace::Model * create_unit_mass_RR_model() throw(runtime_error);
+static jspace::Model * create_unit_inertia_RR_model() throw(runtime_error);
+static jspace::Model * create_unit_mass_RP_model() throw(runtime_error);
 
 
 TEST (jspaceModel, state)
@@ -373,7 +374,7 @@ TEST (jspaceModel, Jacobian_R)
 {
   jspace::Model * model(0);
   try {
-    model = create_unit_RR_model();
+    model = create_unit_mass_RR_model();
     taoDNode * ee(model->getNode(0));
     ASSERT_NE ((void*)0, ee) << "no end effector (node ID 0)";
     jspace::State state(2, 2);	// here we're only gonna test the first joint though
@@ -435,7 +436,7 @@ TEST (jspaceModel, Jacobian_RR)
 {
   jspace::Model * model(0);
   try {
-    model = create_unit_RR_model();
+    model = create_unit_mass_RR_model();
     taoDNode * ee(model->getNode(1));
     ASSERT_NE ((void*)0, ee) << "no end effector (node ID 1)";
     jspace::State state(2, 2);
@@ -502,7 +503,7 @@ TEST (jspaceModel, Jacobian_RP)
 {
   jspace::Model * model(0);
   try {
-    model = create_unit_RP_model();
+    model = create_unit_mass_RP_model();
     taoDNode * ee(model->getNode(1));
     ASSERT_NE ((void*)0, ee) << "no end effector (node ID 1)";
     jspace::State state(2, 2);
@@ -561,73 +562,98 @@ TEST (jspaceModel, Jacobian_RP)
 }
 
 
+static void compute_unit_mass_RR_mass_inertia(double q1, double q2, SAIMatrix & MM_check)
+{
+  double const c1(cos(q1));
+  double const c12(cos(q1+q2));
+  double const s1(sin(q1));
+  double const s12(sin(q1+q2));
+  MM_check.setSize(2, 2);
+  MM_check.elementAt(0, 0) = 1 + pow(s1 + s12, 2) + pow(c1 + c12, 2);
+  MM_check.elementAt(1, 0) = s12 * (s1 + s12) + c12 * (c1 + c12);
+  MM_check.elementAt(0, 1) = MM_check.elementAt(1, 0);
+  MM_check.elementAt(1, 1) = 1;
+}
+
+
+static void compute_unit_inertia_RR_mass_inertia(double q1, double q2, SAIMatrix & MM_check)
+{
+  double const c1(cos(q1));
+  double const c12(cos(q1+q2));
+  double const s1(sin(q1));
+  double const s12(sin(q1+q2));
+  MM_check.setSize(2, 2);
+  MM_check.elementAt(0, 0) = 3 + pow(2*s1 + s12, 2) + pow(2*c1 + c12, 2);
+  MM_check.elementAt(1, 0) = 1 + s12 * (2*s1 + s12) + c12 * (2*c1 + c12);
+  MM_check.elementAt(0, 1) = MM_check.elementAt(1, 0);
+  MM_check.elementAt(1, 1) = 2;
+}
+
+
 TEST (jspaceModel, mass_inertia_RR)
 {
-  jspace::Model * model(0);
-  try {
-    model = create_unit_RR_model();
-    taoDNode * n1(model->getNode(0));
-    taoDNode * n2(model->getNode(1));
-    ASSERT_NE ((void*)0, n1);
-    ASSERT_NE ((void*)0, n2);
-    jspace::State state(2, 2);
-    state.joint_velocities_.zero();
-    
-    for (double q1(-M_PI); q1 <= M_PI; q1 += 2 * M_PI / 7) {
-      for (double q2(-M_PI); q2 <= M_PI; q2 += 2 * M_PI / 7) {
- 	state.joint_angles_[0] = q1;
- 	state.joint_angles_[1] = q2;
-	model->update(state);
-	
-	double const c1(cos(q1));
-	double const c12(cos(q1+q2));
-	double const s1(sin(q1));
-	double const s12(sin(q1+q2));
-	
-	SAIMatrix MM(2, 2);
-	model->getMassInertia(MM);
-	SAIMatrix MM_check(2, 2);
-	MM_check.elementAt(0, 0) = 1 + pow(s1 + s12, 2) + pow(c1 + c12, 2);
-	MM_check.elementAt(1, 0) = s12 * (s1 + s12) + c12 * (c1 + c12);
-	MM_check.elementAt(0, 1) = MM_check.elementAt(1, 0);
-	MM_check.elementAt(1, 1) = 1;
-	{
-	  std::ostringstream msg;
-	  msg << "Checking mass_inertia for q = " << state.joint_angles_ << "\n";
-	  MM_check.prettyPrint(msg, "  want", "    ");
-	  MM.prettyPrint(msg, "  have", "    ");
-	  EXPECT_TRUE (check_matrix("mass_inertia", MM_check, MM, 1e-3, msg)) << msg.str();
-	}
-	
-	SAIMatrix MMinv(2, 2);
-	model->getInverseMassInertia(MMinv);
-	SAIMatrix MMinv_check;
-	MM_check.inverse(MMinv_check);
-	{
-	  SAIMatrix id_check;
-	  id_check.identity(2);
-	  SAIMatrix id;
-	  id = MM_check * MMinv_check;
-	  std::ostringstream msg;
-	  msg << "Checking SAIMatrix::inverse() for q = " << state.joint_angles_ << "\n";
-	  id_check.prettyPrint(msg, "  want", "    ");
-	  id.prettyPrint(msg, "  have", "    ");
-	  EXPECT_TRUE (check_matrix("identity", id_check, id, 1e-3, msg)) << msg.str();
-	}
-	{
-	  std::ostringstream msg;
-	  msg << "Checking inv_mass_inertia for q = " << state.joint_angles_ << "\n";
-	  MMinv_check.prettyPrint(msg, "  want", "    ");
-	  MMinv.prettyPrint(msg, "  have", "    ");
-	  EXPECT_TRUE (check_matrix("inv_mass_inertia", MMinv_check, MMinv, 1e-3, msg)) << msg.str();
+  typedef jspace::Model * (*create_model_t)();
+  create_model_t create_model[] = {
+    create_unit_mass_RR_model,
+    create_unit_inertia_RR_model
+  };
+  
+  typedef void (*compute_mass_inertia_t)(double, double, SAIMatrix &);
+  compute_mass_inertia_t compute_mass_inertia[] = {
+    compute_unit_mass_RR_mass_inertia,
+    compute_unit_inertia_RR_mass_inertia
+  };
+  
+  for (size_t test_index(0); test_index < 2; ++test_index) {
+    jspace::Model * model(0);
+    try {
+      model = create_model[test_index]();
+      taoDNode * n1(model->getNode(0));
+      taoDNode * n2(model->getNode(1));
+      ASSERT_NE ((void*)0, n1);
+      ASSERT_NE ((void*)0, n2);
+      jspace::State state(2, 2);
+      state.joint_velocities_.zero();
+      
+      for (double q1(-M_PI); q1 <= M_PI; q1 += 2 * M_PI / 7) {
+	for (double q2(-M_PI); q2 <= M_PI; q2 += 2 * M_PI / 7) {
+	  state.joint_angles_[0] = q1;
+	  state.joint_angles_[1] = q2;
+	  model->update(state);
+	  
+	  SAIMatrix MM(2, 2);
+	  model->getMassInertia(MM);
+	  SAIMatrix MM_check;
+	  compute_mass_inertia[test_index](q1, q2, MM_check);
+	  {
+	    std::ostringstream msg;
+	    msg << "Checking mass_inertia for test_index " << test_index
+		<< " q = " << state.joint_angles_ << "\n";
+	    MM_check.prettyPrint(msg, "  want", "    ");
+	    MM.prettyPrint(msg, "  have", "    ");
+	    EXPECT_TRUE (check_matrix("mass_inertia", MM_check, MM, 1e-3, msg)) << msg.str();
+	  }
+	  
+	  SAIMatrix MMinv(2, 2);
+	  model->getInverseMassInertia(MMinv);
+	  SAIMatrix MMinv_check;
+	  MM_check.inverse(MMinv_check);
+	  {
+	    std::ostringstream msg;
+	    msg << "Checking inv_mass_inertia for test_index " << test_index
+		<< " q = " << state.joint_angles_ << "\n";
+	    MMinv_check.prettyPrint(msg, "  want", "    ");
+	    MMinv.prettyPrint(msg, "  have", "    ");
+	    EXPECT_TRUE (check_matrix("inv_mass_inertia", MMinv_check, MMinv, 1e-3, msg)) << msg.str();
+	  }
 	}
       }
     }
+    catch (std::exception const & ee) {
+      ADD_FAILURE () << "exception " << ee.what();
+    }
+    delete model;
   }
-  catch (std::exception const & ee) {
-    ADD_FAILURE () << "exception " << ee.what();
-  }
-  delete model;
 }
 
 
@@ -635,7 +661,7 @@ TEST (jspaceModel, mass_inertia_RP)
 {
   jspace::Model * model(0);
   try {
-    model = create_unit_RP_model();
+    model = create_unit_mass_RP_model();
     taoDNode * n1(model->getNode(0));
     taoDNode * n2(model->getNode(1));
     ASSERT_NE ((void*)0, n1);
@@ -1099,7 +1125,7 @@ jspace::Model * create_puma_model() throw(runtime_error)
 }
 
 
-static std::string create_unit_RR_xml() throw(runtime_error)
+static std::string create_unit_mass_RR_xml() throw(runtime_error)
 {
   static char const * xml = 
     "<?xml version=\"1.0\" ?>\n"
@@ -1130,29 +1156,29 @@ static std::string create_unit_RR_xml() throw(runtime_error)
     "    </jointNode>\n"
     "  </baseNode>\n"
     "</dynworld>\n";
-  std::string result(create_tmpfile("unit_RR.xml.XXXXXX", xml));
+  std::string result(create_tmpfile("unit_mass_RR.xml.XXXXXX", xml));
   return result;
 }
 
 
-static wbc::BranchingRepresentation * create_unit_RR_brep() throw(runtime_error)
+static wbc::BranchingRepresentation * create_unit_mass_RR_brep() throw(runtime_error)
 {
   static string xml_filename("");
   if (xml_filename.empty()) {
-    xml_filename = create_unit_RR_xml();
+    xml_filename = create_unit_mass_RR_xml();
   }
   wbc::BranchingRepresentation * brep(wbc::BRParser::parse("sai", xml_filename));
   return brep;
 }
 
 
-jspace::Model * create_unit_RR_model() throw(runtime_error)
+jspace::Model * create_unit_mass_RR_model() throw(runtime_error)
 {
-  wbc::BranchingRepresentation * kg_brep(create_unit_RR_brep());
+  wbc::BranchingRepresentation * kg_brep(create_unit_mass_RR_brep());
   wbc::tao_tree_info_s * kg_tree(create_tao_tree_info(*kg_brep));
   delete kg_brep;
   
-  wbc::BranchingRepresentation * cc_brep(create_unit_RR_brep());
+  wbc::BranchingRepresentation * cc_brep(create_unit_mass_RR_brep());
   wbc::tao_tree_info_s * cc_tree(create_tao_tree_info(*cc_brep));
   delete cc_brep;
   
@@ -1164,7 +1190,72 @@ jspace::Model * create_unit_RR_model() throw(runtime_error)
 }
 
 
-static std::string create_unit_RP_xml() throw(runtime_error)
+static std::string create_unit_inertia_RR_xml() throw(runtime_error)
+{
+  static char const * xml = 
+    "<?xml version=\"1.0\" ?>\n"
+    "<dynworld>\n"
+    "  <baseNode>\n"
+    "    <gravity>0, 0, -9.81</gravity>\n"
+    "    <pos>0, 0, 0</pos>\n"
+    "    <rot>1, 0, 0, 0</rot>\n"
+    "    <jointNode>\n"
+    "      <ID>0</ID>\n"
+    "      <type>R</type>\n"
+    "      <axis>X</axis>\n"
+    "      <mass>1</mass>\n"
+    "      <inertia>1, 1, 1</inertia>\n"
+    "      <com>0, 1, 0</com>\n"
+    "      <pos>0, 0, 0</pos>\n"
+    "      <rot>0, 0, 1, 0</rot>\n"
+    "      <jointNode>\n"
+    "        <ID>1</ID>\n"
+    "        <type>R</type>\n"
+    "        <axis>X</axis>\n"
+    "        <mass>1</mass>\n"
+    "        <inertia>1, 1, 1</inertia>\n"
+    "        <com>0, 1, 0</com>\n"
+    "        <pos>0, 2, 0</pos>\n"
+    "        <rot>0, 0, 1, 0</rot>\n"
+    "      </jointNode>\n"
+    "    </jointNode>\n"
+    "  </baseNode>\n"
+    "</dynworld>\n";
+  std::string result(create_tmpfile("unit_inertia_RR.xml.XXXXXX", xml));
+  return result;
+}
+
+
+static wbc::BranchingRepresentation * create_unit_inertia_RR_brep() throw(runtime_error)
+{
+  static string xml_filename("");
+  if (xml_filename.empty()) {
+    xml_filename = create_unit_inertia_RR_xml();
+  }
+  wbc::BranchingRepresentation * brep(wbc::BRParser::parse("sai", xml_filename));
+  return brep;
+}
+
+
+jspace::Model * create_unit_inertia_RR_model() throw(runtime_error)
+{
+  wbc::BranchingRepresentation * kg_brep(create_unit_inertia_RR_brep());
+  wbc::tao_tree_info_s * kg_tree(create_tao_tree_info(*kg_brep));
+  delete kg_brep;
+  
+  wbc::BranchingRepresentation * cc_brep(create_unit_inertia_RR_brep());
+  wbc::tao_tree_info_s * cc_tree(create_tao_tree_info(*cc_brep));
+  delete cc_brep;
+  
+  //   cout << "created jspace::Model:\n";
+  //   wbc::dump_tao_tree_info(cout, kg_tree, "  ", false);
+  
+  jspace::Model * model(new jspace::Model(kg_tree, cc_tree));
+  return model;
+}
+
+
+static std::string create_unit_mass_RP_xml() throw(runtime_error)
 {
   static char const * xml = 
     "<?xml version=\"1.0\" ?>\n"
@@ -1195,29 +1286,29 @@ static std::string create_unit_RP_xml() throw(runtime_error)
     "    </jointNode>\n"
     "  </baseNode>\n"
     "</dynworld>\n";
-  std::string result(create_tmpfile("unit_RP.xml.XXXXXX", xml));
+  std::string result(create_tmpfile("unit_mass_RP.xml.XXXXXX", xml));
   return result;
 }
 
 
-static wbc::BranchingRepresentation * create_unit_RP_brep() throw(runtime_error)
+static wbc::BranchingRepresentation * create_unit_mass_RP_brep() throw(runtime_error)
 {
   static string xml_filename("");
   if (xml_filename.empty()) {
-    xml_filename = create_unit_RP_xml();
+    xml_filename = create_unit_mass_RP_xml();
   }
   wbc::BranchingRepresentation * brep(wbc::BRParser::parse("sai", xml_filename));
   return brep;
 }
 
 
-jspace::Model * create_unit_RP_model() throw(runtime_error)
+jspace::Model * create_unit_mass_RP_model() throw(runtime_error)
 {
-  wbc::BranchingRepresentation * kg_brep(create_unit_RP_brep());
+  wbc::BranchingRepresentation * kg_brep(create_unit_mass_RP_brep());
   wbc::tao_tree_info_s * kg_tree(create_tao_tree_info(*kg_brep));
   delete kg_brep;
   
-  wbc::BranchingRepresentation * cc_brep(create_unit_RP_brep());
+  wbc::BranchingRepresentation * cc_brep(create_unit_mass_RP_brep());
   wbc::tao_tree_info_s * cc_tree(create_tao_tree_info(*cc_brep));
   delete cc_brep;
   
