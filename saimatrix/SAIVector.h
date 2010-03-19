@@ -64,7 +64,7 @@ public:
 
   // Load from array.  If rgVals is NULL, set size w/out setting values.
   SAIVector( const Float* rgVals, int size );
-
+  
   virtual ~SAIVector();
 
   // -----------------------------------------------------------------
@@ -79,7 +79,30 @@ public:
   void setConstantValue( Float value, int size = -1 );
   void getValues( Float* rgVals, int cVals ) const;
   void getValues( Float* rgVals ) const     { getValues( rgVals, m_size ); }
-
+  
+  // Load from STL (probably works for most of them)
+  template<typename container_t>
+  void setValues(container_t const & container)
+  {
+    setSize(container.size());
+    typename container_t::const_iterator ic(container.begin());
+    typename container_t::const_iterator const ic_end(container.end());
+    int idx(0);
+    for (; ic != ic_end; ++ic, ++idx) {
+      m_data[idx] = *ic;
+    }
+  }
+  
+  // Save to STL (works only for the ones that support random access)
+  template<typename container_t>
+  void getValues(container_t & container) const
+  {
+    container.resize(m_size);
+    for (int idx(0); idx < m_size; ++idx) {
+      container[idx] = m_data[idx];
+    }
+  }
+  
   // load vector with all zeros
   void zero();
 
