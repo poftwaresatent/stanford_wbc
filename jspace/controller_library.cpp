@@ -1,0 +1,227 @@
+/*
+ * Stanford Whole-Body Control Framework http://stanford-wbc.sourceforge.net/
+ *
+ * Copyright (c) 2010 Stanford University. All rights reserved.
+ *
+ * This program is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation, either version 3 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/>
+ */
+
+/**
+   \file jspace/controller_library.cpp
+   \author Roland Philippsen
+*/
+
+#include "controller_library.hpp"
+#include "Model.hpp"
+#include <saimatrix/SAIVector.h>
+#include <saimatrix/SAIMatrix.h>
+
+
+namespace jspace {
+  
+  
+  status_s FloatController::
+  setGoal(std::vector<double> const & goal)
+  {
+    status_s ok;
+    return ok;
+  }
+  
+  
+  status_s FloatController::
+  getGoal(std::vector<double> & goal) const
+  {
+    goal.clear();
+    status_s ok;
+    return ok;
+  }
+  
+  
+  status_s FloatController::
+  getActual(std::vector<double> & actual) const
+  {
+    actual.clear();
+    status_s ok;
+    return ok;
+  }
+  
+  
+  status_s FloatController::
+  setGains(std::vector<double> const & kp, std::vector<double> const & kd)
+  {
+    status_s ok;
+    return ok;
+  }
+  
+  
+  status_s FloatController::
+  getGains(std::vector<double> & kp, std::vector<double> & kd) const
+  {
+    kp.clear();
+    kd.clear();
+    status_s ok;
+    return ok;
+  }
+  
+  
+  status_s FloatController::
+  computeCommand(Model const & model, std::vector<double> & tau)
+  {
+    SAIVector gg;
+    model.getGravity(gg);
+    gg.getValues(tau);
+    status_s ok;
+    return ok;
+  }
+  
+  
+  GoalControllerBase::
+  GoalControllerBase(int compensation_flags,
+		     double default_kp,
+		     double default_kd)
+    : compensation_flags_(compensation_flags),
+      default_kp_(default_kp),
+      default_kd_(default_kd)
+  {
+  }
+  
+  
+  status_s GoalControllerBase::
+  init(Model const & model)
+  {
+    size_t const ndof(model.getNDOF());
+    if (ndof != goal_.size()) {
+      goal_.resize(ndof);
+      kp_.resize(ndof);
+      kd_.resize(ndof);
+      for (int ii(0); ii < ndof; ++ii) {
+	kp_[ii] = default_kp_;
+	kd_[ii] = default_kd_;
+      }
+    }
+    model.getState().joint_angles_.getValues(goal_);
+    status_s ok;
+    return ok;
+  }
+  
+  
+  status_s GoalControllerBase::
+  setGoal(std::vector<double> const & goal)
+  {
+    status_s status;
+    if (goal.size() != goal_.size()) {
+      status.ok = false;
+      status.errstr = "goal size mismatch";
+      return status;
+    }
+    goal_ = goal;
+    return status;
+  }
+  
+  
+  status_s GoalControllerBase::
+  getGoal(std::vector<double> & goal) const
+  {
+    goal = goal_;
+    status_s ok;
+    return ok;
+  }
+  
+  
+  status_s GoalControllerBase::
+  setGains(std::vector<double> const & kp, std::vector<double> const & kd)
+  {
+    status_s status;
+    if ((kp.size() != kp_.size()) || (kd.size() != kd_.size())) {
+      status.ok = false;
+      status.errstr = "gain size mismatch";
+      return status;
+    }
+    kp_ = kp;
+    kd_ = kd;
+    return status;
+  }
+  
+  
+  status_s GoalControllerBase::
+  getGains(std::vector<double> & kp, std::vector<double> & kd) const
+  {
+    kp = kp_;
+    kd = kd_;
+    status_s ok;
+    return ok;
+  }
+  
+  
+  JointGoalController::
+  JointGoalController(int compensation_flags,
+		      double default_kp,
+		      double default_kd)
+    : GoalControllerBase(compensation_flags, default_kp, default_kd)
+  {
+  }
+  
+  
+  status_s JointGoalController::
+  getActual(std::vector<double> & actual) const
+  {
+    actual = actual_;
+    status_s ok;
+    return ok;
+  }
+  
+  
+  status_s JointGoalController::
+  computeCommand(Model const & model, std::vector<double> & tau)
+  {
+    size_t const ndof(model.getNDOF());
+    status_s status;
+    if (ndof != goal_.size()) {
+      status.ok = false;
+      status.errstr = "ndof mismatch";
+      return status;
+    }
+    
+    State const & state(model.getState());
+    state.joint_angles_.getValues(actual_);
+    
+    SAIVector sai_tau(ndof);
+    for (size_t ii(0); ii < ndof; ++ii) {
+      sai_tau[ii] = - kp_[ii] * (actual_[ii] - goal_[ii]) - kd_[ii] * state.joint_velocities_[ii];
+    }
+    
+    if (compensation_flags_ & COMP_MASS_INERTIA) {
+      SAIMatrix AA;
+      model.getMassInertia(AA);
+      sai_tau = AA * sai_tau;
+    }
+    
+    if (compensation_flags_ & COMP_CORIOLIS) {
+      SAIVector BB;
+      model.getCoriolisCentrifugal(BB);
+      sai_tau += BB;
+    }
+    
+    if (compensation_flags_ & COMP_GRAVITY) {
+      SAIVector GG;
+      model.getGravity(GG);
+      sai_tau += GG;
+    }
+    
+    sai_tau.getValues(tau);
+    return status;
+  }
+  
+}

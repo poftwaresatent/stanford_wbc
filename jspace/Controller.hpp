@@ -36,8 +36,9 @@ namespace jspace {
     /** Default ctor sets \c ok=true and \c errstr="" */
     status_s();
     status_s(bool ok, std::string const & errstr);
+    
     bool ok;
-    std::string const errstr;
+    std::string errstr;
   };
   
   
