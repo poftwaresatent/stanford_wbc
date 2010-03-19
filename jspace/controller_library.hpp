@@ -30,6 +30,14 @@
 namespace jspace {
   
   
+  typedef enum {
+    COMP_NONE         = 0x00,
+    COMP_GRAVITY      = 0x01,
+    COMP_CORIOLIS     = 0x02,
+    COMP_MASS_INERTIA = 0x04
+  } compensation_flags_t;
+  
+  
   class FloatController
     : public Controller
   {
@@ -49,13 +57,6 @@ namespace jspace {
     : public Controller
   {
   public:
-    typedef enum {
-      COMP_NONE         = 0x00,
-      COMP_GRAVITY      = 0x01,
-      COMP_CORIOLIS     = 0x02,
-      COMP_MASS_INERTIA = 0x04
-    } compensation_flags_t;
-    
     GoalControllerBase(int compensation_flags,
 		       double default_kp,
 		       double default_kd);
@@ -82,8 +83,6 @@ namespace jspace {
     : public GoalControllerBase
   {
   public:
-    typedef GoalControllerBase::compensation_flags_t compensation_flags_t;
-    
     JointGoalController(int compensation_flags,
 			double default_kp,
 			double default_kd);
