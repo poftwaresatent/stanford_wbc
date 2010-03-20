@@ -130,28 +130,30 @@ namespace wbcros {
     
     XmlRpc::XmlRpcValue gravity_compensated_links_value;
     if ( ! nn.getParam(gravity_compensated_links_param_name_, gravity_compensated_links_value)) {
-      throw std::runtime_error("wbcros::Model::initFromURDF(): invalid gravity_compensated_links_param_name_ \""
-			       + gravity_compensated_links_param_name_ + "\"");
+      ROS_WARN ("wbcros::Model::initFromURDF(): no parameter called \"%s\" (skipping gravity compensation)",
+		gravity_compensated_links_param_name_.c_str());
     }
-    try {
-      std::string foo;
-      for (int ii(0); ii < gravity_compensated_links_value.size(); ++ii) {
-	foo = static_cast<std::string const &>(gravity_compensated_links_value[ii]);
-	if (link_filter.HaveLink(foo)) {
-	  gravity_compensated_links_.push_back(foo);
-	  ROS_INFO ("gravity compensated link `%s'", foo.c_str());
-	}
-	else {
-	  ROS_WARN ("link `%s' not active, cannot flag it as gravity compensated", foo.c_str());
+    else {
+      try {
+	std::string foo;
+	for (int ii(0); ii < gravity_compensated_links_value.size(); ++ii) {
+	  foo = static_cast<std::string const &>(gravity_compensated_links_value[ii]);
+	  if (link_filter.HaveLink(foo)) {
+	    gravity_compensated_links_.push_back(foo);
+	    ROS_INFO ("gravity compensated link `%s'", foo.c_str());
+	  }
+	  else {
+	    ROS_WARN ("link `%s' not active, cannot flag it as gravity compensated", foo.c_str());
+	  }
 	}
       }
-    }
-    catch (XmlRpc::XmlRpcException const & ee) {
-      std::ostringstream msg;
-      msg << "wbcros::Model::initFromURDF():"
-	  << " XmlRpcException while reading gravity compensated links: "
-	  << ee.getMessage();
-      throw std::runtime_error(msg.str());
+      catch (XmlRpc::XmlRpcException const & ee) {
+	std::ostringstream msg;
+	msg << "wbcros::Model::initFromURDF():"
+	    << " XmlRpcException while reading gravity compensated links: "
+	    << ee.getMessage();
+	throw std::runtime_error(msg.str());
+      }
     }
     
     {
