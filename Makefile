@@ -34,6 +34,17 @@ EXTRA_SRCS=
 ### You can add further preprocessor flags by overriding EXTRA_CPPFLAGS
 EXTRA_CPPFLAGS= 
 
+### You can add further linker flags by overriding EXTRA_LDFLAGS
+### (these are only used when linking programs).
+EXTRA_LDFLAGS= 
+
+### You can add further programs to be built. For example, if you have
+### gtest, you might want to set it to the following:
+# EXTRA_CPPFLAGS= -I/home/roland/ros/ros/3rdparty/gtest/gtest/include
+# EXTRA_LDFLAGS= -L/home/roland/ros/ros/3rdparty/gtest/gtest/lib -Wl,-rpath,/home/roland/ros/ros/3rdparty/gtest/gtest/lib
+# EXTRA_PROGS= tests/testJspace.cpp:-lgtest
+EXTRA_PROGS= 
+
 ### with GNU toolchain:
 # The -DDISABLE_PLUGINS ends up telling the plugin mechanism to not
 # actually look for dynamically loadable modules, but to call
@@ -131,7 +142,6 @@ SRCS= wbcnet/wbcnet/msg/TaskMatrix.cpp \
       wbc/parse/TiXmlBRParser.cpp \
       wbc/parse/BehaviorParser.cpp \
       wbc/parse/OsimBRParser.cpp \
-      wbc/parse/BRBuilder.cpp \
       wbc/parse/BRParser.cpp \
       wbc/motion/JointTask.cpp \
       wbc/motion/OrientationTask.cpp \
@@ -207,6 +217,8 @@ SRCS= wbcnet/wbcnet/msg/TaskMatrix.cpp \
       saimatrix/SAIVector3.cpp \
       jspace/State.cpp \
       jspace/Model.cpp \
+      jspace/Controller.cpp \
+      jspace/controller_library.cpp \
       $(WBC_ADD_BUILTIN_PLUGINS_SRC) \
       $(NET_SRCS) \
       $(EXTRA_SRCS) \
@@ -234,7 +246,8 @@ OBJ= NONE
 LIBS= NONE
 PROGS= applications/rawservo.cpp:-llapack:-lblas:-lexpat:-lrt \
        applications/robot-bridge.cpp:-llapack:-lblas \
-       $(NET_PROGS)
+       $(NET_PROGS) \
+       $(EXTRA_PROGS)
 
 
 .PHONY: programs
@@ -256,7 +269,7 @@ programs: libStanford_WBC.a
 .PHONY: program
 program:
 	$(MAKE) $(OBJ)
-	$(CXX) -o $(EXE) $(OBJ) -L. -lStanford_WBC $(LIBS)
+	$(CXX) -o $(EXE) $(OBJ) -L. -lStanford_WBC $(EXTRA_LDFLAGS) $(LIBS)
 
 libStanford_WBC.a: $(OBJS)
 	- rm libStanford_WBC.a
