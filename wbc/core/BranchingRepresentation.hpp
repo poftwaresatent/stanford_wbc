@@ -28,7 +28,7 @@
 #ifndef WBC_Branching_Representation_H
 #define WBC_Branching_Representation_H
 
-#include <wbc/util/tao_util.hpp>
+#include <jspace/tao_util.hpp>
 #include <saimatrix/SAIVector.h>
 #include <saimatrix/SAIMatrix.h>
 #include <tao/matrix/TaoDeMath.h>	

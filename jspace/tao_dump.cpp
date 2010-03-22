@@ -23,7 +23,7 @@
    \author Roland Philippsen
 */
 
-#include "dump.hpp"
+#include "tao_dump.hpp"
 #include "tao_util.hpp"
 
 #include <tao/dynamics/taoNode.h>

@@ -26,7 +26,7 @@
 #include <wbc/core/RobotControlModel.hpp>
 #include <wbc/core/BranchingRepresentation.hpp>
 #include <wbc/parse/BRParser.hpp>
-#include <wbc/util/dump.hpp>
+#include <jspace/tao_dump.hpp>
 #include <tao/dynamics/taoDNode.h>
 #include <jspace/Model.hpp>
 #include <jspace/vector_util.hpp>

@@ -5,6 +5,7 @@ list (APPEND LIBS
   SAI_Matrix
   TAO_Dynamics_Engine
   wbcnet
+  jspace
   dl
   expat
   )
@@ -58,12 +59,10 @@ list (APPEND SRCS
   parse/TiXmlBRParser.cpp
   parse/taoRepCreator/CTaoRepCreator.cpp
 
-  util/tao_util.cpp
   util/ShuffleVector.cpp
   util/saiTime.cpp
   util/DataLog.cpp
   util/RecorderImpl.cpp
-  util/dump.cpp
   util/File.cpp
   util/utc.cpp
   util/dtor_check.cpp

@@ -24,7 +24,7 @@
 */
 
 #include "Model.hpp"
-#include <wbc/util/tao_util.hpp>
+#include "tao_util.hpp"
 #include <tao/dynamics/taoNode.h>
 #include <tao/dynamics/taoJoint.h>
 #include <tao/dynamics/taoDynamics.h>
