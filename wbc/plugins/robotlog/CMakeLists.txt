@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.6)
 
-include (../../wbc.cmake)
+include (../../../wbc.cmake)
 
 ### # Well... this entire block serves to pull-in the wbc.cmake macro
 ### # definitions. But we want to support separate installations as well

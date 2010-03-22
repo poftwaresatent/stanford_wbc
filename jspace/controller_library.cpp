@@ -32,57 +32,57 @@
 namespace jspace {
   
   
-  status_s FloatController::
+  Status FloatController::
   setGoal(std::vector<double> const & goal)
   {
-    status_s ok;
+    Status ok;
     return ok;
   }
   
   
-  status_s FloatController::
+  Status FloatController::
   getGoal(std::vector<double> & goal) const
   {
     goal.clear();
-    status_s ok;
+    Status ok;
     return ok;
   }
   
   
-  status_s FloatController::
+  Status FloatController::
   getActual(std::vector<double> & actual) const
   {
     actual.clear();
-    status_s ok;
+    Status ok;
     return ok;
   }
   
   
-  status_s FloatController::
+  Status FloatController::
   setGains(std::vector<double> const & kp, std::vector<double> const & kd)
   {
-    status_s ok;
+    Status ok;
     return ok;
   }
   
   
-  status_s FloatController::
+  Status FloatController::
   getGains(std::vector<double> & kp, std::vector<double> & kd) const
   {
     kp.clear();
     kd.clear();
-    status_s ok;
+    Status ok;
     return ok;
   }
   
   
-  status_s FloatController::
+  Status FloatController::
   computeCommand(Model const & model, std::vector<double> & tau)
   {
     SAIVector gg;
     model.getGravity(gg);
     gg.getValues(tau);
-    status_s ok;
+    Status ok;
     return ok;
   }
   
@@ -98,7 +98,7 @@ namespace jspace {
   }
   
   
-  status_s GoalControllerBase::
+  Status GoalControllerBase::
   init(Model const & model)
   {
     size_t const ndof(model.getNDOF());
@@ -111,16 +111,16 @@ namespace jspace {
 	kd_[ii] = default_kd_;
       }
     }
-    model.getState().joint_angles_.getValues(goal_);
-    status_s ok;
+    goal_ = model.getState().position_;
+    Status ok;
     return ok;
   }
   
   
-  status_s GoalControllerBase::
+  Status GoalControllerBase::
   setGoal(std::vector<double> const & goal)
   {
-    status_s status;
+    Status status;
     if (goal.size() != goal_.size()) {
       status.ok = false;
       status.errstr = "goal size mismatch";
@@ -131,19 +131,19 @@ namespace jspace {
   }
   
   
-  status_s GoalControllerBase::
+  Status GoalControllerBase::
   getGoal(std::vector<double> & goal) const
   {
     goal = goal_;
-    status_s ok;
+    Status ok;
     return ok;
   }
   
   
-  status_s GoalControllerBase::
+  Status GoalControllerBase::
   setGains(std::vector<double> const & kp, std::vector<double> const & kd)
   {
-    status_s status;
+    Status status;
     if ((kp.size() != kp_.size()) || (kd.size() != kd_.size())) {
       status.ok = false;
       status.errstr = "gain size mismatch";
@@ -155,12 +155,12 @@ namespace jspace {
   }
   
   
-  status_s GoalControllerBase::
+  Status GoalControllerBase::
   getGains(std::vector<double> & kp, std::vector<double> & kd) const
   {
     kp = kp_;
     kd = kd_;
-    status_s ok;
+    Status ok;
     return ok;
   }
   
@@ -174,20 +174,20 @@ namespace jspace {
   }
   
   
-  status_s JointGoalController::
+  Status JointGoalController::
   getActual(std::vector<double> & actual) const
   {
     actual = actual_;
-    status_s ok;
+    Status ok;
     return ok;
   }
   
   
-  status_s JointGoalController::
+  Status JointGoalController::
   computeCommand(Model const & model, std::vector<double> & tau)
   {
     size_t const ndof(model.getNDOF());
-    status_s status;
+    Status status;
     if (ndof != goal_.size()) {
       status.ok = false;
       status.errstr = "ndof mismatch";
@@ -195,11 +195,11 @@ namespace jspace {
     }
     
     State const & state(model.getState());
-    state.joint_angles_.getValues(actual_);
+    actual_ = state.position_;
     
     SAIVector sai_tau(ndof);
     for (size_t ii(0); ii < ndof; ++ii) {
-      sai_tau[ii] = - kp_[ii] * (actual_[ii] - goal_[ii]) - kd_[ii] * state.joint_velocities_[ii];
+      sai_tau[ii] = - kp_[ii] * (actual_[ii] - goal_[ii]) - kd_[ii] * state.velocity_[ii];
     }
     
     if (compensation_flags_ & COMP_MASS_INERTIA) {

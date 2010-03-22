@@ -29,6 +29,7 @@
 #include <wbc/util/dump.hpp>
 #include <tao/dynamics/taoDNode.h>
 #include <jspace/Model.hpp>
+#include <jspace/vector_util.hpp>
 #include <wbcnet/strutil.hpp>
 #include <iostream>
 #include <fstream>
@@ -53,17 +54,14 @@ TEST (jspaceModel, state)
   try {
     model = create_puma_model();
     int const ndof(model->getNDOF());
-    jspace::State state_in(ndof, ndof);
-    if (0 != gettimeofday(&state_in.acquisition_time_, 0)) {
-      FAIL () << "gettimeofday(): " << strerror(errno);
-    }
+    jspace::State state_in(ndof, ndof, 0);
     for (int ii(0); ii < ndof; ++ii) {
-      state_in.joint_angles_[ii] = -3 + ii * 0.5;
-      state_in.joint_velocities_[ii] = 3 - ii * 0.25;
+      state_in.position_[ii] = -3 + ii * 0.5;
+      state_in.velocity_[ii] = 3 - ii * 0.25;
     }
     model->setState(state_in);
     {
-      jspace::State state_out(ndof, ndof);
+      jspace::State state_out(ndof, ndof, 0);
       state_out = model->getState();
       EXPECT_TRUE (state_out.equal(state_in, jspace::State::COMPARE_ALL, 1e-6))
 	<< "jspace::State assignment or jspace::Model::getState() is buggy";
@@ -135,7 +133,7 @@ TEST (jspaceModel, kinematics)
   try {
     model = create_puma_model();
     int const ndof(model->getNDOF());
-    jspace::State state(ndof, ndof);
+    jspace::State state(ndof, ndof, 0);
     
     string const frames_filename(create_puma_frames());
     ifstream is(frames_filename.c_str());
@@ -162,7 +160,7 @@ TEST (jspaceModel, kinematics)
 	}
 	istringstream ipos(token[1]);
 	for (int ii(0); ii < ndof; ++ii) {
-	  ipos >> state.joint_angles_[ii];
+	  ipos >> state.position_[ii];
 	}
 	if ( ! ipos) {
 	  FAIL () << frames_filename << ": line " << line_count << ": not enough joint positions, expected " << ndof;
@@ -203,14 +201,14 @@ TEST (jspaceModel, kinematics)
       EXPECT_TRUE (transform.rotation().equal(SAIQuaternion(rw, rx, ry, rz), 1e-6))
 	<< "rotation mismatch\n"
 	<< "  entry: " << joint_positions_count << "\n"
-	<< "  pos: " << state.joint_angles_ << "\n"
+	<< "  pos: " << state.position_ << "\n"
 	<< "  ID: " << id << "\n"
 	<< "  expected: " << SAIQuaternion(rw, rx, ry, rz) << "\n"
 	<< "  computed: " << transform.rotation();
       EXPECT_TRUE (transform.translation().equal(SAIVector3(tx, ty, tz), 1e-6))
 	<< "translation mismatch\n"
 	<< "  entry: " << joint_positions_count << "\n"
-	<< "  pos: " << state.joint_angles_ << "\n"
+	<< "  pos: " << state.position_ << "\n"
 	<< "  ID: " << id << "\n"
 	<< "  expected: " << SAIVector3(tx, ty, tz) << "\n"
 	<< "  computed: " << transform.translation();
@@ -218,7 +216,7 @@ TEST (jspaceModel, kinematics)
 #ifdef VERBOSE
       cout << "PASSED transform check\n"
 	   << "  entry: " << joint_positions_count << "\n"
-	   << "  pos: " << state.joint_angles_ << "\n"
+	   << "  pos: " << state.position_ << "\n"
 	   << "  ID: " << id << "\n"
 	   << "  rotation:\n"
 	   << "    expected: " << SAIQuaternion(rw, rx, ry, rz) << "\n"
@@ -377,17 +375,17 @@ TEST (jspaceModel, Jacobian_R)
     model = create_unit_mass_RR_model();
     taoDNode * ee(model->getNode(0));
     ASSERT_NE ((void*)0, ee) << "no end effector (node ID 0)";
-    jspace::State state(2, 2);	// here we're only gonna test the first joint though
-    state.joint_angles_.zero();
-    state.joint_velocities_.zero();
+    jspace::State state(2, 2, 0); // here we're only gonna test the first joint though
+    jspace::zero(state.position_);
+    jspace::zero(state.velocity_);
     SAITransform ee_lframe;
     ee_lframe.translation().elementAt(1) = 1;
     
     for (double qq(-M_PI); qq <= M_PI; qq += 2 * M_PI / 7) {
-      state.joint_angles_[0] = qq;
+      state.position_[0] = qq;
       model->update(state);
       
-      double const q1(state.joint_angles_[0]);
+      double const q1(state.position_[0]);
       double const c1(cos(q1));
       double const s1(sin(q1));
       
@@ -399,7 +397,7 @@ TEST (jspaceModel, Jacobian_R)
 	ee_gpos_check.elementAt(1) = c1;
 	ee_gpos_check.elementAt(2) = s1;
 	std::ostringstream msg;
-	msg << "Verifying end-effector frame (position only) for q = " << state.joint_angles_ << "\n";
+	msg << "Verifying end-effector frame (position only) for q = " << state.position_ << "\n";
 	ee_gpos_check.prettyPrint(msg, "  want", "    ");
 	ee_gpos.prettyPrint(msg, "  have", "    ");
 	bool const gpos_ok(check_vector("ee_pos", ee_gpos_check, ee_gpos, 1e-3, msg));
@@ -418,7 +416,7 @@ TEST (jspaceModel, Jacobian_R)
 	Jg_check.elementAt(2, 0) =  c1;
 	Jg_check.elementAt(3, 0) =  1;
 	std::ostringstream msg;
-	msg << "Checking Jacobian for q = " << state.joint_angles_ << "\n";
+	msg << "Checking Jacobian for q = " << state.position_ << "\n";
 	Jg_check.prettyPrint(msg, "  want", "    ");
 	Jg.prettyPrint(msg, "  have", "    ");
 	EXPECT_TRUE (check_matrix("Jacobian", Jg_check, Jg, 1e-3, msg)) << msg.str();
@@ -439,15 +437,15 @@ TEST (jspaceModel, Jacobian_RR)
     model = create_unit_mass_RR_model();
     taoDNode * ee(model->getNode(1));
     ASSERT_NE ((void*)0, ee) << "no end effector (node ID 1)";
-    jspace::State state(2, 2);
-    state.joint_velocities_.zero();
+    jspace::State state(2, 2, 0);
+    jspace::zero(state.velocity_);
     SAITransform ee_lframe;
     ee_lframe.translation().elementAt(1) = 1;
     
     for (double q1(-M_PI); q1 <= M_PI; q1 += 2 * M_PI / 7) {
       for (double q2(-M_PI); q2 <= M_PI; q2 += 2 * M_PI / 7) {
- 	state.joint_angles_[0] = q1;
- 	state.joint_angles_[1] = q2;
+ 	state.position_[0] = q1;
+ 	state.position_[1] = q2;
 	model->update(state);
 	
 	double const c1(cos(q1));
@@ -463,7 +461,7 @@ TEST (jspaceModel, Jacobian_RR)
 	  ee_gpos_check.elementAt(1) = c1 + c12;
 	  ee_gpos_check.elementAt(2) = s1 + s12;
 	  std::ostringstream msg;
-	  msg << "Verifying end-effector frame (position only) for q = " << state.joint_angles_ << "\n";
+	  msg << "Verifying end-effector frame (position only) for q = " << state.position_ << "\n";
 	  ee_gpos_check.prettyPrint(msg, "  want", "    ");
 	  ee_gpos.prettyPrint(msg, "  have", "    ");
 	  bool const gpos_ok(check_vector("ee_pos", ee_gpos_check, ee_gpos, 1e-3, msg));
@@ -484,7 +482,7 @@ TEST (jspaceModel, Jacobian_RR)
 	  Jg_check.elementAt(2, 1) =  c12;
 	  Jg_check.elementAt(3, 1) =  1;
 	  std::ostringstream msg;
-	  msg << "Checking Jacobian for q = " << state.joint_angles_ << "\n";
+	  msg << "Checking Jacobian for q = " << state.position_ << "\n";
 	  Jg_check.prettyPrint(msg, "  want", "    ");
 	  Jg.prettyPrint(msg, "  have", "    ");
 	  EXPECT_TRUE (check_matrix("Jacobian", Jg_check, Jg, 1e-3, msg)) << msg.str();
@@ -506,13 +504,13 @@ TEST (jspaceModel, Jacobian_RP)
     model = create_unit_mass_RP_model();
     taoDNode * ee(model->getNode(1));
     ASSERT_NE ((void*)0, ee) << "no end effector (node ID 1)";
-    jspace::State state(2, 2);
-    state.joint_velocities_.zero();
+    jspace::State state(2, 2, 0);
+    jspace::zero(state.velocity_);
     
     for (double q1(-M_PI); q1 <= M_PI; q1 += 2 * M_PI / 7) {
       for (double q2(-1); q2 <= 1; q2 += 2.0 / 7) {
- 	state.joint_angles_[0] = q1;
- 	state.joint_angles_[1] = q2;
+ 	state.position_[0] = q1;
+ 	state.position_[1] = q2;
 	model->update(state);
 	
 	double const c1(cos(q1));
@@ -526,7 +524,7 @@ TEST (jspaceModel, Jacobian_RP)
 	  ee_gpos_check.elementAt(1) = c1 - s1 * q2;
 	  ee_gpos_check.elementAt(2) = s1 + c1 * q2;
 	  std::ostringstream msg;
-	  msg << "Verifying end-effector frame (position only) for q = " << state.joint_angles_ << "\n";
+	  msg << "Verifying end-effector frame (position only) for q = " << state.position_ << "\n";
 	  ee_gpos_check.prettyPrint(msg, "  want", "    ");
 	  ee_gpos.prettyPrint(msg, "  have", "    ");
 	  bool const gpos_ok(check_vector("ee_pos", ee_gpos_check, ee_gpos, 1e-3, msg));
@@ -547,7 +545,7 @@ TEST (jspaceModel, Jacobian_RP)
 	  Jg_check.elementAt(2, 1) =  c1;
 	  Jg_check.elementAt(3, 1) =  0;
 	  std::ostringstream msg;
-	  msg << "Checking Jacobian for q = " << state.joint_angles_ << "\n";
+	  msg << "Checking Jacobian for q = " << state.position_ << "\n";
 	  Jg_check.prettyPrint(msg, "  want", "    ");
 	  Jg.prettyPrint(msg, "  have", "    ");
 	  EXPECT_TRUE (check_matrix("Jacobian", Jg_check, Jg, 1e-3, msg)) << msg.str();
@@ -612,13 +610,13 @@ TEST (jspaceModel, mass_inertia_RR)
       taoDNode * n2(model->getNode(1));
       ASSERT_NE ((void*)0, n1);
       ASSERT_NE ((void*)0, n2);
-      jspace::State state(2, 2);
-      state.joint_velocities_.zero();
+      jspace::State state(2, 2, 0);
+      jspace::zero(state.velocity_);
       
       for (double q1(-M_PI); q1 <= M_PI; q1 += 2 * M_PI / 7) {
 	for (double q2(-M_PI); q2 <= M_PI; q2 += 2 * M_PI / 7) {
-	  state.joint_angles_[0] = q1;
-	  state.joint_angles_[1] = q2;
+	  state.position_[0] = q1;
+	  state.position_[1] = q2;
 	  model->update(state);
 	  
 	  SAIMatrix MM(2, 2);
@@ -628,7 +626,7 @@ TEST (jspaceModel, mass_inertia_RR)
 	  {
 	    std::ostringstream msg;
 	    msg << "Checking mass_inertia for test_index " << test_index
-		<< " q = " << state.joint_angles_ << "\n";
+		<< " q = " << state.position_ << "\n";
 	    MM_check.prettyPrint(msg, "  want", "    ");
 	    MM.prettyPrint(msg, "  have", "    ");
 	    EXPECT_TRUE (check_matrix("mass_inertia", MM_check, MM, 1e-3, msg)) << msg.str();
@@ -641,7 +639,7 @@ TEST (jspaceModel, mass_inertia_RR)
 	  {
 	    std::ostringstream msg;
 	    msg << "Checking inv_mass_inertia for test_index " << test_index
-		<< " q = " << state.joint_angles_ << "\n";
+		<< " q = " << state.position_ << "\n";
 	    MMinv_check.prettyPrint(msg, "  want", "    ");
 	    MMinv.prettyPrint(msg, "  have", "    ");
 	    EXPECT_TRUE (check_matrix("inv_mass_inertia", MMinv_check, MMinv, 1e-3, msg)) << msg.str();
@@ -666,13 +664,13 @@ TEST (jspaceModel, mass_inertia_RP)
     taoDNode * n2(model->getNode(1));
     ASSERT_NE ((void*)0, n1);
     ASSERT_NE ((void*)0, n2);
-    jspace::State state(2, 2);
-    state.joint_velocities_.zero();
+    jspace::State state(2, 2, 0);
+    jspace::zero(state.velocity_);
     
     for (double q1(-M_PI); q1 <= M_PI; q1 += 2 * M_PI / 7) {
       for (double q2(-1); q2 <= 1; q2 += 2.0 / 7) {
- 	state.joint_angles_[0] = q1;
- 	state.joint_angles_[1] = q2;
+ 	state.position_[0] = q1;
+ 	state.position_[1] = q2;
 	model->update(state);
 	
 	double const c1(cos(q1));
@@ -687,7 +685,7 @@ TEST (jspaceModel, mass_inertia_RP)
 	MM_check.elementAt(1, 1) = 1;
 	{
 	  std::ostringstream msg;
-	  msg << "Checking mass_inertia for q = " << state.joint_angles_ << "\n";
+	  msg << "Checking mass_inertia for q = " << state.position_ << "\n";
 	  MM_check.prettyPrint(msg, "  want", "    ");
 	  MM.prettyPrint(msg, "  have", "    ");
 	  EXPECT_TRUE (check_matrix("mass_inertia", MM_check, MM, 1e-3, msg)) << msg.str();
@@ -701,7 +699,7 @@ TEST (jspaceModel, mass_inertia_RP)
 	  SAIMatrix id;
 	  id = MM * MMinv;
 	  std::ostringstream msg;
-	  msg << "Checking A * Ainv = I for q = " << state.joint_angles_ << "\n";
+	  msg << "Checking A * Ainv = I for q = " << state.position_ << "\n";
 	  id_check.prettyPrint(msg, "  want", "    ");
 	  id.prettyPrint(msg, "  have", "    ");
 	  EXPECT_TRUE (check_matrix("identity", id_check, id, 1e-3, msg)) << msg.str();

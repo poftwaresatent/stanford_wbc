@@ -23,8 +23,10 @@
    \author Roland Philippsen
 */
 
-#include <saimatrix/SAIVector.h>
-#include <sys/time.h>
+#ifndef JSPACE_STATE_HPP
+#define JSPACE_STATE_HPP
+
+#include <vector>
 
 namespace jspace {
   
@@ -33,26 +35,31 @@ namespace jspace {
   public:
     typedef enum {
       COMPARE_ACQUISITION_TIME = 0x1,
-      COMPARE_JOINT_ANGLES     = 0x2,
-      COMPARE_JOINT_VELOCITIES = 0x4,
-      COMPARE_ALL              = 0x7
+      COMPARE_POSITION         = 0x2,
+      COMPARE_VELOCITY         = 0x4,
+      COMPARE_FORCE            = 0x8,
+      COMPARE_ALL              = 0xf
     } compare_flags_t;
     
     State();
     State(State const & orig);
-    State(int npos, int nvel);
+    State(size_t npos, size_t nvel, size_t nforce);
     
-    void init(int npos, int nvel);
+    void init(size_t npos, size_t nvel, size_t nforce);
     
     bool equal(State const & rhs,
-	       int flags = COMPARE_JOINT_ANGLES | COMPARE_JOINT_VELOCITIES,
+	       int flags = COMPARE_POSITION | COMPARE_VELOCITY,
 	       double precision = 1e-3) const;
     
     State & operator = (State const & rhs);
     
-    timeval acquisition_time_;
-    SAIVector joint_angles_;
-    SAIVector joint_velocities_;
+    size_t time_sec_;
+    size_t time_usec_;
+    std::vector<double> position_;
+    std::vector<double> velocity_;
+    std::vector<double> force_;
   };
   
 }
+
+#endif // JSPACE_STATE_HPP

@@ -23,6 +23,9 @@
    \author Roland Philippsen
 */
 
+#ifndef JSPACE_CONTROLLER_LIBRARY_HPP
+#define JSPACE_CONTROLLER_LIBRARY_HPP
+
 #include <jspace/Controller.hpp>
 #include <string>
 
@@ -42,14 +45,14 @@ namespace jspace {
     : public Controller
   {
   public:
-    virtual status_s setGoal(std::vector<double> const & goal);
-    virtual status_s getGoal(std::vector<double> & goal) const;
-    virtual status_s getActual(std::vector<double> & actual) const;
+    virtual Status setGoal(std::vector<double> const & goal);
+    virtual Status getGoal(std::vector<double> & goal) const;
+    virtual Status getActual(std::vector<double> & actual) const;
     
-    virtual status_s setGains(std::vector<double> const & kp, std::vector<double> const & kd);
-    virtual status_s getGains(std::vector<double> & kp, std::vector<double> & kd) const;
+    virtual Status setGains(std::vector<double> const & kp, std::vector<double> const & kd);
+    virtual Status getGains(std::vector<double> & kp, std::vector<double> & kd) const;
     
-    virtual status_s computeCommand(Model const & model, std::vector<double> & tau);
+    virtual Status computeCommand(Model const & model, std::vector<double> & tau);
   };
   
   
@@ -61,13 +64,13 @@ namespace jspace {
 		       double default_kp,
 		       double default_kd);
     
-    virtual status_s init(Model const & model);
+    virtual Status init(Model const & model);
     
-    virtual status_s setGoal(std::vector<double> const & goal);
-    virtual status_s getGoal(std::vector<double> & goal) const;
+    virtual Status setGoal(std::vector<double> const & goal);
+    virtual Status getGoal(std::vector<double> & goal) const;
     
-    virtual status_s setGains(std::vector<double> const & kp, std::vector<double> const & kd);
-    virtual status_s getGains(std::vector<double> & kp, std::vector<double> & kd) const;
+    virtual Status setGains(std::vector<double> const & kp, std::vector<double> const & kd);
+    virtual Status getGains(std::vector<double> & kp, std::vector<double> & kd) const;
     
   protected:
     int compensation_flags_;
@@ -87,11 +90,13 @@ namespace jspace {
 			double default_kp,
 			double default_kd);
     
-    virtual status_s getActual(std::vector<double> & actual) const;
-    virtual status_s computeCommand(Model const & model, std::vector<double> & tau);
+    virtual Status getActual(std::vector<double> & actual) const;
+    virtual Status computeCommand(Model const & model, std::vector<double> & tau);
     
   protected:
     std::vector<double> actual_;
   };
   
 }
+
+#endif // JSPACE_CONTROLLER_LIBRARY_HPP

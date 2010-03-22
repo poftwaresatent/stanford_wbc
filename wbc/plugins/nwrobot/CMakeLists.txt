@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.6)
 
-include (../../wbc.cmake)
+include (../../../wbc.cmake)
 
 ### this plugin only makes sense if we have libnetwrapper... which is
 ### searched for in the wbc.cmake module.

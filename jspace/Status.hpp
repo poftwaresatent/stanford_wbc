@@ -19,41 +19,29 @@
  */
 
 /**
-   \file jspace/Controller.cpp
+   \file jspace/Status.hpp
    \author Roland Philippsen
 */
 
-#include "Controller.hpp"
+#ifndef JSPACE_STATUS_HPP
+#define JSPACE_STATUS_HPP
 
+#include <string>
 
 namespace jspace {
   
-  status_s::
-  status_s()
-    : ok(true)
+  class Status
   {
-  }
-  
-  
-  status_s::
-  status_s(bool ok_, std::string const & errstr_)
-    : ok(ok_),
-      errstr(errstr_)
-  {
-  }
-  
-  
-  Controller::
-  ~Controller()
-  {
-  }
-  
-  
-  status_s Controller::
-  init(Model const & model)
-  {
-    status_s ok;
-    return ok;
-  }
+  public:
+    
+    /** Default ctor sets \c ok=true and \c errstr="" */
+    Status();
+    Status(bool ok, std::string const & errstr);
+    
+    bool ok;
+    std::string errstr;
+  };
   
 }
+
+#endif // JSPACE_STATUS_HPP

@@ -24,6 +24,9 @@
 */
 
 #include "State.hpp"
+#include "vector_util.hpp"
+#include <string.h>
+
 
 namespace jspace {
   
@@ -31,32 +34,35 @@ namespace jspace {
   State::
   State()
   {
-    init(0, 0);
+    init(0, 0, 0);
   }
   
   
   State::
   State(State const & orig)
   {
-    init(0, 0);
     *this = orig;
   }
   
   
   State::
-  State(int npos, int nvel)
+  State(size_t npos, size_t nvel, size_t nforce)
   {
-    init(npos, nvel);
+    init(npos, nvel, nforce);
   }
   
   
   void State::
-  init(int npos, int nvel)
+  init(size_t npos, size_t nvel, size_t nforce)
   {
-    acquisition_time_.tv_sec = 0;
-    acquisition_time_.tv_usec = 0;
-    joint_angles_.setSize(npos, true);
-    joint_velocities_.setSize(npos, true);
+    time_sec_ = 0;
+    time_usec_ = 0;
+    position_.resize(npos);
+    velocity_.resize(nvel);
+    force_.resize(nforce);
+    memset(&position_[0], 0, npos * sizeof(double));
+    memset(&velocity_[0], 0, nvel * sizeof(double));
+    memset(&force_[0], 0, nforce * sizeof(double));
   }
   
   
@@ -66,10 +72,11 @@ namespace jspace {
     if (&rhs == this) {
       return *this;
     }
-    acquisition_time_.tv_sec = rhs.acquisition_time_.tv_sec;
-    acquisition_time_.tv_usec = rhs.acquisition_time_.tv_usec;
-    joint_angles_ = rhs.joint_angles_;
-    joint_velocities_ = rhs.joint_velocities_;
+    time_sec_ = rhs.time_sec_;
+    time_usec_ = rhs.time_usec_;
+    position_ = rhs.position_;
+    velocity_ = rhs.velocity_;
+    force_ = rhs.force_;
     return *this;
   }
   
@@ -81,20 +88,25 @@ namespace jspace {
       return true;
     }
     if (flags & COMPARE_ACQUISITION_TIME) {
-      if (acquisition_time_.tv_sec != rhs.acquisition_time_.tv_sec) {
+      if (time_sec_ != rhs.time_sec_) {
 	return false;
       }
-      if (acquisition_time_.tv_usec != rhs.acquisition_time_.tv_usec) {
-	return false;
-      }
-    }
-    if (flags & COMPARE_JOINT_ANGLES) {
-      if ( ! joint_angles_.equal(rhs.joint_angles_, precision)) {
+      if (time_usec_ != rhs.time_usec_) {
 	return false;
       }
     }
-    if (flags & COMPARE_JOINT_VELOCITIES) {
-      if ( ! joint_velocities_.equal(rhs.joint_velocities_, precision)) {
+    if (flags & COMPARE_POSITION) {
+      if ( ! compare(position_, rhs.position_, precision)) {
+	return false;
+      }
+    }
+    if (flags & COMPARE_VELOCITY) {
+      if ( ! compare(velocity_, rhs.velocity_, precision)) {
+	return false;
+      }
+    }
+    if (flags & COMPARE_FORCE) {
+      if ( ! compare(force_, rhs.force_, precision)) {
 	return false;
       }
     }

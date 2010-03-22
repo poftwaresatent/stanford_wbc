@@ -19,40 +19,27 @@
  */
 
 /**
-   \file jspace/Controller.hpp
+   \file jspace/Status.cpp
    \author Roland Philippsen
 */
 
-#ifndef JSPACE_CONTROLLER_HPP
-#define JSPACE_CONTROLLER_HPP
-
-#include <jspace/Status.hpp>
-#include <vector>
-
+#include "Status.hpp"
 
 namespace jspace {
   
-  class Model;
   
-  
-  class Controller
+  Status::
+  Status()
+    : ok(true)
   {
-  public:
-    virtual ~Controller() {}
-    
-    /** Default init just returns ok. */
-    virtual Status init(Model const & model) { Status ok; return ok; }
-    
-    virtual Status setGoal(std::vector<double> const & goal) = 0;
-    virtual Status getGoal(std::vector<double> & goal) const = 0;
-    virtual Status getActual(std::vector<double> & actual) const = 0;
-    
-    virtual Status setGains(std::vector<double> const & kp, std::vector<double> const & kd) = 0;
-    virtual Status getGains(std::vector<double> & kp, std::vector<double> & kd) const = 0;
-    
-    virtual Status computeCommand(Model const & model, std::vector<double> & tau) = 0;
-  };
+  }
+  
+  
+  Status::
+  Status(bool ok_, std::string const & errstr_)
+    : ok(ok_),
+      errstr(errstr_)
+  {
+  }
   
 }
-
-#endif // JSPACE_CONTROLLER_HPP

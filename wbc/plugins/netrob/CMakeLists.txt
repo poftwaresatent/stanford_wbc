@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 2.6)
-include (../../wbc.cmake)
+include (../../../wbc.cmake)
 
 add_library (netrob SHARED Robot.cpp RawRobot.cpp)
 target_link_libraries (netrob Stanford_WBC)

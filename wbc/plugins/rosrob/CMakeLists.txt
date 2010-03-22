@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 2.6)
-include (../../wbc.cmake)
+include (../../../wbc.cmake)
 
 ### This plugin only works if you have ROS...
 

@@ -89,15 +89,15 @@ namespace jspace {
     state_ = state;
     for (size_t ii(0); ii < ndof_; ++ii) {
       taoJoint * joint(kgm_tree_->info[ii].node->getJointList());
-      joint->setQ(&state.joint_angles_[ii]);
+      joint->setQ(&state.position_[ii]);
       joint->zeroDQ();
       joint->zeroDDQ();
       joint->zeroTau();
     }
     for (size_t ii(0); ii < ndof_; ++ii) {
       taoJoint * joint(cc_tree_->info[ii].node->getJointList());
-      joint->setQ(&state.joint_angles_[ii]);
-      joint->setDQ(&state.joint_velocities_[ii]);
+      joint->setQ(&state.position_[ii]);
+      joint->setDQ(&state.velocity_[ii]);
       joint->zeroDDQ();
       joint->zeroTau();
     }

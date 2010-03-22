@@ -99,11 +99,11 @@ subdirs (
   tao
   wbcnet
   wbc
-  plugins/fake
-  plugins/robotlog
-  plugins/nwrobot
-  plugins/netrob
-  plugins/rosrob
+  wbc/plugins/fake
+  wbc/plugins/robotlog
+  wbc/plugins/nwrobot
+  wbc/plugins/netrob
+  wbc/plugins/rosrob
   tests
   applications
   )

@@ -23,6 +23,9 @@
    \author Roland Philippsen, inspired by wbc/core code of Luis Sentis
 */
 
+#ifndef JSPACE_MODEL_HPP
+#define JSPACE_MODEL_HPP
+
 #include <jspace/State.hpp>
 #include <saimatrix/SAITransform.h>
 #include <vector>
@@ -265,3 +268,5 @@ namespace jspace {
   };
   
 }
+
+#endif // JSPACE_MODEL_HPP
