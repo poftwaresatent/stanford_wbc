@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.6)
 
-include (macros.cmake)
+include (wbc.cmake)
 wbc_init (Stanford_WBC_Umbrella)
 
 list (APPEND CMAKE_REQUIRED_INCLUDES ${Stanford_WBC_SOURCE_DIR})
@@ -71,5 +71,5 @@ subdirs (
 #  applications
   )
 
-install (FILES macros.cmake DESTINATION share)
+install (FILES wbc.cmake DESTINATION share)
 

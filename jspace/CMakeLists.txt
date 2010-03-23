@@ -4,7 +4,7 @@ if (COMMAND CMAKE_POLICY)
   cmake_policy (SET CMP0005 NEW)
 endif (COMMAND CMAKE_POLICY)
 
-include (../macros.cmake)
+include (../wbc.cmake)
 wbc_init (Stanford_WBC_Joint_Space_Dynamics)
 wbc_find_urdf ()
 
