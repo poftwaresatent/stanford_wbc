@@ -59,7 +59,7 @@ subdirs (
   tao
   wbc_tinyxml
   wbcnet
-##  robarch
+  robarch
 #  jspace
 #  wbc
 #  wbc/plugins/fake
