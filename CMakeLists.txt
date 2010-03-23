@@ -57,9 +57,9 @@ endif (NETWRAP_DIR)
 subdirs (
   saimatrix
   tao
+  wbc_tinyxml
 #  robarch
 #  jspace
-#  wbc_tinyxml
 #  wbcnet
 #  wbc
 #  wbc/plugins/fake
