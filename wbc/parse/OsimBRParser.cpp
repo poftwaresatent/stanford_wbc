@@ -26,7 +26,7 @@
 #include "OsimBRParser.hpp"
 #include <wbc/core/BranchingRepresentation.hpp>
 #include <robarch/osimarchitect/COsimArchitect.hpp>
-#include <wbc/parse/taoRepCreator/CTaoRepCreator.hpp>
+#include <robarch/rep_creators/CTaoRepCreator.hpp>
 #include <wbcnet/log.hpp>
 
 static wbcnet::logger_t logger(wbcnet::get_logger("wbc"));

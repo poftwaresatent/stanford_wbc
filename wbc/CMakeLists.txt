@@ -45,7 +45,6 @@ list (APPEND SRCS
   parse/BehaviorParser.cpp
   parse/OsimBRParser.cpp
   parse/TiXmlBRParser.cpp
-  parse/taoRepCreator/CTaoRepCreator.cpp
 
   util/ShuffleVector.cpp
   util/saiTime.cpp

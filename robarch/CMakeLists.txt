@@ -13,6 +13,7 @@ list (APPEND ROBARCH_SRC
   osimarchitect/parser/SkeletonCoordinate.cpp
   osimarchitect/parser/SkeletonMarker.cpp
   osimarchitect/parser/CMuscleDefinition.cpp
+  rep_creators/CTaoRepCreator.cpp
   )
 
 add_library (robarch SHARED ${ROBARCH_SRC})
