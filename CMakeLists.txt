@@ -58,9 +58,9 @@ subdirs (
   saimatrix
   tao
   wbc_tinyxml
-#  robarch
+  wbcnet
+##  robarch
 #  jspace
-#  wbcnet
 #  wbc
 #  wbc/plugins/fake
 #  wbc/plugins/robotlog
