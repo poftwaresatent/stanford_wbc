@@ -23,10 +23,9 @@
 #include <tao/dynamics/taoDNode.h>
 #include <tao/dynamics/taoJoint.h>
 #include <wbcnet/strutil.hpp>
-#include <wbc/core/BranchingRepresentation.hpp>
 
 
-namespace wbc {
+namespace jspace {
   
   void mapNodesToIDs(idToNodeMap_t & idToNodeMap,
 		     taoDNode * node)
@@ -34,7 +33,7 @@ namespace wbc {
   {
     deInt id = node->getID();
     if (idToNodeMap.find( id ) != idToNodeMap.end())
-      throw std::runtime_error("wbc::mapNodesToIDs(): duplicate ID " + sfl::to_string(id));
+      throw std::runtime_error("jspace::mapNodesToIDs(): duplicate ID " + sfl::to_string(id));
     idToNodeMap.insert(std::make_pair(id, node));
     
     // recurse
@@ -141,57 +140,6 @@ namespace wbc {
   ~tao_tree_info_s()
   {
     delete root;
-  }
-  
-  
-  tao_tree_info_s * create_tao_tree_info(BranchingRepresentation & branching)
-  {
-    tao_tree_info_s * tree(new tao_tree_info_s());
-    tree->root = branching.rootNode();
-    
-    typedef idToNodeMap_t foo_t;
-    foo_t const & foo(branching.idToNodeMap());
-    int maxid(0);
-    for (foo_t::const_iterator ifoo(foo.begin()); ifoo != foo.end(); ++ifoo) {
-      if (ifoo->first > maxid) {
-	maxid = ifoo->first;
-      }
-    }
-    tree->info.resize(maxid+1);
-    
-    typedef std::map<std::string, taoDNode*> bar_t;
-    bar_t const & link_bar(branching.linkNameToNodeMap(false));
-    bar_t const & joint_bar(branching.jointNameToNodeMap(false));
-    SAIVector const & upper(branching.upperJointLimits());
-    SAIVector const & lower(branching.upperJointLimits());
-    
-    for (foo_t::const_iterator ifoo(foo.begin()); ifoo != foo.end(); ++ifoo) {
-      if (ifoo->first >= 0) {
-	
-	tree->info[ifoo->first].id = ifoo->first;
-	tree->info[ifoo->first].node = ifoo->second;
-	
-	tree->info[ifoo->first].link_name = "(not found)";
-	for (bar_t::const_iterator ibar(link_bar.begin()); ibar != link_bar.end(); ++ibar) {
-	  if (ifoo->second == ibar->second) {
-	    tree->info[ifoo->first].link_name = ibar->first;
-	    break;
-	  }
-	}
-	
-	tree->info[ifoo->first].joint_name = "(not found)";
-	for (bar_t::const_iterator ibar(joint_bar.begin()); ibar != joint_bar.end(); ++ibar) {
-	  if (ifoo->second == ibar->second) {
-	    tree->info[ifoo->first].joint_name = ibar->first;
-	    break;
-	  }
-	}
-	
-	tree->info[ifoo->first].limit_lower = lower[ifoo->first];
-	tree->info[ifoo->first].limit_upper = upper[ifoo->first];
-      }
-    }
-    return tree;
   }
   
 }

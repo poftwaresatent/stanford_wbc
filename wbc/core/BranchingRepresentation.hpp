@@ -41,7 +41,8 @@ class taoNode;
 class taoNodeRoot;
 
 namespace wbc {
-
+  
+  using jspace::idToNodeMap_t;
   using namespace std;
   
   
@@ -146,6 +147,11 @@ namespace wbc {
     /** \return relative position of force sensor. Returns zero vector
 	      if no link tag is found */
     const SAIVector& forceSensorWRTJointFrame( taoDNode const * node ) const;
+    
+    /** Conversion function for easier back-porting to newer code. You
+	should try to work with a jspace::tao_tree_info_s in the first
+	place... */
+    jspace::tao_tree_info_s * createTreeInfo();
     
   private:
     // Attributes 

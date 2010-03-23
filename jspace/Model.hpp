@@ -35,12 +35,10 @@
 // behind TAO, they can treat this as an opaque pointer type.
 class taoDNode;
 
-namespace wbc {
-  struct tao_tree_info_s;
-}
-
 namespace jspace {
   
+  // declared in <jspace/tao_util.hpp>
+  struct tao_tree_info_s;
   
   class Model
   {
@@ -48,10 +46,10 @@ namespace jspace {
     Model(/** TAO tree info used for computing kinematics, the gravity
 	      torque vector, the mass-inertia matrix, and its
 	      inverse. */
-	  wbc::tao_tree_info_s * kgm_tree,
+	  tao_tree_info_s * kgm_tree,
 	  /** TAO tree info for computing Coriolis and centrifugal
 	      torques. */
-	  wbc::tao_tree_info_s * cc_tree);
+	  tao_tree_info_s * cc_tree);
     
     ~Model();
     
@@ -257,8 +255,8 @@ namespace jspace {
     dof_set_t gravity_disabled_;
     
     std::size_t const ndof_;
-    wbc::tao_tree_info_s * kgm_tree_;
-    wbc::tao_tree_info_s * cc_tree_;
+    tao_tree_info_s * kgm_tree_;
+    tao_tree_info_s * cc_tree_;
     
     State state_;
     std::vector<double> g_torque_;

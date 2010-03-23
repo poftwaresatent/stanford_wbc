@@ -1,6 +1,6 @@
 ### included via subdir() command in top-level CMakeLists.txt
 
-add_library (jspace SHARED
+list (APPEND SRCS
   State.cpp
   Model.cpp
   Status.cpp
@@ -10,13 +10,26 @@ add_library (jspace SHARED
   tao_util.cpp
   )
 
-###add_executable (example example.cpp)
-###target_link_libraries (example jspace wbcnet Stanford_WBC)
+if (HAVE_ROS)
+  message ("[jspace] adding ROS and URDF support")
+  list (APPEND SRCS
+    ros/urdf_to_tao.cpp
+    ros/urdf_dump.cpp
+    ros/Model.cpp
+    )
+endif (HAVE_ROS)
 
-FILE (GLOB headers "*.hpp")
-INSTALL (FILES ${headers} DESTINATION include/jspace)
+add_library (jspace SHARED ${SRCS})
 
-INSTALL (TARGETS jspace
+file (GLOB headers "*.hpp")
+install (FILES ${headers} DESTINATION include/jspace)
+
+if (HAVE_ROS)
+  file (GLOB ros_headers "ros/*.hpp")
+  install (FILES ${ros_headers} DESTINATION include/jspace/ros)
+endif (HAVE_ROS)
+
+install (TARGETS jspace
          RUNTIME DESTINATION bin
          LIBRARY DESTINATION lib
          ARCHIVE DESTINATION lib)

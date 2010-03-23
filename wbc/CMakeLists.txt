@@ -87,8 +87,6 @@ endif (HAVE_XMLRPC)
 
 if (HAVE_ROS)
   list (APPEND SRCS
-    ros/urdf_to_tao.cpp
-    ros/urdf_dump.cpp
     ros/Model.cpp
     ros/BehaviorLibrary.cpp
     )

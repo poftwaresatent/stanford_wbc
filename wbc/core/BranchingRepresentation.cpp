@@ -71,8 +71,8 @@ namespace wbc {
     
     try {
       robot->rootNode_ = tao_root;
-      robot->numJoints_ = countNumberOfLinks(tao_root);
-      robot->totalMass_ = computeTotalMass(tao_root);
+      robot->numJoints_ = jspace::countNumberOfLinks(tao_root);
+      robot->totalMass_ = jspace::computeTotalMass(tao_root);
       
       if (opt_gravity) {
 	robot->grav_ = *opt_gravity;
@@ -103,7 +103,7 @@ namespace wbc {
 	robot->unactuationMatrix_.identity(robot->numJoints_);
       }
       
-      mapNodesToIDs(robot->idToNodeMap_, tao_root);
+      jspace::mapNodesToIDs(robot->idToNodeMap_, tao_root);
       
       if (opt_root_name.empty()) {
 	robot->setRootName("root");
@@ -373,4 +373,61 @@ namespace wbc {
     return jointNameToNodeMap_;
   }
   
+  
+  jspace::tao_tree_info_s * BranchingRepresentation::
+  createTreeInfo()
+  {
+    jspace::tao_tree_info_s * tree(new jspace::tao_tree_info_s());
+    tree->root = rootNode();
+    
+    typedef idToNodeMap_t foo_t;
+    foo_t const & foo(idToNodeMap());
+    int maxid(0);
+    for (foo_t::const_iterator ifoo(foo.begin()); ifoo != foo.end(); ++ifoo) {
+      if (ifoo->first > maxid) {
+	maxid = ifoo->first;
+      }
+    }
+    tree->info.resize(maxid+1);
+    
+    typedef std::map<std::string, taoDNode*> bar_t;
+    bar_t const & link_bar(linkNameToNodeMap(false));
+    bar_t const & joint_bar(jointNameToNodeMap(false));
+    SAIVector const & upper(upperJointLimits());
+    SAIVector const & lower(upperJointLimits());
+    
+    for (foo_t::const_iterator ifoo(foo.begin()); ifoo != foo.end(); ++ifoo) {
+      if (ifoo->first >= 0) {
+	
+	tree->info[ifoo->first].id = ifoo->first;
+	tree->info[ifoo->first].node = ifoo->second;
+	
+	tree->info[ifoo->first].link_name = "(not found)";
+	for (bar_t::const_iterator ibar(link_bar.begin()); ibar != link_bar.end(); ++ibar) {
+	  if (ifoo->second == ibar->second) {
+	    tree->info[ifoo->first].link_name = ibar->first;
+	    break;
+	  }
+	}
+	
+	tree->info[ifoo->first].joint_name = "(not found)";
+	for (bar_t::const_iterator ibar(joint_bar.begin()); ibar != joint_bar.end(); ++ibar) {
+	  if (ifoo->second == ibar->second) {
+	    tree->info[ifoo->first].joint_name = ibar->first;
+	    break;
+	  }
+	}
+	
+	tree->info[ifoo->first].limit_lower = lower[ifoo->first];
+	tree->info[ifoo->first].limit_upper = upper[ifoo->first];
+      }
+    }
+    return tree;
+
+
+
+
+  }
+
 }
+

@@ -18,8 +18,8 @@
  * <http://www.gnu.org/licenses/>
  */
 
-#ifndef WBC_TAO_UTIL_H
-#define WBC_TAO_UTIL_H
+#ifndef JSPACE_TAO_UTIL_H
+#define JSPACE_TAO_UTIL_H
 
 #include <stdexcept>
 #include <string>
@@ -31,10 +31,8 @@ class taoNodeRoot;
 class taoDNode;
 
 
-namespace wbc {
+namespace jspace {
 
-  class BranchingRepresentation;
-  
   /**
      \note TAO supports multiple joints per link, but all use cases so
      far seem to require that exactly one joint sits between two
@@ -64,8 +62,6 @@ namespace wbc {
     node_info_t info;
   };
 
-  tao_tree_info_s * create_tao_tree_info(BranchingRepresentation & branching);
-  
   
   typedef std::map<int, taoDNode *> idToNodeMap_t;
   
@@ -112,4 +108,4 @@ namespace wbc {
   
 }
 
-#endif // WBC_TAO_UTIL_H
+#endif // JSPACE_TAO_UTIL_H

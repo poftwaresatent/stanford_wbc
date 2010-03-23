@@ -28,7 +28,8 @@
 #include <iostream>
 
 
-namespace wbcros {
+namespace jspace {
+  namespace ros {
   
   void dump_urdf_tree(std::ostream & os, urdf::Link const & urdf_root, std::string prefix, bool detailed)
   {
@@ -77,7 +78,8 @@ namespace wbcros {
     urdf::Link const & root(*urdf.getRoot());
     dump_urdf_tree(os, root, prefix, detailed);
   }
-  
+
+  }  
 }
 
 namespace std {

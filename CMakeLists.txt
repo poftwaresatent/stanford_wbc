@@ -42,7 +42,7 @@ add_definitions (-DWBC_PLUGIN_PATH_STR="${WBC_PLUGIN_PATH}")
 ##################################################
 # If we have ROS, then we might even be able to support URDF-to-TAO
 # conversion. And we have to put this detection here at the top
-# because users of the Stanford_WBC library do not want to have to
+# because users of the Stanford_WBC and jspace libraries do not want to have to
 # worry about linking (or not) with the URDF lib.
 
 if (NOT TRY_ROS)
@@ -60,6 +60,7 @@ if (TRY_ROS)
       if (${urdf_PACKAGE_PATH} STREQUAL "")
 	message (FATAL_ERROR "ROS support enabled but urdf package not found, try running 'rosmake urdf'")
       else (${urdf_PACKAGE_PATH} STREQUAL "")
+	message ("[WBC] enabling ROS support for URDF")
 	rosbuild_invoke_rospack (urdf playtao temp cflags-only-I)
 	include_directories (${playtao_temp})
 	rosbuild_invoke_rospack (urdf playtao temp cflags-only-other)

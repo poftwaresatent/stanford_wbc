@@ -50,7 +50,7 @@ static void dump_deFloat(std::ostream & os, deFloat const * arr, size_t len)
   }
 }
 
-namespace wbc {
+namespace jspace {
 
 std::string inertia_matrix_to_string(deMatrix3 const & mx)
 {
@@ -239,7 +239,7 @@ namespace std {
     deMatrix3 inertia;
     rhs.get(&mass, &center, &inertia);
     os << "m: " << mass << "  COM: " << center
-       << "  I: " << wbc::inertia_matrix_to_string(inertia);
+       << "  I: " << jspace::inertia_matrix_to_string(inertia);
     return os;
   }
   

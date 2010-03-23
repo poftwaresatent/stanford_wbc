@@ -23,8 +23,8 @@
    \author Roland Philippsen
 */
 
-#ifndef WBC_ROS_URDF_DUMP_HPP
-#define WBC_ROS_URDF_DUMP_HPP
+#ifndef JSPACE_ROS_URDF_DUMP_HPP
+#define JSPACE_ROS_URDF_DUMP_HPP
 
 #include <iosfwd>
 
@@ -39,11 +39,13 @@ namespace urdf {
 
 }
 
-namespace wbcros {
+namespace jspace {
+  namespace ros {
 
   void dump_urdf_tree(std::ostream & os, urdf::Link const & urdf_root, std::string prefix, bool detailed);
   void dump_urdf_tree(std::ostream & os, urdf::Model const & urdf, std::string prefix, bool detailed);
 
+  }
 }
 
 namespace std {
@@ -55,4 +57,4 @@ namespace std {
 
 }
 
-#endif // WBC_ROS_URDF_DUMP_HPP
+#endif // JSPACE_ROS_URDF_DUMP_HPP

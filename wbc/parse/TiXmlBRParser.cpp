@@ -107,7 +107,7 @@ namespace wbc {
       DFS_JointNodes( nextJNPtr, nodeID_ );
 
       // Map tao nodes to joint IDs
-      mapNodesToIDs(robot_->idToNodeMap_, robot_->rootNode_);
+      jspace::mapNodesToIDs(robot_->idToNodeMap_, robot_->rootNode_);
       
       // Mirror stuff like default joint positions
       robot_->defaultJointPosVec_.setSize( robot_->numJoints_ );

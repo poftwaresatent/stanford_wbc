@@ -57,8 +57,8 @@ namespace jspace {
   
   
   Model::
-  Model(wbc::tao_tree_info_s * kgm_tree,
-	wbc::tao_tree_info_s * cc_tree)
+  Model(tao_tree_info_s * kgm_tree,
+	tao_tree_info_s * cc_tree)
     : ndof_(kgm_tree->info.size()), // XXXX only works for one joint per node and one DOF per joint
       kgm_tree_(kgm_tree),
       cc_tree_(cc_tree)

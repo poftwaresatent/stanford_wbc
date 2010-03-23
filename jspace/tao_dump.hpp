@@ -23,8 +23,8 @@
    \author Roland Philippsen
 */
 
-#ifndef WBC_UTIL_DUMP_HPP
-#define WBC_UTIL_DUMP_HPP
+#ifndef JSPACE_UTIL_DUMP_HPP
+#define JSPACE_UTIL_DUMP_HPP
 
 #include <iosfwd>
 #include <vector>
@@ -39,7 +39,7 @@ class deMatrix3;
 class taoDNode;
 
 
-namespace wbc {
+namespace jspace {
   
   struct tao_tree_info_s;
   
@@ -81,4 +81,4 @@ namespace std {
   
 }
 
-#endif // WBC_UTIL_DUMP_HPP
+#endif // JSPACE_UTIL_DUMP_HPP

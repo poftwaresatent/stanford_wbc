@@ -24,14 +24,15 @@
 */
 
 #include "urdf_to_tao.hpp"
+#include <jspace/tao_dump.hpp>
 #include <fstream>
 #include <limits>
 
 using namespace std;
 
 
-namespace wbcros {
-
+namespace jspace {
+  namespace ros {
 
   void ActiveLinkFilter::
   AddLink(std::string const & link_name)
@@ -45,7 +46,7 @@ namespace wbcros {
   {
     ifstream config(filename.c_str());
     if ( ! config) {
-      throw runtime_error("urdf_to_tao::FlatFileLinkFilter::Load(" + filename + "): could not open file");
+      throw runtime_error("jspace::ros::FlatFileLinkFilter::Load(" + filename + "): could not open file");
     }
     
     string token;
@@ -61,7 +62,7 @@ namespace wbcros {
     }
     
     if (m_root_name.empty()) {
-      throw runtime_error("FlatFileLinkFilter::Load(" + filename + "): no specs in file?");
+      throw runtime_error("jspace::ros::FlatFileLinkFilter::Load(" + filename + "): no specs in file?");
     }
   }
   
@@ -72,12 +73,12 @@ namespace wbcros {
     return m_root_name;
   }
   
+  }
 }
 
 
 #include "urdf_dump.hpp"
-#include <wbc/util/dump.hpp>
-#include <wbc/core/BranchingRepresentation.hpp>
+#include <jspace/tao_dump.hpp>
 
 // Quick hack around build sys bug: urdf_to_tao depends on ROS, which has log4cxx.
 #define HAVE_LOG4CXX
@@ -91,13 +92,11 @@ namespace wbcros {
 #include <map>
 #include <iostream>
 
-static wbcnet::logger_t logger(wbcnet::get_logger("urdf_to_tao"));
-
-using wbc::inertia_matrix_to_string;
+static wbcnet::logger_t logger(wbcnet::get_logger("jspace"));
 
 
-namespace wbcros {
-  
+namespace jspace {
+  namespace ros {  
   
   bool DefaultLinkFilter::
   isFixed(urdf::Link const & urdf_link) const
@@ -242,10 +241,10 @@ namespace wbcros {
       urdf_link(original.urdf_link),
       tao_mass_prop(original.tao_mass_prop),
       tao_home_frame(original.tao_home_frame)
-    {
-      if (parent)
-	parent->children.insert(this);
-    }
+  {
+    if (parent)
+      parent->children.insert(this);
+  }
   
   
   bool element::
@@ -557,13 +556,13 @@ namespace wbcros {
 	
 	LOG_TRACE (logger, "    after:      " << fused_duplicate->tao_mass_prop);
 	
-// 	std::string const prefix((*subtree)->getName() + "/");
-// 	element::kdl_aux_frames_t const & subtree_aux((*subtree)->kdl_aux_frames);
-// 	urdf_fused_aux.insert(make_pair(prefix + "home", urdf_home_frame));
-// 	urdf_fused_aux.insert(make_pair(prefix + "tip", urdf_home_frame * (*subtree)->kdl_tip_frame));
-// 	for (element::kdl_aux_frames_t::const_iterator iaf(subtree_aux.begin()); iaf != subtree_aux.end(); ++iaf) {
-// 	  fused_aux.insert(make_pair(prefix + iaf->first, urdf_home_frame * iaf->second));
-// 	}
+	// 	std::string const prefix((*subtree)->getName() + "/");
+	// 	element::kdl_aux_frames_t const & subtree_aux((*subtree)->kdl_aux_frames);
+	// 	urdf_fused_aux.insert(make_pair(prefix + "home", urdf_home_frame));
+	// 	urdf_fused_aux.insert(make_pair(prefix + "tip", urdf_home_frame * (*subtree)->kdl_tip_frame));
+	// 	for (element::kdl_aux_frames_t::const_iterator iaf(subtree_aux.begin()); iaf != subtree_aux.end(); ++iaf) {
+	// 	  fused_aux.insert(make_pair(prefix + iaf->first, urdf_home_frame * iaf->second));
+	// 	}
       }
     }
     
@@ -605,20 +604,20 @@ namespace wbcros {
       wants them wrt link origin (after the joint). */
   static void create_tao_tree(taoDNode * tao_parent,
 			      element const * child,
-			      std::vector<wbc::tao_node_info_s> & info) throw(std::runtime_error)
+			      std::vector<tao_node_info_s> & info) throw(std::runtime_error)
   {
     std::string const & name(child->urdf_link->name);
     urdf::Joint const * urdf_joint(child->urdf_link->parent_joint.get());
     taoJoint * tao_joint(0);
     if ( ! urdf_joint) {
-      throw std::runtime_error("create_tao_tree(): urdf_link `" + name + "' has no joint");
+      throw std::runtime_error("jspace::ros::create_tao_tree(): urdf_link `" + name + "' has no joint");
     }
     else {
       
       switch (urdf_joint->type) {
 
       case urdf::Joint::UNKNOWN:
-	throw std::runtime_error("create_tao_tree(): joint of urdf_link `" + name + "' is of UNKNOWN type");
+	throw std::runtime_error("jspace::ros::create_tao_tree(): joint of urdf_link `" + name + "' is of UNKNOWN type");
 	break;
 
       case urdf::Joint::REVOLUTE:
@@ -649,26 +648,26 @@ namespace wbcros {
 #endif // ALLOW_NEGATIVE_AXES
 	  else {
 	    std::ostringstream os;
-	    os << "create_tao_tree(): sorry but TAO cannot handle the joint axis (" << bar.x << "  " << bar.y
+	    os << "jspace::ros::create_tao_tree(): sorry but TAO cannot handle the joint axis (" << bar.x << "  " << bar.y
 	       << "  " << bar.z << ") of urdf_link `" << name << "'";
 	    throw std::runtime_error(os.str());
 	  }
 	  
 	  if (urdf::Joint::REVOLUTE == urdf_joint->type) {
-	    LOG_DEBUG (logger, "create_tao_tree(): REVOLUTE joint");
+	    LOG_DEBUG (logger, "jspace::ros::create_tao_tree(): REVOLUTE joint");
 	    tao_joint = new taoJointRevolute(foo);
 	  }
 	  else if (urdf::Joint::CONTINUOUS == urdf_joint->type) {
-	    LOG_DEBUG (logger, "create_tao_tree(): CONTINUOUS joint (treated like a revolute joint<)");
+	    LOG_DEBUG (logger, "jspace::ros::create_tao_tree(): CONTINUOUS joint (treated like a revolute joint<)");
 	    tao_joint = new taoJointRevolute(foo);
 	  }
 	  else if (urdf::Joint::PRISMATIC == urdf_joint->type) {
-	    LOG_DEBUG (logger, "create_tao_tree(): PRISMATIC joint");
+	    LOG_DEBUG (logger, "jspace::ros::create_tao_tree(): PRISMATIC joint");
 	    tao_joint = new taoJointPrismatic(foo);
 	  }
 	  
 	  if ( ! tao_joint) {
-	    throw std::runtime_error("BUG in create_tao_tree(): no TAO joint after URDF->TAO joint type switch");
+	    throw std::runtime_error("BUG in jspace::ros::create_tao_tree(): no TAO joint after URDF->TAO joint type switch");
 	  }
 	  
 	  taoVarDOF1 * dof(new taoVarDOF1());
@@ -681,24 +680,24 @@ namespace wbcros {
 	break;
 
       case urdf::Joint::FLOATING:
-	throw std::runtime_error("create_tao_tree(): unsupported FLOATING joint type for urdf_link `"
+	throw std::runtime_error("jspace::ros::create_tao_tree(): unsupported FLOATING joint type for urdf_link `"
 				 + name + "'");
 	break;
 
       case urdf::Joint::PLANAR:
-	throw std::runtime_error("create_tao_tree(): unsupported PLANAR joint type for urdf_link `"
+	throw std::runtime_error("jspace::ros::create_tao_tree(): unsupported PLANAR joint type for urdf_link `"
 				 + name + "'");
 	break;
 
       case urdf::Joint::FIXED:
-	throw std::runtime_error("create_tao_tree(): unsupported FIXED joint type for urdf_link `"
+	throw std::runtime_error("jspace::ros::create_tao_tree(): unsupported FIXED joint type for urdf_link `"
 				 + name + "'");
 	break;
 
       default:
 	{
 	  std::ostringstream os;
-	  os << "create_tao_tree(): invalid joint type #" << urdf_joint->type
+	  os << "jspace::ros::create_tao_tree(): invalid joint type #" << urdf_joint->type
 	     << " for urdf_link `" << name << "'";
 	  throw std::runtime_error(os.str());
 	}
@@ -707,7 +706,7 @@ namespace wbcros {
     }
     
     if ( ! tao_joint) {
-      throw std::runtime_error("BUG in create_tao_tree(): no TAO joint after switch, should have bailed earlier");
+      throw std::runtime_error("BUG in jspace::ros::create_tao_tree(): no TAO joint after switch, should have bailed earlier");
     }
     
     tao_joint->reset();
@@ -741,7 +740,7 @@ namespace wbcros {
       limit_lower = urdf_joint->limits->lower;
       limit_upper = urdf_joint->limits->upper;
     }
-    info.push_back(wbc::tao_node_info_s(tao_node, name, urdf_joint->name, limit_lower, limit_upper));
+    info.push_back(tao_node_info_s(tao_node, name, urdf_joint->name, limit_lower, limit_upper));
     
     // Recurse...
     for (forest_t::const_iterator grandchild(child->children.begin());
@@ -782,10 +781,10 @@ namespace wbcros {
   }
   
   
-  static wbc::tao_tree_info_s * _convert_urdf_to_tao(deFrame const & global_frame,
-						     element const * conversion_root)
+  static tao_tree_info_s * _convert_urdf_to_tao(deFrame const & global_frame,
+						element const * conversion_root)
   {
-    wbc::tao_tree_info_s * tao_tree(new wbc::tao_tree_info_s());
+    tao_tree_info_s * tao_tree(new tao_tree_info_s());
     tao_tree->root = new taoNodeRoot(global_frame);
     tao_tree->root->setID(-1);
     
@@ -805,9 +804,9 @@ namespace wbcros {
   }
   
   
-  wbc::tao_tree_info_s * convert_urdf_to_tao(urdf::Model const & urdf_model,
-					     std::string const & tao_root_name,
-					     LinkFilter const & link_filter) throw(std::runtime_error)
+  tao_tree_info_s * convert_urdf_to_tao(urdf::Model const & urdf_model,
+					std::string const & tao_root_name,
+					LinkFilter const & link_filter) throw(std::runtime_error)
   {
     Converter converter(link_filter);
     
@@ -817,7 +816,7 @@ namespace wbcros {
     element * conversion_root(find_element_by_name(fused_root, tao_root_name));
     if ( ! conversion_root) {
       ostringstream msg;
-      msg << "wbcros::convert_urdf_to_tao(): no link called `" << tao_root_name << "' in the fused URDF model\n"
+      msg << "jspace::ros::convert_urdf_to_tao(): no link called `" << tao_root_name << "' in the fused URDF model\n"
 	  << "  Note that custom link filters might remove links during the fusion process\n"
 	  << "  Here's the fused tree:\n";
       dump_tree(msg, fused_root, "  ", false);
@@ -834,7 +833,7 @@ namespace wbcros {
   void convert_urdf_to_tao_n(urdf::Model const & urdf_model,
 			     std::string const & tao_root_name,
 			     LinkFilter const & link_filter,
-			     std::vector<wbc::tao_tree_info_s*> & tao_trees,
+			     std::vector<tao_tree_info_s*> & tao_trees,
 			     size_t n_tao_trees) throw(std::runtime_error)
   {
     Converter converter(link_filter);
@@ -845,7 +844,7 @@ namespace wbcros {
     element * conversion_root(find_element_by_name(fused_root, tao_root_name));
     if ( ! conversion_root) {
       ostringstream msg;
-      msg << "wbcros::convert_urdf_to_tao_n(): no link called `" << tao_root_name << "' in the fused URDF model\n"
+      msg << "jspace::ros::convert_urdf_to_tao_n(): no link called `" << tao_root_name << "' in the fused URDF model\n"
 	  << "  Note that custom link filters might remove links during the fusion process\n"
 	  << "  Here's the fused tree:\n";
       dump_tree(msg, fused_root, "  ", false);
@@ -860,5 +859,5 @@ namespace wbcros {
     }
   }
   
-  
+  }
 }

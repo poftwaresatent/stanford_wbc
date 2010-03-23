@@ -1108,11 +1108,11 @@ static wbc::BranchingRepresentation * create_puma_brep() throw(runtime_error)
 jspace::Model * create_puma_model() throw(runtime_error)
 {
   wbc::BranchingRepresentation * kg_brep(create_puma_brep());
-  wbc::tao_tree_info_s * kg_tree(create_tao_tree_info(*kg_brep));
+  jspace::tao_tree_info_s * kg_tree(kg_brep->createTreeInfo());
   delete kg_brep;
   
   wbc::BranchingRepresentation * cc_brep(create_puma_brep());
-  wbc::tao_tree_info_s * cc_tree(create_tao_tree_info(*cc_brep));
+  jspace::tao_tree_info_s * cc_tree(cc_brep->createTreeInfo());
   delete cc_brep;
   
   //   cout << "created jspace::Model:\n";
@@ -1173,11 +1173,11 @@ static wbc::BranchingRepresentation * create_unit_mass_RR_brep() throw(runtime_e
 jspace::Model * create_unit_mass_RR_model() throw(runtime_error)
 {
   wbc::BranchingRepresentation * kg_brep(create_unit_mass_RR_brep());
-  wbc::tao_tree_info_s * kg_tree(create_tao_tree_info(*kg_brep));
+  jspace::tao_tree_info_s * kg_tree(kg_brep->createTreeInfo());
   delete kg_brep;
   
   wbc::BranchingRepresentation * cc_brep(create_unit_mass_RR_brep());
-  wbc::tao_tree_info_s * cc_tree(create_tao_tree_info(*cc_brep));
+  jspace::tao_tree_info_s * cc_tree(cc_brep->createTreeInfo());
   delete cc_brep;
   
   //   cout << "created jspace::Model:\n";
@@ -1238,11 +1238,11 @@ static wbc::BranchingRepresentation * create_unit_inertia_RR_brep() throw(runtim
 jspace::Model * create_unit_inertia_RR_model() throw(runtime_error)
 {
   wbc::BranchingRepresentation * kg_brep(create_unit_inertia_RR_brep());
-  wbc::tao_tree_info_s * kg_tree(create_tao_tree_info(*kg_brep));
+  jspace::tao_tree_info_s * kg_tree(kg_brep->createTreeInfo());
   delete kg_brep;
   
   wbc::BranchingRepresentation * cc_brep(create_unit_inertia_RR_brep());
-  wbc::tao_tree_info_s * cc_tree(create_tao_tree_info(*cc_brep));
+  jspace::tao_tree_info_s * cc_tree(cc_brep->createTreeInfo());
   delete cc_brep;
   
   //   cout << "created jspace::Model:\n";
@@ -1303,11 +1303,11 @@ static wbc::BranchingRepresentation * create_unit_mass_RP_brep() throw(runtime_e
 jspace::Model * create_unit_mass_RP_model() throw(runtime_error)
 {
   wbc::BranchingRepresentation * kg_brep(create_unit_mass_RP_brep());
-  wbc::tao_tree_info_s * kg_tree(create_tao_tree_info(*kg_brep));
+  jspace::tao_tree_info_s * kg_tree(kg_brep->createTreeInfo());
   delete kg_brep;
   
   wbc::BranchingRepresentation * cc_brep(create_unit_mass_RP_brep());
-  wbc::tao_tree_info_s * cc_tree(create_tao_tree_info(*cc_brep));
+  jspace::tao_tree_info_s * cc_tree(cc_brep->createTreeInfo());
   delete cc_brep;
   
   jspace::Model * model(new jspace::Model(kg_tree, cc_tree));

@@ -19,50 +19,56 @@
  */
 
 /**
-   \file wbc/ros/Model.hpp
+   \file jspace/ros/Model.hpp
    \author Roland Philippsen
 */
 
-#ifndef WBCROS_MODEL_HPP
-#define WBCROS_MODEL_HPP
+#ifndef JSPACE_ROS_MODEL_HPP
+#define JSPACE_ROS_MODEL_HPP
 
-#include <jspace/ros/Model.hpp>
+#include <string>
+#include <vector>
+#include <stdexcept>
 
-namespace wbc {
-  class BranchingRepresentation;
-  class RobotControlModel;
-  class TaskModelBase;
+namespace ros {
+  class NodeHandle;
+}
+
+namespace urdf {
+  class Model;
+}
+
+namespace jspace {
+  // declared in <jspace/tao_util.hpp>
+  struct tao_tree_info_s;
 }
 
 
-namespace wbcros {
-    
+namespace jspace {
+  namespace ros {    
   
   class Model
-    : public jspace::ros::Model
   {
   public:
-    wbc::BranchingRepresentation * branching_; // filled in by conversion function, using tao_trees_[0]->root
-    wbc::RobotControlModel * control_model_; // NOTE: gets deleted by ~Model()
-    std::vector<wbc::TaskModelBase*> task_model_pool_;
-    
-    size_t ndof_, ndof_actuated_, nvel_, contact_nrows_, contact_ncols_;
+    std::string tao_root_param_name_;	  // default: "tao_root_name"
+    std::string tao_root_name_;
+    std::string active_links_param_name_; // default: "active_links"
+    std::string gravity_compensated_links_param_name_; // default: "gravity_compensated_links"
+    double gravity_[3];	// default: { 0, 0, -9.81 }
+    std::vector<tao_tree_info_s*> tao_trees_;
+    std::vector<std::string> gravity_compensated_links_; // from ROS parameters, checked against active links
     
     explicit Model(std::string const & param_prefix);
     ~Model();
     
-    void initFromURDF(ros::NodeHandle &nn, urdf::Model const & urdf,
-		      size_t task_model_pool_size,
+    void initFromURDF(::ros::NodeHandle &nn, urdf::Model const & urdf,
 		      size_t n_tao_trees) throw(std::runtime_error);
 
-    void initFromParam(ros::NodeHandle &nn, std::string const & urdf_param_name,
-		       size_t task_model_pool_size,
+    void initFromParam(::ros::NodeHandle &nn, std::string const & urdf_param_name,
 		       size_t n_tao_trees) throw(std::runtime_error);
-    
-  private:
-    void afterInit(size_t task_model_pool_size) throw(std::runtime_error);
   };
-  
+
+  }
 }
 
-#endif // WBCROS_MODEL_HPP
+#endif // JSPACE_ROS_MODEL_HPP

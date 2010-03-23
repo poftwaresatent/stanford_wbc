@@ -23,11 +23,11 @@
    \author Roland Philippsen
 */
 
-#ifndef WBC_URDF_TO_TAO_HPP
-#define WBC_URDF_TO_TAO_HPP
+#ifndef JSPACE_ROS_URDF_TO_TAO_HPP
+#define JSPACE_ROS_URDF_TO_TAO_HPP
 
 
-#include <wbc/util/tao_util.hpp>
+#include <jspace/tao_util.hpp>
 #include <stdexcept>
 #include <vector>
 #include <set>
@@ -38,8 +38,8 @@ namespace urdf {
   class Link;
 }
 
-namespace wbcros {
-  
+namespace jspace {
+  namespace ros {  
 
   /**
      Abstract interface for determining whether a link should be
@@ -154,9 +154,9 @@ namespace wbcros {
      is limited to the principal coordinate axes. These limitations of
      TAO might very well be removed in the future though.
   */
-  wbc::tao_tree_info_s * convert_urdf_to_tao(urdf::Model const & urdf_model,
-					     std::string const & tao_root_name,
-					     LinkFilter const & link_filter) throw(std::runtime_error);
+  tao_tree_info_s * convert_urdf_to_tao(urdf::Model const & urdf_model,
+					std::string const & tao_root_name,
+					LinkFilter const & link_filter) throw(std::runtime_error);
   
   
   /**
@@ -167,10 +167,10 @@ namespace wbcros {
   void convert_urdf_to_tao_n(urdf::Model const & urdf_model,
 			     std::string const & tao_root_name,
 			     LinkFilter const & link_filter,
-			     std::vector<wbc::tao_tree_info_s*> & tao_trees,
+			     std::vector<tao_tree_info_s*> & tao_trees,
 			     size_t n_tao_trees) throw(std::runtime_error);
   
-  
+  }
 }
 
-#endif // WBC_URDF_TO_TAO_HPP
+#endif // JSPACE_ROS_URDF_TO_TAO_HPP

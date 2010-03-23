@@ -24,7 +24,7 @@
 */
 
 #include "Robot.hpp"
-#include <wbc/util/tao_util.hpp>
+#include <jspace/tao_util.hpp>
 #include <saimatrix/SAIVector.h>
 #include <saimatrix/SAIMatrix.h>
 
@@ -65,7 +65,7 @@ namespace wbc_rosrob_plugin {
     try {
       m_model.initFromParam(ros_node, urdf_param_name, 0, 1);
       m_subscriber = ros_node.subscribe(joint_states_topic_name, 1, joint_states_callback);
-      typedef wbc::tao_tree_info_s::node_info_t node_info_t;
+      typedef jspace::tao_tree_info_s::node_info_t node_info_t;
       node_info_t const & node_info(m_model.tao_trees_[0]->info);
       for (node_info_t::const_iterator inode(node_info.begin()); inode != node_info.end(); ++inode) {
 	m_joint_index_map.insert(make_pair(inode->joint_name, inode->id));
