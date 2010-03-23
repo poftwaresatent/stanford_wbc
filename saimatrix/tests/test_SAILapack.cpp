@@ -20,8 +20,8 @@
 
 #include <iostream>
 #include <sstream>
-#include "SAIMatrix.h"
-#include "SAILapack.h"
+#include <saimatrix/SAIMatrix.h>
+#include <saimatrix/SAILapack.h>
 #include <err.h>
 
 using namespace std;

@@ -90,3 +90,5 @@ install (DIRECTORY ./
   DESTINATION include/wbc
   FILES_MATCHING PATTERN "*.hpp"
   PATTERN ".svn" EXCLUDE)
+
+install (FILES wbc.cmake DESTINATION share)

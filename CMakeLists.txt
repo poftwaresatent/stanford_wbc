@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.6)
 
-include (wbc.cmake)
+include (wbc/wbc.cmake)
 wbc_init (Stanford_WBC)
 
 list (APPEND CMAKE_REQUIRED_INCLUDES ${Stanford_WBC_SOURCE_DIR})
@@ -40,45 +40,6 @@ add_definitions (-DWBC_PLUGIN_PATH_STR="${WBC_PLUGIN_PATH}")
 
 
 ##################################################
-# If we have ROS, then we might even be able to support URDF-to-TAO
-# conversion. And we have to put this detection here at the top
-# because users of the Stanford_WBC and jspace libraries do not want to have to
-# worry about linking (or not) with the URDF lib.
-
-if (NOT TRY_ROS)
-  set (TRY_ROS true)
-endif (NOT TRY_ROS)
-if (TRY_ROS)
-  if (NOT $ENV{ROS_ROOT} STREQUAL "")
-    if (NOT EXISTS $ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
-      message ("WARNING ROS_ROOT is set but rosbuild.cmake not found")
-      set (HAVE_ROS-NOTFOUND)
-    else (NOT EXISTS $ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
-      set (HAVE_ROS true)
-      include ($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
-      rosbuild_find_ros_package (urdf)
-      if (${urdf_PACKAGE_PATH} STREQUAL "")
-	message (FATAL_ERROR "ROS support enabled but urdf package not found, try running 'rosmake urdf'")
-      else (${urdf_PACKAGE_PATH} STREQUAL "")
-	message ("[WBC] enabling ROS support for URDF")
-	rosbuild_invoke_rospack (urdf playtao temp cflags-only-I)
-	include_directories (${playtao_temp})
-	rosbuild_invoke_rospack (urdf playtao temp cflags-only-other)
-	add_definitions (${playtao_temp})
-	rosbuild_invoke_rospack (urdf playtao temp libs-only-L)
-	link_directories (${playtao_temp})
-	rosbuild_invoke_rospack (urdf playtao temp libs-only-l)
-	list (APPEND LIBS ${playtao_temp})
-      endif (${urdf_PACKAGE_PATH} STREQUAL "")
-    endif (NOT EXISTS $ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
-  endif (NOT $ENV{ROS_ROOT} STREQUAL "")
-  if (NOT HAVE_ROS)
-    message ("ROS support disabled, will skip URDF conversion stuff")
-  endif (NOT HAVE_ROS)
-endif (TRY_ROS)
-
-
-##################################################
 ### This shouldn'b be necessary, I think CMake just is not very
 ### supportive of linking with external libraries.
 
@@ -94,20 +55,19 @@ endif (NETWRAP_DIR)
 ### go into subdirs
 
 subdirs (
-  robarch
-  jspace
-  wbc_tinyxml
   saimatrix
-  tao
-  wbcnet
-  wbc
-  wbc/plugins/fake
-  wbc/plugins/robotlog
-  wbc/plugins/nwrobot
-  wbc/plugins/netrob
-  wbc/plugins/rosrob
-  tests
-  applications
+#  robarch
+#  jspace
+#  wbc_tinyxml
+#  saimatrix
+#  tao
+#  wbcnet
+#  wbc
+#  wbc/plugins/fake
+#  wbc/plugins/robotlog
+#  wbc/plugins/nwrobot
+#  wbc/plugins/netrob
+#  wbc/plugins/rosrob
+#  tests
+#  applications
   )
-
-install (FILES wbc.cmake DESTINATION share)

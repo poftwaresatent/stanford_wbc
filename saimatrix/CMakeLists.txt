@@ -110,17 +110,17 @@ endif (SAI_Matrix_FOUND_LAPACK)
 
 list (APPEND
   SAI_Matrix_SRCS
-  SAITransform.cpp
-  SAIMatrix.cpp
-  SAIVector.cpp
-  SAIMatrix3.cpp
-  SAIVector3.cpp
-  SAIMatrix6.cpp
-  SAIVector6.cpp
-  SAIQuaternion.cpp)
+  saimatrix/SAITransform.cpp
+  saimatrix/SAIMatrix.cpp
+  saimatrix/SAIVector.cpp
+  saimatrix/SAIMatrix3.cpp
+  saimatrix/SAIVector3.cpp
+  saimatrix/SAIMatrix6.cpp
+  saimatrix/SAIVector6.cpp
+  saimatrix/SAIQuaternion.cpp)
 
 if (SAI_Matrix_ENABLE_LAPACK)
-  list (APPEND SAI_Matrix_SRCS SAILapack.cpp)
+  list (APPEND SAI_Matrix_SRCS saimatrix/SAILapack.cpp)
   list (APPEND SAI_Matrix_LIBS lapack blas)
 endif (SAI_Matrix_ENABLE_LAPACK)
 
@@ -128,22 +128,13 @@ add_library (SAI_Matrix SHARED ${SAI_Matrix_SRCS})
 target_link_libraries (SAI_Matrix ${SAI_Matrix_LIBS})
 
 if (SAI_Matrix_ENABLE_LAPACK)
-  add_executable (test_SAILapack test_SAILapack.cpp)
+  add_executable (test_SAILapack tests/test_SAILapack.cpp)
   target_link_libraries (test_SAILapack SAI_Matrix)
 endif (SAI_Matrix_ENABLE_LAPACK)
 
-### A bit of a hack to keep headers alongside sources and still include <saimatrix/foo/bar.h> ###
+include_directories (${SAI_Matrix_SOURCE_DIR})
 
-add_custom_target (symlink-saimatrix
-  COMMAND ${SAI_Matrix_SOURCE_DIR}/lnsaimatrix.sh ${SAI_Matrix_SOURCE_DIR}
-  COMMENT Creating symbolic link to source directory
-  WORKING_DIRECTORY ${SAI_Matrix_BINARY_DIR}
-  VERBATIM)
-add_dependencies (SAI_Matrix symlink-saimatrix)
-
-include_directories (${SAI_Matrix_BINARY_DIR})
-
-file (GLOB headers "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
+file (GLOB headers "${SAI_Matrix_SOURCE_DIR}/saimatrix/*.h")
 install (FILES ${headers} DESTINATION include/saimatrix)
 
 install (TARGETS SAI_Matrix DESTINATION lib)
