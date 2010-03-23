@@ -1,0 +1,15 @@
+cmake_minimum_required (VERSION 2.6)
+if (COMMAND CMAKE_POLICY)
+  cmake_policy (SET CMP0003 NEW)
+  cmake_policy (SET CMP0005 NEW)
+endif (COMMAND CMAKE_POLICY)
+
+include (../wbc.cmake)
+wbc_init (jspace_tests)
+
+if (HAVE_GTEST)
+  add_executable (testJspace testJspace.cpp)
+  target_link_libraries (testJspace jspace Stanford_WBC gtest)
+else (HAVE_GTEST)
+  message ("WARNING gtest not found")
+endif (HAVE_GTEST)
