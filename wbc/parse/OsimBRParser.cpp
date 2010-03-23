@@ -25,7 +25,7 @@
 
 #include "OsimBRParser.hpp"
 #include <wbc/core/BranchingRepresentation.hpp>
-#include <wbc/robarch/osimarchitect/COsimArchitect.hpp>
+#include <robarch/osimarchitect/COsimArchitect.hpp>
 #include <wbc/parse/taoRepCreator/CTaoRepCreator.hpp>
 #include <wbcnet/log.hpp>
 

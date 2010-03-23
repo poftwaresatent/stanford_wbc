@@ -32,8 +32,8 @@
 #include <tinyxml/tinyxml.h>
 
 //Include the data structures
-#include <wbc/robarch/glob_rob_ds/SControllerRobotLink.hpp>
-#include <wbc/robarch/glob_rob_ds/SGlobalRobotDS.hpp>
+#include <robarch/glob_rob_ds/SControllerRobotLink.hpp>
+#include <robarch/glob_rob_ds/SGlobalRobotDS.hpp>
 
 namespace lotusarchitect {
 

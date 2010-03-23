@@ -94,6 +94,7 @@ endif (NETWRAP_DIR)
 ### go into subdirs
 
 subdirs (
+  robarch
   jspace
   wbc_tinyxml
   saimatrix

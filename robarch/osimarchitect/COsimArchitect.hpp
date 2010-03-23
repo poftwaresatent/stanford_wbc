@@ -27,8 +27,8 @@
 #ifndef COSIMARCHITECT_HPP_
 #define COSIMARCHITECT_HPP_
 
-#include <wbc/robarch/CRobotArchitect.hpp>
-#include <wbc/robarch/osimarchitect/parser/CSkeletonModelNew.h>
+#include <robarch/CRobotArchitect.hpp>
+#include <robarch/osimarchitect/parser/CSkeletonModelNew.h>
 
 namespace robotarchitect {
 using namespace osimparser;

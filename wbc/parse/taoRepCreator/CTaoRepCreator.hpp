@@ -28,8 +28,8 @@
 #ifndef CTAOREPCREATOR_HPP_
 #define CTAOREPCREATOR_HPP_
 
-#include <wbc/robarch/CRobotDefinition.hpp>
-#include <wbc/robarch/glob_rob_ds/SControllerRobotLink.hpp>
+#include <robarch/CRobotDefinition.hpp>
+#include <robarch/glob_rob_ds/SControllerRobotLink.hpp>
 
 
 namespace wbc_representations {

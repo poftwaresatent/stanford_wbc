@@ -27,11 +27,11 @@
 #ifndef COSIMARCHITECT_HPP_
 #define COSIMARCHITECT_HPP_
 
-#include <wbc/robarch/CRobotArchitect.hpp>
+#include <robarch/CRobotArchitect.hpp>
 
 //The data structures
-#include <wbc/robarch/glob_rob_ds/SControllerRobotLink.hpp>
-#include <wbc/robarch/glob_rob_ds/SGlobalRobotDS.hpp>
+#include <robarch/glob_rob_ds/SControllerRobotLink.hpp>
+#include <robarch/glob_rob_ds/SGlobalRobotDS.hpp>
 
 namespace lotusarchitect {
 

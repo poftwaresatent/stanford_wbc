@@ -6,6 +6,7 @@ list (APPEND LIBS
   TAO_Dynamics_Engine
   wbcnet
   jspace
+  robarch
   dl
   expat
   )
@@ -39,19 +40,6 @@ list (APPEND SRCS
   motion/PositionTask.cpp
   motion/PostureBehavior.cpp
   motion/WholeBodyPosture.cpp
-
-  robarch/CRobotArchitect.cpp
-  robarch/osimarchitect/parser/CCoordObj.cpp
-  robarch/osimarchitect/parser/CJointNew.cpp
-  robarch/osimarchitect/COsimArchitect.cpp
-  robarch/osimarchitect/parser/CSkeletonLinkNew.cpp
-  robarch/osimarchitect/parser/CSkeletonModelNew.cpp
-  robarch/osimarchitect/parser/CTransformAxisObj.cpp
-  robarch/osimarchitect/parser/CWrapCylinderNew.cpp
-  robarch/osimarchitect/parser/CWrapEllipsoidNew.cpp
-  robarch/osimarchitect/parser/SkeletonCoordinate.cpp
-  robarch/osimarchitect/parser/SkeletonMarker.cpp
-  robarch/osimarchitect/parser/CMuscleDefinition.cpp
 
   parse/BRParser.cpp
   parse/BehaviorParser.cpp

@@ -33,9 +33,9 @@
 #include <tinyxml/tinyxml.h>
 
 //The general header (contains the logger etc.)
-#include <wbc/robarch/lotusarchitect/LotusHeaders.hpp>
+#include <robarch/lotusarchitect/LotusHeaders.hpp>
 //And the tinyxml parser for lotus xml files
-#include <wbc/robarch/lotusarchitect/tixml_parser/CLotusTiXmlParser.hpp>
+#include <robarch/lotusarchitect/tixml_parser/CLotusTiXmlParser.hpp>
 
 namespace lotusarchitect {
 

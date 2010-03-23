@@ -25,10 +25,10 @@
  */
 //=========================================================================
 
-#include <wbc/robarch/lotusarchitect/tixml_parser/CLotusTiXmlParser.hpp>
+#include <robarch/lotusarchitect/tixml_parser/CLotusTiXmlParser.hpp>
 
 //The general header (contains the logger etc.)
-#include <wbc/robarch/lotusarchitect/LotusHeaders.hpp>
+#include <robarch/lotusarchitect/LotusHeaders.hpp>
 
 #include <sstream>
 
