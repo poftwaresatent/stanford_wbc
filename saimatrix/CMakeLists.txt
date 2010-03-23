@@ -4,82 +4,8 @@ if (COMMAND CMAKE_POLICY)
   cmake_policy (SET CMP0005 NEW)
 endif (COMMAND CMAKE_POLICY)
 
-project (SAI_Matrix)
-set (CMAKE_VERBOSE_MAKEFILE ON)
-
-message (">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-message ("configuring SAI_Matrix")
-
-if (NOT BUILD_SHARED_LIBS)
-  set (BUILD_SHARED_LIBS True)
-endif (NOT BUILD_SHARED_LIBS)
-
-### Set up some system-dependent things... ###
-
-message ("System: ${CMAKE_SYSTEM_NAME}")
-
-if (WIN32)
-  message ("Detected Microsoft Windows")
-  add_definitions (-DWIN32)
-else (WIN32)
-  if (APPLE)
-    message ("Detected Mac OS X")
-    add_definitions (-DOSX)
-    # add the default macports location to include and link path
-    include_directories (/opt/local/include)
-    link_directories (/opt/local/lib)
-  endif (APPLE)
-  
-  if (CMAKE_SYSTEM_NAME MATCHES Linux)
-    message ("Detected Linux")
-    add_definitions (-DLINUX)
-  endif (CMAKE_SYSTEM_NAME MATCHES Linux)
-  
-  if (CMAKE_SYSTEM_NAME MATCHES OpenBSD)
-    message ("Detected OpenBSD")
-    add_definitions (-DOPENBSD)
-    # OpenBSD will not pick up /usr/local on its own
-    include_directories (/usr/local/include)
-    link_directories (/usr/local/lib)
-  endif (CMAKE_SYSTEM_NAME MATCHES OpenBSD)
-endif (WIN32)
-
-### Some compiler flags are not understood by all...
-
-include (CheckCXXCompilerFlag)
-
-check_cxx_compiler_flag (-pipe SAI_Matrix_CXX_FLAG_pipe)
-if (SAI_Matrix_CXX_FLAG_pipe)
-  add_definitions (-pipe)
-endif (SAI_Matrix_CXX_FLAG_pipe)
-
-check_cxx_compiler_flag (-Wall SAI_Matrix_CXX_FLAG_Wall)
-if (SAI_Matrix_CXX_FLAG_Wall)
-  add_definitions (-Wall)
-endif (SAI_Matrix_CXX_FLAG_Wall)
-
-if (ANSI)
-  check_cxx_compiler_flag (-ansi SAI_Matrix_CXX_FLAG_ansi)
-  if (SAI_Matrix_CXX_FLAG_ansi)
-    add_definitions (-ansi)
-  endif (SAI_Matrix_CXX_FLAG_ansi)
-  check_cxx_compiler_flag (-pedantic SAI_Matrix_CXX_FLAG_pedantic)
-  if (SAI_Matrix_CXX_FLAG_pedantic)
-    add_definitions (-pedantic)
-  endif (SAI_Matrix_CXX_FLAG_pedantic)
-endif (ANSI)
-
-if (NOT CMAKE_BUILD_TYPE)
-  set (CMAKE_BUILD_TYPE Debug)
-endif (NOT CMAKE_BUILD_TYPE)
-
-if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-  set (SAI_Matrix_DEBUG)
-  check_cxx_compiler_flag (-O0 SAI_Matrix_CXX_FLAG_O0)
-  if (SAI_Matrix_CXX_FLAG_O0)
-    add_definitions (-O0)
-  endif (SAI_Matrix_CXX_FLAG_O0)
-endif (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+include (../macros.cmake)
+wbc_init (SAI_Matrix)
 
 ### If we have LAPACK, we can enable the SVD and maybe other goodies ###
 
@@ -103,6 +29,8 @@ if (SAI_Matrix_FOUND_LAPACK)
     message (FATAL_ERROR "BLAS not found, please install it (e.g. `sudo apt-get install libblas-dev')")
   endif (SAI_Matrix_FOUND_BLAS)
 else (SAI_Matrix_FOUND_LAPACK)
+  # Well, here we simply always fail if lapack is not found, so
+  # actually we do not need the handling of "optional" stuff.
   message (FATAL_ERROR "LAPACK not found, please install it (e.g. `sudo apt-get install liblapack-dev')")
 endif (SAI_Matrix_FOUND_LAPACK)
 

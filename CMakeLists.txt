@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
 
-include (wbc/wbc.cmake)
-wbc_init (Stanford_WBC)
+include (macros.cmake)
+wbc_init (Stanford_WBC_Umbrella)
 
 list (APPEND CMAKE_REQUIRED_INCLUDES ${Stanford_WBC_SOURCE_DIR})
 include_directories (${Stanford_WBC_SOURCE_DIR} ${Stanford_WBC_SOURCE_DIR}/wbcnet)
@@ -56,11 +56,10 @@ endif (NETWRAP_DIR)
 
 subdirs (
   saimatrix
+  tao
 #  robarch
 #  jspace
 #  wbc_tinyxml
-#  saimatrix
-#  tao
 #  wbcnet
 #  wbc
 #  wbc/plugins/fake
