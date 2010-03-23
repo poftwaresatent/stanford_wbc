@@ -1,4 +1,11 @@
-### included via subdir() command in top-level CMakeLists.txt
+cmake_minimum_required (VERSION 2.6)
+if (COMMAND CMAKE_POLICY)
+  cmake_policy (SET CMP0003 NEW)
+  cmake_policy (SET CMP0005 NEW)
+endif (COMMAND CMAKE_POLICY)
+
+include (../macros.cmake)
+wbc_init (Stanford_WBC)
 
 list (APPEND LIBS
   wbc_tinyxml
@@ -13,82 +20,90 @@ list (APPEND LIBS
 
 list (APPEND SRCS
 
-  core/Plugin.cpp
-  core/RobotFactory.cpp
-  core/TaskModelBase.cpp
-  core/MobileManipulatorTaskModel.cpp
-  core/BranchingRepresentation.cpp
-  core/Contact.cpp
-  core/Dynamics.cpp
-  core/Kinematics.cpp
-  core/RobotControlModel.cpp
-  core/MobileManipulatorServoBehaviors.cpp
-  core/BehaviorDescription.cpp
-  core/BehaviorFactory.cpp
-  core/TaskDescription.cpp
-  core/TaskSet.cpp
-  core/SAIMatrixAPI.cpp
-  core/SAIVectorAPI.cpp
+  wbc/core/Plugin.cpp
+  wbc/core/RobotFactory.cpp
+  wbc/core/TaskModelBase.cpp
+  wbc/core/MobileManipulatorTaskModel.cpp
+  wbc/core/BranchingRepresentation.cpp
+  wbc/core/Contact.cpp
+  wbc/core/Dynamics.cpp
+  wbc/core/Kinematics.cpp
+  wbc/core/RobotControlModel.cpp
+  wbc/core/MobileManipulatorServoBehaviors.cpp
+  wbc/core/BehaviorDescription.cpp
+  wbc/core/BehaviorFactory.cpp
+  wbc/core/TaskDescription.cpp
+  wbc/core/TaskSet.cpp
+  wbc/core/SAIMatrixAPI.cpp
+  wbc/core/SAIVectorAPI.cpp
 
-  motion/COMTask.cpp
-  motion/FloatBehavior.cpp
-  motion/FrictionPosture.cpp
-  motion/JointLimitConstraint.cpp
-  motion/JointTask.cpp
-  motion/ObstacleAvoidanceTask.cpp
-  motion/OrientationTask.cpp
-  motion/PositionTask.cpp
-  motion/PostureBehavior.cpp
-  motion/WholeBodyPosture.cpp
+  wbc/motion/COMTask.cpp
+  wbc/motion/FloatBehavior.cpp
+  wbc/motion/FrictionPosture.cpp
+  wbc/motion/JointLimitConstraint.cpp
+  wbc/motion/JointTask.cpp
+  wbc/motion/ObstacleAvoidanceTask.cpp
+  wbc/motion/OrientationTask.cpp
+  wbc/motion/PositionTask.cpp
+  wbc/motion/PostureBehavior.cpp
+  wbc/motion/WholeBodyPosture.cpp
 
-  parse/BRParser.cpp
-  parse/BehaviorParser.cpp
-  parse/OsimBRParser.cpp
-  parse/TiXmlBRParser.cpp
+  wbc/parse/BRParser.cpp
+  wbc/parse/BehaviorParser.cpp
+  wbc/parse/OsimBRParser.cpp
+  wbc/parse/TiXmlBRParser.cpp
 
-  util/ShuffleVector.cpp
-  util/saiTime.cpp
-  util/DataLog.cpp
-  util/RecorderImpl.cpp
-  util/File.cpp
-  util/utc.cpp
-  util/dtor_check.cpp
-  
-  bin/builtin.cpp
-  bin/attributes.cpp
-  bin/DirectoryCmdServer.cpp
-  bin/ModelProcess.cpp
-  bin/ServoModelProcess.cpp
-  bin/ServoProcess.cpp
-  bin/TaskModelListener.cpp
-  bin/options.cpp
-  bin/Process.cpp
-  bin/directory.cpp
-  bin/UserProcess.cpp
+  wbc/util/ShuffleVector.cpp
+  wbc/util/saiTime.cpp
+  wbc/util/DataLog.cpp
+  wbc/util/RecorderImpl.cpp
+  wbc/util/File.cpp
+  wbc/util/utc.cpp
+  wbc/util/dtor_check.cpp
+
+  wbc/bin/builtin.cpp
+  wbc/bin/attributes.cpp
+  wbc/bin/DirectoryCmdServer.cpp
+  wbc/bin/ModelProcess.cpp
+  wbc/bin/ServoModelProcess.cpp
+  wbc/bin/ServoProcess.cpp
+  wbc/bin/TaskModelListener.cpp
+  wbc/bin/options.cpp
+  wbc/bin/Process.cpp
+  wbc/bin/directory.cpp
+  wbc/bin/UserProcess.cpp
   )
 
 if (HAVE_XMLRPC)
-  list (APPEND SRCS bin/XMLRPCDirectoryServer.cpp)
+  list (APPEND SRCS wbc/bin/XMLRPCDirectoryServer.cpp)
   list (APPEND LIBS XmlRpc)
 endif (HAVE_XMLRPC)
 
 if (HAVE_ROS)
   list (APPEND SRCS
-    ros/Model.cpp
-    ros/BehaviorLibrary.cpp
+    wbc/ros/Model.cpp
+    wbc/ros/BehaviorLibrary.cpp
     )
 endif (HAVE_ROS)
 
 
 add_library (Stanford_WBC SHARED ${SRCS})
 
+include_directories (
+  .
+  ../saimatrix
+  ../tao
+  ../wbc_tinyxml
+  ../wbcnet
+  ../robarch
+  ../jspace
+  )
+
 target_link_libraries (Stanford_WBC ${LIBS})
 
 install (TARGETS Stanford_WBC DESTINATION lib)
 
-install (DIRECTORY ./
+install (DIRECTORY wbc/
   DESTINATION include/wbc
   FILES_MATCHING PATTERN "*.hpp"
   PATTERN ".svn" EXCLUDE)
-
-install (FILES wbc.cmake DESTINATION share)

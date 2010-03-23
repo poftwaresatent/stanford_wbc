@@ -61,7 +61,7 @@ subdirs (
   wbcnet
   robarch
   jspace
-#  wbc
+  wbc
 #  wbc/plugins/fake
 #  wbc/plugins/robotlog
 #  wbc/plugins/nwrobot
@@ -70,3 +70,6 @@ subdirs (
 #  tests
 #  applications
   )
+
+install (FILES macros.cmake DESTINATION share)
+
