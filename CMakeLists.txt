@@ -60,7 +60,7 @@ subdirs (
   wbc_tinyxml
   wbcnet
   robarch
-#  jspace
+  jspace
 #  wbc
 #  wbc/plugins/fake
 #  wbc/plugins/robotlog

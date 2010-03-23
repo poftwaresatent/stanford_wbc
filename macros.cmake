@@ -315,7 +315,9 @@ endmacro (wbc_init)
 #
 # Try to find ROS. If found, try to find URDF. If everything works as
 # desired, it ends up setting HAVE_ROS=true and sets up the include
-# and link directives for inclusion of the URDF package.
+# and link directives for inclusion of the URDF package. The required
+# libraries are appended to the URDF_LIBS CMake list, which might or might
+# not be populated beforehand.
 #
 # You can set TRY_ROS=false on the CMake command line in order to skip
 # all of this.
@@ -346,7 +348,7 @@ macro (wbc_find_urdf)
 	  rosbuild_invoke_rospack (urdf wbc_ros_support temp libs-only-L)
 	  link_directories (${wbc_ros_support_temp})
 	  rosbuild_invoke_rospack (urdf wbc_ros_support temp libs-only-l)
-	  list (APPEND LIBS ${wbc_ros_support_temp})
+	  list (APPEND URDF_LIBS ${wbc_ros_support_temp})
 	endif (${urdf_PACKAGE_PATH} STREQUAL "")
       endif (NOT EXISTS $ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
     endif (NOT $ENV{ROS_ROOT} STREQUAL "")
