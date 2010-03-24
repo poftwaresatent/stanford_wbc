@@ -61,14 +61,13 @@ subdirs (
   wbcnet
   robarch
   jspace
+  jspace-tests
   wbc
 #  wbc/plugins/fake
 #  wbc/plugins/robotlog
 #  wbc/plugins/nwrobot
 #  wbc/plugins/netrob
 #  wbc/plugins/rosrob
-#  tests
-#  applications
   )
 
 install (FILES wbc.cmake DESTINATION share)
