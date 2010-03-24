@@ -104,7 +104,7 @@ target_link_libraries (Stanford_WBC ${LIBS})
 
 subdirs (
   tests
-#  applications
+  applications
   )
 
 install (TARGETS Stanford_WBC DESTINATION lib)
