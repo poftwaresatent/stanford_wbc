@@ -386,6 +386,7 @@ endmacro (wbc_find_urdf)
 # - otherwise, if WBC_ROOT is set in CMake or the environment, it gets
 #   written to ${WBC_ROOT}/plugins
 # - otherwise, it ends up in the CMake default location for libraries
+#
 macro (wbc_add_plugin PLUGIN_NAME)
   message ("[WBC] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
   message ("[WBC] BEGIN configuring plugin ${PLUGIN_NAME}")
@@ -415,3 +416,18 @@ macro (wbc_add_plugin PLUGIN_NAME)
   message ("[WBC] FINISHED configuring WBC plugin ${PLUGIN_NAME}")
   message ("[WBC] <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
 endmacro (wbc_add_plugin)
+
+
+##################################################
+#
+# wbc_add_executable()
+#
+# Just like add_executable(), but adds linker directives to find the
+# Stanford_WBC libraries and other dependencies.
+#
+macro (wbc_add_executable EXECUTABLE_NAME)
+  add_executable (${EXECUTABLE_NAME} ${ARGN})
+  target_link_libraries (${EXECUTABLE_NAME} Stanford_WBC)
+  wbc_find_urdf ()
+  set_target_properties (${EXECUTABLE_NAME} PROPERTIES INSTALL_RPATH "${URDF_LIBDIRS};${CMAKE_INSTALL_PREFIX}/lib")
+endmacro (wbc_add_executable)
