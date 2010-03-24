@@ -38,6 +38,8 @@ namespace jspace {
     Status();
     Status(bool ok, std::string const & errstr);
     
+    inline operator bool () const { return ok; }
+    
     bool ok;
     std::string errstr;
   };
