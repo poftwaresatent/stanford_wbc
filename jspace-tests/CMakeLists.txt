@@ -9,18 +9,21 @@ wbc_init (jspace_tests)
 
 wbc_find_urdf ()
 
-include_directories (
-  .
-  ../jspace
-  ../saimatrix
-  ../wbcnet
-  ../tao
-  ../wbc
-  )
-
 if (HAVE_GTEST)
-  add_executable (testJspace testJspace.cpp)
-  target_link_libraries (testJspace jspace Stanford_WBC gtest urdf)
+  if (HAVE_ROS)
+    include_directories (
+      .
+      ../jspace
+      ../saimatrix
+      ../wbcnet
+      ../tao
+      ../wbc
+      )
+    add_executable (testJspace testJspace.cpp)
+    target_link_libraries (testJspace jspace Stanford_WBC gtest urdf)
+  else (HAVE_ROS)
+    message ("WARNING ROS not found")
+  endif (HAVE_ROS)
 else (HAVE_GTEST)
   message ("WARNING gtest not found")
 endif (HAVE_GTEST)
