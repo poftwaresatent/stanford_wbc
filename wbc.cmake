@@ -107,6 +107,10 @@ endmacro (wbc_getvars)
 # - compiler flags -pipe and -Wall will be set
 # - compiler flag -O0 will be set for debug build
 # - if desired (by setting ANSI=true), also add -ansi and -pedantic compiler flags
+# - preprocessor symbol TIXML_USE_STL will be set, because that seems
+#   a good idea and if we mix in our optional ROS support, we have to
+#   (there is no end to headaches due to tinyxml version and
+#   compilation issues, grr)
 # - CMake variables and preprocessor definitions to detect some
 #   optional 3rdparty modules:
 #   - HAVE_GTEST
@@ -124,6 +128,8 @@ macro (wbc_init PROJECT_NAME)
   message ("[WBC] BEGIN base config of ${PROJECT_NAME}")
   
   project (${PROJECT_NAME})
+  
+  add_definitions (-DTIXML_USE_STL)
   
   # nothing worse than not knowing why a header could not be found, so
   # we wanna see those -I directives etc
@@ -314,10 +320,14 @@ endmacro (wbc_init)
 # wbc_find_urdf()
 #
 # Try to find ROS. If found, try to find URDF. If everything works as
-# desired, it ends up setting HAVE_ROS=true and sets up the include
-# and link directives for inclusion of the URDF package. The required
-# libraries are appended to the URDF_LIBS CMake list, which might or might
-# not be populated beforehand.
+# desired, it sets up the include and link directives for inclusion of
+# the URDF package. The following variables will be set if URDF was
+# found:
+# - HAVE_ROS=true
+# - URDF_INCLUDES the directories to include
+# - URDF_CFLAGS other CFLAGS required to build the URDF
+# - URDF_LIBDIRS the directories to add to the linker search path
+# - URDF_LIBS the libraries to link with
 #
 # You can set TRY_ROS=false on the CMake command line in order to skip
 # all of this.
@@ -341,14 +351,13 @@ macro (wbc_find_urdf)
 	  message (FATAL_ERROR "ROS support enabled but urdf package not found, try running 'rosmake urdf'")
 	else (${urdf_PACKAGE_PATH} STREQUAL "")
 	  message ("[WBC] enabling ROS support for URDF")
-	  rosbuild_invoke_rospack (urdf wbc_ros_support temp cflags-only-I)
-	  include_directories (${wbc_ros_support_temp})
-	  rosbuild_invoke_rospack (urdf wbc_ros_support temp cflags-only-other)
-	  add_definitions (${wbc_ros_support_temp})
-	  rosbuild_invoke_rospack (urdf wbc_ros_support temp libs-only-L)
-	  link_directories (${wbc_ros_support_temp})
-	  rosbuild_invoke_rospack (urdf wbc_ros_support temp libs-only-l)
-	  list (APPEND URDF_LIBS ${wbc_ros_support_temp})
+	  rosbuild_invoke_rospack (urdf URDF INCLUDES cflags-only-I)
+	  include_directories (${URDF_INCLUDES})
+	  rosbuild_invoke_rospack (urdf URDF OTHER_CFLAGS cflags-only-other)
+	  add_definitions (${URDF_CFLAGS})
+	  rosbuild_invoke_rospack (urdf URDF LIBDIRS libs-only-L)
+	  link_directories (${URDF_LIBDIRS})
+	  rosbuild_invoke_rospack (urdf URDF LIBS libs-only-l)
 	endif (${urdf_PACKAGE_PATH} STREQUAL "")
       endif (NOT EXISTS $ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
     endif (NOT $ENV{ROS_ROOT} STREQUAL "")

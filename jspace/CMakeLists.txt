@@ -27,17 +27,23 @@ if (HAVE_ROS)
     )
 endif (HAVE_ROS)
 
-add_library (jspace SHARED ${SRCS})
-
-### Would be nice, but we need to -Wl,-rpath,FOO to get it to work...
-# target_link_libraries (jspace ${URDF_LIBS})
-
 include_directories (
   .
   ../saimatrix
   ../tao
   ../wbcnet
   )
+
+add_library (jspace SHARED ${SRCS})
+if (HAVE_ROS)
+  target_link_libraries (jspace urdf)
+  # Some guesswork to make it easier for users of libjspace to handle
+  # the optional ROS dependency.
+  #  set_target_properties (jspace
+  #    PROPERTIES
+  #    INSTALL_RPATH ${URDF_LIBDIRS}
+  #    BUILD_WITH_INSTALL_RPATH True)
+endif (HAVE_ROS)
 
 file (GLOB headers "jspace/*.hpp")
 install (FILES ${headers} DESTINATION include/jspace)

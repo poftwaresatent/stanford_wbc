@@ -6,6 +6,7 @@ endif (COMMAND CMAKE_POLICY)
 
 include (../wbc.cmake)
 wbc_init (Stanford_WBC)
+wbc_find_urdf ()
 
 list (APPEND LIBS
   wbc_tinyxml
@@ -100,6 +101,11 @@ include_directories (
   )
 
 target_link_libraries (Stanford_WBC ${LIBS})
+
+subdirs (
+  tests
+#  applications
+  )
 
 install (TARGETS Stanford_WBC DESTINATION lib)
 
