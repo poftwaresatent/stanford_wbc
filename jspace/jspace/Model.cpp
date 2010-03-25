@@ -25,6 +25,7 @@
 
 #include "Model.hpp"
 #include "tao_util.hpp"
+//DEBUG// #include "tao_dump.hpp"
 #include <tao/dynamics/taoNode.h>
 #include <tao/dynamics/taoJoint.h>
 #include <tao/dynamics/taoDynamics.h>
@@ -420,20 +421,18 @@ namespace jspace {
       // required for the column-selecting unit acceleration (into a
       // flattened upper triangular matrix).
       
-      double wtf;
-      cerr << "wtf [" << irow << "] q: ";
-      joint->getQ(&wtf);
-      cerr << wtf << " dq: ";
-      joint->getDQ(&wtf);
-      cerr << wtf << " aa:";
+      //DEBUG//       double wtf;
+      //DEBUG//       cerr << "wtf [" << irow << "] q: ";
+      //DEBUG//       joint->getQ(&wtf);
+      //DEBUG//       cerr << wtf << " dq: ";
+      //DEBUG//       joint->getDQ(&wtf);
+      //DEBUG//       cerr << wtf << " aa:";
       for (size_t icol(0); icol <= irow; ++icol) {
 	joint = kgm_tree_->info[icol].node->getJointList();
 	joint->getTau(&a_upper_triangular_[squareToTriangularIndex(irow, icol, ndof_)]);
-
-	cerr << " " << a_upper_triangular_[squareToTriangularIndex(irow, icol, ndof_)];
-
+	//DEBUG// 	cerr << " " << a_upper_triangular_[squareToTriangularIndex(irow, icol, ndof_)];
       }
-      cerr << "\n";
+      //DEBUG//       cerr << "\n";
     }
     
     // Reset all the torques.
@@ -442,12 +441,11 @@ namespace jspace {
       joint->zeroTau();
     }
     
-    
-    {
-      SAIMatrix wtf;
-      getMassInertia(wtf);
-      wtf.prettyPrint(cerr, "jspace::Model::computeMassInertia()", "  ");
-    }
+    //DEBUG//     {
+    //DEBUG//       SAIMatrix wtf;
+    //DEBUG//       getMassInertia(wtf);
+    //DEBUG//       wtf.prettyPrint(cerr, "jspace::Model::computeMassInertia()", "  ");
+    //DEBUG//     }
   }
   
   

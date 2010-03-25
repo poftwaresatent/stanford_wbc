@@ -213,14 +213,14 @@ namespace jspace {
     State const & state(model.getState());
     actual_ = state.position_;
 
-    cerr << "JointGoalController\n";
+    //DEBUG//     cerr << "JointGoalController\n";
     
     SAIVector sai_tau(ndof);
     for (size_t ii(0); ii < ndof; ++ii) {
       sai_tau[ii] = - kp_[ii] * (actual_[ii] - goal_[ii]) - kd_[ii] * state.velocity_[ii];
     }
     
-    sai_tau.prettyPrint(cerr, "  raw tau", "    ");
+    //DEBUG//     sai_tau.prettyPrint(cerr, "  raw tau", "    ");
     
     if (compensation_flags_ & COMP_MASS_INERTIA) {
       SAIMatrix AA;
@@ -231,8 +231,8 @@ namespace jspace {
       }
       sai_tau = AA * sai_tau;
       
-      AA.prettyPrint(cerr, "  MassInertia", "    ");
-      sai_tau.prettyPrint(cerr, "  after COMP_MASS_INERTIA", "    ");
+      //DEBUG//       AA.prettyPrint(cerr, "  MassInertia", "    ");
+      //DEBUG//       sai_tau.prettyPrint(cerr, "  after COMP_MASS_INERTIA", "    ");
 
     }
     
@@ -245,7 +245,7 @@ namespace jspace {
       }
       sai_tau += BB;
       
-      sai_tau.prettyPrint(cerr, "  after COMP_CORIOLIS", "    ");
+      //DEBUG//       sai_tau.prettyPrint(cerr, "  after COMP_CORIOLIS", "    ");
 
     }
     
@@ -258,7 +258,7 @@ namespace jspace {
       }
       sai_tau += GG;
       
-      sai_tau.prettyPrint(cerr, "  after COMP_GRAVITY", "    ");
+      //DEBUG//       sai_tau.prettyPrint(cerr, "  after COMP_GRAVITY", "    ");
       
     }
     

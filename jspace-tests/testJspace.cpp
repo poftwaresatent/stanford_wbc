@@ -28,10 +28,13 @@
 #include <jspace/Model.hpp>
 #include <jspace/vector_util.hpp>
 #include <jspace/controller_library.hpp>
+#include <jspace/ros/urdf_to_tao.hpp>
+#include <jspace/ros/urdf_dump.hpp>
 #include <wbcnet/strutil.hpp>
 #include <wbc/core/RobotControlModel.hpp>
 #include <wbc/core/BranchingRepresentation.hpp>
 #include <wbc/parse/BRParser.hpp>
+#include <urdf/model.h>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -46,6 +49,7 @@ static std::string create_puma_frames() throw(runtime_error);
 static jspace::Model * create_puma_model() throw(runtime_error);
 static jspace::Model * create_unit_mass_RR_model() throw(runtime_error);
 static jspace::Model * create_unit_mass_5R_model() throw(runtime_error);
+static urdf::Model * create_unit_mass_5R_urdf() throw(runtime_error);
 static jspace::Model * create_unit_inertia_RR_model() throw(runtime_error);
 static jspace::Model * create_unit_mass_RP_model() throw(runtime_error);
 
@@ -822,6 +826,102 @@ TEST (jspaceController, mass_inertia_compensation_RR)
 }
 
 
+TEST (jspaceROSModel, check_5R_conversion)
+{
+  urdf::Model const * urdf_model(0);
+  std::vector<jspace::tao_tree_info_s*> tao_trees;
+  jspace::Model * model(0);
+  jspace::Model * model_check(0);
+
+  try {
+    urdf_model = create_unit_mass_5R_urdf();
+    static const size_t n_tao_trees(2);
+    convert_urdf_to_tao_n(*urdf_model, "world", jspace::ros::DefaultLinkFilter(), tao_trees, n_tao_trees);
+    model = new jspace::Model(tao_trees[0], tao_trees[1]);
+    taoDNode * ee(model->getNode(4));
+    ASSERT_NE ((void*)0, ee);
+    
+    model_check = create_unit_mass_5R_model();
+    taoDNode * ee_check(model_check->getNode(4));
+    ASSERT_NE ((void*)0, ee_check);
+    
+    jspace::State state(5, 5, 0);
+    for (size_t ii(0); ii < 5; ++ii) {
+      for (double pos(-M_PI); pos <= M_PI; pos += 2 * M_PI / 7) {
+	memset(&state.position_[0], 0, 5 * sizeof(double));
+	state.position_[ii] = pos;
+	for (double vel(-M_PI); vel <= M_PI; vel += 2 * M_PI / 7) {
+	  memset(&state.velocity_[0], 0, 5 * sizeof(double));
+	  state.velocity_[ii] = vel;
+	  
+	  model->update(state);
+	  model_check->update(state);
+	  
+	  SAIMatrix Jg, Jg_check, MM, MM_check;
+	  SAIVector GG, GG_check, BB, BB_check;
+	  ASSERT_TRUE (model->computeJacobian(ee, Jg));
+	  ASSERT_TRUE (model_check->computeJacobian(ee_check, Jg_check));
+	  ASSERT_TRUE (model->getMassInertia(MM));
+	  ASSERT_TRUE (model_check->getMassInertia(MM_check));
+	  ASSERT_TRUE (model->getGravity(GG));
+	  ASSERT_TRUE (model_check->getGravity(GG_check));
+	  ASSERT_TRUE (model->getCoriolisCentrifugal(BB));
+	  ASSERT_TRUE (model_check->getCoriolisCentrifugal(BB_check));
+	  
+	  {
+	    std::ostringstream msg;
+	    msg << "Jg check\n"
+		<< "  pos = " << state.position_ << "\n"
+		<< "  vel = " << state.velocity_ << "\n";
+	    Jg_check.prettyPrint(msg, "  want", "    ");
+	    Jg.prettyPrint(msg, "  have", "    ");
+	    EXPECT_TRUE (check_matrix("Jg", Jg_check, Jg, 1e-3, msg)) << msg.str();
+	  }
+	  {
+	    std::ostringstream msg;
+	    msg << "MM check\n"
+		<< "  pos = " << state.position_ << "\n"
+		<< "  vel = " << state.velocity_ << "\n";
+	    MM_check.prettyPrint(msg, "  want", "    ");
+	    MM.prettyPrint(msg, "  have", "    ");
+	    EXPECT_TRUE (check_matrix("MM", MM_check, MM, 1e-3, msg)) << msg.str();
+	  }
+	  {
+	    std::ostringstream msg;
+	    msg << "GG check\n"
+		<< "  pos = " << state.position_ << "\n"
+		<< "  vel = " << state.velocity_ << "\n";
+	    GG_check.prettyPrint(msg, "  want", "    ");
+	    GG.prettyPrint(msg, "  have", "    ");
+	    EXPECT_TRUE (check_vector("GG", GG_check, GG, 1e-3, msg)) << msg.str();
+	  }
+	  {
+	    std::ostringstream msg;
+	    msg << "BB check\n"
+		<< "  pos = " << state.position_ << "\n"
+		<< "  vel = " << state.velocity_ << "\n";
+	    BB_check.prettyPrint(msg, "  want", "    ");
+	    BB.prettyPrint(msg, "  have", "    ");
+	    EXPECT_TRUE (check_vector("BB", BB_check, BB, 1e-3, msg)) << msg.str();
+	  }
+	}
+      }
+    }
+    
+  }
+  catch (std::exception const & ee) {
+    ADD_FAILURE () << "exception " << ee.what();
+  }
+
+  delete model_check;
+  delete model;
+  //   for (size_t ii(0); ii < tao_trees.size(); ++ii) {
+  //     delete tao_trees[ii];
+  //   }
+  delete urdf_model;
+}
+
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
@@ -1383,11 +1483,111 @@ jspace::Model * create_unit_mass_5R_model() throw(runtime_error)
   jspace::tao_tree_info_s * cc_tree(cc_brep->createTreeInfo());
   delete cc_brep;
   
-  //   cout << "created jspace::Model:\n";
-  //   wbc::dump_tao_tree_info(cout, kg_tree, "  ", false);
-  
   jspace::Model * model(new jspace::Model(kg_tree, cc_tree));
   return model;
+}
+
+
+urdf::Model * create_unit_mass_5R_urdf() throw(runtime_error)
+{
+  static char const * urdf_string =
+    "<?xml version=\"1.0\"?>\n"
+    "<robot name=\"continuous_chain\"\n"
+    "       xmlns:xi=\"http://www.w3.org/2001/XInclude\"\n"
+    "       xmlns:gazebo=\"http://playerstage.sourceforge.net/gazebo/xmlschema/#gz\"\n"
+    "       xmlns:model=\"http://playerstage.sourceforge.net/gazebo/xmlschema/#model\"\n"
+    "       xmlns:sensor=\"http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor\"\n"
+    "       xmlns:body=\"http://playerstage.sourceforge.net/gazebo/xmlschema/#body\"\n"
+    "       xmlns:geom=\"http://playerstage.sourceforge.net/gazebo/xmlschema/#geom\"\n"
+    "       xmlns:joint=\"http://playerstage.sourceforge.net/gazebo/xmlschema/#joint\"\n"
+    "       xmlns:interface=\"http://playerstage.sourceforge.net/gazebo/xmlschema/#interface\"\n"
+    "       xmlns:rendering=\"http://playerstage.sourceforge.net/gazebo/xmlschema/#rendering\"\n"
+    "       xmlns:renderable=\"http://playerstage.sourceforge.net/gazebo/xmlschema/#renderable\"\n"
+    "       xmlns:controller=\"http://playerstage.sourceforge.net/gazebo/xmlschema/#controller\"\n"
+    "       xmlns:physics=\"http://playerstage.sourceforge.net/gazebo/xmlschema/#physics\">\n"
+    "  <joint name=\"joint_1\" type=\"continuous\" >\n"
+    "    <axis xyz=\"0 0 1\" />\n"
+    "    <origin xyz=\"0 0 2\" rpy=\"0 0 0\" />\n"
+    "    <parent link=\"world\" />\n"
+    "    <child link=\"link_1\" />\n"
+    "    <dynamics damping=\"0.0\" />\n"
+    "  </joint>\n"
+    "  <link name=\"link_1\">\n"
+    "    <inertial>\n"
+    "      <mass value=\"1\" />\n"
+    "      <origin xyz=\"1 0 0\" /> \n"
+    "      <inertia  ixx=\"0\" ixy=\"0\" ixz=\"0\" iyy=\"0\" iyz=\"0\" izz=\"0\" />\n"
+    "    </inertial>\n"
+    "  </link>\n"
+    "  <joint name=\"joint_2\" type=\"continuous\" >\n"
+    "    <axis xyz=\"0 0 1\" />\n"
+    "    <origin xyz=\"1 0 0\" rpy=\"0 0 0\" />\n"
+    "    <parent link=\"link_1\" />\n"
+    "    <child link=\"link_2\" />\n"
+    "    <dynamics damping=\"0.0\" />\n"
+    "  </joint>\n"
+    "  <link name=\"link_2\">\n"
+    "    <inertial>\n"
+    "      <mass value=\"1\" />\n"
+    "      <origin xyz=\"1 0 0\" /> \n"
+    "      <inertia  ixx=\"0\" ixy=\"0\" ixz=\"0\" iyy=\"0\" iyz=\"0\" izz=\"0\" />\n"
+    "    </inertial>\n"
+    "  </link>\n"
+    "  <joint name=\"joint_3\" type=\"continuous\" >\n"
+    "    <axis xyz=\"0 0 1\" />\n"
+    "    <origin xyz=\"1 0 0\" rpy=\"0 0 0\" />\n"
+    "    <parent link=\"link_2\" />\n"
+    "    <child link=\"link_3\" />\n"
+    "    <dynamics damping=\"0.0\" />\n"
+    "  </joint>\n"
+    "  <link name=\"link_3\">\n"
+    "    <inertial>\n"
+    "      <mass value=\"1\" />\n"
+    "      <origin xyz=\"1 0 0\" /> \n"
+    "      <inertia  ixx=\"0\" ixy=\"0\" ixz=\"0\" iyy=\"0\" iyz=\"0\" izz=\"0\" />\n"
+    "    </inertial>\n"
+    "  </link>\n"
+    "  <joint name=\"joint_4\" type=\"continuous\" >\n"
+    "    <axis xyz=\"0 0 1\" />\n"
+    "    <origin xyz=\"1 0 0\" rpy=\"0 0 0\" />\n"
+    "    <parent link=\"link_3\" />\n"
+    "    <child link=\"link_4\" />\n"
+    "    <dynamics damping=\"0.0\" />\n"
+    "  </joint>\n"
+    "  <link name=\"link_4\">\n"
+    "    <inertial>\n"
+    "      <mass value=\"1\" />\n"
+    "      <origin xyz=\"1 0 0\" /> \n"
+    "      <inertia  ixx=\"0\" ixy=\"0\" ixz=\"0\" iyy=\"0\" iyz=\"0\" izz=\"0\" />\n"
+    "    </inertial>\n"
+    "  </link>\n"
+    "  <joint name=\"joint_5\" type=\"continuous\" >\n"
+    "    <axis xyz=\"0 0 1\" />\n"
+    "    <origin xyz=\"1 0 0\" rpy=\"0 0 0\" />\n"
+    "    <parent link=\"link_4\" />\n"
+    "    <child link=\"link_5\" />\n"
+    "    <dynamics damping=\"0.0\" />\n"
+    "  </joint>\n"
+    "  <link name=\"link_5\">\n"
+    "    <inertial>\n"
+    "      <mass value=\"1\" />\n"
+    "      <origin xyz=\"1 0 0\" /> \n"
+    "      <inertia  ixx=\"0\" ixy=\"0\" ixz=\"0\" iyy=\"0\" iyz=\"0\" izz=\"0\" />\n"
+    "    </inertial>\n"
+    "  </link>\n"
+    "</robot>\n";
+  TiXmlDocument urdf_xml;
+  urdf_xml.Parse(urdf_string);
+  TiXmlElement * urdf_root(urdf_xml.FirstChildElement("robot"));
+  if ( ! urdf_root) {
+    throw runtime_error("no <robot> element");
+  }
+  urdf::Model * urdf_model(new urdf::Model());
+  if ( ! urdf_model->initXml(urdf_root)) {
+    delete urdf_model;
+    throw runtime_error("urdf_model.initXml() failed");
+  }
+  return urdf_model;
 }
 
 
