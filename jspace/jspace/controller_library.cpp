@@ -196,28 +196,54 @@ namespace jspace {
     
     State const & state(model.getState());
     actual_ = state.position_;
+
+    cerr << "JointGoalController\n";
     
     SAIVector sai_tau(ndof);
     for (size_t ii(0); ii < ndof; ++ii) {
       sai_tau[ii] = - kp_[ii] * (actual_[ii] - goal_[ii]) - kd_[ii] * state.velocity_[ii];
     }
     
+    sai_tau.prettyPrint(cerr, "  raw tau", "    ");
+    
     if (compensation_flags_ & COMP_MASS_INERTIA) {
       SAIMatrix AA;
-      model.getMassInertia(AA);
+      if ( ! model.getMassInertia(AA)) {
+	status.ok = false;
+	status.errstr = "model.getMassInertia() failed";
+	return status;
+      }
       sai_tau = AA * sai_tau;
+      
+      AA.prettyPrint(cerr, "  MassInertia", "    ");
+      sai_tau.prettyPrint(cerr, "  after COMP_MASS_INERTIA", "    ");
+
     }
     
     if (compensation_flags_ & COMP_CORIOLIS) {
       SAIVector BB;
-      model.getCoriolisCentrifugal(BB);
+      if ( ! model.getCoriolisCentrifugal(BB)) {
+	status.ok = false;
+	status.errstr = "model.getCoriolisCentrifugal() failed";
+	return status;
+      }
       sai_tau += BB;
+      
+      sai_tau.prettyPrint(cerr, "  after COMP_CORIOLIS", "    ");
+
     }
     
     if (compensation_flags_ & COMP_GRAVITY) {
       SAIVector GG;
-      model.getGravity(GG);
+      if ( ! model.getGravity(GG)) {
+	status.ok = false;
+	status.errstr = "model.getGravity() failed";
+	return status;
+      }
       sai_tau += GG;
+      
+      sai_tau.prettyPrint(cerr, "  after COMP_GRAVITY", "    ");
+      
     }
     
     sai_tau.getValues(tau);

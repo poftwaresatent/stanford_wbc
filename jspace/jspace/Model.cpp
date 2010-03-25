@@ -351,9 +351,12 @@ namespace jspace {
   }
   
   
-  void Model::
+  bool Model::
   getGravity(SAIVector & gravity) const
   {
+    if (g_torque_.empty()) {
+      return false;
+    }
     gravity.setSize(g_torque_.size(), true);
     for (size_t ii(0); ii < g_torque_.size(); ++ii) {
       // Only copy over the gravity torque in case it has NOT been
@@ -362,6 +365,7 @@ namespace jspace {
 	gravity[ii] = g_torque_[ii];
       }
     }
+    return true;
   }
   
   
@@ -377,13 +381,17 @@ namespace jspace {
   }
   
   
-  void Model::
+  bool Model::
   getCoriolisCentrifugal(SAIVector & coriolis_centrifugal) const
   {
+    if (cc_torque_.empty()) {
+      return false;
+    }
     coriolis_centrifugal.setSize(cc_torque_.size());
     for (size_t ii(0); ii < cc_torque_.size(); ++ii) {
       coriolis_centrifugal[ii] = cc_torque_[ii];
     }
+    return true;
   }
   
   
@@ -411,16 +419,34 @@ namespace jspace {
       // Retrieve the column of A by reading the joint torques
       // required for the column-selecting unit acceleration (into a
       // flattened upper triangular matrix).
+      
+      double wtf;
+      cerr << "wtf [" << irow << "] q: ";
+      joint->getQ(&wtf);
+      cerr << wtf << " dq: ";
+      joint->getDQ(&wtf);
+      cerr << wtf << " aa:";
       for (size_t icol(0); icol <= irow; ++icol) {
 	joint = kgm_tree_->info[icol].node->getJointList();
 	joint->getTau(&a_upper_triangular_[squareToTriangularIndex(irow, icol, ndof_)]);
+
+	cerr << " " << a_upper_triangular_[squareToTriangularIndex(irow, icol, ndof_)];
+
       }
+      cerr << "\n";
     }
     
     // Reset all the torques.
     for (size_t ii(0); ii < ndof_; ++ii) {
       taoJoint * joint(kgm_tree_->info[ii].node->getJointList());
       joint->zeroTau();
+    }
+    
+    
+    {
+      SAIMatrix wtf;
+      getMassInertia(wtf);
+      wtf.prettyPrint(cerr, "jspace::Model::computeMassInertia()", "  ");
     }
   }
   

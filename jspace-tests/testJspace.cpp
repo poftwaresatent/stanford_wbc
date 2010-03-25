@@ -44,6 +44,7 @@ using namespace std;
 static std::string create_puma_frames() throw(runtime_error);
 static jspace::Model * create_puma_model() throw(runtime_error);
 static jspace::Model * create_unit_mass_RR_model() throw(runtime_error);
+static jspace::Model * create_unit_mass_5R_model() throw(runtime_error);
 static jspace::Model * create_unit_inertia_RR_model() throw(runtime_error);
 static jspace::Model * create_unit_mass_RP_model() throw(runtime_error);
 
@@ -655,6 +656,41 @@ TEST (jspaceModel, mass_inertia_RR)
 }
 
 
+TEST (jspaceModel, mass_inertia_5R_nonzero)
+{
+  jspace::Model * model(0);
+  try {
+    model = create_unit_mass_5R_model();
+    jspace::State state(5, 5, 0);
+    jspace::zero(state.velocity_);
+    
+    for (size_t ii(0); ii < 5; ++ii) {
+      for (double qq(-M_PI); qq <= M_PI; qq += 2 * M_PI / 7) {
+	memset(&state.position_[0], 0, 5 * sizeof(double));
+	state.position_[ii] = qq;
+	model->update(state);
+	
+	SAIMatrix MM;
+	model->getMassInertia(MM);
+	std::ostringstream msg;
+	bool ok(true);
+	for (size_t jj(0); jj < 5; ++jj) {
+	  if (MM.elementAt(jj, jj) < 1e-3) {
+	    ok = false;
+	    msg << "  MM[" << jj << "][" << jj << "] = " << MM.elementAt(jj, jj) << "\n";
+	  }
+	}
+	EXPECT_TRUE (ok) << "diagonal element below threshold\n" << msg.str();
+      }
+    }
+  }
+  catch (std::exception const & ee) {
+    ADD_FAILURE () << "exception " << ee.what();
+  }
+  delete model;
+}
+
+
 TEST (jspaceModel, mass_inertia_RP)
 {
   jspace::Model * model(0);
@@ -1177,6 +1213,101 @@ jspace::Model * create_unit_mass_RR_model() throw(runtime_error)
   delete kg_brep;
   
   wbc::BranchingRepresentation * cc_brep(create_unit_mass_RR_brep());
+  jspace::tao_tree_info_s * cc_tree(cc_brep->createTreeInfo());
+  delete cc_brep;
+  
+  //   cout << "created jspace::Model:\n";
+  //   wbc::dump_tao_tree_info(cout, kg_tree, "  ", false);
+  
+  jspace::Model * model(new jspace::Model(kg_tree, cc_tree));
+  return model;
+}
+
+
+static std::string create_unit_mass_5R_xml() throw(runtime_error)
+{
+  static char const * xml = 
+    "<?xml version=\"1.0\" ?>\n"
+    "<dynworld>\n"
+    "  <baseNode>\n"
+    "    <gravity>0, 0, -9.81</gravity>\n"
+    "    <pos>0, 0, 0</pos>\n"
+    "    <rot>1, 0, 0, 0</rot>\n"
+    "    <jointNode>\n"
+    "      <ID>0</ID>\n"
+    "      <type>R</type>\n"
+    "      <axis>Z</axis>\n"
+    "      <mass>1</mass>\n"
+    "      <inertia>0, 0, 0</inertia>\n"
+    "      <com>1, 0, 0</com>\n"
+    "      <pos>0, 0, 0</pos>\n"
+    "      <rot>0, 0, 1, 0</rot>\n"
+    "      <jointNode>\n"
+    "        <ID>1</ID>\n"
+    "        <type>R</type>\n"
+    "        <axis>Z</axis>\n"
+    "        <mass>1</mass>\n"
+    "        <inertia>0, 0, 0</inertia>\n"
+    "        <com>1, 0, 0</com>\n"
+    "        <pos>0, 1, 0</pos>\n"
+    "        <rot>0, 0, 1, 0</rot>\n"
+    "        <jointNode>\n"
+    "          <ID>2</ID>\n"
+    "          <type>R</type>\n"
+    "          <axis>Z</axis>\n"
+    "          <mass>1</mass>\n"
+    "          <inertia>0, 0, 0</inertia>\n"
+    "          <com>1, 0, 0</com>\n"
+    "          <pos>0, 1, 0</pos>\n"
+    "          <rot>0, 0, 1, 0</rot>\n"
+    "          <jointNode>\n"
+    "            <ID>3</ID>\n"
+    "            <type>R</type>\n"
+    "            <axis>Z</axis>\n"
+    "            <mass>1</mass>\n"
+    "            <inertia>0, 0, 0</inertia>\n"
+    "            <com>1, 0, 0</com>\n"
+    "            <pos>0, 1, 0</pos>\n"
+    "            <rot>0, 0, 1, 0</rot>\n"
+    "            <jointNode>\n"
+    "              <ID>4</ID>\n"
+    "              <type>R</type>\n"
+    "              <axis>Z</axis>\n"
+    "              <mass>1</mass>\n"
+    "              <inertia>0, 0, 0</inertia>\n"
+    "              <com>1, 0, 0</com>\n"
+    "              <pos>0, 1, 0</pos>\n"
+    "              <rot>0, 0, 1, 0</rot>\n"
+    "            </jointNode>\n"
+    "          </jointNode>\n"
+    "        </jointNode>\n"
+    "      </jointNode>\n"
+    "    </jointNode>\n"
+    "  </baseNode>\n"
+    "</dynworld>\n";
+  std::string result(create_tmpfile("unit_mass_5R.xml.XXXXXX", xml));
+  return result;
+}
+
+
+static wbc::BranchingRepresentation * create_unit_mass_5R_brep() throw(runtime_error)
+{
+  static string xml_filename("");
+  if (xml_filename.empty()) {
+    xml_filename = create_unit_mass_5R_xml();
+  }
+  wbc::BranchingRepresentation * brep(wbc::BRParser::parse("sai", xml_filename));
+  return brep;
+}
+
+
+jspace::Model * create_unit_mass_5R_model() throw(runtime_error)
+{
+  wbc::BranchingRepresentation * kg_brep(create_unit_mass_5R_brep());
+  jspace::tao_tree_info_s * kg_tree(kg_brep->createTreeInfo());
+  delete kg_brep;
+  
+  wbc::BranchingRepresentation * cc_brep(create_unit_mass_5R_brep());
   jspace::tao_tree_info_s * cc_tree(cc_brep->createTreeInfo());
   delete cc_brep;
   

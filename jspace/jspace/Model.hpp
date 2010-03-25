@@ -218,14 +218,23 @@ namespace jspace {
 	\return The previous value of \c disable for this joint. */
     bool disableGravityCompensation(size_t index, bool disable);
     
-    /** Retrieve the gravity joint-torque vector. */
-    void getGravity(SAIVector & gravity) const;
+    /** Retrieve the gravity joint-torque vector.
+	
+	\return True on success. The only possibility of receiving
+	false is if you never called updateDynamics(), which gets
+	called by updateDynamics(), which gets called by update(). */
+    bool getGravity(SAIVector & gravity) const;
     
     /** Compute the Coriolis and contrifugal joint-torque vector. */
     void computeCoriolisCentrifugal();
     
-    /** Retrieve the Coriolis and contrifugal joint-torque vector. */
-    void getCoriolisCentrifugal(SAIVector & coriolis_centrifugal) const;
+    /** Retrieve the Coriolis and contrifugal joint-torque vector.
+	
+	\return True on success. The only possibility of receiving
+	false is if you never called computeCoriolisCentrifugal(),
+	which gets called by updateDynamics(), which gets called by
+	update(). */
+    bool getCoriolisCentrifugal(SAIVector & coriolis_centrifugal) const;
     
     /** Compute the joint-space mass-inertia matrix, a.k.a. the
 	kinetic energy matrix. */
