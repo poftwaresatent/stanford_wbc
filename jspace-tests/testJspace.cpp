@@ -23,7 +23,8 @@
    \author Roland Philippsen
 */
 
-#include <tao/dynamics/taoDNode.h>
+#include <tao/dynamics/taoNode.h>
+#include <tao/dynamics/taoDynamics.h>
 #include <jspace/tao_dump.hpp>
 #include <jspace/Model.hpp>
 #include <jspace/vector_util.hpp>
@@ -48,6 +49,7 @@ using namespace std;
 static std::string create_puma_frames() throw(runtime_error);
 static jspace::Model * create_puma_model() throw(runtime_error);
 static jspace::Model * create_unit_mass_RR_model() throw(runtime_error);
+static wbc::BranchingRepresentation * create_unit_mass_5R_brep() throw(runtime_error);
 static jspace::Model * create_unit_mass_5R_model() throw(runtime_error);
 static urdf::Model * create_unit_mass_5R_urdf() throw(runtime_error);
 static jspace::Model * create_unit_inertia_RR_model() throw(runtime_error);
@@ -249,21 +251,35 @@ static double smart_delta(double have, double want)
 }
 
 
-static bool check_matrix(char const * name,
-			 SAIMatrix const & want,
-			 SAIMatrix const & have,
-			 double precision,
-			 std::ostringstream & msg)
+template<typename mtype>
+int mnrows(mtype const & mm) { return mm.row(); }
+
+template<>
+int mnrows(deMatrix3 const & mm) { return 3; }
+
+template<typename mtype>
+int mncols(mtype const & mm) { return mm.column(); }
+
+template<>
+int mncols(deMatrix3 const & mm) { return 3; }
+
+
+template<typename mtype>
+bool check_matrix(char const * name,
+		  mtype const & want,
+		  mtype const & have,
+		  double precision,
+		  std::ostringstream & msg)
 {
-  int const nrows(want.row());
-  if (nrows != have.row()) {
-    msg << "check_matrix(" << name << ") size mismatch: have " << have.row()
+  int const nrows(mnrows(want));
+  if (nrows != mnrows(have)) {
+    msg << "check_matrix(" << name << ") size mismatch: have " << mnrows(have)
 	<< " rows but want " << nrows << "\n";
     return false;
   }
-  int const ncolumns(want.column());
-  if (ncolumns != have.column()) {
-    msg << "check_matrix(" << name << ") size mismatch: have " << have.column()
+  int const ncolumns(mncols(want));
+  if (ncolumns != mncols(have)) {
+    msg << "check_matrix(" << name << ") size mismatch: have " << mncols(have)
 	<< " columns but want " << ncolumns << "\n";
     return false;
   }
@@ -337,6 +353,12 @@ void print_vector(SAIVector const & vv,
 }
 
 
+template<typename vtype>
+int vsize(vtype const & vv) { return vv.size(); }
+
+template<>
+int vsize(deVector3 const & vv) { return 3; }
+
 
 template<typename vtype>
 bool check_vector(char const * name,
@@ -345,16 +367,16 @@ bool check_vector(char const * name,
 		  double precision,
 		  std::ostream & msg)
 {
-  int const nelems(want.size());
-  if (nelems != have.size()) {
-    msg << "check_vector(" << name << ") size mismatch: have " << have.size()
+  int const nelems(vsize(want));
+  if (nelems != vsize(have)) {
+    msg << "check_vector(" << name << ") size mismatch: have " << vsize(have)
 	<< " elements but want " << nelems << "\n";
     return false;
   }
   
   precision = fabs(precision);
   double maxdelta(0);
-  vtype delta(nelems);
+  SAIVector delta(nelems);
   for (int ii(0); ii < nelems; ++ii) {
     delta[ii] = fabs(smart_delta(have[ii], want[ii]));
     if (delta[ii] > precision) {
@@ -826,17 +848,93 @@ TEST (jspaceController, mass_inertia_compensation_RR)
 }
 
 
-TEST (jspaceROSModel, check_5R_conversion)
+TEST (jspaceROSModel, urdf_tree_5R)
+{
+  urdf::Model * urdf_model(0);
+  jspace::tao_tree_info_s * tree(0);
+  wbc::BranchingRepresentation * brep_model(0);
+  jspace::tao_tree_info_s * tree_check(0);
+  
+  try {
+    urdf_model = create_unit_mass_5R_urdf();
+    tree = convert_urdf_to_tao(*urdf_model, "world", jspace::ros::DefaultLinkFilter());
+    ASSERT_EQ (5, tree->info.size());
+    
+    brep_model = create_unit_mass_5R_brep();
+    tree_check = brep_model->createTreeInfo();
+    ASSERT_EQ (5, tree_check->info.size());
+    
+    for (size_t ii(0); ii < 5; ++ii) {
+      taoDNode * node(tree->info[ii].node);
+      taoDNode * node_check(tree_check->info[ii].node);
+      taoDNode * parent(node->getDParent());
+      taoDNode * parent_check(node_check->getDParent());
+      
+      EXPECT_EQ (node->getID(), node_check->getID());
+      
+      if ( ! parent) {
+	EXPECT_EQ ((taoDNode*)0, parent_check);
+      }
+      else {
+	EXPECT_EQ (parent->getID(), parent_check->getID());
+      }
+      
+      if ( ! node->mass()) {
+	EXPECT_EQ ((deFloat*)0, node_check->mass());
+      }
+      else {
+	EXPECT_EQ (*(node->mass()), *(node_check->mass()));
+      }
+      
+      if ( ! node->center()) {
+	EXPECT_EQ ((deVector3*)0, node_check->center());
+      }
+      else {
+	std::ostringstream msg;
+	msg << "COM check\n"
+	    << "  want = " << *(node_check->center()) << "\n"
+	    << "  have = " << *(node->center()) << "\n";
+	EXPECT_TRUE (check_vector("COM", *(node_check->center()), *(node->center()), 1e-3, msg)) << msg.str();
+      }
+      
+      if ( ! node->inertia()) {
+	EXPECT_EQ ((deMatrix3*)0, node_check->inertia());
+      }
+      else {
+	std::ostringstream msg;
+	msg << "inertia check\n"
+	    << "  want = " << jspace::inertia_matrix_to_string(*(node_check->inertia())) << "\n"
+	    << "  have = " << jspace::inertia_matrix_to_string(*(node->inertia())) << "\n";
+	EXPECT_TRUE (check_matrix("inertia", *(node_check->inertia()), *(node->inertia()), 1e-3, msg)) << msg.str();
+      }
+    }    
+  }
+  catch (std::exception const & ee) {
+    ADD_FAILURE () << "exception " << ee.what();
+  }
+
+  delete tree_check;
+  delete brep_model;
+  delete tree;
+  delete urdf_model;
+}
+
+
+TEST (jspaceROSModel, urdf_dynamics_5R)
 {
   urdf::Model const * urdf_model(0);
   std::vector<jspace::tao_tree_info_s*> tao_trees;
   jspace::Model * model(0);
   jspace::Model * model_check(0);
-
+  
   try {
     urdf_model = create_unit_mass_5R_urdf();
     static const size_t n_tao_trees(2);
     convert_urdf_to_tao_n(*urdf_model, "world", jspace::ros::DefaultLinkFilter(), tao_trees, n_tao_trees);
+    
+//     taoDynamics::initialize(tao_trees[0]->root);
+//     taoDynamics::initialize(tao_trees[1]->root);
+    
     model = new jspace::Model(tao_trees[0], tao_trees[1]);
     taoDNode * ee(model->getNode(4));
     ASSERT_NE ((void*)0, ee);
@@ -850,6 +948,48 @@ TEST (jspaceROSModel, check_5R_conversion)
       for (double pos(-M_PI); pos <= M_PI; pos += 2 * M_PI / 7) {
 	memset(&state.position_[0], 0, 5 * sizeof(double));
 	state.position_[ii] = pos;
+	
+	model->update(state);
+	model_check->update(state);
+	
+	SAIMatrix Jg, Jg_check, MM, MM_check;
+	SAIVector GG, GG_check;
+	
+	ASSERT_TRUE (model->computeJacobian(ee, Jg));
+	ASSERT_TRUE (model_check->computeJacobian(ee_check, Jg_check));
+	ASSERT_TRUE (model->getMassInertia(MM));
+	ASSERT_TRUE (model_check->getMassInertia(MM_check));
+	ASSERT_TRUE (model->getGravity(GG));
+	ASSERT_TRUE (model_check->getGravity(GG_check));
+	
+	{
+	  std::ostringstream msg;
+	  msg << "Jg check\n"
+	      << "  pos = " << state.position_ << "\n"
+	      << "  vel = " << state.velocity_ << "\n";
+	  Jg_check.prettyPrint(msg, "  want", "    ");
+	  Jg.prettyPrint(msg, "  have", "    ");
+	  EXPECT_TRUE (check_matrix("Jg", Jg_check, Jg, 1e-3, msg)) << msg.str();
+	}
+	{
+	  std::ostringstream msg;
+	  msg << "MM check\n"
+	      << "  pos = " << state.position_ << "\n"
+	      << "  vel = " << state.velocity_ << "\n";
+	  MM_check.prettyPrint(msg, "  want", "    ");
+	  MM.prettyPrint(msg, "  have", "    ");
+	  EXPECT_TRUE (check_matrix("MM", MM_check, MM, 1e-3, msg)) << msg.str();
+	}
+	{
+	  std::ostringstream msg;
+	  msg << "GG check\n"
+	      << "  pos = " << state.position_ << "\n"
+	      << "  vel = " << state.velocity_ << "\n";
+	  GG_check.prettyPrint(msg, "  want", "    ");
+	  GG.prettyPrint(msg, "  have", "    ");
+	  EXPECT_TRUE (check_vector("GG", GG_check, GG, 1e-3, msg)) << msg.str();
+	}
+	
 	for (double vel(-M_PI); vel <= M_PI; vel += 2 * M_PI / 7) {
 	  memset(&state.velocity_[0], 0, 5 * sizeof(double));
 	  state.velocity_[ii] = vel;
@@ -857,44 +997,9 @@ TEST (jspaceROSModel, check_5R_conversion)
 	  model->update(state);
 	  model_check->update(state);
 	  
-	  SAIMatrix Jg, Jg_check, MM, MM_check;
-	  SAIVector GG, GG_check, BB, BB_check;
-	  ASSERT_TRUE (model->computeJacobian(ee, Jg));
-	  ASSERT_TRUE (model_check->computeJacobian(ee_check, Jg_check));
-	  ASSERT_TRUE (model->getMassInertia(MM));
-	  ASSERT_TRUE (model_check->getMassInertia(MM_check));
-	  ASSERT_TRUE (model->getGravity(GG));
-	  ASSERT_TRUE (model_check->getGravity(GG_check));
+	  SAIVector BB, BB_check;
 	  ASSERT_TRUE (model->getCoriolisCentrifugal(BB));
 	  ASSERT_TRUE (model_check->getCoriolisCentrifugal(BB_check));
-	  
-	  {
-	    std::ostringstream msg;
-	    msg << "Jg check\n"
-		<< "  pos = " << state.position_ << "\n"
-		<< "  vel = " << state.velocity_ << "\n";
-	    Jg_check.prettyPrint(msg, "  want", "    ");
-	    Jg.prettyPrint(msg, "  have", "    ");
-	    EXPECT_TRUE (check_matrix("Jg", Jg_check, Jg, 1e-3, msg)) << msg.str();
-	  }
-	  {
-	    std::ostringstream msg;
-	    msg << "MM check\n"
-		<< "  pos = " << state.position_ << "\n"
-		<< "  vel = " << state.velocity_ << "\n";
-	    MM_check.prettyPrint(msg, "  want", "    ");
-	    MM.prettyPrint(msg, "  have", "    ");
-	    EXPECT_TRUE (check_matrix("MM", MM_check, MM, 1e-3, msg)) << msg.str();
-	  }
-	  {
-	    std::ostringstream msg;
-	    msg << "GG check\n"
-		<< "  pos = " << state.position_ << "\n"
-		<< "  vel = " << state.velocity_ << "\n";
-	    GG_check.prettyPrint(msg, "  want", "    ");
-	    GG.prettyPrint(msg, "  have", "    ");
-	    EXPECT_TRUE (check_vector("GG", GG_check, GG, 1e-3, msg)) << msg.str();
-	  }
 	  {
 	    std::ostringstream msg;
 	    msg << "BB check\n"
@@ -1462,7 +1567,7 @@ static std::string create_unit_mass_5R_xml() throw(runtime_error)
 }
 
 
-static wbc::BranchingRepresentation * create_unit_mass_5R_brep() throw(runtime_error)
+wbc::BranchingRepresentation * create_unit_mass_5R_brep() throw(runtime_error)
 {
   static string xml_filename("");
   if (xml_filename.empty()) {
