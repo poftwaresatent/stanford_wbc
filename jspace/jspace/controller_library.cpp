@@ -25,6 +25,7 @@
 
 #include "controller_library.hpp"
 #include "Model.hpp"
+#include <wbcnet/strutil.hpp>
 #include <saimatrix/SAIVector.h>
 #include <saimatrix/SAIMatrix.h>
 
@@ -101,19 +102,32 @@ namespace jspace {
   Status GoalControllerBase::
   init(Model const & model)
   {
+    Status status;
     size_t const ndof(model.getNDOF());
+    
+    if (model.getState().position_.size() != ndof) {
+      status.ok = false;
+      status.errstr =
+	"inconsistent model: ndof = " + sfl::to_string(ndof)
+	+ " but state.size() = " + sfl::to_string(model.getState().position_.size());
+      return status;
+    }
+    
+    // If this is the first time we got called, initialize to default.
     if (ndof != goal_.size()) {
       goal_.resize(ndof);
       kp_.resize(ndof);
       kd_.resize(ndof);
-      for (int ii(0); ii < ndof; ++ii) {
+      for (size_t ii(0); ii < ndof; ++ii) {
 	kp_[ii] = default_kp_;
 	kd_[ii] = default_kd_;
       }
     }
+    
+    // Set goal to current position.
     goal_ = model.getState().position_;
-    Status ok;
-    return ok;
+    
+    return status;
   }
   
   
@@ -123,7 +137,9 @@ namespace jspace {
     Status status;
     if (goal.size() != goal_.size()) {
       status.ok = false;
-      status.errstr = "goal size mismatch";
+      status.errstr =
+	"goal size mismatch: expected " + sfl::to_string(goal_.size())
+	+ " but got " + sfl::to_string(goal.size());
       return status;
     }
     goal_ = goal;

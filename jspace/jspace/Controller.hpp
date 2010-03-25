@@ -40,7 +40,9 @@ namespace jspace {
   public:
     virtual ~Controller() {}
     
-    /** Default init just returns ok. */
+    /** Default init just returns ok. You should only call this with a
+	fully initialized model, because controllers might need to
+	inspect the state. */
     virtual Status init(Model const & model) { Status ok; return ok; }
     
     virtual Status setGoal(std::vector<double> const & goal) = 0;

@@ -23,14 +23,15 @@
    \author Roland Philippsen
 */
 
+#include <tao/dynamics/taoDNode.h>
+#include <jspace/tao_dump.hpp>
+#include <jspace/Model.hpp>
+#include <jspace/vector_util.hpp>
+#include <jspace/controller_library.hpp>
+#include <wbcnet/strutil.hpp>
 #include <wbc/core/RobotControlModel.hpp>
 #include <wbc/core/BranchingRepresentation.hpp>
 #include <wbc/parse/BRParser.hpp>
-#include <jspace/tao_dump.hpp>
-#include <tao/dynamics/taoDNode.h>
-#include <jspace/Model.hpp>
-#include <jspace/vector_util.hpp>
-#include <wbcnet/strutil.hpp>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -312,11 +313,33 @@ static bool check_matrix(char const * name,
 }
 
 
-static bool check_vector(char const * name,
-			 SAIVector const & want,
-			 SAIVector const & have,
-			 double precision,
-			 std::ostream & msg)
+template<typename vtype>
+void print_vector(vtype const & vv,
+		  std::ostream & msg,
+		  std::string const & title,
+		  std::string const & prefix)
+{
+  msg << title << "\n" << prefix << vv << "\n";
+}
+
+
+template<>
+void print_vector(SAIVector const & vv,
+		  std::ostream & msg,
+		  std::string const & title,
+		  std::string const & prefix)
+{
+  vv.prettyPrint(msg, title, prefix);
+}
+
+
+
+template<typename vtype>
+bool check_vector(char const * name,
+		  vtype const & want,
+		  vtype const & have,
+		  double precision,
+		  std::ostream & msg)
 {
   int const nelems(want.size());
   if (nelems != have.size()) {
@@ -327,7 +350,7 @@ static bool check_vector(char const * name,
   
   precision = fabs(precision);
   double maxdelta(0);
-  SAIVector delta(nelems);
+  vtype delta(nelems);
   for (int ii(0); ii < nelems; ++ii) {
     delta[ii] = fabs(smart_delta(have[ii], want[ii]));
     if (delta[ii] > precision) {
@@ -345,7 +368,7 @@ static bool check_vector(char const * name,
   }
   msg << "  precision = " << precision << "\n"
       << "  maxdelta = " << maxdelta << "\n";
-  delta.prettyPrint(msg, "  delta", "    ");
+  print_vector(delta, msg, "  delta", "    ");
   msg << "  error pattern\n    ";
   for (int ii(0); ii < nelems; ++ii) {
     if (delta[ii] <= precision) {
@@ -622,7 +645,7 @@ TEST (jspaceModel, mass_inertia_RR)
 	  
 	  SAIMatrix MM(2, 2);
 	  model->getMassInertia(MM);
-	  SAIMatrix MM_check;
+ 	  SAIMatrix MM_check;
 	  compute_mass_inertia[test_index](q1, q2, MM_check);
 	  {
 	    std::ostringstream msg;
@@ -740,6 +763,55 @@ TEST (jspaceModel, mass_inertia_RP)
 	  id.prettyPrint(msg, "  have", "    ");
 	  EXPECT_TRUE (check_matrix("identity", id_check, id, 1e-3, msg)) << msg.str();
 	}
+      }
+    }
+  }
+  catch (std::exception const & ee) {
+    ADD_FAILURE () << "exception " << ee.what();
+  }
+  delete model;
+}
+
+
+TEST (jspaceController, mass_inertia_compensation_RR)
+{
+  jspace::Model * model(0);
+  try {
+    model = create_unit_mass_RR_model();
+    ASSERT_EQ (model->getNDOF(), 2);
+    jspace::State state(2, 2, 0);
+    model->update(state);	// otherwise ctrl.init() complains (further down)
+    static double const kp(100);
+    static double const kd(20);
+    jspace::JointGoalController ctrl(jspace::COMP_MASS_INERTIA, kp, kd);
+    jspace::Status status(ctrl.init(*model));
+    ASSERT_TRUE (status) << "ctrl.init failed: " << status.errstr;
+    status = ctrl.setGoal(state.position_);
+    ASSERT_TRUE (status) << "ctrl.setGoal failed: " << status.errstr;
+    std::vector<double> tau;
+    
+    for (double q1(-M_PI); q1 <= M_PI; q1 += 2 * M_PI / 7) {
+      for (double q2(-M_PI); q2 <= M_PI; q2 += 2 * M_PI / 7) {
+	state.position_[0] = q1;
+	state.position_[1] = q2;
+	model->update(state);
+	status = ctrl.computeCommand(*model, tau);
+	ASSERT_EQ (tau.size(), 2);
+	
+	SAIMatrix MM;
+	compute_unit_mass_RR_mass_inertia(q1, q2, MM);
+	double const m11(MM.elementAt(0, 0));
+	double const m12(MM.elementAt(0, 1));
+	double const m22(MM.elementAt(1, 1));
+	std::vector<double> tau_check(2);
+	tau_check[0] = - kp * (m11 * q1 + m12 * q2);
+	tau_check[1] = - kp * (m12 * q1 + m22 * q2);
+	
+	std::ostringstream msg;
+	msg << "Verifying command for q = " << state.position_ << "\n"
+	    << "  want: " << tau_check << "\n"
+	    << "  have: " << tau << "\n";
+	EXPECT_TRUE (check_vector("tau", tau_check, tau, 1e-3, msg)) << msg.str();
       }
     }
   }
