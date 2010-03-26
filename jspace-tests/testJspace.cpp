@@ -25,6 +25,7 @@
 
 #include <tao/dynamics/taoNode.h>
 #include <tao/dynamics/taoDynamics.h>
+#include <tao/dynamics/taoJoint.h>
 #include <jspace/tao_dump.hpp>
 #include <jspace/Model.hpp>
 #include <jspace/vector_util.hpp>
@@ -359,6 +360,16 @@ int vsize(vtype const & vv) { return vv.size(); }
 template<>
 int vsize(deVector3 const & vv) { return 3; }
 
+template<>
+int vsize(deVector6 const & vv) { return 6; }
+
+
+template<typename vtype>
+double vget(vtype const & vv, int idx) { return vv[idx]; }
+
+template<>
+double vget(deVector6 const & vv, int idx) { return vv.elementAt(idx); }
+
 
 template<typename vtype>
 bool check_vector(char const * name,
@@ -378,7 +389,7 @@ bool check_vector(char const * name,
   double maxdelta(0);
   SAIVector delta(nelems);
   for (int ii(0); ii < nelems; ++ii) {
-    delta[ii] = fabs(smart_delta(have[ii], want[ii]));
+    delta[ii] = fabs(smart_delta(vget(have, ii), vget(want, ii)));
     if (delta[ii] > precision) {
       maxdelta = delta[ii];
     }
@@ -848,7 +859,7 @@ TEST (jspaceController, mass_inertia_compensation_RR)
 }
 
 
-TEST (jspaceROSModel, urdf_tree_5R)
+TEST (jspaceROSModel, urdf_links_5R)
 {
   urdf::Model * urdf_model(0);
   jspace::tao_tree_info_s * tree(0);
@@ -920,6 +931,107 @@ TEST (jspaceROSModel, urdf_tree_5R)
 }
 
 
+TEST (jspaceROSModel, urdf_joints_5R)
+{
+  urdf::Model * urdf_model(0);
+  jspace::tao_tree_info_s * tree(0);
+  wbc::BranchingRepresentation * brep_model(0);
+  jspace::tao_tree_info_s * tree_check(0);
+  
+  try {
+    urdf_model = create_unit_mass_5R_urdf();
+    tree = convert_urdf_to_tao(*urdf_model, "world", jspace::ros::DefaultLinkFilter());
+    ASSERT_EQ (5, tree->info.size());
+    
+    brep_model = create_unit_mass_5R_brep();
+    tree_check = brep_model->createTreeInfo();
+    ASSERT_EQ (5, tree_check->info.size());
+    
+    for (size_t ii(0); ii < 5; ++ii) {
+      taoDNode * node(tree->info[ii].node);
+      taoDNode * node_check(tree_check->info[ii].node);
+      
+      taoJoint * joint(node->getJointList());
+      taoJoint * joint_check(node_check->getJointList());
+      
+      if ( ! joint) {
+	EXPECT_EQ ((taoJoint*)0, joint_check);
+	continue;
+      }
+      if ( ! joint_check) {
+	ADD_FAILURE () << "joint_check is NULL but joint is not";
+	continue;
+      }
+      
+      EXPECT_EQ ((taoJoint*)0, joint->getNext());
+      EXPECT_EQ ((taoJoint*)0, joint_check->getNext());
+      EXPECT_EQ (joint->getDOF(), joint_check->getDOF());
+      EXPECT_EQ (joint->getType(), joint_check->getType());
+      
+      taoJointDOF1 * jdof1(dynamic_cast<taoJointDOF1*>(joint));
+      taoJointDOF1 * jdof1_check(dynamic_cast<taoJointDOF1*>(joint_check));
+      
+      if ( ! jdof1) {
+	EXPECT_EQ ((taoJointDOF1*)0, jdof1_check);
+	continue;
+      }
+      if ( ! jdof1_check) {
+	ADD_FAILURE () << "jdof1_check is NULL but jdof1 is not";
+	continue;
+      }
+      
+      EXPECT_EQ (jdof1->getAxis(), jdof1_check->getAxis());
+      
+      deVector6 const & sv(jdof1->getS());
+      deVector6 const & sv_check(jdof1_check->getS());
+      
+      std::ostringstream msg;
+      msg << "getS() check\n"
+	  << "  want = " << sv_check << "\n"
+	  << "  have = " << sv << "\n";
+      EXPECT_TRUE (check_vector("sv", sv_check, sv, 1e-3, msg)) << msg.str();
+      
+    }    
+  }
+  catch (std::exception const & ee) {
+    ADD_FAILURE () << "exception " << ee.what();
+  }
+
+  delete tree_check;
+  delete brep_model;
+  delete tree;
+  delete urdf_model;
+}
+
+
+static jspace::tao_tree_info_s * reparse_tao_tree(jspace::tao_tree_info_s * orig)  throw(runtime_error)
+{
+  static char const * fname_template("reparse_sai.xml.XXXXXX");
+  static char tmpname[64];
+  memset(tmpname, '\0', 64);
+  strncpy(tmpname, fname_template, 63);
+  int const tmpfd(mkstemp(tmpname));
+  if (-1 == tmpfd) {
+    throw runtime_error("reparse_tao_tree(): mkstemp(): " + string(strerror(errno)));
+  }
+  
+  std::ostringstream os;
+  xmldump_tao_tree_info(os, orig);
+  std::string const contents(os.str());  
+  size_t const len(contents.size());
+  if (static_cast<ssize_t>(len) != write(tmpfd, contents.c_str(), len)) {
+    throw runtime_error("reparse_tao_tree(): write(): " + string(strerror(errno)));
+  }
+  close(tmpfd);
+  
+  wbc::BranchingRepresentation * brep(wbc::BRParser::parse("sai", tmpname));
+  jspace::tao_tree_info_s * tree(brep->createTreeInfo());
+  delete brep;
+  
+  return tree;
+}
+
+
 TEST (jspaceROSModel, urdf_dynamics_5R)
 {
   urdf::Model const * urdf_model(0);
@@ -929,11 +1041,19 @@ TEST (jspaceROSModel, urdf_dynamics_5R)
   
   try {
     urdf_model = create_unit_mass_5R_urdf();
-    static const size_t n_tao_trees(2);
-    convert_urdf_to_tao_n(*urdf_model, "world", jspace::ros::DefaultLinkFilter(), tao_trees, n_tao_trees);
-    
-//     taoDynamics::initialize(tao_trees[0]->root);
-//     taoDynamics::initialize(tao_trees[1]->root);
+
+    ////////////////////////////////////////////////////
+    //     static const size_t n_tao_trees(2);
+    //     convert_urdf_to_tao_n(*urdf_model, "world", jspace::ros::DefaultLinkFilter(), tao_trees, n_tao_trees);
+    //
+    // Let's do something crazy instead: convert urdf to tao, write that out
+    // as xml, re-read it back through the brep parser, and stuff it
+    // into a model.
+    jspace::tao_tree_info_s * wtf(convert_urdf_to_tao(*urdf_model, "world", jspace::ros::DefaultLinkFilter()));
+    tao_trees.push_back(reparse_tao_tree(wtf));
+    tao_trees.push_back(reparse_tao_tree(wtf));
+    delete wtf;
+    ////////////////////////////////////////////////////
     
     model = new jspace::Model(tao_trees[0], tao_trees[1]);
     taoDNode * ee(model->getNode(4));

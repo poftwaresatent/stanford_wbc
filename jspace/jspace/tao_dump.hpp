@@ -28,6 +28,7 @@
 
 #include <iosfwd>
 #include <vector>
+#include <stdexcept>
 
 class deVector6;
 class deVector3;
@@ -67,6 +68,12 @@ namespace jspace {
      Similar to dump_tao_tree() but uses the more recent tao_tree_info_s structure.
   */
   void dump_tao_tree_info(std::ostream & os, tao_tree_info_s * tree, std::string prefix, bool detailed);
+  
+  /**
+     Similar to dump_tao_tree_info(), but attempts to spew it out in a
+     format that can be read back into a parser.
+  */
+  void xmldump_tao_tree_info(std::ostream & os, tao_tree_info_s * tree) throw(std::runtime_error);
   
 }
 

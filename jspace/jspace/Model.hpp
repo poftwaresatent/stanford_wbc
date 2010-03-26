@@ -259,6 +259,14 @@ namespace jspace {
     bool getInverseMassInertia(SAIMatrix & inverse_mass_inertia) const;
     
     
+    /** For debugging only, access to the
+	kinematics-gravity-mass-inertia tree. */
+    tao_tree_info_s * _getKGMTree() { return kgm_tree_; }
+    
+    /** For debugging only, access to the Coriolis-centrifugal tree. */
+    tao_tree_info_s * _getCCTree() { return cc_tree_; }
+    
+    
   private:
     typedef std::set<size_t> dof_set_t;
     dof_set_t gravity_disabled_;

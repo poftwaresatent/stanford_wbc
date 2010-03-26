@@ -156,6 +156,98 @@ std::string inertia_matrix_to_string(deMatrix3 const & mx)
     _dump_tao_tree_info(os, tree->root, tree->info, prefix, detailed);
   }
   
+  
+  static void _xmldump_tao_tree_info(std::ostream & os, taoDNode * root, tao_tree_info_s::node_info_t const & info,
+				     std::string prefix) throw(std::runtime_error)
+  {
+    deFrame * const home(root->frameHome());
+    if ( ! home) {
+	throw std::runtime_error("_xmldump_tao_tree_info(): no home frame");
+    }
+    deVector3 const & pos(home->translation());
+    deVector3 raxis;
+    deFloat rangle;
+    home->rotation().get(raxis, rangle);
+    
+    int const id(root->getID());
+    std::string closing;
+    if (0 > id) {
+      os << prefix << "<baseNode>\n"
+	 << prefix << "  <gravity>0, 0, -9.81</gravity>\n"
+	 << prefix << "  <pos>" << pos[0] << ", " << pos[1] << ", " << pos[2] << "</pos>\n"
+	 << prefix << "  <rot>" << raxis[0] << ", " << raxis[1] << ", " << raxis[2] <<  ", " << rangle << "</rot>\n";
+      closing = prefix + "</baseNode>\n";
+    }
+    else {
+      deVector3 const & com(*root->center());
+      deMatrix3 const * inertia(root->inertia());
+      taoJoint const * joint(root->getJointList());
+      if ( ! joint) {
+	throw std::runtime_error("_xmldump_tao_tree_info(): no joint");
+      }
+      std::string jtype;
+      double mixx(0);
+      double miyy(0);
+      double mizz(0);
+      if (0 != dynamic_cast<taoJointPrismatic const *>(joint)) {
+	jtype = "P";
+	
+      }
+      else if (0 != dynamic_cast<taoJointRevolute const *>(joint)) {
+	jtype = "R";
+	mixx = (pow(com[1], 2) + pow(com[2], 2)) * *(root->mass());
+	miyy = (pow(com[0], 2) + pow(com[2], 2)) * *(root->mass());
+	mizz = (pow(com[0], 2) + pow(com[1], 2)) * *(root->mass());
+      }
+      else {
+	throw std::runtime_error("_xmldump_tao_tree_info(): invalid joint type");
+      }
+      std::string jaxis;
+      taoJointDOF1 const * jdof1(dynamic_cast<taoJointDOF1 const *>(joint));
+      if (TAO_AXIS_X == jdof1->getAxis()) {
+	jaxis = "X";
+      }
+      else if (TAO_AXIS_Y == jdof1->getAxis()) {
+	jaxis = "Y";
+      }
+      else if (TAO_AXIS_Z == jdof1->getAxis()) {
+	jaxis = "Z";
+      }
+      else {
+	throw std::runtime_error("_xmldump_tao_tree_info(): invalid joint axis");
+      }
+      
+      os << prefix << "<jointNode>\n"
+	 << prefix << "  <ID>" << id << "</ID>\n"
+	 << prefix << "  <type>" << jtype << "</type>\n"
+	 << prefix << "  <axis>" << jaxis << "</axis>\n"
+	 << prefix << "  <mass>" << *(root->mass()) << "</mass>\n"
+	 << prefix << "  <inertia>" << inertia->elementAt(0, 0) - mixx
+	 << ", " << inertia->elementAt(1, 1) - miyy
+	 << ", " << inertia->elementAt(2, 2) - mizz << "</inertia>\n"
+	 << prefix << "  <com>" << com[0] << ", " << com[1] << ", " << com[2] << "</com>\n"
+	 << prefix << "  <pos>" << pos[0] << ", " << pos[1] << ", " << pos[2] << "</pos>\n"
+	 << prefix << "  <rot>" << raxis[0] << ", " << raxis[1] << ", " << raxis[2] <<  ", " << rangle << "</rot>\n";
+      closing = prefix + "</jointNode>\n";
+    }
+    
+    prefix += "  ";
+    for (taoDNode * child(root->getDChild()); child != 0; child = child->getDSibling())
+      _xmldump_tao_tree_info(os, child, info, prefix);
+    
+    os << closing;
+  }
+  
+  
+  void xmldump_tao_tree_info(std::ostream & os, tao_tree_info_s * tree) throw(std::runtime_error)
+  {
+    os << "<?xml version=\"1.0\" ?>\n"
+       << "<dynworld>\n";
+    std::string prefix("  ");
+    _xmldump_tao_tree_info(os, tree->root, tree->info, prefix);
+    os << "</dynworld>\n";
+  }
+  
 }
 
 namespace std {
