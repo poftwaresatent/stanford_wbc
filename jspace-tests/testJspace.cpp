@@ -1042,18 +1042,16 @@ TEST (jspaceROSModel, urdf_dynamics_5R)
   try {
     urdf_model = create_unit_mass_5R_urdf();
 
-    ////////////////////////////////////////////////////
-    //     static const size_t n_tao_trees(2);
-    //     convert_urdf_to_tao_n(*urdf_model, "world", jspace::ros::DefaultLinkFilter(), tao_trees, n_tao_trees);
-    //
-    // Let's do something crazy instead: convert urdf to tao, write that out
-    // as xml, re-read it back through the brep parser, and stuff it
-    // into a model.
+#undef CRAZY_WORKAROUND
+#ifdef CRAZY_WORKAROUND
     jspace::tao_tree_info_s * wtf(convert_urdf_to_tao(*urdf_model, "world", jspace::ros::DefaultLinkFilter()));
     tao_trees.push_back(reparse_tao_tree(wtf));
     tao_trees.push_back(reparse_tao_tree(wtf));
     delete wtf;
-    ////////////////////////////////////////////////////
+#else // CRAZY_WORKAROUND
+    static const size_t n_tao_trees(2);
+    convert_urdf_to_tao_n(*urdf_model, "world", jspace::ros::DefaultLinkFilter(), tao_trees, n_tao_trees);
+#endif // CRAZY_WORKAROUND
     
     model = new jspace::Model(tao_trees[0], tao_trees[1]);
     taoDNode * ee(model->getNode(4));

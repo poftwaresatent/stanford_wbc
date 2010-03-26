@@ -675,7 +675,7 @@ namespace jspace {
 	  dof->_dQ = 0;
 	  dof->_ddQ = 0;
 	  dof->_Tau = 0;
-	  tao_joint->setDVar(new taoVarDOF1());
+	  tao_joint->setDVar(dof);
 	}
 	break;
 
