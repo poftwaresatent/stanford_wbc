@@ -25,6 +25,7 @@
 
 #include "urdf_to_tao.hpp"
 #include <jspace/tao_dump.hpp>
+#include <tao/dynamics/taoDynamics.h>
 #include <fstream>
 #include <limits>
 
@@ -787,6 +788,7 @@ namespace jspace {
     tao_tree_info_s * tao_tree(new tao_tree_info_s());
     tao_tree->root = new taoNodeRoot(global_frame);
     tao_tree->root->setID(-1);
+    tao_tree->root->setIsFixed(1);
     
     // We do not want the conversion_root itself to be descendend of the
     // TAO root, we want all its children to descend from it. Otherwise,
@@ -800,6 +802,7 @@ namespace jspace {
 	create_tao_tree(tao_tree->root, *child, tao_tree->info);
       }
     
+    taoDynamics::initialize(tao_tree->root); // what happens if you initialize twice?
     return tao_tree;
   }
   
