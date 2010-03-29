@@ -13,12 +13,13 @@ if (HAVE_ROS)
   subdirs (wbc_plugins/rosrob)
 endif (HAVE_ROS)
 
-#include_directories (
-#  .
-#  ../saimatrix
-#  ../tao
-#  ../wbcnet
-#  )
+include_directories (
+  ../wbc
+  ../wbcnet
+  ../jspace
+  ../saimatrix
+  ../tao
+  )
 
 subdirs (
   wbc_plugins/fake

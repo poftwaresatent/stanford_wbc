@@ -7,20 +7,6 @@ list (APPEND CMAKE_REQUIRED_INCLUDES ${Stanford_WBC_SOURCE_DIR})
 include_directories (${Stanford_WBC_SOURCE_DIR} ${Stanford_WBC_SOURCE_DIR}/wbcnet)
 
 
-if (HAVE_CURSES)
-  list (APPEND LIBS curses)
-else (HAVE_CURSES)
-  message ("WARNING curses not found")
-  message ("        keypress-commands will not work")
-  message ("        you should seriously consider installing the package")
-  message ("        (e.g. libncurses5-dev or so)")
-endif (HAVE_CURSES)
-
-if (NOT HAVE_EXPAT)
-  message (FATAL_ERROR "Expat not found. Please install it (e.g. `sudo apt-get install libexpat1-dev')")
-endif (NOT HAVE_EXPAT)
-
-
 ##################################################
 ### A note about log4cxx: if wbcnet finds it and we don't, we'll get
 ### screwed. If we link with things that come from ROS and we don't
@@ -28,7 +14,9 @@ endif (NOT HAVE_EXPAT)
 
 
 ##################################################
-# users can request a custom hardcoded start of WBC_PLUGIN_PATH, but we fall back on 
+# Users can request a custom hardcoded start of WBC_PLUGIN_PATH, but
+# we fall back on some "reasonable default" ... this should probably
+# not appear in the top-level CMakeLists.txt anyhow.
 
 if (NOT WBC_PLUGIN_PATH)
   message ("setting WBC_PLUGIN_PATH to ${Stanford_WBC_BINARY_DIR}/plugins")

@@ -8,6 +8,19 @@ include (../wbc.cmake)
 wbc_init (Stanford_WBC)
 wbc_find_urdf ()
 
+if (HAVE_CURSES)
+  list (APPEND LIBS curses)
+else (HAVE_CURSES)
+  message ("WARNING curses not found")
+  message ("        keypress-commands will not work")
+  message ("        you should seriously consider installing the package")
+  message ("        (e.g. libncurses5-dev or so)")
+endif (HAVE_CURSES)
+
+if (NOT HAVE_EXPAT)
+  message (FATAL_ERROR "Expat not found. Please install it (e.g. `sudo apt-get install libexpat1-dev')")
+endif (NOT HAVE_EXPAT)
+
 list (APPEND LIBS
   wbc_tinyxml
   SAI_Matrix
