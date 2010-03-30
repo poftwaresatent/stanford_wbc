@@ -53,21 +53,6 @@ void deLoggerOutputStd::Log(deChar *msg)
 	fflush(stdout);
 }
 
-//
-// deLoggerOutputWinDebug
-//
-
-#ifdef WIN32
-void deLoggerOutputWinDebug::Log(deChar *msg)
-{
-	OutputDebugString(msg);
-}
-#endif
-
-//
-// deLoggerOutputWinDebug
-//
-
 deLoggerOutputFile::deLoggerOutputFile(deChar* filename)
 {
 	logfile = fopen(filename, "w");
