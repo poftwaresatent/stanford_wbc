@@ -127,6 +127,9 @@ namespace wbcnet {
     if (logger->isTraceEnabled() && (COM_TRY_AGAIN != ms.com))
       LOG_TRACE (logger, "wbcnet::Muldex::DemuxOne(): returning " << muldex_status_str(ms));
     
+	// Don't worry if the compiler complains here about "empty controlled statement" or so:
+	// when compiling with logging disabled, the above LOG_TRACE() expands to an empty
+	// string, leading to an empty "if();" which is harmless.
     return ms;
   }
   
@@ -150,6 +153,9 @@ namespace wbcnet {
 		     "wbcnet::Muldex::Demux(): " << *msgcount << " of " << max_nmsg
 		     << " message(s), returning " << muldex_status_str(ms));
     
+	// Don't worry if the compiler complains here about "empty controlled statement" or so:
+	// when compiling with logging disabled, the above LOG_TRACE() expands to an empty
+	// string, leading to an empty "if();" which is harmless.
     return ms;
   }
   

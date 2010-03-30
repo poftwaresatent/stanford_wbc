@@ -37,6 +37,10 @@
 
 #include "imp/SPQNetConfig.hpp"
 
+#ifdef WIN32
+# define DISABLE_NETWORKING
+#endif // WIN32
+
 #ifndef DISABLE_NETWORKING
 # include "imp/TCPNetConfig.hpp"
 #endif // DISABLE_NETWORKING
