@@ -1,4 +1,5 @@
-This is a pretty old snapshot of TinyXML http://www.grinninglizard.com/tinyxml/
+This is a tweaked version of TinyXML-2.6.1
+http://www.grinninglizard.com/tinyxml/
 
 IMPORTANT NOTICE:
   All filenames and the include-guards have been prefixed with wbc_
@@ -6,8 +7,10 @@ IMPORTANT NOTICE:
   by two libraries that are used together. For the same reason, this
   TinyXML has been placed into the wbc_tinyxml namespace.
 
-TinyXML is released under the zlib license:
-	 
+TinyXML is released under the zlib/libpng license (see also
+wbc_tinyxml/readme.txt and
+http://www.opensource.org/licenses/zlib-license.php):
+
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any damages
 arising from the use of this software.

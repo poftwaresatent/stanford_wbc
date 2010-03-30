@@ -16,6 +16,9 @@ add_library (
 
 include_directories (${wbc_tinyxml_SOURCE_DIR})
 
+add_executable (xmltest tests/xmltest.cpp)
+target_link_libraries (xmltest wbc_tinyxml)
+
 install (FILES
   wbc_tinyxml/wbc_tinyxml.h
   wbc_tinyxml/wbc_tinystr.h
