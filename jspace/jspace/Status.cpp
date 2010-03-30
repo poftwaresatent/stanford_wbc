@@ -27,14 +27,6 @@
 
 namespace jspace {
   
-  
-  Status::
-  Status()
-    : ok(true)
-  {
-  }
-  
-  
   Status::
   Status(bool ok_, std::string const & errstr_)
     : ok(ok_),
