@@ -30,7 +30,7 @@
 
 #include "CLotusArchitect.hpp"
 
-#include <tinyxml/tinyxml.h>
+#include <wbc_tinyxml/wbc_tinyxml.h>
 
 //The general header (contains the logger etc.)
 #include <robarch/lotusarchitect/LotusHeaders.hpp>
@@ -38,7 +38,7 @@
 #include <robarch/lotusarchitect/tixml_parser/CLotusTiXmlParser.hpp>
 
 namespace lotusarchitect {
-
+using namespace wbc_tinyxml;
 using namespace robotarchitect;
 
 bool CLotusArchitect::readRobotDefinition(const string arg_file)

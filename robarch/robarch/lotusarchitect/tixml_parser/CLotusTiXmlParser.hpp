@@ -29,13 +29,14 @@
 
 #include <iostream>
 #include <string>
-#include <tinyxml/tinyxml.h>
+#include <wbc_tinyxml/wbc_tinyxml.h>
 
 //Include the data structures
 #include <robarch/glob_rob_ds/SControllerRobotLink.hpp>
 #include <robarch/glob_rob_ds/SGlobalRobotDS.hpp>
 
 namespace lotusarchitect {
+using namespace wbc_tinyxml;
 
 class CLotusTiXmlParser
 {
