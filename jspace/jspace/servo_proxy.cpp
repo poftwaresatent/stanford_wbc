@@ -24,6 +24,9 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <stdio.h>
+#define PDEBUG(fmt, arg...) fprintf(stderr, fmt, ## arg)
+
 
 namespace {
   
@@ -177,7 +180,7 @@ namespace jspace {
     
     wbcnet::Buffer request(0, -1);
     wbcnet::com_status cs(channel_->Receive(request));
-    if ( ! wbcnet::COM_OK == cs) {
+    if ( wbcnet::COM_OK != cs) {
       if (wbcnet::COM_TRY_AGAIN == cs) {
 	return mst;
       }
@@ -304,7 +307,7 @@ namespace jspace {
     }
     
     cs = channel_->Send(reply);
-    if ( ! wbcnet::COM_OK == cs) {
+    if (wbcnet::COM_OK != cs) {
       // When sending, wbcnet::COM_TRY_AGAIN is also an error... it
       // probably "never" happens though.
       mst.ok = false;
@@ -385,7 +388,7 @@ namespace jspace {
       return mst;
     }
     wbcnet::com_status cs(channel_->Send(buffer));
-    if ( ! wbcnet::COM_OK == cs) {
+    if (wbcnet::COM_OK != cs) {
       mst.ok = false;
       mst.errstr = wbcnet::com_status_str(cs);
       return mst;
@@ -405,7 +408,7 @@ namespace jspace {
 	return mst;
       }
     }
-    if ( ! wbcnet::COM_OK == cs) {
+    if (wbcnet::COM_OK != cs) {
       mst.ok = false;
       mst.errstr = wbcnet::com_status_str(cs);
       return mst;
@@ -508,6 +511,10 @@ namespace {
       return false;
     }
     memcpy(buffer.GetData() + offset, &rq, sizeof(msg_rq_t));
+    
+    PDEBUG ("pack_rq(%d): %s\n", (int) rq,
+	    wbcnet::hexdump_buffer(buffer.GetData() + offset, sizeof(msg_rq_t)).c_str());
+    
     return true;
   }
   
@@ -520,6 +527,10 @@ namespace {
     }
     memcpy(buffer.GetData() + offset, &packsize, sizeof(packsize));
     memcpy(buffer.GetData() + offset + sizeof(packsize), name.data(), packsize - sizeof(packsize));
+    
+    PDEBUG ("pack_name(%s): %s\n", name.c_str(),
+	    wbcnet::hexdump_buffer(buffer.GetData() + offset, packsize).c_str());
+    
     return true;
   }
   
@@ -532,6 +543,10 @@ namespace {
     }
     memcpy(buffer.GetData() + offset, &packsize, sizeof(packsize));
     memcpy(buffer.GetData() + offset + sizeof(packsize), &data[0], packsize - sizeof(packsize));
+    
+    PDEBUG ("pack_vector(): %s\n",
+	    wbcnet::hexdump_buffer(buffer.GetData() + offset, packsize).c_str());
+    
     return true;
   }
   
@@ -547,6 +562,10 @@ namespace {
     memcpy(buffer.GetData() + offset + sizeof(packsize), &ok, sizeof(ok));
     memcpy(buffer.GetData() + offset + sizeof(packsize) + sizeof(ok),
 	   status.errstr.data(), packsize - sizeof(packsize) - sizeof(ok));
+    
+    PDEBUG ("pack_status(%s \"%s\"): %s\n", status.ok ? "OK" : "FAIL", status.errstr.c_str(),
+	    wbcnet::hexdump_buffer(buffer.GetData() + offset, packsize).c_str());
+    
     return true;
   }
   
@@ -590,6 +609,9 @@ namespace {
     buf += sizeof(nelem);
     memcpy(buf, &info.limit_upper[0], nelem * sizeof(double));
     //buf += nelem * sizeof(double);
+    
+    PDEBUG ("pack_info(): %s\n",
+	    wbcnet::hexdump_buffer(buffer.GetData() + offset, packsize).c_str());
     
     return true;
   }
@@ -636,6 +658,9 @@ namespace {
     memcpy(buf, &state.kd[0], nelem * sizeof(double));
     //buf += nelem * sizeof(double);
     
+    PDEBUG ("pack_state(): %s\n",
+	    wbcnet::hexdump_buffer(buffer.GetData() + offset, packsize).c_str());
+    
     return true;
   }
   
@@ -663,6 +688,9 @@ namespace {
     
     name.resize(nelem);
     name.copy(buf, nelem);
+    
+    PDEBUG ("unpack_name(%s): %s\n", name.c_str(),
+	    wbcnet::hexdump_buffer(buffer.GetData() + offset, packsize).c_str());
     
     return true;
   }
@@ -692,6 +720,9 @@ namespace {
     data.resize(nelem);
     memcpy(&data[0], buf, nelem * sizeof(double));
     
+    PDEBUG ("unpack_vector(): %s\n",
+	    wbcnet::hexdump_buffer(buffer.GetData() + offset, packsize).c_str());
+    
     return true;
   }
   
@@ -710,21 +741,26 @@ namespace {
     buf += sizeof(packsize);
     
     msg_bool_t ok;
-    if (packsize < sizeof(ok)) { // because later we need packsize - sizeof(ok)
+    if (packsize < sizeof(packsize) + sizeof(ok)) {
       return false;
     }
     memcpy(&ok, buf, sizeof(ok));
     buf += sizeof(ok);
     status.ok = (ok == 0 ? false : true);
     
-    msg_size_t const nelem(packsize - sizeof(ok));
+    msg_size_t const nelem(packsize - sizeof(packsize) - sizeof(ok));
     if (nelem == 0) {
       status.errstr.clear();
       return true;
     }
     
     status.errstr.resize(nelem);
-    status.errstr.copy(buf, nelem);
+    status.errstr.replace(0, nelem, buf, nelem);
+    //memcpy(status.errstr.data(), buf, nelem);
+    //buf += nelem;
+    
+    PDEBUG ("unpack_status(%s \"%s\"): %s\n", status.ok ? "OK" : "FAIL", status.errstr.c_str(),
+	    wbcnet::hexdump_buffer(buffer.GetData() + offset, packsize).c_str());
     
     return true;
   }
@@ -732,12 +768,14 @@ namespace {
   
   bool unpack_info(wbcnet::Buffer const & buffer, size_t offset, jspace::ServoInfo & info)
   {
+    PDEBUG ("ZONK!!! unpack_info()\n");
     return false;
   }
   
   
   bool unpack_state(wbcnet::Buffer const & buffer, size_t offset, jspace::ServoState & state)
   {
+    PDEBUG ("ZONK!!! unpack_state()\n");
     return false;
   }
   

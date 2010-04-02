@@ -139,7 +139,7 @@ namespace {
     
     for (double foo(-0.1); foo <= 0.1; foo += 0.1) {
       info.limit_lower.push_back(foo - 17);
-      info.limit_lower.push_back(foo + 42);
+      info.limit_upper.push_back(foo + 42);
     }
     
     jspace::Status st(true, "dummy servo info");
@@ -219,7 +219,15 @@ namespace {
   jspace::Status SPQTransactionPolicy::
   PreReceive()
   {
-    return server_->handle();
+    jspace::Status st(server_->handle());
+    std::cerr << "SPQTransactionPolicy::PreReceive(): server_->handle() ";
+    if (st.ok) {
+      std::cerr << "OK\n";
+    }
+    else {
+      std::cerr << "FAILURE " << st.errstr << "\n";
+    }
+    return st;
   }
   
   
