@@ -42,6 +42,20 @@ namespace {
   };
   
   
+  class SPQTransactionPolicy
+    : public jspace::TransactionPolicy
+  {
+  public:
+    explicit SPQTransactionPolicy(jspace::ServoProxyServer * server);
+    
+    virtual jspace::Status WaitReceive();
+    virtual jspace::Status PreReceive();
+    
+  private:
+    jspace::ServoProxyServer * server_;
+  };
+  
+  
   class ServoProxyTest
     : public testing::Test
   {
@@ -49,16 +63,19 @@ namespace {
     virtual void SetUp();
     virtual void TearDown();
     
-    wbcnet::SPQueue * channel;
     DummyServo * servo;
     jspace::ServoProxyServer * server;
     jspace::ServoProxyClient * client;
+    
+  private:
+    wbcnet::Channel * c2s_;
+    wbcnet::Channel * s2c_;
   };
   
 }
 
 
-TEST_F (ServoProxyTest, info)
+TEST_F (ServoProxyTest, dummy_info)
 {
   jspace::ServoInfo sinfo;
   sinfo.controller_name.push_back("blahblah");
@@ -184,15 +201,40 @@ namespace {
   }
   
   
+  SPQTransactionPolicy::
+  SPQTransactionPolicy(jspace::ServoProxyServer * server)
+    : server_(server)
+  {
+  }
+  
+  
+  jspace::Status SPQTransactionPolicy::
+  WaitReceive()
+  {
+    jspace::Status zonk(false, "SPQTransactionPolicy::WaitReceive() should never be called");
+    return zonk;
+  }
+  
+  
+  jspace::Status SPQTransactionPolicy::
+  PreReceive()
+  {
+    return server_->handle();
+  }
+  
+  
   void ServoProxyTest::
   SetUp()
   {
-    channel = new wbcnet::SPQueue();
+    wbcnet::SPQueue * foo(new wbcnet::SPQueue());
+    wbcnet::SPQueue * bar(new wbcnet::SPQueue());
+    c2s_ = new wbcnet::ProxyChannel(foo, true, bar, true);
+    s2c_ = new wbcnet::ProxyChannel(bar, false, foo, false);
     servo = new DummyServo();
     server = new jspace::ServoProxyServer();
-    server->init(servo, false, channel, false);
+    server->init(servo, false, c2s_, false);
     client = new jspace::ServoProxyClient();
-    client->init(channel, false, 0);
+    client->init(s2c_, false, new SPQTransactionPolicy(server), true);
   }
   
   
@@ -202,7 +244,8 @@ namespace {
     delete client;
     delete server;
     delete servo;
-    delete channel;
+    delete s2c_;
+    delete c2s_;
   }
   
 }

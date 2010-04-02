@@ -28,6 +28,34 @@ namespace wbcnet {
 }
 
 namespace jspace {
+    
+  
+  class TransactionPolicy
+  {
+  public:
+    virtual ~TransactionPolicy() {}
+    // virtual Status PreSend() = 0;
+    // virtual Status PostSend() = 0;
+    virtual Status WaitReceive() = 0;
+    virtual Status PreReceive() = 0;
+    // virtual Status PostReceive() = 0;
+  };
+  
+  
+  class SleepTransactionPolicy
+    : public TransactionPolicy
+  {
+  public:
+    explicit SleepTransactionPolicy(size_t wait_us);
+    // virtual Status PreSend();
+    // virtual Status PostSend();
+    virtual Status WaitReceive();
+    virtual Status PreReceive();
+    // virtual Status PostReceive();
+    
+  protected:
+    size_t wait_us_;
+  };
   
   
   class ServoProxyServer
@@ -60,7 +88,8 @@ namespace jspace {
     
     void reset();
     
-    Status init(wbcnet::Channel * channel, bool own_channel, size_t pwait_us);
+    Status init(wbcnet::Channel * channel, bool own_channel,
+		TransactionPolicy * tpol, bool own_tpol);
     
     virtual Status getInfo(ServoInfo & info) const;
     
@@ -75,7 +104,8 @@ namespace jspace {
   protected:
     wbcnet::Channel * channel_;
     bool own_channel_;
-    size_t pwait_us_;
+    TransactionPolicy * tpol_;
+    bool own_tpol_;
   };
   
 }

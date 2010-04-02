@@ -60,7 +60,56 @@ namespace {
   
 }
 
+
 namespace jspace {
+  
+  
+  SleepTransactionPolicy::
+  SleepTransactionPolicy(size_t wait_us)
+    : wait_us_(wait_us)
+  {
+  }
+  
+  
+  // Status SleepTransactionPolicy::
+  // PreSend()
+  // {
+  //   Status ok;
+  //   return ok;
+  // }
+  
+  
+  // Status SleepTransactionPolicy::
+  // PostSend()
+  // {
+  //   Status ok;
+  //   return ok;
+  // }
+  
+  
+  Status SleepTransactionPolicy::
+  WaitReceive()
+  {
+    usleep(wait_us_);
+    Status ok;
+    return ok;
+  }
+  
+  
+  Status SleepTransactionPolicy::
+  PreReceive()
+  {
+    Status ok;
+    return ok;
+  }
+  
+  
+  // Status SleepTransactionPolicy::
+  // PostReceive()
+  // {
+  //   Status ok;
+  //   return ok;
+  // }
   
   
   ServoProxyServer::
@@ -271,7 +320,8 @@ namespace jspace {
   ServoProxyClient()
     : channel_(0),
       own_channel_(false),
-      pwait_us_(100000)
+      tpol_(0),
+      own_tpol_(false)
   {
   }
   
@@ -290,16 +340,19 @@ namespace jspace {
       delete channel_;
     }
     channel_ = 0;
-    pwait_us_ = 100000;
+    if (own_tpol_) {
+      delete tpol_;
+    }
+    tpol_ = 0;
   }
   
   
   Status ServoProxyClient::
-  init(wbcnet::Channel * channel, bool own_channel, size_t pwait_us)
+  init(wbcnet::Channel * channel, bool own_channel, TransactionPolicy * tpol, bool own_tpol)
   {
     Status status;
     
-    if (0 != channel_) {
+    if ((0 != channel_) || (0 != tpol_)){
       status.ok = false;
       status.errstr = "already initialized";
       return status;
@@ -307,7 +360,8 @@ namespace jspace {
     
     channel_ = channel;
     own_channel_ = own_channel;
-    pwait_us_ = pwait_us;
+    tpol_ = tpol;
+    own_tpol_ = own_tpol;
     
     return status;
   }
@@ -337,10 +391,19 @@ namespace jspace {
       return mst;
     }
     
-    for (cs = channel_->Receive(buffer);
-	 wbcnet::COM_TRY_AGAIN == cs;
-	 cs = channel_->Receive(buffer)) {
-      usleep(pwait_us_);
+    while (true) {
+      mst = tpol_->PreReceive();
+      if ( ! mst) {
+	return mst;
+      }
+      cs = channel_->Receive(buffer);
+      if (wbcnet::COM_TRY_AGAIN != cs) {
+	break;
+      }
+      mst = tpol_->WaitReceive();
+      if ( ! mst) {
+	return mst;
+      }
     }
     if ( ! wbcnet::COM_OK == cs) {
       mst.ok = false;
