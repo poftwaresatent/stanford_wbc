@@ -37,14 +37,21 @@ include_directories (
 
 add_library (jspace SHARED ${SRCS})
 if (HAVE_ROS)
-  target_link_libraries (jspace urdf)
+  target_link_libraries (jspace wbcnet TAO_Dynamics_Engine SAI_Matrix urdf)
   # Some guesswork to make it easier for users of libjspace to handle
   # the optional ROS dependency.
   #  set_target_properties (jspace
   #    PROPERTIES
   #    INSTALL_RPATH ${URDF_LIBDIRS}
   #    BUILD_WITH_INSTALL_RPATH True)
+else (HAVE_ROS)
+  target_link_libraries (jspace wbcnet TAO_Dynamics_Engine SAI_Matrix)
 endif (HAVE_ROS)
+
+if (HAVE_GTEST)
+  add_executable (testServoProxy tests/testServoProxy.cpp)
+  target_link_libraries (testServoProxy jspace gtest)
+endif (HAVE_GTEST)
 
 file (GLOB headers "jspace/*.hpp")
 install (FILES ${headers} DESTINATION include/jspace)
