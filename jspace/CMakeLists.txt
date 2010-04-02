@@ -16,6 +16,7 @@ list (APPEND SRCS
   jspace/vector_util.cpp
   jspace/tao_dump.cpp
   jspace/tao_util.cpp
+  jspace/servo_proxy.cpp
   )
 
 if (HAVE_ROS)
