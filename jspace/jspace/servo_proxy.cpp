@@ -24,9 +24,13 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <stdio.h>
-#define PDEBUG(fmt, arg...) fprintf(stderr, fmt, ## arg)
-
+#undef DEBUG_SERVO_PROXY
+#ifdef DEBUG_SERVO_PROXY
+# include <stdio.h>
+# define PDEBUG(fmt, arg...) fprintf(stderr, fmt, ## arg)
+#else // DEBUG_SERVO_PROXY
+# define PDEBUG(fmt, arg...) /*NOP*/
+#endif // DEBUG_SERVO_PROXY
 
 namespace {
   
@@ -482,13 +486,20 @@ namespace {
   msg_size_t packsize_info(jspace::ServoInfo const & info)
   {
     msg_size_t packsize(sizeof(msg_size_t));
+    // For info.controller_name, we need the overall number of entries
+    // first, because each entry has a variable size.
+    packsize += sizeof(msg_size_t);
     for (size_t ii(0); ii < info.controller_name.size(); ++ii) {
       packsize += packsize_name(info.controller_name[ii]);
     }
+    // Likewise for info.dof_name...
+    packsize += sizeof(msg_size_t);
     for (size_t ii(0); ii < info.dof_name.size(); ++ii) {
       packsize += packsize_name(info.dof_name[ii]);
     }
+    // But not for info.limit_lower...
     packsize += packsize_vector(info.limit_lower);
+    // Nor for info.limit_upper...
     packsize += packsize_vector(info.limit_upper);
     return packsize;
   }
@@ -581,7 +592,9 @@ namespace {
     memcpy(buf, &packsize, sizeof(packsize));
     buf += sizeof(packsize);
     
-    msg_size_t nelem;
+    msg_size_t nelem(info.controller_name.size());
+    memcpy(buf, &nelem, sizeof(nelem));
+    buf += sizeof(nelem);
     for (size_t ii(0); ii < info.controller_name.size(); ++ii) {
       nelem = info.controller_name[ii].size();
       memcpy(buf, &nelem, sizeof(nelem));
@@ -590,6 +603,9 @@ namespace {
       buf += nelem;
     }
     
+    nelem = info.dof_name.size();
+    memcpy(buf, &nelem, sizeof(nelem));
+    buf += sizeof(nelem);
     for (size_t ii(0); ii < info.dof_name.size(); ++ii) {
       nelem = info.dof_name[ii].size();
       memcpy(buf, &nelem, sizeof(nelem));
@@ -755,8 +771,9 @@ namespace {
     }
     
     status.errstr.resize(nelem);
+    // the last ", nelem" should not be necessary, but there is a bug
+    // in GCC http://gcc.gnu.org/bugzilla/show_bug.cgi?id=43634
     status.errstr.replace(0, nelem, buf, nelem);
-    //memcpy(status.errstr.data(), buf, nelem);
     //buf += nelem;
     
     PDEBUG ("unpack_status(%s \"%s\"): %s\n", status.ok ? "OK" : "FAIL", status.errstr.c_str(),
@@ -768,15 +785,115 @@ namespace {
   
   bool unpack_info(wbcnet::Buffer const & buffer, size_t offset, jspace::ServoInfo & info)
   {
-    PDEBUG ("ZONK!!! unpack_info()\n");
-    return false;
+    msg_size_t packsize;
+    if (buffer.GetSize() < offset + sizeof(packsize)) {
+      return false;
+    }
+    char * buf(buffer.GetData() + offset);
+    memcpy(&packsize, buf, sizeof(packsize));
+    if (buffer.GetSize() < offset + packsize) {
+      return false;
+    }
+    buf += sizeof(packsize);
+    
+    info.controller_name.clear();
+    msg_size_t nelem;
+    memcpy(&nelem, buf, sizeof(nelem));
+    buf += sizeof(nelem);
+    info.controller_name.resize(nelem);
+    for (msg_size_t ii(0); ii < nelem; ++ii) {
+      msg_size_t nchars;
+      memcpy(&nchars, buf, sizeof(nchars));
+      buf += sizeof(nchars);
+      if (0 < nchars) {
+	info.controller_name[ii].resize(nchars);
+	info.controller_name[ii].replace(0, nchars, buf, nchars);
+	buf += nchars;
+      }
+    }
+    
+    info.dof_name.clear();
+    memcpy(&nelem, buf, sizeof(nelem));
+    buf += sizeof(nelem);
+    info.dof_name.resize(nelem);
+    for (msg_size_t ii(0); ii < nelem; ++ii) {
+      msg_size_t nchars;
+      memcpy(&nchars, buf, sizeof(nchars));
+      buf += sizeof(nchars);
+      if (0 < nchars) {
+	info.dof_name[ii].resize(nchars);
+	info.dof_name[ii].replace(0, nchars, buf, nchars);
+	buf += nchars;
+      }
+    }
+    
+    memcpy(&nelem, buf, sizeof(nelem));
+    buf += sizeof(nelem);
+    info.limit_lower.resize(nelem);
+    memcpy(&info.limit_lower[0], buf, nelem * sizeof(double));
+    buf += nelem * sizeof(double);
+    
+    memcpy(&nelem, buf, sizeof(nelem));
+    buf += sizeof(nelem);
+    info.limit_upper.resize(nelem);
+    memcpy(&info.limit_upper[0], buf, nelem * sizeof(double));
+    //buf += nelem * sizeof(double);
+    
+    PDEBUG ("unpack_info(): %s\n",
+	    wbcnet::hexdump_buffer(buffer.GetData() + offset, packsize).c_str());
+    
+    return true;
   }
   
   
   bool unpack_state(wbcnet::Buffer const & buffer, size_t offset, jspace::ServoState & state)
   {
-    PDEBUG ("ZONK!!! unpack_state()\n");
-    return false;
+    msg_size_t packsize;
+    if (buffer.GetSize() < offset + sizeof(packsize)) {
+      return false;
+    }
+    char * buf(buffer.GetData() + offset);
+    memcpy(&packsize, buf, sizeof(packsize));
+    if (buffer.GetSize() < offset + packsize) {
+      return false;
+    }
+    buf += sizeof(packsize);
+    
+    msg_size_t nelem;
+    memcpy(&nelem, buf, sizeof(nelem));
+    buf += sizeof(nelem);
+    state.active_controller.resize(nelem);
+    state.active_controller.replace(0, nelem, buf, nelem);
+    buf += nelem;
+    
+    memcpy(&nelem, buf, sizeof(nelem));
+    buf += sizeof(nelem);
+    state.goal.resize(nelem);
+    memcpy(&state.goal[0], buf, nelem * sizeof(double));
+    buf += nelem * sizeof(double);
+    
+    memcpy(&nelem, buf, sizeof(nelem));
+    buf += sizeof(nelem);
+    state.actual.resize(nelem);
+    memcpy(&state.actual[0], buf, nelem * sizeof(double));
+    buf += nelem * sizeof(double);
+    
+    memcpy(&nelem, buf, sizeof(nelem));
+    buf += sizeof(nelem);
+    state.kp.resize(nelem);
+    memcpy(&state.kp[0], buf, nelem * sizeof(double));
+    buf += nelem * sizeof(double);
+    
+    memcpy(&nelem, buf, sizeof(nelem));
+    buf += sizeof(nelem);
+    state.kd.resize(nelem);
+    memcpy(&state.kd[0], buf, nelem * sizeof(double));
+    //buf += nelem * sizeof(double);
+    
+    PDEBUG ("unpack_state(): %s\n",
+	    wbcnet::hexdump_buffer(buffer.GetData() + offset, packsize).c_str());
+    
+    return true;
   }
   
 }

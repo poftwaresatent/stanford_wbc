@@ -220,13 +220,13 @@ namespace {
   PreReceive()
   {
     jspace::Status st(server_->handle());
-    std::cerr << "SPQTransactionPolicy::PreReceive(): server_->handle() ";
-    if (st.ok) {
-      std::cerr << "OK\n";
-    }
-    else {
-      std::cerr << "FAILURE " << st.errstr << "\n";
-    }
+    // std::cerr << "SPQTransactionPolicy::PreReceive(): server_->handle() ";
+    // if (st.ok) {
+    //   std::cerr << "OK\n";
+    // }
+    // else {
+    //   std::cerr << "FAILURE " << st.errstr << "\n";
+    // }
     return st;
   }
   
