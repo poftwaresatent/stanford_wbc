@@ -88,7 +88,7 @@ TEST_F (ServoProxyTest, dummy_info)
   
   jspace::ServoInfo cinfo;
   jspace::Status const cst(client->getInfo(cinfo));
-  ASSERT_TRUE (sst.ok) << sst.errstr;
+  ASSERT_TRUE (cst.ok) << cst.errstr;
   
   ASSERT_EQ (sinfo.controller_name.size(), cinfo.controller_name.size());
   for (size_t ii(0); ii < sinfo.controller_name.size(); ++ii) {
