@@ -172,6 +172,9 @@ TEST_F (ServoProxyTest, selectController)
   ASSERT_TRUE (sst.ok) << sst.errstr;
   
   ASSERT_EQ (sstate.active_controller, "foobar");
+  
+  cst = client->selectController("");
+  ASSERT_FALSE (cst.ok) << "selectController() should have failed on empty name";
 }
 
 
