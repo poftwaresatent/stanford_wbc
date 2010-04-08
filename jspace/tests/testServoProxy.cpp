@@ -44,6 +44,7 @@ namespace {
 
   private:
     std::string active_controller_;
+    std::vector<double> goal_;
   };
   
   
@@ -178,6 +179,33 @@ TEST_F (ServoProxyTest, selectController)
 }
 
 
+TEST_F (ServoProxyTest, setGoal)
+{
+  std::vector<double> sgoal;
+  for (double foo(0.1); foo <= 0.3; foo += 0.1) {
+    sgoal.push_back(foo);
+  }
+  jspace::Status sst(servo->setGoal(sgoal));
+  ASSERT_TRUE (sst.ok) << sst.errstr;
+  
+  std::vector<double> cgoal;
+  for (double foo(1.1); foo <= 1.3; foo += 0.05) {
+    cgoal.push_back(foo);
+  }
+  jspace::Status cst(client->setGoal(cgoal));
+  ASSERT_TRUE (cst.ok) << cst.errstr;
+  
+  jspace::ServoState sstate;
+  sst = servo->getState(sstate);
+  ASSERT_TRUE (sst.ok) << sst.errstr;
+  
+  ASSERT_EQ (sstate.goal.size(), cgoal.size());
+  for (size_t ii(0); ii < cgoal.size(); ++ii) {
+    ASSERT_EQ (sstate.goal[ii], cgoal[ii]);
+  }
+}
+
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
@@ -223,13 +251,12 @@ namespace {
   getState(jspace::ServoState & state) const
   {
     state.active_controller = active_controller_;
-    state.goal.clear();
+    state.goal = goal_;
+    
     state.actual.clear();
     state.kp.clear();
     state.kd.clear();
-    
     for (double foo(-0.1); foo <= 0.1; foo += 0.05) {
-      state.goal.push_back(foo + 4);
       state.actual.push_back(foo + 17);
       state.kp.push_back(foo + 42);
       state.kd.push_back(foo + 1024);
@@ -261,6 +288,7 @@ namespace {
     if (goal.empty()) {
       st.ok = false;
     }
+    goal_ = goal;
     return st;
   }
   

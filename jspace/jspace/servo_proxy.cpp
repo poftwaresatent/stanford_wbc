@@ -555,7 +555,60 @@ namespace jspace {
   Status ServoProxyClient::
   setGoal(std::vector<double> const & goal)
   {
-    return Status(false, "implement me!");
+    Status mst;
+    
+    if (0 == channel_) {
+      mst.ok = false;
+      mst.errstr = "not initialized";
+      return mst;
+    }
+    
+    wbcnet::Buffer buffer(0, -1);
+    if ( ! pack_rq(buffer, 0, RQ_SET_GOAL)) {
+      mst.ok = false;
+      mst.errstr = "error packing request code";
+      return mst;
+    }
+    if ( ! pack_vector(buffer, sizeof(msg_rq_t), goal)) {
+      mst.ok = false;
+      mst.errstr = "error packing goal";
+      return mst;
+    }
+    
+    wbcnet::com_status cs(channel_->Send(buffer));
+    if (wbcnet::COM_OK != cs) {
+      mst.ok = false;
+      mst.errstr = wbcnet::com_status_str(cs);
+      return mst;
+    }
+    
+    while (true) {
+      mst = tpol_->PreReceive();
+      if ( ! mst) {
+	return mst;
+      }
+      cs = channel_->Receive(buffer);
+      if (wbcnet::COM_TRY_AGAIN != cs) {
+	break;
+      }
+      mst = tpol_->WaitReceive();
+      if ( ! mst) {
+	return mst;
+      }
+    }
+    if (wbcnet::COM_OK != cs) {
+      mst.ok = false;
+      mst.errstr = wbcnet::com_status_str(cs);
+      return mst;
+    }
+    
+    if ( ! unpack_status(buffer, 0, mst)) {
+      mst.ok = false;
+      mst.errstr = "error unpacking Status";
+      return mst;
+    }
+    
+    return mst;
   }
   
   
@@ -814,30 +867,28 @@ namespace {
   
   bool unpack_vector(wbcnet::Buffer const & buffer, size_t offset, std::vector<double> & data)
   {
-    msg_size_t packsize;
-    if (buffer.GetSize() < offset + sizeof(packsize)) {
+    msg_size_t arrlen;
+    if (buffer.GetSize() < offset + sizeof(arrlen)) {
       return false;
     }
     char * buf(buffer.GetData() + offset);
-    memcpy(&packsize, buf, sizeof(packsize));
-    if (buffer.GetSize() < offset + packsize) {
+    memcpy(&arrlen, buf, sizeof(arrlen));
+    if (buffer.GetSize() < offset + arrlen) {
       return false;
     }
-    buf += sizeof(packsize);
+    buf += sizeof(arrlen);
+    arrlen -= sizeof(arrlen);
     
-    msg_size_t nelem;
-    memcpy(&nelem, buf, sizeof(nelem));
-    if (0 == nelem) {
-      data.clear();
-      return true;
+    if (0 != arrlen % sizeof(double)) {
+      PDEBUG ("unpack_vector(): arrlen %d is not an integer multiple of %d\n", (int) arrlen, sizeof(double));
+      return false;
     }
-    buf += sizeof(nelem);
     
-    data.resize(nelem);
-    memcpy(&data[0], buf, nelem * sizeof(double));
+    data.resize(arrlen / sizeof(double));
+    memcpy(&data[0], buf, arrlen);
     
     PDEBUG ("unpack_vector(): %s\n",
-	    wbcnet::hexdump_buffer(buffer.GetData() + offset, packsize).c_str());
+	    wbcnet::hexdump_buffer(buffer.GetData() + offset, arrlen + sizeof(arrlen)).c_str());
     
     return true;
   }
