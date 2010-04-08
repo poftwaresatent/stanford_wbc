@@ -436,7 +436,59 @@ namespace jspace {
   Status ServoProxyClient::
   getState(ServoState & state) const
   {
-    return Status(false, "implement me!");
+    Status mst;
+    
+    if (0 == channel_) {
+      mst.ok = false;
+      mst.errstr = "not initialized";
+      return mst;
+    }
+    
+    wbcnet::Buffer buffer(0, -1);
+    if ( ! pack_rq(buffer, 0, RQ_GET_STATE)) {
+      mst.ok = false;
+      mst.errstr = "error packing request code";
+      return mst;
+    }
+    wbcnet::com_status cs(channel_->Send(buffer));
+    if (wbcnet::COM_OK != cs) {
+      mst.ok = false;
+      mst.errstr = wbcnet::com_status_str(cs);
+      return mst;
+    }
+    
+    while (true) {
+      mst = tpol_->PreReceive();
+      if ( ! mst) {
+	return mst;
+      }
+      cs = channel_->Receive(buffer);
+      if (wbcnet::COM_TRY_AGAIN != cs) {
+	break;
+      }
+      mst = tpol_->WaitReceive();
+      if ( ! mst) {
+	return mst;
+      }
+    }
+    if (wbcnet::COM_OK != cs) {
+      mst.ok = false;
+      mst.errstr = wbcnet::com_status_str(cs);
+      return mst;
+    }
+    
+    if ( ! unpack_status(buffer, 0, mst)) {
+      mst.ok = false;
+      mst.errstr = "error unpacking Status";
+      return mst;
+    }
+    if ( ! unpack_state(buffer, packsize_status(mst), state)) {
+      mst.ok = false;
+      mst.errstr = "error unpacking ServoState";
+      return mst;
+    }
+    
+    return mst;
   }
   
   

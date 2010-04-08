@@ -75,7 +75,7 @@ namespace {
 }
 
 
-TEST_F (ServoProxyTest, dummy_info)
+TEST_F (ServoProxyTest, info)
 {
   jspace::ServoInfo sinfo;
   sinfo.controller_name.push_back("blahblah");
@@ -111,6 +111,46 @@ TEST_F (ServoProxyTest, dummy_info)
   }
 }
 
+
+TEST_F (ServoProxyTest, state)
+{
+  jspace::ServoState sstate;
+  sstate.active_controller = "2k34u5";
+  for (double foo(0.1); foo <= 0.3; foo += 0.1) {
+    sstate.goal.push_back(foo);
+    sstate.actual.push_back(-foo);
+    sstate.kp.push_back(100*foo);
+    sstate.kd.push_back(10*foo);
+  }
+  jspace::Status const sst(servo->getState(sstate));
+  ASSERT_TRUE (sst.ok) << sst.errstr;
+  
+  jspace::ServoState cstate;
+  jspace::Status const cst(client->getState(cstate));
+  ASSERT_TRUE (cst.ok) << cst.errstr;
+  
+  ASSERT_EQ (sstate.active_controller, cstate.active_controller);
+
+  ASSERT_EQ (sstate.goal.size(), cstate.goal.size());
+  for (size_t ii(0); ii < sstate.goal.size(); ++ii) {
+    ASSERT_EQ (sstate.goal[ii], cstate.goal[ii]);
+  }
+  
+  ASSERT_EQ (sstate.actual.size(), cstate.actual.size());
+  for (size_t ii(0); ii < sstate.actual.size(); ++ii) {
+    ASSERT_EQ (sstate.actual[ii], cstate.actual[ii]);
+  }
+
+  ASSERT_EQ (sstate.kp.size(), cstate.kp.size());
+  for (size_t ii(0); ii < sstate.kp.size(); ++ii) {
+    ASSERT_EQ (sstate.kp[ii], cstate.kp[ii]);
+  }
+
+  ASSERT_EQ (sstate.kd.size(), cstate.kd.size());
+  for (size_t ii(0); ii < sstate.kd.size(); ++ii) {
+    ASSERT_EQ (sstate.kd[ii], cstate.kd[ii]);
+  }
+}
 
 int main(int argc, char ** argv)
 {
@@ -156,7 +196,7 @@ namespace {
     state.kp.clear();
     state.kd.clear();
     
-    for (double foo(-0.1); foo <= 0.1; foo += 0.1) {
+    for (double foo(-0.1); foo <= 0.1; foo += 0.05) {
       state.goal.push_back(foo + 4);
       state.actual.push_back(foo + 17);
       state.kp.push_back(foo + 42);
@@ -219,15 +259,7 @@ namespace {
   jspace::Status SPQTransactionPolicy::
   PreReceive()
   {
-    jspace::Status st(server_->handle());
-    // std::cerr << "SPQTransactionPolicy::PreReceive(): server_->handle() ";
-    // if (st.ok) {
-    //   std::cerr << "OK\n";
-    // }
-    // else {
-    //   std::cerr << "FAILURE " << st.errstr << "\n";
-    // }
-    return st;
+    return server_->handle();
   }
   
   
