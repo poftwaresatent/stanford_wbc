@@ -495,7 +495,60 @@ namespace jspace {
   Status ServoProxyClient::
   selectController(std::string const & name)
   {
-    return Status(false, "implement me!");
+    Status mst;
+    
+    if (0 == channel_) {
+      mst.ok = false;
+      mst.errstr = "not initialized";
+      return mst;
+    }
+    
+    wbcnet::Buffer buffer(0, -1);
+    if ( ! pack_rq(buffer, 0, RQ_SELECT_CONTROLLER)) {
+      mst.ok = false;
+      mst.errstr = "error packing request code";
+      return mst;
+    }
+    if ( ! pack_name(buffer, sizeof(msg_rq_t), name)) {
+      mst.ok = false;
+      mst.errstr = "error packing name";
+      return mst;
+    }
+    
+    wbcnet::com_status cs(channel_->Send(buffer));
+    if (wbcnet::COM_OK != cs) {
+      mst.ok = false;
+      mst.errstr = wbcnet::com_status_str(cs);
+      return mst;
+    }
+    
+    while (true) {
+      mst = tpol_->PreReceive();
+      if ( ! mst) {
+	return mst;
+      }
+      cs = channel_->Receive(buffer);
+      if (wbcnet::COM_TRY_AGAIN != cs) {
+	break;
+      }
+      mst = tpol_->WaitReceive();
+      if ( ! mst) {
+	return mst;
+      }
+    }
+    if (wbcnet::COM_OK != cs) {
+      mst.ok = false;
+      mst.errstr = wbcnet::com_status_str(cs);
+      return mst;
+    }
+    
+    if ( ! unpack_status(buffer, 0, mst)) {
+      mst.ok = false;
+      mst.errstr = "error unpacking Status";
+      return mst;
+    }
+    
+    return mst;
   }
   
   
@@ -735,30 +788,25 @@ namespace {
   
   bool unpack_name(wbcnet::Buffer const & buffer, size_t offset, std::string & name)
   {
-    msg_size_t packsize;
-    if (buffer.GetSize() < offset + sizeof(packsize)) {
+    msg_size_t namelen;
+    if (buffer.GetSize() < offset + sizeof(namelen)) {
       return false;
     }
     char * buf(buffer.GetData() + offset);
-    memcpy(&packsize, buf, sizeof(packsize));
-    if (buffer.GetSize() < offset + packsize) {
+    memcpy(&namelen, buf, sizeof(namelen));
+    if (buffer.GetSize() < offset + namelen) {
       return false;
     }
-    buf += sizeof(packsize);
+    buf += sizeof(namelen);
+    namelen -= sizeof(namelen);	// in the message we have the pack length, which includes the length of the length
     
-    msg_size_t nelem;
-    memcpy(&nelem, buf, sizeof(nelem));
-    if (0 == nelem) {
-      name.clear();
-      return true;
-    }
-    buf += sizeof(nelem);
+    PDEBUG ("unpack_name(): namelen = %d\n", (int) namelen);
     
-    name.resize(nelem);
-    name.copy(buf, nelem);
+    name.resize(namelen);
+    name.replace(0, namelen, buf, namelen);
     
     PDEBUG ("unpack_name(%s): %s\n", name.c_str(),
-	    wbcnet::hexdump_buffer(buffer.GetData() + offset, packsize).c_str());
+	    wbcnet::hexdump_buffer(buffer.GetData() + offset, namelen + sizeof(namelen)).c_str());
     
     return true;
   }

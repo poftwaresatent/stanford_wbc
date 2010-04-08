@@ -34,11 +34,16 @@ namespace {
     : public jspace::ServoAPI
   {
   public:
+    DummyServo();
+    
     virtual jspace::Status getInfo(jspace::ServoInfo & info) const;
     virtual jspace::Status getState(jspace::ServoState & state) const;
     virtual jspace::Status selectController(std::string const & name);
     virtual jspace::Status setGoal(std::vector<double> const & goal);
     virtual jspace::Status setGains(std::vector<double> const & kp, std::vector<double> const & kd);
+
+  private:
+    std::string active_controller_;
   };
   
   
@@ -75,7 +80,7 @@ namespace {
 }
 
 
-TEST_F (ServoProxyTest, info)
+TEST_F (ServoProxyTest, getInfo)
 {
   jspace::ServoInfo sinfo;
   sinfo.controller_name.push_back("blahblah");
@@ -112,7 +117,7 @@ TEST_F (ServoProxyTest, info)
 }
 
 
-TEST_F (ServoProxyTest, state)
+TEST_F (ServoProxyTest, getState)
 {
   jspace::ServoState sstate;
   sstate.active_controller = "2k34u5";
@@ -152,6 +157,24 @@ TEST_F (ServoProxyTest, state)
   }
 }
 
+
+TEST_F (ServoProxyTest, selectController)
+{
+  jspace::Status sst(servo->selectController("blahblah"));
+  ASSERT_TRUE (sst.ok) << sst.errstr;
+  
+  std::string cname;
+  jspace::Status cst(client->selectController("foobar"));
+  ASSERT_TRUE (cst.ok) << cst.errstr;
+  
+  jspace::ServoState sstate;
+  sst = servo->getState(sstate);
+  ASSERT_TRUE (sst.ok) << sst.errstr;
+  
+  ASSERT_EQ (sstate.active_controller, "foobar");
+}
+
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
@@ -160,6 +183,12 @@ int main(int argc, char ** argv)
 
 
 namespace {
+  
+  DummyServo::
+  DummyServo()
+    : active_controller_("hyperactive dummy")
+  {
+  }
   
   
   jspace::Status DummyServo::
@@ -190,7 +219,7 @@ namespace {
   jspace::Status DummyServo::
   getState(jspace::ServoState & state) const
   {
-    state.active_controller = "hyperactive dummy";
+    state.active_controller = active_controller_;
     state.goal.clear();
     state.actual.clear();
     state.kp.clear();
@@ -214,6 +243,9 @@ namespace {
     jspace::Status st(true, "dummy servo select controller");
     if (name.empty()) {
       st.ok = false;
+    }
+    else {
+      active_controller_ = name;
     }
     return st;
   }
