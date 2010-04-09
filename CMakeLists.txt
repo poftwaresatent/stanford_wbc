@@ -3,8 +3,8 @@ cmake_minimum_required (VERSION 2.6)
 include (wbc.cmake)
 wbc_init (Stanford_WBC_Umbrella)
 
-list (APPEND CMAKE_REQUIRED_INCLUDES ${Stanford_WBC_SOURCE_DIR})
-include_directories (${Stanford_WBC_SOURCE_DIR} ${Stanford_WBC_SOURCE_DIR}/wbcnet)
+list (APPEND CMAKE_REQUIRED_INCLUDES ${Stanford_WBC_Umbrella_SOURCE_DIR})
+include_directories (${Stanford_WBC_Umbrella_SOURCE_DIR} ${Stanford_WBC_Umbrella_SOURCE_DIR}/wbcnet)
 
 
 ##################################################
@@ -19,8 +19,8 @@ include_directories (${Stanford_WBC_SOURCE_DIR} ${Stanford_WBC_SOURCE_DIR}/wbcne
 # not appear in the top-level CMakeLists.txt anyhow.
 
 if (NOT WBC_PLUGIN_PATH)
-  message ("setting WBC_PLUGIN_PATH to ${Stanford_WBC_BINARY_DIR}/plugins")
-  set (WBC_PLUGIN_PATH ${Stanford_WBC_BINARY_DIR}/plugins)
+  message ("setting WBC_PLUGIN_PATH to ${Stanford_WBC_Umbrella_BINARY_DIR}/plugins")
+  set (WBC_PLUGIN_PATH ${Stanford_WBC_Umbrella_BINARY_DIR}/plugins)
 else (NOT WBC_PLUGIN_PATH)
   message ("WBC_PLUGIN_PATH already set to ${WBC_PLUGIN_PATH}")
 endif (NOT WBC_PLUGIN_PATH)
