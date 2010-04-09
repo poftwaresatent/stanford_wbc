@@ -45,6 +45,8 @@ namespace {
   private:
     std::string active_controller_;
     std::vector<double> goal_;
+    std::vector<double> kp_;
+    std::vector<double> kd_;
   };
   
   
@@ -206,6 +208,40 @@ TEST_F (ServoProxyTest, setGoal)
 }
 
 
+TEST_F (ServoProxyTest, setGains)
+{
+  std::vector<double> skp, skd;
+  for (double foo(100); foo <= 300; foo += 100) {
+    skp.push_back(foo);
+    skd.push_back(foo/17);
+  }
+  jspace::Status sst(servo->setGains(skp, skd));
+  ASSERT_TRUE (sst.ok) << sst.errstr;
+  
+  std::vector<double> ckp, ckd;
+  for (double foo(200); foo <= 1000; foo *= 1.2) {
+    ckp.push_back(foo);
+    ckd.push_back(foo/21.3);
+  }
+  jspace::Status cst(client->setGains(ckp, ckd));
+  ASSERT_TRUE (cst.ok) << cst.errstr;
+  
+  jspace::ServoState sstate;
+  sst = servo->getState(sstate);
+  ASSERT_TRUE (sst.ok) << sst.errstr;
+  
+  ASSERT_EQ (sstate.kp.size(), ckp.size());
+  for (size_t ii(0); ii < ckp.size(); ++ii) {
+    ASSERT_EQ (sstate.kp[ii], ckp[ii]);
+  }
+  
+  ASSERT_EQ (sstate.kd.size(), ckd.size());
+  for (size_t ii(0); ii < ckd.size(); ++ii) {
+    ASSERT_EQ (sstate.kd[ii], ckd[ii]);
+  }
+}
+
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
@@ -252,14 +288,12 @@ namespace {
   {
     state.active_controller = active_controller_;
     state.goal = goal_;
+    state.actual = goal_;
+    state.kp = kp_;
+    state.kd = kd_;
     
-    state.actual.clear();
-    state.kp.clear();
-    state.kd.clear();
-    for (double foo(-0.1); foo <= 0.1; foo += 0.05) {
-      state.actual.push_back(foo + 17);
-      state.kp.push_back(foo + 42);
-      state.kd.push_back(foo + 1024);
+    for (size_t ii(0); ii < goal_.size(); ++ii) {
+      state.actual[ii] += 0.1;
     }
     
     jspace::Status st(true, "dummy servo state");
@@ -300,6 +334,8 @@ namespace {
     if ((kp.empty()) || (kd.empty())) {
       st.ok = false;
     }
+    kp_ = kp;
+    kd_ = kd;
     return st;
   }
   
