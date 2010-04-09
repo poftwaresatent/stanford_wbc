@@ -21,16 +21,24 @@
 #include "servo_proxy.hpp"
 #include <wbcnet/data.hpp>
 #include <wbcnet/com.hpp>
-#include <stdint.h>
 #include <string.h>
 
-#undef DEBUG_SERVO_PROXY
-#ifdef DEBUG_SERVO_PROXY
-# include <stdio.h>
-# define PDEBUG(fmt, arg...) fprintf(stderr, fmt, ## arg)
-#else // DEBUG_SERVO_PROXY
-# define PDEBUG(fmt, arg...) /*NOP*/
-#endif // DEBUG_SERVO_PROXY
+#ifdef WIN32
+# include <wbcnet/win32/win32_compat.hpp>
+# define PDEBUG(whatever) /*NOP*/
+# pragma warning (disable : 4002)
+# pragma warning (disable : 4003)
+#else // WIN32
+# include <stdint.h>
+# undef DEBUG_SERVO_PROXY
+# ifdef DEBUG_SERVO_PROXY
+#  include <stdio.h>
+#  define PDEBUG(fmt, arg...) fprintf(stderr, fmt, ## arg)
+# else // DEBUG_SERVO_PROXY
+#  define PDEBUG(fmt, arg...) /*NOP*/
+# endif // DEBUG_SERVO_PROXY
+#endif // WIN32
+
 
 namespace {
   
