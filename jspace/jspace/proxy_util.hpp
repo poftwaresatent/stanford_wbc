@@ -37,6 +37,36 @@
 
 namespace jspace {
   
+  
+  class TransactionPolicy
+  {
+  public:
+    virtual ~TransactionPolicy() {}
+    virtual Status WaitReceive() = 0;
+    virtual Status PreReceive() = 0;
+  };
+  
+  
+  class RobotTransactionPolicy
+  {
+  public:
+    virtual Status WaitReceive();
+    virtual Status PreReceive();
+  };
+  
+  
+  class ServoTransactionPolicy
+    : public TransactionPolicy
+  {
+  public:
+    explicit ServoTransactionPolicy(size_t wait_us);
+    virtual Status WaitReceive();
+    virtual Status PreReceive();
+  protected:
+    size_t wait_us_;
+  };
+  
+  
   typedef uint16_t msg_rq_t;
   typedef uint16_t msg_size_t;
   typedef uint8_t msg_bool_t;
@@ -58,7 +88,7 @@ namespace jspace {
   msg_size_t packsize_status(jspace::Status const & status);
   msg_size_t packsize_servo_info(jspace::ServoInfo const & info);
   msg_size_t packsize_servo_state(jspace::ServoState const & state);
-  ////  msg_size_t packsize_state(jspace::State const & state);
+  msg_size_t packsize_state(jspace::State const & state);
   
   bool pack_rq(wbcnet::Buffer & buffer, size_t offset, msg_rq_t rq);
   bool pack_name(wbcnet::Buffer & buffer, size_t offset, std::string const & name);
@@ -66,14 +96,14 @@ namespace jspace {
   bool pack_status(wbcnet::Buffer & buffer, size_t offset, jspace::Status const & status);
   bool pack_servo_info(wbcnet::Buffer & buffer, size_t offset, jspace::ServoInfo const & info);
   bool pack_servo_state(wbcnet::Buffer & buffer, size_t offset, jspace::ServoState const & state);
-  ////  bool pack_state(wbcnet::Buffer & buffer, size_t offset, jspace::State const & state);
+  bool pack_state(wbcnet::Buffer & buffer, size_t offset, jspace::State const & state);
   
   bool unpack_name(wbcnet::Buffer const & buffer, size_t offset, std::string & name);
   bool unpack_vector(wbcnet::Buffer const & buffer, size_t offset, std::vector<double> & data);
   bool unpack_status(wbcnet::Buffer const & buffer, size_t offset, jspace::Status & status);
   bool unpack_servo_info(wbcnet::Buffer const & buffer, size_t offset, jspace::ServoInfo & info);
   bool unpack_servo_state(wbcnet::Buffer const & buffer, size_t offset, jspace::ServoState & state);
-  ////  bool unpack_state(wbcnet::Buffer const & buffer, size_t offset, jspace::State & state);
+  bool unpack_state(wbcnet::Buffer const & buffer, size_t offset, jspace::State & state);
   
 }
 

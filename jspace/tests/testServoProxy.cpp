@@ -24,6 +24,7 @@
 */
 
 #include <jspace/servo_proxy.hpp>
+#include <jspace/proxy_util.hpp>
 #include <wbcnet/imp/SPQueue.hpp>
 #include <gtest/gtest.h>
 

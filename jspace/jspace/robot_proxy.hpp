@@ -18,10 +18,10 @@
  * <http://www.gnu.org/licenses/>
  */
 
-#ifndef JSPACE_SERVO_PROXY_HPP
-#define JSPACE_SERVO_PROXY_HPP
+#ifndef JSPACE_ROBOT_PROXY_HPP
+#define JSPACE_ROBOT_PROXY_HPP
 
-#include <jspace/ServoAPI.hpp>
+#include <jspace/RobotAPI.hpp>
 
 namespace wbcnet {
   class Channel;
@@ -30,52 +30,47 @@ namespace wbcnet {
 namespace jspace {
   
   /** \note See proxy_util.hpp, especially its subclass
-      jspace::ServoTransactionPolicy. */
+      jspace::RobotTransactionPolicy. */
   class TransactionPolicy;
   
-  
-  class ServoProxyServer
+  class RobotProxyServer
   {
   public:
-    ServoProxyServer();
-    virtual ~ServoProxyServer();
+    RobotProxyServer();
+    virtual ~RobotProxyServer();
     
     void reset();
     
-    Status init(ServoAPI * servo, bool own_servo,
+    Status init(RobotAPI * robot, bool own_robot,
 		wbcnet::Channel * channel, bool own_channel);
     
     Status handle();
     
   protected:
-    ServoAPI * servo_;
-    bool own_servo_;
+    RobotAPI * robot_;
+    bool own_robot_;
     wbcnet::Channel * channel_;
     bool own_channel_;
   };
   
   
-  class ServoProxyClient
-    : public ServoAPI
+  class RobotProxyClient
+    : public RobotAPI
   {
   public:
-    ServoProxyClient();
-    virtual ~ServoProxyClient();
+    RobotProxyClient();
+    virtual ~RobotProxyClient();
     
     void reset();
     
     Status init(wbcnet::Channel * channel, bool own_channel,
 		TransactionPolicy * tpol, bool own_tpol);
     
-    virtual Status getInfo(ServoInfo & info) const;
+    virtual Status readState(State & state);
     
-    virtual Status getState(ServoState & state) const;
+    virtual Status writeCommand(std::vector<double> const & command);
     
-    virtual Status selectController(std::string const & name);
-    
-    virtual Status setGoal(std::vector<double> const & goal);
-    
-    virtual Status setGains(std::vector<double> const & kp, std::vector<double> const & kd);
+    virtual void shutdown();
     
   protected:
     wbcnet::Channel * channel_;
@@ -86,4 +81,4 @@ namespace jspace {
   
 }
 
-#endif // JSPACE_SERVO_PROXY_HPP
+#endif // JSPACE_ROBOT_PROXY_HPP

@@ -18,6 +18,7 @@ list (APPEND SRCS
   jspace/tao_util.cpp
   jspace/proxy_util.cpp
   jspace/servo_proxy.cpp
+  jspace/robot_proxy.cpp
   )
 
 if (HAVE_ROS)
