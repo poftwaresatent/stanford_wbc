@@ -2,12 +2,17 @@ TOP_BUILD_DIR= $(CURDIR)
 TOP_SRC_DIR= $(CURDIR)/..
 VPATH=$(TOP_SRC_DIR)
 
+URDF_CPPFLAGS= \
+         $(shell rospack cflags-only-I urdf | sed 's:\([^ ]*\):-I\1:g') \
+         $(shell rospack cflags-only-other urdf)
+
 CXX=      g++
 CPPFLAGS= -I$(TOP_SRC_DIR)/jspace \
           -I$(TOP_SRC_DIR)/saimatrix \
           -I$(TOP_SRC_DIR)/tao \
           -I$(TOP_SRC_DIR)/wbc_tinyxml \
-          -I$(TOP_SRC_DIR)/wbcnet
+          -I$(TOP_SRC_DIR)/wbcnet \
+          $(URDF_CPPFLAGS)
 CXXFLAGS= $(CPPFLAGS) -Wall -O0 -g
 
 JSPACE_HDRS= \
