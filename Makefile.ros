@@ -1,0 +1,223 @@
+TOP_BUILD_DIR= $(CURDIR)
+TOP_SRC_DIR= $(CURDIR)/..
+VPATH=$(TOP_SRC_DIR)
+
+CXX=      g++
+CPPFLAGS= -I$(TOP_SRC_DIR)/jspace \
+          -I$(TOP_SRC_DIR)/saimatrix \
+          -I$(TOP_SRC_DIR)/tao \
+          -I$(TOP_SRC_DIR)/wbc_tinyxml \
+          -I$(TOP_SRC_DIR)/wbcnet
+CXXFLAGS= $(CPPFLAGS) -Wall -O0 -g
+
+JSPACE_HDRS= \
+      jspace/jspace/Model.hpp \
+      jspace/jspace/RobotAPI.hpp \
+      jspace/jspace/ServoAPI.hpp \
+      jspace/jspace/State.hpp \
+      jspace/jspace/Status.hpp \
+      jspace/jspace/controller_library.hpp \
+      jspace/jspace/proxy_util.hpp \
+      jspace/jspace/robot_proxy.hpp \
+      jspace/jspace/ros/Model.hpp \
+      jspace/jspace/ros/urdf_dump.hpp \
+      jspace/jspace/ros/urdf_to_tao.hpp \
+      jspace/jspace/servo_proxy.hpp \
+      jspace/jspace/tao_dump.hpp \
+      jspace/jspace/tao_util.hpp \
+      jspace/jspace/vector_util.hpp
+
+JSPACE_SRCS= \
+      jspace/jspace/Model.cpp \
+      jspace/jspace/State.cpp \
+      jspace/jspace/Status.cpp \
+      jspace/jspace/controller_library.cpp \
+      jspace/jspace/proxy_util.cpp \
+      jspace/jspace/robot_proxy.cpp \
+      jspace/jspace/ros/Model.cpp \
+      jspace/jspace/ros/urdf_dump.cpp \
+      jspace/jspace/ros/urdf_to_tao.cpp \
+      jspace/jspace/servo_proxy.cpp \
+      jspace/jspace/tao_dump.cpp \
+      jspace/jspace/tao_util.cpp \
+      jspace/jspace/vector_util.cpp
+
+SAIMATRIX_HDRS= \
+      saimatrix/saimatrix/SAIGlobalDefn.h \
+      saimatrix/saimatrix/SAILapack.h \
+      saimatrix/saimatrix/SAIMath.h \
+      saimatrix/saimatrix/SAIMathDefn.h \
+      saimatrix/saimatrix/SAIMatrix.h \
+      saimatrix/saimatrix/SAIMatrix3.h \
+      saimatrix/saimatrix/SAIMatrix6.h \
+      saimatrix/saimatrix/SAIQuaternion.h \
+      saimatrix/saimatrix/SAITransform.h \
+      saimatrix/saimatrix/SAIVector.h \
+      saimatrix/saimatrix/SAIVector3.h \
+      saimatrix/saimatrix/SAIVector6.h
+
+SAIMATRIX_SRCS= \
+      saimatrix/saimatrix/SAILapack.cpp \
+      saimatrix/saimatrix/SAIMatrix.cpp \
+      saimatrix/saimatrix/SAIMatrix3.cpp \
+      saimatrix/saimatrix/SAIMatrix6.cpp \
+      saimatrix/saimatrix/SAIQuaternion.cpp \
+      saimatrix/saimatrix/SAITransform.cpp \
+      saimatrix/saimatrix/SAIVector.cpp \
+      saimatrix/saimatrix/SAIVector3.cpp \
+      saimatrix/saimatrix/SAIVector6.cpp
+
+TAO_HDRS= \
+      tao/tao/dynamics/tao.h \
+      tao/tao/dynamics/taoABDynamics.h \
+      tao/tao/dynamics/taoABJoint.h \
+      tao/tao/dynamics/taoABNode.h \
+      tao/tao/dynamics/taoCNode.h \
+      tao/tao/dynamics/taoDJoint.h \
+      tao/tao/dynamics/taoDNode.h \
+      tao/tao/dynamics/taoDVar.h \
+      tao/tao/dynamics/taoDynamics.h \
+      tao/tao/dynamics/taoGroup.h \
+      tao/tao/dynamics/taoJoint.h \
+      tao/tao/dynamics/taoNode.h \
+      tao/tao/dynamics/taoTypes.h \
+      tao/tao/dynamics/taoVar.h \
+      tao/tao/dynamics/taoWorld.h \
+      tao/tao/matrix/TaoDeFrame.h \
+      tao/tao/matrix/TaoDeFrame.inl \
+      tao/tao/matrix/TaoDeMath.h \
+      tao/tao/matrix/TaoDeMatrix3.h \
+      tao/tao/matrix/TaoDeMatrix3.inl \
+      tao/tao/matrix/TaoDeMatrix3f.h \
+      tao/tao/matrix/TaoDeMatrix6.h \
+      tao/tao/matrix/TaoDeMatrix6.inl \
+      tao/tao/matrix/TaoDeQuaternion.h \
+      tao/tao/matrix/TaoDeQuaternion.inl \
+      tao/tao/matrix/TaoDeQuaternionf.h \
+      tao/tao/matrix/TaoDeTransform.h \
+      tao/tao/matrix/TaoDeTransform.inl \
+      tao/tao/matrix/TaoDeTypes.h \
+      tao/tao/matrix/TaoDeVector3.h \
+      tao/tao/matrix/TaoDeVector3.inl \
+      tao/tao/matrix/TaoDeVector3f.h \
+      tao/tao/matrix/TaoDeVector6.h \
+      tao/tao/matrix/TaoDeVector6.inl \
+      tao/tao/utility/TaoDeLogger.h \
+      tao/tao/utility/TaoDeMassProp.h
+
+TAO_SRCS= \
+      tao/tao/dynamics/taoABDynamics.cpp \
+      tao/tao/dynamics/taoABJoint.cpp \
+      tao/tao/dynamics/taoABNode.cpp \
+      tao/tao/dynamics/taoCNode.cpp \
+      tao/tao/dynamics/taoDynamics.cpp \
+      tao/tao/dynamics/taoGroup.cpp \
+      tao/tao/dynamics/taoJoint.cpp \
+      tao/tao/dynamics/taoNode.cpp \
+      tao/tao/dynamics/taoWorld.cpp \
+      tao/tao/matrix/TaoDeMatrix3f.cpp \
+      tao/tao/matrix/TaoDeMatrix6.cpp \
+      tao/tao/matrix/TaoDeQuaternionf.cpp \
+      tao/tao/matrix/TaoDeTransform.cpp \
+      tao/tao/matrix/TaoDeVector6.cpp \
+      tao/tao/utility/TaoDeLogger.cpp \
+      tao/tao/utility/TaoDeMassProp.cpp
+
+TIXML_HDRS= \
+      wbc_tinyxml/wbc_tinyxml/wbc_tinystr.h \
+      wbc_tinyxml/wbc_tinyxml/wbc_tinyxml.h
+
+TIXML_SRCS= \
+      wbc_tinyxml/wbc_tinyxml/wbc_tinystr.cpp \
+      wbc_tinyxml/wbc_tinyxml/wbc_tinyxml.cpp \
+      wbc_tinyxml/wbc_tinyxml/wbc_tinyxmlerror.cpp \
+      wbc_tinyxml/wbc_tinyxml/wbc_tinyxmlparser.cpp
+
+WBCNET_HDRS= \
+      wbcnet/wbcnet/Factory.hpp \
+      wbcnet/wbcnet/Muldex.hpp \
+      wbcnet/wbcnet/NetConfig.hpp \
+      wbcnet/wbcnet/Registry.hpp \
+      wbcnet/wbcnet/com.hpp \
+      wbcnet/wbcnet/data.hpp \
+      wbcnet/wbcnet/endian.hpp \
+      wbcnet/wbcnet/endian_mode.hpp \
+      wbcnet/wbcnet/imp/MQNetConfig.hpp \
+      wbcnet/wbcnet/imp/MQWrap.hpp \
+      wbcnet/wbcnet/imp/NetWrapNetConfig.hpp \
+      wbcnet/wbcnet/imp/NetWrapperWrap.hpp \
+      wbcnet/wbcnet/imp/SPQNetConfig.hpp \
+      wbcnet/wbcnet/imp/SPQueue.hpp \
+      wbcnet/wbcnet/imp/SockWrap.hpp \
+      wbcnet/wbcnet/imp/TCPNetConfig.hpp \
+      wbcnet/wbcnet/imp/fake_log.hpp \
+      wbcnet/wbcnet/log.hpp \
+      wbcnet/wbcnet/misc/AutoSocket.hpp \
+      wbcnet/wbcnet/misc/DelayHistogram.hpp \
+      wbcnet/wbcnet/misc/StreamBufMgr.hpp \
+      wbcnet/wbcnet/misc/TaskAtomizer.hpp \
+      wbcnet/wbcnet/misc/TaskModelAPI.hpp \
+      wbcnet/wbcnet/misc/TaskModelContainer.hpp \
+      wbcnet/wbcnet/misc/id.hpp \
+      wbcnet/wbcnet/misc/message_id.hpp \
+      wbcnet/wbcnet/misc/udp_util.hpp \
+      wbcnet/wbcnet/msg/Matrix.hpp \
+      wbcnet/wbcnet/msg/RobotState.hpp \
+      wbcnet/wbcnet/msg/Service.hpp \
+      wbcnet/wbcnet/msg/ServoCommand.hpp \
+      wbcnet/wbcnet/msg/Status.hpp \
+      wbcnet/wbcnet/msg/StringList.hpp \
+      wbcnet/wbcnet/msg/TaskMatrix.hpp \
+      wbcnet/wbcnet/msg/TaskSpec.hpp \
+      wbcnet/wbcnet/msg/UserCommand.hpp \
+      wbcnet/wbcnet/net.hpp \
+      wbcnet/wbcnet/pack.hpp \
+      wbcnet/wbcnet/proxy.hpp \
+      wbcnet/wbcnet/strutil.hpp
+
+WBCNET_SRCS= \
+      wbcnet/wbcnet/Muldex.cpp \
+      wbcnet/wbcnet/NetConfig.cpp \
+      wbcnet/wbcnet/com.cpp \
+      wbcnet/wbcnet/data.cpp \
+      wbcnet/wbcnet/endian.cpp \
+      wbcnet/wbcnet/imp/MQNetConfig.cpp \
+      wbcnet/wbcnet/imp/MQWrap.cpp \
+      wbcnet/wbcnet/imp/NetWrapNetConfig.cpp \
+      wbcnet/wbcnet/imp/NetWrapperWrap.cpp \
+      wbcnet/wbcnet/imp/SPQNetConfig.cpp \
+      wbcnet/wbcnet/imp/SPQueue.cpp \
+      wbcnet/wbcnet/imp/SockWrap.cpp \
+      wbcnet/wbcnet/imp/TCPNetConfig.cpp \
+      wbcnet/wbcnet/log.cpp \
+      wbcnet/wbcnet/misc/AutoSocket.cpp \
+      wbcnet/wbcnet/misc/DelayHistogram.cpp \
+      wbcnet/wbcnet/misc/StreamBufMgr.cpp \
+      wbcnet/wbcnet/misc/TaskAtomizer.cpp \
+      wbcnet/wbcnet/misc/id.cpp \
+      wbcnet/wbcnet/misc/message_id.cpp \
+      wbcnet/wbcnet/misc/udp_util.cpp \
+      wbcnet/wbcnet/msg/Matrix.cpp \
+      wbcnet/wbcnet/msg/RobotState.cpp \
+      wbcnet/wbcnet/msg/Service.cpp \
+      wbcnet/wbcnet/msg/ServoCommand.cpp \
+      wbcnet/wbcnet/msg/Status.cpp \
+      wbcnet/wbcnet/msg/StringList.cpp \
+      wbcnet/wbcnet/msg/TaskMatrix.cpp \
+      wbcnet/wbcnet/msg/TaskSpec.cpp \
+      wbcnet/wbcnet/msg/UserCommand.cpp \
+      wbcnet/wbcnet/net.cpp \
+      wbcnet/wbcnet/pack.cpp \
+      wbcnet/wbcnet/proxy.cpp \
+      wbcnet/wbcnet/strutil.cpp
+
+SRCS= $(JSPACE_SRCS) $(SAIMATRIX_SRCS) $(TAO_SRCS) $(TIXML_SRCS) $(WBCNET_SRCS)
+OBJS= $(SRCS:.cpp=.o)
+
+all: $(OBJS)
+
+.SUFFIXES: .cpp .o
+
+.cpp.o:
+	mkdir -p `dirname $@`
+	$(CXX) $(CXXFLAGS) -o $@ -c $<
