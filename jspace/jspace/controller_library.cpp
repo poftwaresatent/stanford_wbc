@@ -90,8 +90,8 @@ namespace jspace {
   
   GoalControllerBase::
   GoalControllerBase(int compensation_flags,
-		     double default_kp,
-		     double default_kd)
+		     std::vector<double> const & default_kp,
+		     std::vector<double> const & default_kd)
     : compensation_flags_(compensation_flags),
       default_kp_(default_kp),
       default_kd_(default_kd)
@@ -112,16 +112,19 @@ namespace jspace {
 	+ " but state.size() = " + sfl::to_string(model.getState().position_.size());
       return status;
     }
-    
-    // If this is the first time we got called, initialize to default.
+
+    // If this is the first time we got called, then initialize gains.
     if (ndof != goal_.size()) {
-      goal_.resize(ndof);
-      kp_.resize(ndof);
-      kd_.resize(ndof);
-      for (size_t ii(0); ii < ndof; ++ii) {
-	kp_[ii] = default_kp_;
-	kd_[ii] = default_kd_;
+      if ((ndof != default_kp_.size()) || (ndof != default_kd_.size())) {
+	status.ok = false;
+	status.errstr =
+	  "inconsistent default gains: ndof = " + sfl::to_string(ndof)
+	  + " but default_kp_.size() = " + sfl::to_string(default_kp_.size())
+	  + " and default_kd_.size() = " + sfl::to_string(default_kd_.size());
+	return status;
       }
+      kp_ = default_kp_;
+      kd_ = default_kd_;
     }
     
     // Set goal to current position.
@@ -162,7 +165,7 @@ namespace jspace {
     Status status;
     if ((kp.size() != kp_.size()) || (kd.size() != kd_.size())) {
       status.ok = false;
-      status.errstr = "gain size mismatch";
+      status.errstr = "gain size mismatch (maybe not initialized?)";
       return status;
     }
     kp_ = kp;
@@ -183,8 +186,8 @@ namespace jspace {
   
   JointGoalController::
   JointGoalController(int compensation_flags,
-		      double default_kp,
-		      double default_kd)
+		      std::vector<double> const & default_kp,
+		      std::vector<double> const & default_kd)
     : GoalControllerBase(compensation_flags, default_kp, default_kd)
   {
   }
