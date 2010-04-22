@@ -6,217 +6,172 @@
 Whole-Body Control Framework
 Copyright (c) 1997-2010 Stanford University. All rights reserved.
 Released under LGPLv3.
-See wbc/gpl-3.0.txt and wbc/lgpl-3.0.txt for more information
+See wbc/gpl-3.0.txt and wbc/lgpl-3.0.txt for more information.
 ----------------------------------------------------------------------
 TAO Dynamics Engine
 Copyright (c) 2005 Arachi, Inc. and Stanford University. All rights reserved.
 Released under MIT License.
-See tao/README for more information
+See tao/LICENSE for more information.
 ----------------------------------------------------------------------
 Networking Mechanisms for Whole-Body Control (wbcnet)
 Copyright (c) 2008-2009 Roland Philippsen <roland DOT philippsen AT gmx DOT net>
 Released under BSD License.
-See wbcnet/README for more information
+See wbcnet/README for more information.
 ----------------------------------------------------------------------
-3rdparty dependencies not hosted in this project have various other
-copyrights and license terms.
+TinyXML (renamed wbc_tinyxml to avoid version conflicts)
+Copyright (c) 2000-2006 Lee Thomason (www.grinninglizard.com)
+Released under zlib/libpng license.
+See wbc_tinyxml/README for more information.
 ======================================================================
 
 
-= PREREQUISITES =
+= Prerequisites =
 
-The CMake checks will signal any missing prerequisites and warn about
-missing optional or recommended 3rd party libraries.
+Install the following four from your package manager or directly from
+the original source.  Note that the build system will signal any
+missing prerequisites and warn about missing optional or recommended
+3rd-party libraries.
 
-== Non-bundled ==
-
-Install these from your package manager or directly from the original
-source:
-
- * '''A C++ compiler:'''
+ * '''A C++ compiler:''' [[BR]]
    The WBC code is developed with GCC http://gcc.gnu.org/ ... other
    compilers should work as well but are not currently tested.
    
- * '''CMake 2.6 or higher:'''
+ * '''CMake 2.6''' or higher: [[BR]]
    Widely available from package managers. You can also get it from
    http://www.cmake.org/ (especially if your distro provides an older
    version such as CMake-2.4)
 
- * '''GNU ncurses''' (version 5 seems to work fine):
+ * '''GNU ncurses''' (version 5 seems to work fine): [[BR]]
    Widely available from package managers.
    http://www.gnu.org/software/ncurses/
 
- * '''LAPACK''' (and thus, BLAS):
+ * '''LAPACK''' (and thus, BLAS): [[BR]]
    Widely available as packages.
 
-== Bundled ==
+Some further prerequisites can be installed from your package manager
+or from the 3rd-party tarballs available from
+http://sourceforge.net/projects/stanford-wbc/files/
+(e.g. stanford-wbc-3rdparty-0.0.tar.gz):
 
-We provide snaphsots, patches, and build scripts (mostly) in the 3rdparty
-subdirectory, of the following external open source projects.
+ * ''Required:'' '''expat''' version 1 or 2 [[BR]]
+   Also available as package on pretty much any distro.
+   http://expat.sourceforge.net/
+   The stanford-wbc-3rdparty tarball contains version 2.0.1
 
-Given that log4cxx, gtest, and XmlRpc++ are somewhat likely to need
+ * ''Recommened:'' '''log4cxx''' version 0.10.0 [[BR]]
+   (higher versions might work as well).
+   Without log4cxx, you will not be able to control the verbosity of
+   programs, they will simply print any warnings and errors to the
+   console. It is fairly common that distros provide version 0.9.x,
+   which unfortunately is not compatible with WBC, in which case
+   you'll have to use the one provided by the stanford-wbc-3rdparty
+   tarball or from http://logging.apache.org/log4cxx/
+
+ * Optional: '''!XmlRpc++''' [[BR]]
+   For easier integration with higher levels and GUIs.  The
+   stanford-wbc-3rdparty tarball contains a CVS snapshot (from early
+   2009) plus some local patches.  http://xmlrpcpp.sourceforge.net/
+
+ * Optional: '''Google testing framework''' version 1.3.0 [[BR]]
+   (other version might work, too) The stanford-wbc-3rdparty tarball
+   contains version 1.3.0, or get the freshest from
+   http://code.google.com/p/googletest/
+
+Given that log4cxx, gtest, and !XmlRpc++ are somewhat likely to need
 custom installation on your machine, you can tell CMake where to find
 them by using the environment (or CMake) variables LOG4CXX_DIR,
 GTEST_DIR, and XMLRPC_DIR. If they are all installed in the same
 location, you can just set one of these three variables and the build
 system should find them all.
 
- * Required:
-   * '''tinyxml'''
-     We provide a (fairly old) snapshot directly with a CMakeLists.txt
-     that ties it directly into the WBC build system. Actually, we
-     stuffed all of the tinyxml code into a separate namespace and
-     renamed the file by adding the {{{wbc_}}} prefix, in order to
-     allow Stanford-WBC to live side-by-side with other libraries
-     which might use a different version of tinyxml.
-     http://www.grinninglizard.com/tinyxml/
-   * '''expat version 1 or 2'''
-     Also available as package on pretty much any distro.
-     http://expat.sourceforge.net/
 
- * Highly recommended:
-   * '''log4cxx version 0.10.0''' (higher versions might be supported, too).
-     Without log4cxx, you will not be able to control the verbosity of
-     programs, they will simply print any warnings and errors to the
-     console. It is fairly common that distros provide version 0.9.x,
-     which unfortunately is not compatible with WBC, in which case
-     you'll have to use the one provided here.
-     http://logging.apache.org/log4cxx/
-
- * Optional:
-   * '''!XmlRpc++''' for easier integration with higher levels and GUIs.
-     We provide a CVS snapshot (from early 2009) plus some local
-     patches.
-     http://xmlrpcpp.sourceforge.net/
-   * '''Google testing framework version 1.3.0''' (other version might work, too)
-     http://code.google.com/p/googletest/
+= Installation =
 
 
-= INSTALLATION =
+== Download and install 3rd party libraries ==
 
+Install desired 3rd-party libraries using the build scripts from the
+stanford-wbc-3rdparty tarball. Note that most of them are optional,
+except for expat which is widely available from package managers.
+Let's assume that you want to install log4cxx into
+{{{/usr/local/wbc}}}. You can install anywhere you like, you are going
+to tell CMake how to find the 3rd-party package anyhow. The other
+3rd-party packages follow the same approach.
 
-== Check out the Sources ==
-
-You can follow the stable (branches/wbc-stable) or unstable (trunk)
-code. Currently, the trunk is much more likely to work for you, so
-let's suppose we follow that. Let's also assume you check out the code
-into ~/svn-wbc (you can place it anywhere you like of course).
-
-{{{
- $ svn co https://stanford-wbc.svn.sourceforge.net/svnroot/stanford-wbc/trunk/wbc ~/svn-wbc
-}}}
-
-
-== Install 3rd party libraries ==
-
-Install required 3rdparty libraries, for example into ~/wbc/bindeps
-(Let's assume you installed expat as a system package and you only
-need log4cxx and gtest, leaving aside xmlrpc++ because you don't
-want to do any GUI development)
-{{{
- $ cd ~/svn-wbc/src/3rdparty/log4cxx
- $ ./buildme.sh ~/wbc/bindeps
- $ cd ~/svn-wbc/src/3rdparty/gtest
- $ ./buildme.sh ~/wbc/bindeps
-}}}
-
-'''NOTES:'''
-
- * Many Linux distributions provide log4cxx development packages at a
-   sufficiently recent version, and gtest is not absolutely required
-   (although it's a good idea to use it, especially if you are likely
-   to change framework code).
- * You can very easily install these dependencies elsewhere on your
-   system. This is actually recommended if you are using them for
-   other projects as well. See the notes about {{{GTEST_DIR}}},
-   {{{XMLRPC_DIR}}}, and {{{LOG4CXX_DIR}}} in the next section.
-
-
-== Setup your environment ==
-
-Choose a directory to install WBC. In the following, it is assumed
-that you use a somewhat canonical directory layout underneath
-${HOME}/wbc, but you can easily adjust this to your needs.
-
- 1. Set the WBC environment variables. The "standard" setup is to use
-   {{{~/wbc}}} as the installation directory. You can (and should)
-   keep the sources somewhere else though, as illustrated
-   above. Assuming your are using bash, these are the commands for
-   setting the environment variables (but see NOTE below for an
-   automated way of doing this):
+ * Go to http://sourceforge.net/projects/stanford-wbc/files/ and
+   download the latest stanford-wbc-3rdparty-X.Y.tar.gz
+ * Unpack the tarball somewhere (replacing X.Y with the version you
+   actually downloaded):
    {{{
-    $ export WBC_ROOT=~/wbc
+    $ tar xfvz stanford-wbc-3rdparty-X.Y.tar.gz
    }}}
-    For csh or tcsh users, these would look something like "{{{setenv WBC_ROOT ~/wbc}}}" or so.
-
- 2. If you want to keep some of the 3rdparty dependencies elsewhere on
-    your system (for example in order to use them in other projects as
-    well), you can optionally use the following environment variables
-    to point to more specific directories:
-    * {{{GTEST_DIR}}}
-    * {{{XMLRPC_DIR}}}
-    * {{{LOG4CXX_DIR}}}
-    
-    For details on how these variables get used, read the
-    {{{wbc_getvars()}}} macro in the top-level {{{wbc.cmake}}}
-    file.
-    
-    A typical use case is to have log4cxx underneath
-    {{{/usr/local/log4cxx}}}, in which case you want set
-    {{{LOG4CXX_DIR}}} like so:
+ * Use the provided build script to install log4cxx into
+   {{{/usr/local/wbc}}}:
    {{{
-    $ export LOG4CXX_DIR=/usr/local/log4cxx
+    $ cd stanford-wbc-3rdparty-X.Y/log4cxx
+    $ ./buildme.sh /usr/local/wbc
    }}}
+   The build script will invoke {{{sudo}}} in case it needs root
+   privileges.
+ * Proceed similarly for the other 3rd-party packages that you want to
+   install.
 
 
-== Install the WBC framework ==
+== Download and unpack (or check out) the Sources ==
 
-Configure, build, and install WBC. The recommended way is to build it
-in a separate directory so that it becomes very easy to clean it
-out. Also note that CMake has a kind of convoluted way of specifying
-the installation directory... don't forget the
-'''{{{-DCMAKE_INSTALL_PREFIX=~/wbc}}}''' command line argument!
+You can follow the stable code by downloading a the latest source
+tarball from http://sourceforge.net/projects/stanford-wbc/files/
+(e.g. stanford-wbc-0.2.tar.gz at the time of writing). Just unpack the
+tarball wherever you like:
+
 {{{
- $ mkdir ~/svn-wbc/build
- $ cd ~/svn-wbc/build
- $ cmake ~/svn-wbc -DCMAKE_INSTALL_PREFIX=~/wbc
- $ make
- $ make install
+ $ tar xfvz stanford-wbc-0.2.tar.gz
+}}}
+
+In order to check out the latest source, you need to install GIT
+http://git-scm.com/ (very widely available via package managers). Then
+just clone our repository:
+
+{{{
+ $ git clone git://stanford-wbc.git.sourceforge.net/gitroot/stanford-wbc/stanford-wbc.git
 }}}
 
 
-= UPGRADING =
+== Configure the build ==
 
-In order to upgrade WBC, usually all you have to do is "svn update"
-your checked-out copy, recompile on top of your existing build, and
-re-install (see first subsection). That would lead to the following
-sequence of commands:
+We use CMake-2.6 as build tool, which works in two steps. First, you
+configure the build (checking for dependencies and setting up the
+include and link paths), then you build the project. CMake will
+complain if it does not find required packages. You can tell CMake
+about the 3rd-party packages in two ways: either using environment
+variables, or passing CMake variables on the command line. Note that
+if you've installed dependencies using a package manager or into a
+standard sysrtem location, CMake will most likely pick them up without
+any further information.
 
-{{{
- $ cd ~/svn-wbc
- $ svn up
- $ cd build
- $ make
- $ make install
-}}}
+For example, if you have installed log4cxx into {{{/usr/local/wbc}}}
+as explained above, then you have to tell CMake where to find it by
+setting the {{{LOG4CXX_DIR}}} variable. For gtest and !XmlRpc++, these
+variables are called {{{GTEST_DIR}}} and {{{XMLRPC_DIR}}}.
 
-However, in case some major changes were introduced, it might be
-better to clean out your previous installation and build directories
-(see second subsection). But then, you can at least reuse the 3rdparty
-packages that were installed in the ~/wbc/bindeps directory (or some
-other cutsom location)... which is another reason why you shouldn't
-install the dependencies underneath ~/wbc because then you can just
-blow away the entire installation. Anyway, the sequence of commands
-would look like this:
+It is recommended to build everything in a separate build directory,
+as follows (assuming your sources are in stanford-wbc-0.2 and have
+installed log4cxx in {{{/usr/local/wbc}}}):
 
 {{{
- $ cd ~/wbc
- $ rm -r include lib bin share
- $ cd ~/svn-wbc
- $ svn up
- $ rm -r build
- $ mkdir build
- $ cmake .. -DCMAKE_INSTALL_PREFIX=~/wbc
+ $ mkdir stanford-wbc-0.2/build
+ $ cd stanford-wbc-0.2/build
+ $ cmake .. -DLOG4CXX_DIR:path=/usr/local/wbc
  $ make
- $ make install
 }}}
+
+
+= Upgrading =
+
+If you have checked out the sources using git, then it is usually
+trivial to upgrade. Simply "git pull" in your source tree, go into the
+build directory, and type "make" again. Sometimes, however, major
+changes are introduced, and then it might be
+better to clean out your build and re-run CMake (don't forget the
+command-line arguments that allow it to find your 3rd-party packages
+in case of non-standard installation locations).
