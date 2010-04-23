@@ -6,7 +6,7 @@
 
 DOXYFILE_ENCODING      = UTF-8
 PROJECT_NAME           = "TAO Dynamics Engine"
-PROJECT_NUMBER         = "TAO_Dynamics_Engine r@TAO_REV@"
+PROJECT_NUMBER         = "@TAO_REV@"
 OUTPUT_DIRECTORY       = .
 CREATE_SUBDIRS         = NO
 OUTPUT_LANGUAGE        = English
@@ -507,9 +507,9 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories 
 # with spaces.
 
-INPUT                  = dynamics \
-                         matrix \
-			 utility \
+INPUT                  = ../tao/dynamics \
+                         ../tao/matrix \
+			 ../tao/utility \
 			 mainpage.dox
 
 # This tag can be used to specify the character encoding of the source files 
@@ -530,6 +530,7 @@ INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.cpp \
                          *.h \
                          *.hpp \
+                         *.inl \
                          *.dox
 
 # The RECURSIVE tag can be used to turn specify whether or not subdirectories 
@@ -570,7 +571,7 @@ EXCLUDE_SYMBOLS        =
 # directories that contain example code fragments that are included (see 
 # the \include command).
 
-EXAMPLE_PATH           = .
+EXAMPLE_PATH           = ..
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the 
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 

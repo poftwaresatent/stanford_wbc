@@ -116,16 +116,21 @@ class deMassProp
     /*!	@name updating methods
      *	set general mass/inertia parameters for a body defined in the current reference frame.
      *	\remarks Calls are accumulative.
-     *	\param f new frame of reference. \a NULL indicates the identity matrix..
      */
+
     void mass(const deFloat m, const deFrame* f = NULL);
     /*!< add a point mass of mass \a m at a point at the origin of the reference frame.
      *    Set frame of reference to be used when specifying a objects mass/inertial properties.
+     *  \param m mass to be added
+     *	\param f new frame of reference. \a NULL (default) indicates the identity matrix.
      */
+
     void inertia(const deMatrix3* inertia, const deFrame* f = NULL);
     /*!< add an inertia tensor \a inertia specified by a 3x3 matrix at the current frame of reference. */
+
     void inertia(const deVector3* diag, const deFrame* f = NULL); 
     /*!< add an inertia tensor specified by its diagonal \a diag = (\a Ixx, \a Iyy, \a Izz). */
+
     void inertia(const deFloat Ixx,const deFloat Iyy,const deFloat Izz, const deFrame* f = NULL);
     /*!< add an inertia tensor specified by its diagonal (\a Ixx, \a Iyy, \a Izz). */
 
@@ -135,6 +140,7 @@ class deMassProp
      *	\remarks Calls are accumulative.
      *	\param f new frame of reference. \a NULL indicates the identity matrix..
      */
+
     void cylinder(const deFloat mp, const deFloat h, const deFloat r, const deFrame* f = NULL);
     /*!< 
      *  Specify the mass parameters to a homogeneous cylinder with center
@@ -142,8 +148,9 @@ class deMassProp
      *  \param mp mass (density if dedensity(deFloat)) of cylinder.
      *  \param h  total height of cylinder in z-axis.
      *  \param r  radius of the cylinder.
-     *  \image html cylinder.gif
+     *	\param f new frame of reference. \a NULL (default) indicates the identity matrix.
      */
+
     void cone(const deFloat mp, const deFloat h, const deFloat r, const deFrame* f = NULL);
     /*!< 
      *  Specify the mass parameters to a homogeneous cone with center
@@ -152,8 +159,9 @@ class deMassProp
      *  \param mp mass (density if dedensity(deFloat)) of cone.
      *  \param h  total height of cone in z-axis.
      *  \param r  radius of the base of the cone.
-     *  \image html cone.gif
+     *	\param f new frame of reference. \a NULL (default) indicates the identity matrix.
      */
+
     void pyramid(const deFloat mp, const deFloat a, const deFloat b, const deFloat h, const deFrame* f = NULL);
     /*!< 
      *  Specify the mass parameters to a homogeneous four sided pyramid with
@@ -163,8 +171,9 @@ class deMassProp
      *  \param a  width of base of pyramid along the x-axis.
      *  \param b  length of base of pyramid along the y-axis.
      *  \param h  total height of pyramid h in z-axis.
-     *  \image html pyramid.gif
+     *	\param f new frame of reference. \a NULL (default) indicates the identity matrix.
      */
+
     void block(const deFloat mp, const deFloat a, const deFloat b, const deFloat c, const deFrame* f = NULL);
     /*!< 
      *  Specify the mass parameters to a homogeneous block with center of
@@ -173,16 +182,18 @@ class deMassProp
      *  \param a  width of base of block along the x-axis.
      *  \param b  length of base of block along the y-axis.
      *  \param c  height of base of block along the z-axis.
-     *  \image html block.gif
+     *	\param f new frame of reference. \a NULL (default) indicates the identity matrix.
      */
+
     void sphere(const deFloat mp, const deFloat r, const deFrame* f = NULL);
     /*!< 
      *  Specify the mass parameters to a homogeneous sphere with center of
      *  mass at the current frame.
      *  \param mp mass (density if dedensity(deFloat)) of sphere.
      *  \param r  radius of sphere.
-     *  \image html sphere.gif
+     *	\param f new frame of reference. \a NULL (default) indicates the identity matrix.
      */
+
     void hemisphere(const deFloat mp, const deFloat r, const deFrame* f = NULL);
     /*!< 
      *  Specify the mass parameters to a homogeneous half sphere (hemisphere) with
@@ -190,8 +201,9 @@ class deMassProp
      *  is located \a (3/8)*r from base in \a z
      *  \param mp mass (density if dedensity(deFloat)) of hemisphere.
      *  \param r  radius of hemisphere.
-     *  \image html hemisphere.gif
+     *	\param f new frame of reference. \a NULL (default) indicates the identity matrix.
      */
+
     void ellipsoid(const deFloat mp, const deFloat a, const deFloat b, const deFloat c, const deFrame* f = NULL);
     /*!< 
      *  Specify the mass parameters to a homogeneous ellipsoid with center of
@@ -200,8 +212,9 @@ class deMassProp
      *  \param a  length of major axis along the x-axis, one half total width
      *  \param b  length of major axis along the y-axis, one half total length
      *  \param c  length of major axis along the z-axis, one half total height
-     *  \image html ellipsoid.gif
+     *	\param f new frame of reference. \a NULL (default) indicates the identity matrix.
      */
+
     void rod(const deFloat mp, const deFloat l, const deFrame* f = NULL);
     /*!< 
      *  Specify the mass parameters to a homogeneous one dimensional rod having
@@ -209,8 +222,9 @@ class deMassProp
      *  The center of mass of a rod is located half way along its length.
      *  \param mp mass (linear density if dedensity(deFloat)).
      *  \param l  total length of the rod along the z-axis.
-     *  \image html rod.gif
+     *	\param f new frame of reference. \a NULL (default) indicates the identity matrix.
      */
+
     void disk(const deFloat mp, const deFloat r, const deFrame* f = NULL);
     /*!< 
      *  Specify the mass parameters to a homogeneous two dimensional flat disk
@@ -218,8 +232,9 @@ class deMassProp
      *  the z-axis.
      *  \param mp mass (surface density if dedensity(deFloat)).
      *  \param r  radius of disk.
-     *  \image html disk.gif
+     *	\param f new frame of reference. \a NULL (default) indicates the identity matrix.
      */
+
     void plate(const deFloat mp, const deFloat a, const deFloat b, const deFrame* f = NULL);
     /*!< 
      *  Specify the mass parameters to a homogeneous two dimensional flat square
@@ -228,8 +243,9 @@ class deMassProp
      *  \param mp mass (surface density if dedensity(deFloat)).
      *  \param a  total width of the in the x-axis .
      *  \param b  total width of the in the y-axis .
-     *  \image html plate.gif
+     *	\param f new frame of reference. \a NULL (default) indicates the identity matrix.
      */
+
     void cylinderShell(const deFloat mp, const deFloat h, const deFloat r, const deFrame* f = NULL);
     /*!< 
      *  Specify the mass parameters to a homogeneous infinitely
@@ -237,8 +253,9 @@ class deMassProp
      *  \param mp mass (surface density if dedensity(deFloat)).
      *  \param h  total height of cylinder shell in z-axis.
      *  \param r  radius of the cylinder shell.
-     *  \image html cylinderShell.gif
+     *	\param f new frame of reference. \a NULL (default) indicates the identity matrix.
      */
+
     void coneShell(const deFloat mp, const deFloat h, const deFloat r, const deFrame* f = NULL);
     /*!< 
      *  Specify the mass parameters to a homogeneous infinitely
@@ -247,16 +264,18 @@ class deMassProp
      *  \param mp mass (surface density if dedensity(deFloat)).
      *  \param h  total height of cone shell h in z-axis.
      *  \param r  radius of the base of the cone shell.
-     *  \image html coneShell.gif
+     *	\param f new frame of reference. \a NULL (default) indicates the identity matrix.
      */
+
     void sphereShell(const deFloat mp, const deFloat r, const deFrame* f = NULL);
     /*!< 
      *  Specify the mass parameters to a homogeneous infinitely
      *  thin sphere, with center of mass at the current frame.
      *  \param mp mass (surface density if dedensity(deFloat)).
      *  \param r  radius of the sphere.
-     *  \image html sphereShell.gif
+     *	\param f new frame of reference. \a NULL (default) indicates the identity matrix.
      */
+
     void hemisphereShell(const deFloat mp, const deFloat r, const deFrame* f = NULL);
     /*!< 
      *  Specify the mass parameters to a homogeneous infinitely
@@ -265,7 +284,7 @@ class deMassProp
      *  the z-axis.
      *  \param mp mass (surface density if dedensity(deFloat)).
      *  \param r  radius of the hemisphere.
-     *  \image html hemisphereShell.gif
+     *	\param f new frame of reference. \a NULL (default) indicates the identity matrix.
      */
 
     /*! @name resetting methods
