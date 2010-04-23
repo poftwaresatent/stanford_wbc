@@ -19,7 +19,7 @@
  */
 
 /**
-   \file dump.hpp
+   \file tao_dump.hpp
    \author Roland Philippsen
 */
 

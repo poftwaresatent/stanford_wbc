@@ -19,7 +19,7 @@
  */
 
 /**
-   \file dump.cpp
+   \file tao_dump.cpp
    \author Roland Philippsen
 */
 
