@@ -508,19 +508,13 @@ WARN_LOGFILE           =
 # with spaces.
 
 INPUT                  = mainpage.dox \
-                         ../applications \
-                         ../plugins \
-			 ../saimatrix \
-			 ../wbcnet/wbcnet \
 			 ../wbc/bin \
 			 ../wbc/core \
 			 ../wbc/motion \
 			 ../wbc/msg \
 			 ../wbc/parse \
-			 ../wbc/robarch \
-			 ../wbc/util \
-			 ../wbc_tinyxml \
-			 ../jspace
+			 ../wbc/ros \
+			 ../wbc/util
 
 # This tag can be used to specify the character encoding of the source files 
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is 
@@ -552,8 +546,7 @@ RECURSIVE              = YES
 
 EXCLUDE                = ../wbc/core/control-hierarchy-idea-usage-example.cpp \
                          ../wbc/core/ideaTaskDescription.hpp \
-                         ../wbc/core/control-hierarchy-idea.hpp \
-			 ../wbcnet/wbcnet/README
+                         ../wbc/core/control-hierarchy-idea.hpp
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or 
 # directories that are symbolic links (a Unix filesystem feature) are excluded 
@@ -581,7 +574,9 @@ EXCLUDE_SYMBOLS        =
 # directories that contain example code fragments that are included (see 
 # the \include command).
 
-EXAMPLE_PATH           = ../README
+# it looks weird that the PATH is a file, but otherwise it picks up
+# wbcnet's README instead
+EXAMPLE_PATH           = ../../README
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the 
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 

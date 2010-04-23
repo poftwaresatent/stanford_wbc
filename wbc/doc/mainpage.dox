@@ -1,16 +1,9 @@
 /**
    \namespace wbc Whole-Body Control Framework
-   \namespace jspace joint-space dynamics library, a tool for implementing controllers
    \namespace wbc::msg concrete message classes for WBC, derived from wbcnet::msg
    \namespace wbcnet asynchronous non-blocking middleware for WBC
    \namespace wbcnet::msg semi-abstract message classes for WBC
    \namespace wbcnet::imp an implementation sub-namespace that end users can (hopefully) ignore
-   \namespace netrob generic network-based wbc::RobotAPI support (plugin)
-   \namespace urdf_to_tao utilities for converting URDF models to TAO format
-   \namespace wbc_fake_plugin example and testing of WBC plugin support
-   \namespace wbc_nwrobot_plugin libnetwrapper-based wbc::RobotAPI support (plugin)
-   \namespace wbc_robotlog_plugin support for writing and reading wbc::RobotAPI log files (plugin)
-   \namespace wbc_tinyxml snapshot of http://www.grinninglizard.com/tinyxml/ used in WBC
    
    \mainpage
    
