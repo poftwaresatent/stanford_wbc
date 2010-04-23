@@ -230,11 +230,17 @@ namespace wbcnet {
       
       void InitSetGoal(/** set the ID to -1 to select the current behavior*/
 		       int behaviorID,
-		       double const * goal_coordinates, size_t n_coordinates);
+		       /** pointer to the array of goal coordinates */
+		       double const * goal_coordinates,
+		       /** the dimension of the goal coordinate array */
+		       size_t n_coordinates);
       
       void InitSetGains(/** set the ID to -1 to select the current behavior*/
 			int behaviorID,
-			double const * gains, size_t n_gains);
+			/** pointer to the array of gains */
+			double const * gains,
+			/** dimension of the gains array */
+			size_t n_gains);
   
       void InitGetPositions();
       void InitGetVelocities();
@@ -261,6 +267,8 @@ namespace wbcnet {
 			    the current behavior and sending it that
 			    key code. */
 			int behaviorID,
+			/** The code of the key that has been
+			    pressed. */
 			int32_t keycode);
     };
     

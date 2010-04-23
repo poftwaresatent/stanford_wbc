@@ -53,7 +53,9 @@ namespace wbcnet {
     bool server_mode;
     std::string address;
     
-    NetWrapNetConfig(bool server_mode,
+    NetWrapNetConfig(/** If true, use a server mode net wrap
+			 socket. Otherwise, use client mode. */
+		     bool server_mode,
 		     /** only used for client mode */
 		     std::string const & address);
     

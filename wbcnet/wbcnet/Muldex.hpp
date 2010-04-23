@@ -162,13 +162,9 @@ namespace wbcnet {
     muldex_status DemuxOne(Source * source);
     
     /**
-       THIS DOC IS OUT OF DATE
-       \todo Update this doc!!!!!
-       
-       Demultiplex messages until we hit a condition. Conditions can be:
-       - muldex_status::TRY_AGAIN if the source is (temporarily) dry
-       - one of the muldex_status error codes
-       - we have processed max_nmsg messages, provided max_nmsg>=0
+       Demultiplex messages using DemuxOne() until either that returns
+       something other than muldex_status::SUCCESS or a maximum number
+       of messages has been demuxed.
        
        \note
        - Use max_nmsg<0 to say "as many as possible". This effectively
@@ -182,7 +178,13 @@ namespace wbcnet {
        - If you want to keep waiting on a non-blocking sink until
          the data has been transmitted, use DemuxWait().
     */
-    muldex_status Demux(Source * source, int max_nmsg,
+    muldex_status Demux(/** Where to read from. */
+			Source * source,
+			/** Maximum number of messages to handle in
+			    this call. Specify a negative number if
+			    you want to keep demuxing until an error
+			    is encountered. */
+			int max_nmsg,
 			/** optional: if non-null it will contain the
 			    number of messages handled during this
 			    call */
@@ -198,7 +200,16 @@ namespace wbcnet {
        used to implement data-driven processing using the Handle()
        method.
     */
-    muldex_status DemuxWait(Source * source, int min_nmsg, int max_nmsg,
+    muldex_status DemuxWait(/** Where to read from. */
+			    Source * source,
+			    /** Minimum number of messages to
+				demux. */
+			    int min_nmsg,
+			    /** Maximum number of messages to handle
+				in this call. Specify a negative
+				number if you want to keep demuxing
+				until an error is encountered. */
+			    int max_nmsg,
 			    /** amount of time to usleep() between
 				attempts to Demux() */
 			    unsigned long usecsleep,
@@ -216,7 +227,10 @@ namespace wbcnet {
     
     /** Attempts to Mux() until the data has been sent or an error
 	occurs. */
-    muldex_status MuxWait(Sink * sink, Proxy & proxy,
+    muldex_status MuxWait(/** The sink to write to. */
+			  Sink * sink,
+			  /** The data to write. */
+			  Proxy & proxy,
 			  /** amount of time to usleep() between
 			      attempts to Mux() */
 			  unsigned long usecsleep,
@@ -338,7 +352,12 @@ namespace wbcnet {
     : public Muldex
   {
   public:
-    MdxDispatcher(int bufsize, int max_bufsize,
+    MdxDispatcher(/** Initial buffer size. Use max_bufsize < 0 to say
+		      "grow indefinitely if needed". */
+		  int bufsize,
+		  /** Maximum buffer size. Negative values mean
+		      "unlimited". */
+		  int max_bufsize,
 		  /** if networking, use ENDIAN_DETECT, otherwise
 		      ENDIAN_NEVER_SWAP to avoid swapping when staying
 		      within the same computer */
@@ -350,7 +369,9 @@ namespace wbcnet {
     */
     ~MdxDispatcher();
     
-    void SetHandler(unique_id_t msg_id,
+    void SetHandler(/** The message ID for which this handler should
+			be called. */
+		    unique_id_t msg_id,
 		    /** Note that you can set
 			mdx_handler::dispatcher_owned to true if you
 			want to "fire and forget" a newly created

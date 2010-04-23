@@ -72,8 +72,12 @@ namespace wbcnet {
     TCPNetWrapper();
     virtual ~TCPNetWrapper();
 
-    bool Open(in_port_t port,
+    bool Open(/** The port to use. */
+	      in_port_t port,
+	      /** The address to use (connect to or listen on,
+		  depending on server_mode). */
 	      std::string const & address,
+	      /** Whether to run as server or as client. */
 	      bool server_mode,
 	      /** Whether to use blocking sockets or not. It might
 		  seem weird to set nonblocking to false in order to

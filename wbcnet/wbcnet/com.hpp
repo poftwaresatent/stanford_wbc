@@ -85,14 +85,19 @@ namespace wbcnet {
      success) or -1 on error, in which case errno reflects what went
      wrong with the underlying write() call.
   */
-  int com_writebuf(int fd, char const * data, int n_bytes,
+  int com_writebuf(/** file descriptor to write to */
+		   int fd,
+		   /** pointer to the buffer that contains the data */
+		   char const * data,
+		   /** the number of bytes to write */
+		   int n_bytes,
 		   /** optional */
 		   int * n_written);
   
   /**
      Utility for reading a file into a buffer. Uses the system's
      read() routine to receive some data using a file descriptor,
-     looping until either everything has been written or an error
+     looping until either everything has been read or an error
      occurred. Note that we are most interested in the system errno
      being EAGAIN, which happens a lot in non-blocking
      I/O. NetSource::Receive() is the main (only?) user of this
@@ -102,7 +107,12 @@ namespace wbcnet {
      success) or -1 on error, in which case errno reflects what went
      wrong with the underlying read() call.
   */
-  int com_readbuf(int fd, char * data, int n_bytes,
+  int com_readbuf(/** file descriptor to read from */
+		  int fd,
+		  /** pointer to the buffer that will receive the data */
+		  char * data,
+		  /** the number of bytes to read */
+		  int n_bytes,
 		  /** optional */
 		  int * n_read);
 
@@ -160,9 +170,11 @@ namespace wbcnet {
     : public Channel
   {
   public:
-    ProxyChannel(Sink * sink,
+    ProxyChannel(/** The sink, used for sending. */
+		 Sink * sink,
 		 /** if true, then sink will be deleted in ~ProxyChannel() */
 		 bool own_sink,
+		 /** The source, used for receiving. */
 		 Source * source,
 		 /** if true, then source will be deleted in ~ProxyChannel() */
 		 bool own_source);

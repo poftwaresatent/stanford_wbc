@@ -15,7 +15,8 @@ extern "C" {
 namespace wbcnet {
   
   /** calls exit() in case something goes wrong */
-  int create_udp_server(char const * port,
+  int create_udp_server(/** port specification, will get passed to getaddrinfo() */
+			char const * port,
 			/** use AF_UNSPEC for allowing IPv4 or IPv6,
 			    AF_INET for IPv4, or AF_INET6 for IPv6 */
 			int ai_family);
@@ -27,7 +28,10 @@ namespace wbcnet {
 			struct sockaddr const * addr, socklen_t addr_len);
   
   /** calls exit() in case something goes wrong */
-  int create_udp_client(char const * host, char const * port,
+  int create_udp_client(/** Host to connect to. Gets passed to getaddrinfo(). */
+			char const * host,
+			/** Port to connect to. Gets passed to getaddrinfo(). */
+			char const * port,
 			/** use AF_UNSPEC for allowing IPv4 or IPv6,
 			    AF_INET for IPv4, or AF_INET6 for IPv6 */
 			int ai_family);

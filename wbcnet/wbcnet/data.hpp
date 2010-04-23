@@ -122,17 +122,6 @@ namespace wbcnet {
        Copies a portion of a source vector into a portion of *this
        (the destination vector).
        
-       \param dst_begin_idx The index where the splice should be
-       inserted into the destination.
-       
-       \param src The source vector.
-       
-       \param src_begin_idx The index where the splice should be taken
-       from in the source vector.
-       
-       \param src_end_idx An index ONE PAST the end of the range to be
-       spliced from the source vector.
-       
        \note
        - Negative indices are treated as being counted
          from the end backwards. E.g. passing "-1" as src_begin_idx is
@@ -148,10 +137,17 @@ namespace wbcnet {
        sure that the former matches (and actually implies the same
        type, not just the same size) you should be fine.
     */
-    bool Splice(int dst_begin_idx,
+    bool Splice(/** The index where the splice should be inserted into
+		    the destination. */
+		int dst_begin_idx,
+		/** The source vector. */
 		VectorStorageAPI const & src,
+		/** The index where the splice should be taken from in
+		    the source vector. */
 		int src_begin_idx,
-		/** \note use std::numeric_limits<int>::max() if you
+		/** An index ONE PAST the end of the range to be
+		    spliced from the source vector.
+		    \note use std::numeric_limits<int>::max() if you
 		    want to include the end of src without needing to
 		    worry about its current size. */
 		int src_end_idx);

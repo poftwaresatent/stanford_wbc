@@ -61,7 +61,12 @@ namespace wbcnet {
     : public Channel
   {
   protected:
-    SockWrap(int bufsize, int max_bufsize,
+    SockWrap(/** Initial buffer size. Use a negative number to
+		 indicate "grow as required". */
+	     int bufsize,
+	     /** Maximum buffer size. Use a negative number to
+		 indicate "no limit". */
+	     int max_bufsize,
 	     /** Subclasses pass in the sockfd which is to be used in
 		 Send() and Receive(). */
 	     int & com_sockfd,
@@ -159,7 +164,12 @@ namespace wbcnet {
        buffer behavior, just like size and max_size parameters of the
        Buffer constructor.
      */
-    SoClient(int bufsize, int max_bufsize,
+    SoClient(/** Initial buffer size. Use a negative number to
+		 indicate "grow as required". */
+	     int bufsize,
+	     /** Maximum buffer size. Use a negative number to
+		 indicate "no limit". */
+	     int max_bufsize,
 	     /** Set it to true only if you really know what you're
 		 doing. */
 	     bool skip_length_header = false);
@@ -201,7 +211,12 @@ namespace wbcnet {
        buffer behavior, just like size and max_size parameters of the
        Buffer constructor.
      */
-    SoServer(int bufsize, int max_bufsize,
+    SoServer(/** Initial buffer size. Use a negative number to
+		 indicate "grow as required". */
+	     int bufsize,
+	     /** Maximum buffer size. Use a negative number to
+		 indicate "no limit". */
+	     int max_bufsize,
 	     /** Set it to true only if you really know what you're
 		 doing. */
 	     bool skip_length_header = false);
