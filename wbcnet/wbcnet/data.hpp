@@ -345,6 +345,55 @@ namespace wbcnet {
   
   
   /**
+     A wrapper around an existing data structure that behaves like a
+     BufferAPI. The user is responsible for managing the underlying
+     data.
+  */
+  template<typename custom_ds_t>
+  class CustomDataBuffer
+    : public BufferAPI {
+  public:
+    typedef custom_ds_t data_type;
+    
+    explicit CustomDataBuffer(data_type * data)
+      : data_(data) {}
+    
+    virtual char * GetData() const
+    { return reinterpret_cast<char*>(data_); }
+    
+    virtual int GetSize() const
+    { return sizeof(data_type); }
+    
+    virtual bool Resize(int size)
+    { return sizeof(data_type) == size; }
+    
+    virtual bool Set(BufferAPI const & rhs) {
+      if (rhs.GetData() == data_) {
+	return true;
+      }
+      if (rhs.GetSize() == sizeof(data_type)) {
+	*data_ = *reinterpret_cast<data_type const *>(rhs.GetData());
+	return true;
+      }
+      return false;
+    }
+    
+    /** Specialized version in case we know at compile-time that we
+	are talking to another CustomDataBuffer instance. */
+    template<typename other_ds_t>
+    bool Set(CustomDataBuffer<other_ds_t> const & rhs) {
+      // Let the compiler decide whether these expressions are valid...
+      if (data_ != rhs.data_) {
+	*data_ = *rhs.data;
+      }
+      return true;
+    }
+    
+    data_type * data_;
+  };
+  
+  
+  /**
      An implementation of a type-aware VectorStorageAPI that uses a
      Buffer as data store.
   */

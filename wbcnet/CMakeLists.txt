@@ -32,6 +32,7 @@ list (APPEND WBCNET_SRCS
       wbcnet/imp/TCPNetConfig.cpp
       wbcnet/imp/SPQNetConfig.cpp
       wbcnet/imp/NetWrapNetConfig.cpp
+      wbcnet/imp/RawMemChannel.cpp
       wbcnet/msg/StringList.cpp
       wbcnet/msg/RobotState.cpp
       wbcnet/msg/ServoCommand.cpp
