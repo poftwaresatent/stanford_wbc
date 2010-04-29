@@ -26,6 +26,7 @@
 #include "model_library.hpp"
 #include <jspace/State.hpp>
 #include <jspace/Model.hpp>
+#include <wbcnet/misc/DelayHistogram.hpp>
 #include <err.h>
 #include <stdlib.h>
 
@@ -54,6 +55,15 @@ int main(int argc, char ** argv)
     jspace::State puma_state(6, 6, 0);
     custom_ds_t ds;
     
+    wbcnet::DelayHistogram dhist(4, 5, 0, 2);
+    if ( ! (dhist.SetName(0, "convert data")
+	    && dhist.SetName(1, "model update")
+	    && dhist.SetName(2, "controller")
+	    && dhist.SetName(3, "TOTAL"))) {
+      errx(EXIT_FAILURE, "dhist.SetName() oops");
+    }
+    struct timeval t0, t1, t2, t3;
+    
     for (int tick(0); tick < 100; ++tick) {
       // Pretend the DS is somehow hooked up to a simulator or whatever...
       for (int ii(0); ii < 6; ++ii) {
@@ -69,14 +79,34 @@ int main(int argc, char ** argv)
       }
       
       // Update the model according to our state
+      if (0 != gettimeofday(&t0, 0)) {
+	err(EXIT_FAILURE, "gettimeofday");
+      }
       custom_ds_to_state(&ds, puma_state);
+      if (0 != gettimeofday(&t1, 0)) {
+	err(EXIT_FAILURE, "gettimeofday");
+      }
       puma_model->update(puma_state);
       
       // Update controller... this could of course just as easily call
       // something from jspace/controller_library, in which case we'd
       // have to convert from std::vector<double> to double[6], which
       // is a trivial memcpy.
+      if (0 != gettimeofday(&t2, 0)) {
+	err(EXIT_FAILURE, "gettimeofday");
+      }
       custom_controller(*puma_model, &ds);
+      
+      if (0 != gettimeofday(&t3, 0)) {
+	err(EXIT_FAILURE, "gettimeofday");
+      }
+      
+      if ( ! (dhist.StartStop(   0, &t0, &t1)
+	      && dhist.StartStop(1, &t1, &t2)
+	      && dhist.StartStop(2, &t2, &t3)
+	      && dhist.StartStop(3, &t0, &t3))) {
+	errx(EXIT_FAILURE, "dhist.StartStop() oops");
+      }
       
       // This is where we would send the torques to a robot or the
       // simulator.
@@ -94,6 +124,11 @@ int main(int argc, char ** argv)
     
     // Don't forget to clean up after ourselves
     delete puma_model;
+    
+    printf("\ndelay and computation time measurements\n");
+    if ( ! dhist.DumpTable(stdout)) {
+      printf("oops, could not print\n");
+    }
   }
   catch (std::exception const & ee) {
     errx(EXIT_FAILURE, "EXCEPTION: %s", ee.what());
