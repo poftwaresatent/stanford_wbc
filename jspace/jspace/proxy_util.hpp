@@ -47,6 +47,43 @@ namespace jspace {
   };
   
   
+  /**
+     Single-process (e.g. multi-threaded) transaction policy when
+     message semantics are implemented on top of shared memory. All it
+     does is allow the other side to handle the pending message before
+     we attempt to read.
+   */
+  template<typename proxy_server_t>
+  class SPTransactionPolicy
+    : public TransactionPolicy
+  {
+  public:
+    typedef proxy_server_t proxy_server_type;
+    
+    explicit SPTransactionPolicy(proxy_server_t * server)
+      : server_(server) {}
+    
+    virtual jspace::Status WaitReceive() {
+      jspace::Status zonk(false, "SPTransactionPolicy::WaitReceive() should never be called");
+      return zonk;
+    }
+    
+    virtual jspace::Status PreReceive() {
+      return server_->handle();
+    }
+    
+  protected:
+    proxy_server_t * server_;
+  };
+  
+  
+  /** Convenient factory to avoid typing out the template
+      instantiation in client code. */
+  template<typename proxy_server_t>
+  SPTransactionPolicy<proxy_server_t> * CreateSPTransactionPolicy(proxy_server_t * server)
+  { return new SPTransactionPolicy<proxy_server_t>(server); }
+  
+  
   class RobotTransactionPolicy
   {
   public:

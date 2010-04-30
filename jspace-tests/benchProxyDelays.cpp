@@ -28,7 +28,10 @@
 #include <jspace/Model.hpp>
 #include <jspace/RobotAPI.hpp>
 #include <jspace/Controller.hpp>
+#include <jspace/robot_proxy.hpp>
+#include <jspace/proxy_util.hpp>
 #include <wbcnet/misc/DelayHistogram.hpp>
+#include <wbcnet/imp/RawMemChannel.hpp>
 #include <err.h>
 #include <stdlib.h>
 
@@ -87,6 +90,8 @@ namespace {
 
 static void bench_raw(jspace::Model & model, jspace::State & state, custom_ds_t * ds,
 		      int nticks, wbcnet::DelayHistogram & dhist);
+static void bench_wrapped(jspace::Model & model, jspace::State & state, custom_ds_t * ds,
+			  int nticks, wbcnet::DelayHistogram & dhist);
 static void bench_proxified(jspace::Model & model, jspace::State & state, custom_ds_t * ds,
 			    int nticks, wbcnet::DelayHistogram & dhist);
 static void fill_ds(int tick, custom_ds_t * ds);
@@ -99,8 +104,8 @@ int main(int argc, char ** argv)
     jspace::State puma_state(6, 6, 0);
     custom_ds_t ds;
     
-    wbcnet::DelayHistogram * dhist[2];
-    for (int ii(0); ii < 2; ++ii) {
+    wbcnet::DelayHistogram * dhist[3];
+    for (int ii(0); ii < 3; ++ii) {
       dhist[ii] = new wbcnet::DelayHistogram(5, 5, 0, 2);
       if ( ! (dhist[ii]->SetName(0, "ds to state")
 	      && dhist[ii]->SetName(1, "model update")
@@ -111,29 +116,37 @@ int main(int argc, char ** argv)
       }
     }
     
-    bench_raw(*puma_model, puma_state, &ds, 100, *dhist[0]);
-    bench_proxified(*puma_model, puma_state, &ds, 100, *dhist[1]);
+    bench_raw(*puma_model, puma_state, &ds, 500, *dhist[0]);
+    bench_wrapped(*puma_model, puma_state, &ds, 500, *dhist[1]);
+    bench_proxified(*puma_model, puma_state, &ds, 500, *dhist[2]);
     
     printf("\nDelay and computation time measurements:\n"
-	   "RAW:\n");
+	   "raw:\n");
     if ( ! dhist[0]->DumpTable(stdout)) {
       printf("oops, could not print\n");
     }
 
-    printf("PROXIFIED:\n");
+    printf("wrapped:\n");
     if ( ! dhist[1]->DumpTable(stdout)) {
+      printf("oops, could not print\n");
+    }
+
+    printf("proxified:\n");
+    if ( ! dhist[2]->DumpTable(stdout)) {
       printf("oops, could not print\n");
     }
     
     printf("average relative overhead of data conversion:\n"
 	   "raw:       %4.2f\n"
+	   "wrapped:   %4.2f\n"
 	   "proxified: %4.2f\n",
 	   100 * (dhist[0]->GetMsMean(0) + dhist[0]->GetMsMean(3)) / dhist[0]->GetMsMean(4),
-	   100 * (dhist[1]->GetMsMean(0) + dhist[1]->GetMsMean(3)) / dhist[1]->GetMsMean(4));
+	   100 * (dhist[1]->GetMsMean(0) + dhist[1]->GetMsMean(3)) / dhist[1]->GetMsMean(4),
+	   100 * (dhist[2]->GetMsMean(0) + dhist[2]->GetMsMean(3)) / dhist[2]->GetMsMean(4));
     
     // Don't forget to clean up after ourselves
     delete puma_model;
-    for (int ii(0); ii < 2; ++ii) {
+    for (int ii(0); ii < 3; ++ii) {
       delete dhist[ii];
     }
     
@@ -191,8 +204,8 @@ void bench_raw(jspace::Model & model, jspace::State & state, custom_ds_t * ds,
 }
 
 
-void bench_proxified(jspace::Model & model, jspace::State & state, custom_ds_t * ds,
-		     int nticks, wbcnet::DelayHistogram & dhist)
+void bench_wrapped(jspace::Model & model, jspace::State & state, custom_ds_t * ds,
+		   int nticks, wbcnet::DelayHistogram & dhist)
 {
   struct timeval t0, t1, t2, t3, t4;
   CustomRobot robot(ds);
@@ -226,6 +239,87 @@ void bench_proxified(jspace::Model & model, jspace::State & state, custom_ds_t *
       err(EXIT_FAILURE, "gettimeofday");
     }
     status = robot.writeCommand(tau);
+    if ( ! status) {
+      errx(EXIT_FAILURE, "robot.writeCommand(): %s", status.errstr.c_str());
+    }
+    if (0 != gettimeofday(&t4, 0)) {
+      err(EXIT_FAILURE, "gettimeofday");
+    }
+    
+    if ( ! (dhist.StartStop(   0, &t0, &t1)
+	    && dhist.StartStop(1, &t1, &t2)
+	    && dhist.StartStop(2, &t2, &t3)
+	    && dhist.StartStop(3, &t3, &t4)
+	    && dhist.StartStop(4, &t0, &t4))) {
+      errx(EXIT_FAILURE, "dhist.StartStop() oops");
+    }
+    
+    // This is where we would send the torques to a robot or the
+    // simulator.
+
+    dump_ds(ds);
+  }
+}
+
+
+void bench_proxified(jspace::Model & model, jspace::State & state, custom_ds_t * ds,
+		     int nticks, wbcnet::DelayHistogram & dhist)
+{
+  struct timeval t0, t1, t2, t3, t4;
+  CustomRobot custom_robot(ds);
+  CustomController controller(ds);
+  jspace::Status status;
+  std::vector<double> tau;
+  
+  static int const bufsize(512);
+  std::vector<char> buffer(bufsize);
+  wbcnet::RawMemChannel channel(&buffer[0], bufsize, false);
+  
+  // Pretend that the robot "lives" in another thread, and that all we
+  // have access to here is a proxy. For that purpose, the other
+  // thread needs to provide a robot server, and in this thread we
+  // need a robot client. Given that we are not actually
+  // multi-threaded in this benchmark, all these things live right
+  // here though.
+  
+  jspace::RobotProxyServer robot_server;
+  status = robot_server.init(&custom_robot, false, &channel, false);
+  if ( ! status) {
+    errx(EXIT_FAILURE, "robot_server.init(): %s", status.errstr.c_str());
+  }
+  
+  jspace::RobotProxyClient robot_client;
+  status = robot_client.init(&channel, false, jspace::CreateSPTransactionPolicy(&robot_server), true);
+  if ( ! status) {
+    errx(EXIT_FAILURE, "robot_client.init(): %s", status.errstr.c_str());
+  }
+  
+  for (int tick(0); tick < nticks; ++tick) {
+    fill_ds(tick, ds);
+    
+    // Update the model according to our state
+    if (0 != gettimeofday(&t0, 0)) {
+      err(EXIT_FAILURE, "gettimeofday");
+    }
+    status = robot_client.readState(state);
+    if ( ! status) {
+      errx(EXIT_FAILURE, "robot.readState(): %s", status.errstr.c_str());
+    }
+    if (0 != gettimeofday(&t1, 0)) {
+      err(EXIT_FAILURE, "gettimeofday");
+    }
+    model.update(state);
+    if (0 != gettimeofday(&t2, 0)) {
+      err(EXIT_FAILURE, "gettimeofday");
+    }
+    status = controller.computeCommand(model, tau);
+    if ( ! status) {
+      errx(EXIT_FAILURE, "controller.computeCommand(): %s", status.errstr.c_str());
+    }
+    if (0 != gettimeofday(&t3, 0)) {
+      err(EXIT_FAILURE, "gettimeofday");
+    }
+    status = robot_client.writeCommand(tau);
     if ( ! status) {
       errx(EXIT_FAILURE, "robot.writeCommand(): %s", status.errstr.c_str());
     }

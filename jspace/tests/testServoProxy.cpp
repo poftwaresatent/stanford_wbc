@@ -51,20 +51,6 @@ namespace {
   };
   
   
-  class SPQTransactionPolicy
-    : public jspace::TransactionPolicy
-  {
-  public:
-    explicit SPQTransactionPolicy(jspace::ServoProxyServer * server);
-    
-    virtual jspace::Status WaitReceive();
-    virtual jspace::Status PreReceive();
-    
-  private:
-    jspace::ServoProxyServer * server_;
-  };
-  
-  
   class ServoProxyTest
     : public testing::Test
   {
@@ -341,28 +327,6 @@ namespace {
   }
   
   
-  SPQTransactionPolicy::
-  SPQTransactionPolicy(jspace::ServoProxyServer * server)
-    : server_(server)
-  {
-  }
-  
-  
-  jspace::Status SPQTransactionPolicy::
-  WaitReceive()
-  {
-    jspace::Status zonk(false, "SPQTransactionPolicy::WaitReceive() should never be called");
-    return zonk;
-  }
-  
-  
-  jspace::Status SPQTransactionPolicy::
-  PreReceive()
-  {
-    return server_->handle();
-  }
-  
-  
   void ServoProxyTest::
   SetUp()
   {
@@ -374,7 +338,7 @@ namespace {
     server = new jspace::ServoProxyServer();
     server->init(servo, false, c2s_, false);
     client = new jspace::ServoProxyClient();
-    client->init(s2c_, false, new SPQTransactionPolicy(server), true);
+    client->init(s2c_, false, CreateSPTransactionPolicy(server), true);
   }
   
   
