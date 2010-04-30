@@ -204,9 +204,6 @@ void bench_raw(jspace::Model & model, jspace::State & state, custom_ds_t * ds,
       errx(EXIT_FAILURE, "dhist.StartStop() oops");
     }
     
-    // This is where we would send the torques to a robot or the
-    // simulator.
-    
     dump_ds(ds);
   }
 }
@@ -262,9 +259,6 @@ void bench_wrapped(jspace::Model & model, jspace::State & state, custom_ds_t * d
       errx(EXIT_FAILURE, "dhist.StartStop() oops");
     }
     
-    // This is where we would send the torques to a robot or the
-    // simulator.
-
     dump_ds(ds);
   }
 }
@@ -343,9 +337,6 @@ void bench_proxified(jspace::Model & model, jspace::State & state, custom_ds_t *
       errx(EXIT_FAILURE, "dhist.StartStop() oops");
     }
     
-    // This is where we would send the torques to a robot or the
-    // simulator.
-
     dump_ds(ds);
   }
 }
