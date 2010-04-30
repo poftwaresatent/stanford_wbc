@@ -136,13 +136,21 @@ int main(int argc, char ** argv)
       printf("oops, could not print\n");
     }
     
-    printf("average relative overhead of data conversion:\n"
-	   "raw:       %4.2f\n"
-	   "wrapped:   %4.2f\n"
-	   "proxified: %4.2f\n",
+    printf("percent of time spent in the various steps of the servo iteration:\n"
+	   "           | shuffling |     model |   control |\n"
+	   "-----------+-----------+-----------+-----------+\n"
+	   "raw:       |    % 6.2f |    % 6.2f |    % 6.2f |\n"
+	   "wrapped:   |    % 6.2f |    % 6.2f |    % 6.2f |\n"
+	   "proxified: |    % 6.2f |    % 6.2f |    % 6.2f |\n",
 	   100 * (dhist[0]->GetMsMean(0) + dhist[0]->GetMsMean(3)) / dhist[0]->GetMsMean(4),
+	   100 * dhist[0]->GetMsMean(1) / dhist[0]->GetMsMean(4),
+	   100 * dhist[0]->GetMsMean(2) / dhist[0]->GetMsMean(4),
 	   100 * (dhist[1]->GetMsMean(0) + dhist[1]->GetMsMean(3)) / dhist[1]->GetMsMean(4),
-	   100 * (dhist[2]->GetMsMean(0) + dhist[2]->GetMsMean(3)) / dhist[2]->GetMsMean(4));
+	   100 * dhist[1]->GetMsMean(1) / dhist[1]->GetMsMean(4),
+	   100 * dhist[1]->GetMsMean(2) / dhist[1]->GetMsMean(4),
+	   100 * (dhist[2]->GetMsMean(0) + dhist[2]->GetMsMean(3)) / dhist[2]->GetMsMean(4),
+	   100 * dhist[2]->GetMsMean(1) / dhist[2]->GetMsMean(4),
+	   100 * dhist[2]->GetMsMean(2) / dhist[2]->GetMsMean(4));
     
     // Don't forget to clean up after ourselves
     delete puma_model;
