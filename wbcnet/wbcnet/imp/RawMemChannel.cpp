@@ -43,9 +43,12 @@ namespace wbcnet {
   
   RawMemChannel::
   RawMemChannel(void * data_pointer,
-		int data_size)
+		int data_size,
+		bool strict_size)
     : m_data_pointer(data_pointer),
-      m_data_size(data_size)
+      m_data_size(data_size),
+      m_strict_size(strict_size),
+      m_last_sent_size(-1)
   {
   }
   
@@ -61,13 +64,22 @@ namespace wbcnet {
       return COM_OK;
     }
     
-    // Otherwise be paranoid and check that the provided data matches
-    // our data in size.
-    if (buffer.GetSize() != m_data_size) {
-      return COM_SIZE_MISMATCH;
+    // Otherwise be (more or less) paranoid and check to what extent
+    // the provided data matches our data in size.
+    if (m_strict_size) {
+      if (buffer.GetSize() != m_data_size) {
+	return COM_SIZE_MISMATCH;
+      }
+      memcpy(m_data_pointer, buffer_data, m_data_size);
+    }
+    else {
+      if (buffer.GetSize() > m_data_size) {
+	return COM_SIZE_MISMATCH;
+      }
+      m_last_sent_size = buffer.GetSize();
+      memcpy(m_data_pointer, buffer_data, m_last_sent_size);
     }
     
-    memcpy(m_data_pointer, buffer_data, m_data_size);
     return COM_OK;
   }
   
@@ -85,12 +97,25 @@ namespace wbcnet {
       return COM_OK;
     }
     
-    // Otherwise be paranoid and try to resize to the correct size.
-    if ( ! buffer.Resize(m_data_size)) {
-      return COM_OTHER_ERROR;
+    // Otherwise be somewhat paranoid and try to resize to the correct
+    // size.
+    if (m_strict_size) {
+      if ( ! buffer.Resize(m_data_size)) {
+	return COM_OTHER_ERROR;
+      }
+      memcpy(buffer.GetData(), m_data_pointer, m_data_size);
+    }
+    else {
+      if (0 > m_last_sent_size) {
+	// Nothing has been sent yet, maybe next time?
+	return COM_TRY_AGAIN;
+      }
+      if ( ! buffer.Resize(m_last_sent_size)) {
+	return COM_OTHER_ERROR;
+      }
+      memcpy(buffer.GetData(), m_data_pointer, m_last_sent_size);
     }
     
-    memcpy(buffer.GetData(), m_data_pointer, m_data_size);
     return COM_OK;
   }
   

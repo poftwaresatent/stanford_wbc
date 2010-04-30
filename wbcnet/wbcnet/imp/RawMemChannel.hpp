@@ -38,12 +38,10 @@
 #define WBCNET_RAW_MEM_CHANNEL_HPP
 
 #include <wbcnet/com.hpp>
+#include <wbcnet/data.hpp>
 
 
 namespace wbcnet {
-  
-  
-  class Buffer;
   
   
   /**
@@ -60,7 +58,13 @@ namespace wbcnet {
     RawMemChannel(/** Pointer to user-supplied and user-managed memory. */
 		  void * data_pointer,
 		  /** Number of bytes in the user-supplied memory. */
-		  int data_size);
+		  int data_size,
+		  /** If strict_size is true, then sizes of provided
+		      buffer must match exactly. Otherwise, data_size
+		      is interpreted as a maximum value, and as long
+		      as buffer sizes do not exceed this value
+		      everything is fine. */
+		  bool strict_size);
     
     virtual com_status Send(BufferAPI const & buffer);
     virtual com_status Receive(BufferAPI & buffer);
@@ -68,6 +72,8 @@ namespace wbcnet {
   protected:
     void * m_data_pointer;
     int const m_data_size;
+    bool const m_strict_size;
+    int m_last_sent_size;	// only used if m_strict_size is true
   };
   
   
