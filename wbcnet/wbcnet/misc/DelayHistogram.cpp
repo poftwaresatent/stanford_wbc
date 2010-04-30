@@ -59,6 +59,8 @@ namespace wbcnet {
       m_start(new ::timeval[_nsets]),
       m_ms_min(new double[_nsets]),
       m_ms_max(new double[_nsets]),
+      m_ms_sum(new double[_nsets]),
+      m_ms_count(new size_t[_nsets]),
       m_bin_floor(new double[_nbins]),
       m_iteration(0)
   {
@@ -79,6 +81,8 @@ namespace wbcnet {
     delete[] m_start;
     delete[] m_ms_min;
     delete[] m_ms_max;
+    delete[] m_ms_sum;
+    delete[] m_ms_count;
     delete[] m_bin_floor;
   }
   
@@ -119,6 +123,8 @@ namespace wbcnet {
     
     double * ms_min(m_ms_min + iset);
     double * ms_max(m_ms_max + iset);
+    double * ms_sum(m_ms_sum + iset);
+    size_t * ms_count(m_ms_count + iset);
     if (ms < *ms_min) {
       *ms_min = ms;
       if (ms < m_ms_min_all)
@@ -129,6 +135,8 @@ namespace wbcnet {
       if (ms > m_ms_max_all)
 	m_ms_max_all = ms;
     }
+    *ms_sum += ms;
+    ++*ms_count;
     
     double const bin(floor(nbins * (ms - ms_floor) / ms_range));
     if (bin < 0)
@@ -248,6 +256,10 @@ namespace wbcnet {
     for (size_t ii(1); ii < nsets; ++ii)
       fprintf(of, " |           %8.3f",
 	      (m_ms_max[ii] == numeric_limits<double>::min() ? -1 : m_ms_max[ii]));
+    fprintf(of, " |\n| mean          ");
+    for (size_t ii(0); ii < nsets; ++ii)
+      fprintf(of, " |           %8.3f",
+	      (m_ms_count[ii] == 0 ? -1.0 : m_ms_sum[ii] / m_ms_count[ii]));
     fprintf(of, " |\n+----------------+-------------------");
     for (size_t ii(1); ii < nsets; ++ii)
       fprintf(of, "-+-------------------");
@@ -293,6 +305,8 @@ namespace wbcnet {
     memset(m_start + iset,         0, sizeof(*m_start));
     m_ms_min[iset] = numeric_limits<double>::max();
     m_ms_max[iset] = numeric_limits<double>::min();
+    m_ms_sum[iset] = 0;
+    m_ms_count[iset] = 0;
     m_lower = nbins;
     m_upper = 0;
     return true;
@@ -319,6 +333,10 @@ namespace wbcnet {
     for (size_t ii(1); ii < nsets; ++ii) {
       memcpy(dst, m_ms_max, sizeof(*dst));
       ++dst;
+    }
+    for (size_t ii(0); ii < nsets; ++ii) {
+      m_ms_sum[ii] = 0;
+      m_ms_count[ii] = 0;
     }
     m_ms_min_all = numeric_limits<double>::max();
     m_ms_max_all = numeric_limits<double>::min();
@@ -357,6 +375,16 @@ namespace wbcnet {
   GetMsMaxAll() const
   {
     return m_ms_max_all;
+  }
+  
+  
+  double DelayHistogram::
+  GetMsMean(size_t iset) const
+  {
+    if (m_ms_count[iset] == 0) {
+      return -1;
+    }
+    return m_ms_sum[iset] / m_ms_count[iset];
   }
   
   

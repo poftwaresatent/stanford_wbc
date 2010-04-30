@@ -142,6 +142,8 @@ namespace wbcnet {
     double GetMsMax(size_t iset) const;
     double GetMsMaxAll() const;
     
+    double GetMsMean(size_t iset) const;
+    
     size_t const nsets;
     size_t const nbins;
     double const ms_floor;
@@ -158,6 +160,8 @@ namespace wbcnet {
     struct ::timeval * m_start;	// [nsets]
     double * m_ms_min;		// [nsets]
     double * m_ms_max;		// [nsets]
+    double * m_ms_sum;		// [nsets]
+    size_t * m_ms_count;	// [nsets]
     double * m_bin_floor;	// [nbins]
     double m_ms_min_all;
     double m_ms_max_all;

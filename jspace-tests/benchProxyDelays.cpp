@@ -26,6 +26,8 @@
 #include "model_library.hpp"
 #include <jspace/State.hpp>
 #include <jspace/Model.hpp>
+#include <jspace/RobotAPI.hpp>
+#include <jspace/Controller.hpp>
 #include <wbcnet/misc/DelayHistogram.hpp>
 #include <err.h>
 #include <stdlib.h>
@@ -45,8 +47,50 @@ namespace {
   static void custom_ds_to_state(custom_ds_t const * ds, jspace::State & state);
   static void custom_controller(jspace::Model const & model, custom_ds_t * ds);
   
+  
+  class CustomRobot
+    : public jspace::RobotAPI
+  {
+  public:
+    explicit CustomRobot(custom_ds_t * ds);
+    
+    virtual jspace::Status readState(jspace::State & state);
+    virtual jspace::Status writeCommand(std::vector<double> const & command);
+    virtual void shutdown();
+    
+  protected:
+    custom_ds_t * ds_;
+  };
+  
+  
+  class CustomController
+    : public jspace::Controller
+  {
+  public:
+    explicit CustomController(custom_ds_t * ds);
+    
+    virtual jspace::Status setGoal(std::vector<double> const & goal);
+    virtual jspace::Status getGoal(std::vector<double> & goal) const;
+    virtual jspace::Status getActual(std::vector<double> & actual) const;
+    
+    virtual jspace::Status setGains(std::vector<double> const & kp, std::vector<double> const & kd);
+    virtual jspace::Status getGains(std::vector<double> & kp, std::vector<double> & kd) const;
+    
+    virtual jspace::Status computeCommand(jspace::Model const & model, std::vector<double> & tau);
+    
+  protected:
+    custom_ds_t * ds_;
+  };
+    
 }
 
+
+static void bench_raw(jspace::Model & model, jspace::State & state, custom_ds_t * ds,
+		      int nticks, wbcnet::DelayHistogram & dhist);
+static void bench_proxified(jspace::Model & model, jspace::State & state, custom_ds_t * ds,
+			    int nticks, wbcnet::DelayHistogram & dhist);
+static void fill_ds(int tick, custom_ds_t * ds);
+static void dump_ds(custom_ds_t const * ds);
 
 int main(int argc, char ** argv)
 {
@@ -55,84 +99,185 @@ int main(int argc, char ** argv)
     jspace::State puma_state(6, 6, 0);
     custom_ds_t ds;
     
-    wbcnet::DelayHistogram dhist(4, 5, 0, 2);
-    if ( ! (dhist.SetName(0, "convert data")
-	    && dhist.SetName(1, "model update")
-	    && dhist.SetName(2, "controller")
-	    && dhist.SetName(3, "TOTAL"))) {
-      errx(EXIT_FAILURE, "dhist.SetName() oops");
+    wbcnet::DelayHistogram * dhist[2];
+    for (int ii(0); ii < 2; ++ii) {
+      dhist[ii] = new wbcnet::DelayHistogram(5, 5, 0, 2);
+      if ( ! (dhist[ii]->SetName(0, "ds to state")
+	      && dhist[ii]->SetName(1, "model update")
+	      && dhist[ii]->SetName(2, "controller")
+	      && dhist[ii]->SetName(3, "command to ds")
+	      && dhist[ii]->SetName(4, "TOTAL"))) {
+	errx(EXIT_FAILURE, "dhist->SetName() oops");
+      }
     }
-    struct timeval t0, t1, t2, t3;
     
-    for (int tick(0); tick < 100; ++tick) {
-      // Pretend the DS is somehow hooked up to a simulator or whatever...
-      for (int ii(0); ii < 6; ++ii) {
-	ds.pos[ii] = 0.1 * (tick + ii);
-	ds.vel[ii] = 0.05 * (tick - ii);
-      }
-      ds.tick = tick;
-      if (tick % 2) {
-	strncpy(ds.hello, "odd", 63);
-      }
-      else {
-	strncpy(ds.hello, "even", 63);
-      }
-      
-      // Update the model according to our state
-      if (0 != gettimeofday(&t0, 0)) {
-	err(EXIT_FAILURE, "gettimeofday");
-      }
-      custom_ds_to_state(&ds, puma_state);
-      if (0 != gettimeofday(&t1, 0)) {
-	err(EXIT_FAILURE, "gettimeofday");
-      }
-      puma_model->update(puma_state);
-      
-      // Update controller... this could of course just as easily call
-      // something from jspace/controller_library, in which case we'd
-      // have to convert from std::vector<double> to double[6], which
-      // is a trivial memcpy.
-      if (0 != gettimeofday(&t2, 0)) {
-	err(EXIT_FAILURE, "gettimeofday");
-      }
-      custom_controller(*puma_model, &ds);
-      
-      if (0 != gettimeofday(&t3, 0)) {
-	err(EXIT_FAILURE, "gettimeofday");
-      }
-      
-      if ( ! (dhist.StartStop(   0, &t0, &t1)
-	      && dhist.StartStop(1, &t1, &t2)
-	      && dhist.StartStop(2, &t2, &t3)
-	      && dhist.StartStop(3, &t0, &t3))) {
-	errx(EXIT_FAILURE, "dhist.StartStop() oops");
-      }
-      
-      // This is where we would send the torques to a robot or the
-      // simulator.
-      printf("tick: %d (%s)\n"
-	     "  pos = %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n"
-	     "  vel = %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n"
-	     "  tau = %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n"
-	     "  eepos = %5.2f %5.2f %5.2f\n",
-	     ds.tick, ds.hello,
-	     ds.pos[0], ds.pos[1], ds.pos[2], ds.pos[3], ds.pos[4], ds.pos[5], 
-	     ds.vel[0], ds.vel[1], ds.vel[2], ds.vel[3], ds.vel[4], ds.vel[5], 
-	     ds.tau[0], ds.tau[1], ds.tau[2], ds.tau[3], ds.tau[4], ds.tau[5],
-	     ds.eepos[0], ds.eepos[1], ds.eepos[2]);
+    bench_raw(*puma_model, puma_state, &ds, 100, *dhist[0]);
+    bench_proxified(*puma_model, puma_state, &ds, 100, *dhist[1]);
+    
+    printf("\nDelay and computation time measurements:\n"
+	   "RAW:\n");
+    if ( ! dhist[0]->DumpTable(stdout)) {
+      printf("oops, could not print\n");
     }
+
+    printf("PROXIFIED:\n");
+    if ( ! dhist[1]->DumpTable(stdout)) {
+      printf("oops, could not print\n");
+    }
+    
+    printf("average relative overhead of data conversion:\n"
+	   "raw:       %4.2f\n"
+	   "proxified: %4.2f\n",
+	   100 * (dhist[0]->GetMsMean(0) + dhist[0]->GetMsMean(3)) / dhist[0]->GetMsMean(4),
+	   100 * (dhist[1]->GetMsMean(0) + dhist[1]->GetMsMean(3)) / dhist[1]->GetMsMean(4));
     
     // Don't forget to clean up after ourselves
     delete puma_model;
-    
-    printf("\ndelay and computation time measurements\n");
-    if ( ! dhist.DumpTable(stdout)) {
-      printf("oops, could not print\n");
+    for (int ii(0); ii < 2; ++ii) {
+      delete dhist[ii];
     }
+    
   }
   catch (std::exception const & ee) {
     errx(EXIT_FAILURE, "EXCEPTION: %s", ee.what());
   }
+}
+
+
+void bench_raw(jspace::Model & model, jspace::State & state, custom_ds_t * ds,
+	       int nticks, wbcnet::DelayHistogram & dhist)
+{
+  struct timeval t0, t1, t2, t4; // there is no t3, it's the same as t2
+  
+  for (int tick(0); tick < nticks; ++tick) {
+    fill_ds(tick, ds);
+    
+    // Update the model according to our state
+    if (0 != gettimeofday(&t0, 0)) {
+      err(EXIT_FAILURE, "gettimeofday");
+    }
+    custom_ds_to_state(ds, state);
+    if (0 != gettimeofday(&t1, 0)) {
+      err(EXIT_FAILURE, "gettimeofday");
+    }
+    model.update(state);
+    
+    // Update controller... this could of course just as easily call
+    // something from jspace/controller_library, in which case we'd
+    // have to convert from std::vector<double> to double[6], which
+    // is a trivial memcpy.
+    if (0 != gettimeofday(&t2, 0)) {
+      err(EXIT_FAILURE, "gettimeofday");
+    }
+    custom_controller(model, ds);
+    
+    if (0 != gettimeofday(&t4, 0)) {
+      err(EXIT_FAILURE, "gettimeofday");
+    }
+    
+    if ( ! (dhist.StartStop(   0, &t0, &t1)
+	    && dhist.StartStop(1, &t1, &t2)
+	    && dhist.StartStop(2, &t2, &t4)
+	    && dhist.StartStop(3, &t2, &t2) // yes, use the same t2 twice because there is no cmd->ds
+	    && dhist.StartStop(4, &t0, &t4))) {
+      errx(EXIT_FAILURE, "dhist.StartStop() oops");
+    }
+    
+    // This is where we would send the torques to a robot or the
+    // simulator.
+    
+    dump_ds(ds);
+  }
+}
+
+
+void bench_proxified(jspace::Model & model, jspace::State & state, custom_ds_t * ds,
+		     int nticks, wbcnet::DelayHistogram & dhist)
+{
+  struct timeval t0, t1, t2, t3, t4;
+  CustomRobot robot(ds);
+  CustomController controller(ds);
+  jspace::Status status;
+  std::vector<double> tau;
+  
+  for (int tick(0); tick < nticks; ++tick) {
+    fill_ds(tick, ds);
+    
+    // Update the model according to our state
+    if (0 != gettimeofday(&t0, 0)) {
+      err(EXIT_FAILURE, "gettimeofday");
+    }
+    status = robot.readState(state);
+    if ( ! status) {
+      errx(EXIT_FAILURE, "robot.readState(): %s", status.errstr.c_str());
+    }
+    if (0 != gettimeofday(&t1, 0)) {
+      err(EXIT_FAILURE, "gettimeofday");
+    }
+    model.update(state);
+    if (0 != gettimeofday(&t2, 0)) {
+      err(EXIT_FAILURE, "gettimeofday");
+    }
+    status = controller.computeCommand(model, tau);
+    if ( ! status) {
+      errx(EXIT_FAILURE, "controller.computeCommand(): %s", status.errstr.c_str());
+    }
+    if (0 != gettimeofday(&t3, 0)) {
+      err(EXIT_FAILURE, "gettimeofday");
+    }
+    status = robot.writeCommand(tau);
+    if ( ! status) {
+      errx(EXIT_FAILURE, "robot.writeCommand(): %s", status.errstr.c_str());
+    }
+    if (0 != gettimeofday(&t4, 0)) {
+      err(EXIT_FAILURE, "gettimeofday");
+    }
+    
+    if ( ! (dhist.StartStop(   0, &t0, &t1)
+	    && dhist.StartStop(1, &t1, &t2)
+	    && dhist.StartStop(2, &t2, &t3)
+	    && dhist.StartStop(3, &t3, &t4)
+	    && dhist.StartStop(4, &t0, &t4))) {
+      errx(EXIT_FAILURE, "dhist.StartStop() oops");
+    }
+    
+    // This is where we would send the torques to a robot or the
+    // simulator.
+
+    dump_ds(ds);
+  }
+}
+
+
+void fill_ds(int tick, custom_ds_t * ds)
+{
+  // Pretend the DS is somehow hooked up to a simulator or whatever...
+  for (int ii(0); ii < 6; ++ii) {
+    ds->pos[ii] = 0.1 * (tick + ii);
+    ds->vel[ii] = 0.05 * (tick - ii);
+  }
+  ds->tick = tick;
+  if (tick % 2) {
+    strncpy(ds->hello, "odd", 63);
+  }
+  else {
+    strncpy(ds->hello, "even", 63);
+  }
+}
+
+
+void dump_ds(custom_ds_t const * ds)
+{
+  printf("tick: %d (%s)\n"
+	 "  pos = %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n"
+	 "  vel = %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n"
+	 "  tau = %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n"
+	 "  eepos = %5.2f %5.2f %5.2f\n",
+	 ds->tick, ds->hello,
+	 ds->pos[0], ds->pos[1], ds->pos[2], ds->pos[3], ds->pos[4], ds->pos[5], 
+	 ds->vel[0], ds->vel[1], ds->vel[2], ds->vel[3], ds->vel[4], ds->vel[5], 
+	 ds->tau[0], ds->tau[1], ds->tau[2], ds->tau[3], ds->tau[4], ds->tau[5],
+	 ds->eepos[0], ds->eepos[1], ds->eepos[2]);
 }
 
 
@@ -196,5 +341,100 @@ namespace {
     // in the custom data structure.
     memcpy(ds->eepos, eeframe.translation().dataPtr(), 3 * sizeof(double));
   }
-
+  
+  
+  CustomRobot::
+  CustomRobot(custom_ds_t * ds)
+    : ds_(ds)
+  {
+  }
+  
+  
+  jspace::Status CustomRobot::
+  readState(jspace::State & state)
+  {
+    custom_ds_to_state(ds_, state);
+    jspace::Status ok;
+    return ok;
+  }
+  
+  
+  jspace::Status CustomRobot::
+  writeCommand(std::vector<double> const & command)
+  {
+    jspace::Status status;
+    if (command.size() != 6) {
+      status.ok = false;
+      status.errstr = "wrong dimension";
+      return status;
+    }
+    memcpy(ds_->tau, &command[0], 6 * sizeof(double));
+    return status;
+  }
+  
+  
+  void CustomRobot::
+  shutdown()
+  {
+    // nop
+  }
+  
+  
+  CustomController::
+  CustomController(custom_ds_t * ds)
+    : ds_(ds)
+  {
+  }
+  
+  
+  jspace::Status CustomController::
+  setGoal(std::vector<double> const & goal)
+  {
+    jspace::Status zonk(false, "not implemented");
+    return zonk;
+  }
+  
+  
+  jspace::Status CustomController::
+  getGoal(std::vector<double> & goal) const
+  {
+    jspace::Status zonk(false, "not implemented");
+    return zonk;
+  }
+  
+  
+  jspace::Status CustomController::
+  getActual(std::vector<double> & actual) const
+  {
+    jspace::Status zonk(false, "not implemented");
+    return zonk;
+  }
+  
+  
+  jspace::Status CustomController::
+  setGains(std::vector<double> const & kp, std::vector<double> const & kd)
+  {
+    jspace::Status zonk(false, "not implemented");
+    return zonk;
+  }
+  
+  
+  jspace::Status CustomController::
+  getGains(std::vector<double> & kp, std::vector<double> & kd) const
+  {
+    jspace::Status zonk(false, "not implemented");
+    return zonk;
+  }
+  
+  
+  jspace::Status CustomController::
+  computeCommand(jspace::Model const & model, std::vector<double> & tau)
+  {
+    custom_controller(model, ds_);
+    tau.resize(6);
+    memcpy(&tau[0], ds_->tau, 6 * sizeof(double));
+    jspace::Status ok;
+    return ok;
+  }
+  
 }
