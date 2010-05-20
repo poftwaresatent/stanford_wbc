@@ -12,6 +12,7 @@ list (APPEND SRCS
   jspace/State.cpp
   jspace/Model.cpp
   jspace/Status.cpp
+  jspace/Controller.cpp
   jspace/controller_library.cpp
   jspace/vector_util.cpp
   jspace/tao_dump.cpp

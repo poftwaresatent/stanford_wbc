@@ -35,19 +35,29 @@ namespace jspace {
   class Model;
   
   
-  /** Interface for retrieving DOF names from controllers, if they
-      provide such a functionality. By default, they don't. */
-  struct name_getter_s {
-    virtual ~name_getter_s() {}
-    virtual void getDOFNames(std::vector<std::string> & names) const = 0;
-    virtual void getGainNames(std::vector<std::string> & names) const = 0;
+  /** Interface for retrieving custom info (DOF names etc) from
+      controllers. */
+  struct controller_info_getter_s {
+    virtual ~controller_info_getter_s() {}
+    virtual void getDOFNames(Model const & model, std::vector<std::string> & names) const = 0;
+    virtual void getGainNames(Model const & model, std::vector<std::string> & names) const = 0;
+    virtual void getLimits(Model const & model, std::vector<double> & limits_lower, std::vector<double> & limits_upper) const = 0;
+  };
+  
+  /** Default info getter is based on the jspace::Model. */
+  struct jspace_controller_info_getter_s
+    : public controller_info_getter_s {
+    virtual void getDOFNames(Model const & model, std::vector<std::string> & names) const;
+    virtual void getGainNames(Model const & model, std::vector<std::string> & names) const;
+    virtual void getLimits(Model const & model, std::vector<double> & limits_lower, std::vector<double> & limits_upper) const;
   };
   
   
   class Controller
   {
   public:
-    virtual ~Controller() {}
+    Controller();
+    virtual ~Controller();
     
     /** Provides a hook for retrieving specialized DOF and gain names,
 	if provided. Specific Controller subclasses can override this
@@ -55,11 +65,15 @@ namespace jspace {
 	the degrees of freedom etc. Useful mostly for operational
 	space controllers.
 	
-	\note The default is to return NULL.
+	\note The default is to construct a
+	jspace_controller_info_getter_s on the fly and return
+	that. The Controller destructor will clean it up.
 	
-	\return NULL or a pointer to a custom name_getter_s.
+	\return A pointer to a (custom) controller_info_getter_s or
+	NULL (i.e. we cannot construct the info getter before init()
+	has been called).
     */
-    virtual name_getter_s const * getNameGetter() const { return 0; }
+    virtual controller_info_getter_s const * getInfo() const;
     
     /** Default init just returns ok. You should only call this with a
 	fully initialized model, because controllers might need to
@@ -74,6 +88,9 @@ namespace jspace {
     virtual Status getGains(std::vector<double> & kp, std::vector<double> & kd) const = 0;
     
     virtual Status computeCommand(Model const & model, std::vector<double> & tau) = 0;
+    
+  protected:
+    mutable jspace_controller_info_getter_s * info_getter_;
   };
   
 }
