@@ -35,10 +35,31 @@ namespace jspace {
   class Model;
   
   
+  /** Interface for retrieving DOF names from controllers, if they
+      provide such a functionality. By default, they don't. */
+  struct name_getter_s {
+    virtual ~name_getter_s() {}
+    virtual void getDOFNames(std::vector<std::string> & names) const = 0;
+    virtual void getGainNames(std::vector<std::string> & names) const = 0;
+  };
+  
+  
   class Controller
   {
   public:
     virtual ~Controller() {}
+    
+    /** Provides a hook for retrieving specialized DOF and gain names,
+	if provided. Specific Controller subclasses can override this
+	method in order to inform higher levels about how to refer to
+	the degrees of freedom etc. Useful mostly for operational
+	space controllers.
+	
+	\note The default is to return NULL.
+	
+	\return NULL or a pointer to a custom name_getter_s.
+    */
+    virtual name_getter_s const * getNameGetter() const { return 0; }
     
     /** Default init just returns ok. You should only call this with a
 	fully initialized model, because controllers might need to
