@@ -47,8 +47,9 @@ namespace jspace {
 	      torque vector, the mass-inertia matrix, and its
 	      inverse. */
 	  tao_tree_info_s * kgm_tree,
-	  /** TAO tree info for computing Coriolis and centrifugal
-	      torques. */
+	  /** Optional TAO tree info for computing Coriolis and
+	      centrifugal torques. If you set this to NULL, then the
+	      Coriolis and centrifugal forces won't be computed. */
 	  tao_tree_info_s * cc_tree);
     
     ~Model();
@@ -247,14 +248,17 @@ namespace jspace {
 	called by updateDynamics(), which gets called by update(). */
     bool getGravity(SAIVector & gravity) const;
     
-    /** Compute the Coriolis and contrifugal joint-torque vector. */
+    /** Compute the Coriolis and contrifugal joint-torque vector. If
+	you set cc_tree=NULL in the constructor, then this is a
+	no-op. */
     void computeCoriolisCentrifugal();
     
     /** Retrieve the Coriolis and contrifugal joint-torque vector.
 	
-	\return True on success. The only possibility of receiving
-	false is if you never called computeCoriolisCentrifugal(),
-	which gets called by updateDynamics(), which gets called by
+	\return True on success. There are two possibility of
+	receiving false: (i) you set cc_tree=NULL in the constructor,
+	or (ii) you never called computeCoriolisCentrifugal(), which
+	gets called by updateDynamics(), which gets called by
 	update(). */
     bool getCoriolisCentrifugal(SAIVector & coriolis_centrifugal) const;
     
@@ -285,7 +289,9 @@ namespace jspace {
 	kinematics-gravity-mass-inertia tree. */
     tao_tree_info_s * _getKGMTree() { return kgm_tree_; }
     
-    /** For debugging only, access to the Coriolis-centrifugal tree. */
+    /** For debugging only, access to the optional
+	Coriolis-centrifugal tree. Can NULL if the user is not
+	interested in Coriolis-centrifugal effects. */
     tao_tree_info_s * _getCCTree() { return cc_tree_; }
     
     

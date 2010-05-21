@@ -95,12 +95,14 @@ namespace jspace {
       joint->zeroDDQ();
       joint->zeroTau();
     }
-    for (size_t ii(0); ii < ndof_; ++ii) {
-      taoJoint * joint(cc_tree_->info[ii].node->getJointList());
-      joint->setQ(&state.position_[ii]);
-      joint->setDQ(&state.velocity_[ii]);
-      joint->zeroDDQ();
-      joint->zeroTau();
+    if (cc_tree_) {
+      for (size_t ii(0); ii < ndof_; ++ii) {
+	taoJoint * joint(cc_tree_->info[ii].node->getJointList());
+	joint->setQ(&state.position_[ii]);
+	joint->setDQ(&state.velocity_[ii]);
+	joint->zeroDDQ();
+	joint->zeroTau();
+      }
     }
   }
   
@@ -395,11 +397,13 @@ namespace jspace {
   void Model::
   computeCoriolisCentrifugal()
   {
-    cc_torque_.resize(ndof_);
-    taoDynamics::invDynamics(cc_tree_->root, &zero_gravity);
-    for (size_t ii(0); ii < ndof_; ++ii) {
-      taoJoint * joint(cc_tree_->info[ii].node->getJointList());
-      joint->getTau(&cc_torque_[ii]);
+    if (cc_tree_) {
+      cc_torque_.resize(ndof_);
+      taoDynamics::invDynamics(cc_tree_->root, &zero_gravity);
+      for (size_t ii(0); ii < ndof_; ++ii) {
+	taoJoint * joint(cc_tree_->info[ii].node->getJointList());
+	joint->getTau(&cc_torque_[ii]);
+      }
     }
   }
   
@@ -407,6 +411,9 @@ namespace jspace {
   bool Model::
   getCoriolisCentrifugal(SAIVector & coriolis_centrifugal) const
   {
+    if ( ! cc_tree_) {
+      return false;
+    }
     if (cc_torque_.empty()) {
       return false;
     }
