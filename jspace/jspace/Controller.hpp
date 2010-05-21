@@ -40,6 +40,7 @@ namespace jspace {
   struct controller_info_getter_s {
     virtual ~controller_info_getter_s() {}
     virtual void getDOFNames(Model const & model, std::vector<std::string> & names) const = 0;
+    virtual void getDOFUnits(Model const & model, std::vector<std::string> & names) const = 0;
     virtual void getGainNames(Model const & model, std::vector<std::string> & names) const = 0;
     virtual void getLimits(Model const & model, std::vector<double> & limits_lower, std::vector<double> & limits_upper) const = 0;
   };
@@ -48,6 +49,7 @@ namespace jspace {
   struct jspace_controller_info_getter_s
     : public controller_info_getter_s {
     virtual void getDOFNames(Model const & model, std::vector<std::string> & names) const;
+    virtual void getDOFUnits(Model const & model, std::vector<std::string> & names) const;
     virtual void getGainNames(Model const & model, std::vector<std::string> & names) const;
     virtual void getLimits(Model const & model, std::vector<double> & limits_lower, std::vector<double> & limits_upper) const;
   };

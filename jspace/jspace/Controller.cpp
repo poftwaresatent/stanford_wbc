@@ -25,6 +25,8 @@
 
 #include "Controller.hpp"
 #include "Model.hpp"
+#include <tao/dynamics/taoDNode.h>
+#include <tao/dynamics/taoJoint.h>
 
 namespace jspace {
   
@@ -36,6 +38,30 @@ namespace jspace {
     names.resize(njoints);
     for (int ii(0); ii < njoints; ++ii) {
       names[ii] = model.getJointName(ii);
+    }
+  }
+  
+  
+  /** \todo XXXX yet another place where we hardcode a one-to-one
+      relationship between joints and links, although TAO can express
+      many-to-one relationships here. */
+  void jspace_controller_info_getter_s::
+  getDOFUnits(Model const & model, std::vector<std::string> & names) const
+  {
+    int const njoints(model.getNJoints());
+    names.resize(njoints);
+    for (int ii(0); ii < njoints; ++ii) {
+      taoDNode const * node(model.getNode(ii));
+      taoJoint const * joint(node->getJointList());
+      if (0 != dynamic_cast<taoJointRevolute const *>(joint)) {
+	names[ii] = "rad";
+      }
+      else if (0 != dynamic_cast<taoJointPrismatic const *>(joint)) {
+	names[ii] = "m";
+      }
+      else {
+	names[ii] = "void";
+      }
     }
   }
   
