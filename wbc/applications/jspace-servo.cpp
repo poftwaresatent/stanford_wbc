@@ -165,10 +165,11 @@ int main(int argc, char*argv[])
     wbc_robot = attr->extensions->robot_registry->parseCreate(opt.robot_type, &inspector);
   }
   catch (std::exception const & ee) {
+    LOG_ERROR (logger, "EXCEPTION " << ee.what());
     errx(EXIT_FAILURE, "EXCEPTION %s", ee.what());
   }
   
-  warnx("creating and initializing model and state");
+  LOG_INFO (logger, "creating and initializing model and state");
   jspace::tao_tree_info_s * kg_tree(attr->robmodel->branching()->createTreeInfo());
   jspace_model = new jspace::Model(/* transfers ownership */ kg_tree,
 				   /* no Coriolis */ 0);
@@ -177,10 +178,12 @@ int main(int argc, char*argv[])
   jspace_state.init(ndof, ndof, 0);
   imp::RobotAPI robot(ndof, wbc_robot);
   if ( ! robot.readState(jspace_state)) {
+    LOG_ERROR (logger, "robot.readState() failed");
     errx(EXIT_FAILURE, "robot.readState() failed");
   }
+  jspace_model->update(jspace_state);
   
-  warnx("creating and initializing controller");
+  LOG_INFO (logger, "creating and initializing controller");
   // XXXX selectable at runtime...
   std::vector<double> initial_kp(ndof);
   std::vector<double> initial_kd(ndof);
@@ -194,28 +197,31 @@ int main(int argc, char*argv[])
   jspace::Status status;
   status = jspace_controller->init(*jspace_model);
   if ( ! status) {
+    LOG_ERROR (logger, "jspace_controller->init() failed: " << status.errstr);
     errx(EXIT_FAILURE, "jspace_controller->init() failed: %s", status.errstr.c_str());
   }
   
-  warnx("entering control loop");
+  LOG_INFO (logger, "entering control loop");
   std::vector<double> tau(ndof);
   while (true) {
     
-    jspace_model->update(jspace_state);
-    
     status = jspace_controller->computeCommand(*jspace_model, tau);
     if ( ! status) {
+      LOG_ERROR (logger, "jspace_controller->compute(tau) failed: " << status.errstr);
       errx(EXIT_FAILURE, "jspace_controller->compute(tau) failed: %s", status.errstr.c_str());
     }
     
     status = robot.writeCommand(tau);
     if ( ! status) {
+      LOG_ERROR (logger, "robot.writeCommand() failed: " << status.errstr);
       errx(EXIT_FAILURE, "robot.writeCommand() failed: %s", status.errstr.c_str());
     }
     
     if ( ! robot.readState(jspace_state)) {
+      LOG_ERROR (logger, "robot.readState() failed");
       errx(EXIT_FAILURE, "robot.readState() failed");
     }
+    jspace_model->update(jspace_state);
     
   }
 }
@@ -226,10 +232,14 @@ namespace imp {
   wbc::RobotControlModel * Inspector::
   getRobotControlModel()
   {
-    if ( ! attr)
+    if ( ! attr) {
       errx(EXIT_FAILURE, "imp::Inspector::getRobotControlModel() called before attr is available");
-    if ( ! attr->robmodel)
+      errx(EXIT_FAILURE, "imp::Inspector::getRobotControlModel() called before attr is available");
+    }
+    if ( ! attr->robmodel) {
       errx(EXIT_FAILURE, "imp::Inspector::getRobotControlModel() called before robmodel is available");
+      errx(EXIT_FAILURE, "imp::Inspector::getRobotControlModel() called before robmodel is available");
+    }
     return attr->robmodel;
   }
   
@@ -237,6 +247,7 @@ namespace imp {
   wbc::cop_data Inspector::
   getCentersOfPressure()
   {
+    LOG_ERROR (logger, "imp::Inspector::getCentersOfPressure() should never be called");
     errx(EXIT_FAILURE, "imp::Inspector::getCentersOfPressure() should never be called");
     wbc::cop_data cop(0);
     return cop;
@@ -246,6 +257,7 @@ namespace imp {
   SAIVector Inspector::
   getCOM()
   {
+    LOG_ERROR (logger, "imp::Inspector::getCOM() should never be called");
     errx(EXIT_FAILURE, "imp::Inspector::getCOM() should never be called");
     SAIVector com(0);
     return com;
@@ -255,7 +267,8 @@ namespace imp {
   SAIVector Inspector::
   getZMP()
   {
-    errx(EXIT_FAILURE, "servo::Inspector::getZMP() should never be called");
+    LOG_ERROR (logger, "imp::Inspector::getZMP() should never be called");
+    errx(EXIT_FAILURE, "imp::Inspector::getZMP() should never be called");
     SAIVector zmp(0);
     return zmp;
   }
@@ -270,15 +283,6 @@ namespace imp {
   {
     acquisition_time_.tv_sec = 0;
     acquisition_time_.tv_usec = 0;
-    // SAIVector joint_angles(attr->robmodel->branching()->numJoints());
-    // SAIVector joint_velocities(attr->robmodel->branching()->numJoints());
-    // timeval acquisition_time;
-    // acquisition_time.tv_sec = 0;
-    // acquisition_time.tv_usec = 0;
-    // size_t nrows, ncols;
-    // attr->robmodel->getForceDimension(nrows, ncols);
-    // SAIMatrix contact_forces(nrows, ncols);
-    // SAIVector command_torques(attr->robmodel->branching()->numJoints());
   }
   
   
