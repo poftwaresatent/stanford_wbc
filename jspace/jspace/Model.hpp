@@ -162,6 +162,28 @@ namespace jspace {
 			    SAITransform const & local_transform,
 			    SAITransform & global_transform) const;
     
+    /** Convenience method in case you are only interested in the
+	translational part and hold the local point in three
+	doubles.
+	
+	\return True on success. The only possible failure stems from
+	an invalid node, so if you got that using getNode() or one of
+	the related methods you can safely ignore the return value. */
+    bool computeGlobalFrame(taoDNode const * node,
+			    double local_x, double local_y, double local_z,
+			    SAITransform & global_transform) const;
+    
+    /** Convenience method in case you are only interested in the
+	translational part and hold the local point in a
+	three-dimensional SAIVector.
+	
+	\return True on success. The only possible failure stems from
+	an invalid node, so if you got that using getNode() or one of
+	the related methods you can safely ignore the return value. */
+    bool computeGlobalFrame(taoDNode const * node,
+			    SAIVector local_translation,
+			    SAITransform & global_transform) const;
+    
     /** Compute the Jacobian (J_v over J_omega) at the origin of a
 	given node.
 	

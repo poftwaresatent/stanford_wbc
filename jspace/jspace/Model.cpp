@@ -239,6 +239,28 @@ namespace jspace {
   
   
   bool Model::
+  computeGlobalFrame(taoDNode const * node,
+		     SAIVector local_translation,
+		     SAITransform & global_transform) const
+  {
+    return computeGlobalFrame(node, SAITransform(local_translation), global_transform);
+  }
+  
+  
+  bool Model::
+  computeGlobalFrame(taoDNode const * node,
+		     double local_x, double local_y, double local_z,
+		     SAITransform & global_transform) const
+  {
+    SAIVector trans(3);
+    trans[0] = local_x;
+    trans[1] = local_y;
+    trans[2] = local_z;
+    return computeGlobalFrame(node, SAITransform(trans), global_transform);
+  }
+  
+  
+  bool Model::
   computeJacobian(taoDNode const * node,
 		  SAIMatrix & jacobian) const
   {
