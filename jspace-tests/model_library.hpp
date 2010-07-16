@@ -30,6 +30,8 @@
 namespace jspace {
   namespace test {
     
+    std::string create_tmpfile(char const * fname_template, char const * contents) throw(std::runtime_error);
+    
     jspace::Model * create_puma_model() throw(std::runtime_error);
     jspace::Model * create_unit_mass_RR_model() throw(std::runtime_error);
     wbc::BranchingRepresentation * create_unit_mass_5R_brep() throw(std::runtime_error);

@@ -16,6 +16,9 @@ include_directories (
   ../wbc
   )
 
+link_directories (${URDF_LIBDIRS})
+#/wg/stor1a/roland/cturtle_karmic_wg_all/stacks/robot_model/urdf/lib;/wg/stor1a/roland/cturtle_karmic_wg_all/stacks/common/tinyxml;/wg/stor1a/roland/cturtle_karmic_wg_all/ros/core/roscpp/lib;/wg/stor1a/roland/cturtle_karmic_wg_all/ros/3rdparty/xmlrpcpp/lib;/wg/stor1a/roland/cturtle_karmic_wg_all/ros/core/rosconsole/lib;/wg/stor1a/roland/cturtle_karmic_wg_all/ros/core/roslib/lib;/wg/stor1a/roland/cturtle_karmic_wg_all/ros/tools/rospack/lib
+
 add_library (jspace_tests model_library.cpp)
 target_link_libraries (jspace_tests jspace Stanford_WBC)
 

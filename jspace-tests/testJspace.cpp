@@ -34,17 +34,17 @@
 #include <jspace/ros/urdf_dump.hpp>
 #include <wbcnet/strutil.hpp>
 // #include <wbc/core/RobotControlModel.hpp>
-// #include <wbc/parse/BRParser.hpp>
+#include <wbc/parse/BRParser.hpp>
 #include <urdf/model.h>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <gtest/gtest.h>
-// #include <errno.h>
+#include <errno.h>
 // #include <string.h>
 
 using namespace std;
-
+using namespace jspace::test;
 
 static std::string create_puma_frames() throw(runtime_error);
 static urdf::Model * create_unit_mass_5R_urdf() throw(runtime_error);
@@ -811,8 +811,11 @@ TEST (jspaceController, mass_inertia_compensation_RR)
     ASSERT_EQ (model->getNDOF(), 2);
     jspace::State state(2, 2, 0);
     model->update(state);	// otherwise ctrl.init() complains (further down)
-    static double const kp(100);
-    static double const kd(20);
+    std::vector<double> kp, kd;
+    kp.push_back(100);
+    kp.push_back(100);
+    kd.push_back(20);
+    kd.push_back(20);
     jspace::JointGoalController ctrl(jspace::COMP_MASS_INERTIA, kp, kd);
     jspace::Status status(ctrl.init(*model));
     ASSERT_TRUE (status) << "ctrl.init failed: " << status.errstr;
@@ -834,8 +837,8 @@ TEST (jspaceController, mass_inertia_compensation_RR)
 	double const m12(MM.elementAt(0, 1));
 	double const m22(MM.elementAt(1, 1));
 	std::vector<double> tau_check(2);
-	tau_check[0] = - kp * (m11 * q1 + m12 * q2);
-	tau_check[1] = - kp * (m12 * q1 + m22 * q2);
+	tau_check[0] = - kp[0] * (m11 * q1 + m12 * q2);
+	tau_check[1] = - kp[0] * (m12 * q1 + m22 * q2);
 	
 	std::ostringstream msg;
 	msg << "Verifying command for q = " << state.position_ << "\n"
@@ -1395,6 +1398,7 @@ urdf::Model * create_unit_mass_5R_urdf() throw(runtime_error)
     "       xmlns:renderable=\"http://playerstage.sourceforge.net/gazebo/xmlschema/#renderable\"\n"
     "       xmlns:controller=\"http://playerstage.sourceforge.net/gazebo/xmlschema/#controller\"\n"
     "       xmlns:physics=\"http://playerstage.sourceforge.net/gazebo/xmlschema/#physics\">\n"
+    "  <link name=\"world\" />\n"
     "  <joint name=\"joint_1\" type=\"continuous\" >\n"
     "    <axis xyz=\"0 0 1\" />\n"
     "    <origin xyz=\"0 0 2\" rpy=\"0 0 0\" />\n"
