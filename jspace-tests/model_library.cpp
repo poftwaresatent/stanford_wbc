@@ -24,6 +24,7 @@
 */
 
 #include "model_library.hpp"
+#include "util.hpp"
 #include <wbc/core/RobotControlModel.hpp>
 #include <wbc/parse/BRParser.hpp>
 #include <string.h>
@@ -32,37 +33,6 @@
 
 
 using namespace jspace::test;
-
-
-namespace jspace {
-  namespace test {
-    
-    std::string create_tmpfile(char const * fname_template, char const * contents) throw(runtime_error)
-    {
-      if (strlen(fname_template) >= 64) {
-	throw runtime_error("create_tmpfile(): fname_template is too long (max 63 characters)");
-      }
-      
-      static char tmpname[64];
-      memset(tmpname, '\0', 64);
-      strncpy(tmpname, fname_template, 63);
-      int const tmpfd(mkstemp(tmpname));
-      if (-1 == tmpfd) {
-	throw runtime_error("create_tmpfile(): mkstemp(): " + string(strerror(errno)));
-      }
-      
-      size_t const len(strlen(contents));
-      if (static_cast<ssize_t>(len) != write(tmpfd, contents, len)) {
-	throw runtime_error("create_tmpfile(): write(): " + string(strerror(errno)));
-      }
-      close(tmpfd);
-      
-      string result(tmpname);
-      return result;
-    }
-
-  }
-}
 
 
 static std::string create_puma_xml() throw(runtime_error)
