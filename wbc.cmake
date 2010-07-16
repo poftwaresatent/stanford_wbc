@@ -324,6 +324,7 @@ endmacro (wbc_init)
 # the URDF package. The following variables will be set if URDF was
 # found:
 # - HAVE_ROS=true
+# - HAVE_URDF=true
 # - URDF_INCLUDES the directories to include
 # - URDF_CFLAGS other CFLAGS required to build the URDF
 # - URDF_LIBDIRS the directories to add to the linker search path
@@ -349,8 +350,10 @@ macro (wbc_find_urdf)
 	rosbuild_find_ros_package (urdf)
 	if (${urdf_PACKAGE_PATH} STREQUAL "")
 	  message (FATAL_ERROR "ROS support enabled but urdf package not found, try running 'rosmake urdf'")
+	  set (HAVE_URDF-NOTFOUND)
 	else (${urdf_PACKAGE_PATH} STREQUAL "")
 	  message ("[WBC] enabling ROS support for URDF")
+	  set (HAVE_URDF true)
 	  rosbuild_invoke_rospack (urdf URDF INCLUDES cflags-only-I)
 	  include_directories (${URDF_INCLUDES})
 	  message ("[WBC] URDF_INCLUDES is ${URDF_INCLUDES}")
