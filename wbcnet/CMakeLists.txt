@@ -53,35 +53,40 @@ if (${WBCNET_HAVE_MQUEUE})
 	list (APPEND WBCNET_LIBS rt)
 endif (${WBCNET_HAVE_MQUEUE})
 
-check_include_file_cxx (log4cxx/logger.h WBCNET_HAVE_LOG4CXX)
-if (WBCNET_HAVE_LOG4CXX)
-  message ("found log4cxx headers, will check it's library version")
-  try_compile (LOG4CXX_VERSION_CHECK
-    ${WBCNET_BINARY_DIR}/log4cxx_version_check
-    ${WBCNET_SOURCE_DIR}/test/log4cxx_version_check.cpp
-    CMAKE_FLAGS
-      -DINCLUDE_DIRECTORIES:path=${TRYCOMPILE_INCLUDE_DIRECTORIES}
-      -DLINK_DIRECTORIES:path=${TRYCOMPILE_LINK_DIRECTORIES}
-      -DLINK_LIBRARIES:string=log4cxx
-    OUTPUT_VARIABLE LOG4CXX_VERSION_CHECK_LOG
-    )
-  if (LOG4CXX_VERSION_CHECK)
-    message ("log4cxx version check succeeded")
-  else (LOG4CXX_VERSION_CHECK)
-    message ("LOG4CXX_VERSION_CHECK_LOG:\n${LOG4CXX_VERSION_CHECK_LOG}")
-    message (FATAL_ERROR "The log4cxx version check failed (see try_compile log above). Please install log4cxx-0.10.0 (e.g. from the 3rdparty/ directory of stanford-wbc) and tell CMake where to find it by setting the LOG4CXX_DIR variable (either in the environment or by passing -DLOG4CXX:path=/foo/bar to cmake)")
-  endif (LOG4CXX_VERSION_CHECK)
-  add_definitions (-DHAVE_LOG4CXX)
-  list (APPEND WBCNET_LIBS log4cxx)
-else (WBCNET_HAVE_LOG4CXX)
-  message ("WARNING did not find log4cxx, will use simplistic logging")
-endif (WBCNET_HAVE_LOG4CXX)
+if (LOG4CXX_DIR STREQUAL "DISABLED")
+  message ("[WBCNET] logging has been explicitly disabled")
+  add_definitions (-DDISABLE_LOGGING)
+else (LOG4CXX_DIR STREQUAL "DISABLED")
+  check_include_file_cxx (log4cxx/logger.h WBCNET_HAVE_LOG4CXX)
+  if (WBCNET_HAVE_LOG4CXX)
+    message ("[WBCNET] found log4cxx headers, will check it's library version")
+    try_compile (LOG4CXX_VERSION_CHECK
+      ${WBCNET_BINARY_DIR}/log4cxx_version_check
+      ${WBCNET_SOURCE_DIR}/test/log4cxx_version_check.cpp
+      CMAKE_FLAGS
+        -DINCLUDE_DIRECTORIES:path=${TRYCOMPILE_INCLUDE_DIRECTORIES}
+	-DLINK_DIRECTORIES:path=${TRYCOMPILE_LINK_DIRECTORIES}
+	-DLINK_LIBRARIES:string=log4cxx
+      OUTPUT_VARIABLE LOG4CXX_VERSION_CHECK_LOG
+      )
+    if (LOG4CXX_VERSION_CHECK)
+      message ("[WBCNET] log4cxx version check succeeded")
+    else (LOG4CXX_VERSION_CHECK)
+      message ("[WBCNET] LOG4CXX_VERSION_CHECK_LOG:\n${LOG4CXX_VERSION_CHECK_LOG}")
+      message (FATAL_ERROR "[WBCNET] The log4cxx version check failed (see try_compile log above). Please install log4cxx-0.10.0 (e.g. from the 3rdparty/ directory of stanford-wbc) and tell CMake where to find it by setting the LOG4CXX_DIR variable (either in the environment or by passing -DLOG4CXX:path=/foo/bar to cmake)")
+    endif (LOG4CXX_VERSION_CHECK)
+    add_definitions (-DHAVE_LOG4CXX)
+    list (APPEND WBCNET_LIBS log4cxx)
+  else (WBCNET_HAVE_LOG4CXX)
+    message ("[WBCNET] WARNING did not find log4cxx, will use simplistic logging")
+  endif (WBCNET_HAVE_LOG4CXX)
+endif (LOG4CXX_DIR STREQUAL "DISABLED")
 
 check_include_file_cxx (NetWrapper.h WBCNET_HAVE_NETWRAP)
-message ("DBG WBCNET_HAVE_NETWRAP: ${WBCNET_HAVE_NETWRAP}")
+message ("[WBCNET] DBG WBCNET_HAVE_NETWRAP: ${WBCNET_HAVE_NETWRAP}")
 if (WBCNET_HAVE_NETWRAP)
-  message ("found NetWrapper.h")
-  message ("WARNING: skipping the try_compile() step because CMake seems broken...")
+  message ("[WBCNET] found NetWrapper.h")
+  message ("[WBCNET] WARNING: skipping the try_compile() step because CMake seems broken...")
   #    try_compile (NETWRAP_CHECK
   #      ${WBCNET_BINARY_DIR}/netwrap_check
   #      ${WBCNET_SOURCE_DIR}/test/netwrap_check.cpp
@@ -92,10 +97,10 @@ if (WBCNET_HAVE_NETWRAP)
   #      OUTPUT_VARIABLE NETWRAP_CHECK_LOG
   #      )
   #    if (NETWRAP_CHECK)
-  #      message ("checked compilation and linking of Forcedimension LLC's NetWrapper library")
+  #      message ("[WBCNET] checked compilation and linking of Forcedimension LLC's NetWrapper library")
   #    else (NETWRAP_CHECK)
-  #      message ("NETWRAP_CHECK_LOG:\n${NETWRAP_CHECK_LOG}")
-  #      message (FATAL_ERROR "The netwrapper check failed (see try_compile log above).")
+  #      message ("[WBCNET] NETWRAP_CHECK_LOG:\n${NETWRAP_CHECK_LOG}")
+  #      message (FATAL_ERROR "[WBCNET] The netwrapper check failed (see try_compile log above).")
   #    endif (NETWRAP_CHECK)
   add_definitions (-DHAVE_NETWRAP)
   list (APPEND WBCNET_LIBS netwrapper)
@@ -176,11 +181,11 @@ endif (WBCNET_HAVE_NETWRAP)
 
 check_include_file_cxx (gtest/gtest.h WBCNET_HAVE_GTEST)
 if (${WBCNET_HAVE_GTEST})
-  message (STATUS "Found Google testing framework.")
+  message ("[WBCNET] Found Google testing framework.")
   add_executable (testFactory test/testFactory.cpp)
   target_link_libraries (testFactory wbcnet ${WBCNET_LIBS} gtest)
 else (${WBCNET_HAVE_GTEST})
-  message (STATUS "WARNING Google testing framework not found! If you do have it, use -DGTEST_DIR:path=/where/ever or set the GTEST_DIR environment variable")
+  message ("[WBCNET] WARNING Google testing framework not found! If you do have it, use -DGTEST_DIR:path=/where/ever or set the GTEST_DIR environment variable")
 endif (${WBCNET_HAVE_GTEST})
 
 ### installation-related commands
