@@ -30,7 +30,11 @@
  */
 
 #include "MQNetConfig.hpp"
-#include <wbcnet/imp/MQWrap.hpp>
+
+#ifdef WBCNET_HAVE_MQUEUE
+# include <wbcnet/imp/MQWrap.hpp>
+#endif // WBCNET_HAVE_MQUEUE
+
 #include <wbcnet/strutil.hpp>
 #include <wbcnet/log.hpp>
 #include <vector>
