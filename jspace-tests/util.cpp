@@ -95,5 +95,44 @@ namespace jspace {
       os << "\n";
     }
     
+    
+    void pretty_print(jspace::Matrix const & mm, std::ostream & os,
+		      std::string const & title, std::string const & prefix)
+    {
+      if ( ! title.empty())
+	os << title << "\n";
+      if ((mm.rows() <= 0) || (mm.cols() <= 0))
+	os << prefix << " (empty)\n";
+      else {
+	static int const buflen(32);
+	static char buf[buflen];
+	memset(buf, 0, sizeof(buf));
+	for (int ir(0); ir < mm.rows(); ++ir) {
+	  if ( ! prefix.empty())
+	    os << prefix;
+	  for (int ic(0); ic < mm.cols(); ++ic) {
+#ifndef WIN32
+	    if (isinf(mm.coeff(ir, ic))) {
+	      snprintf(buf, buflen-1, " inf    ");
+	    }
+	    else if (isnan(mm.coeff(ir, ic))) {
+	      snprintf(buf, buflen-1, " nan    ");
+	    }
+	    else if (fabs(fmod(mm.coeff(ir, ic), 1)) < 1e-6) {
+	      snprintf(buf, buflen-1, "%- 7d  ", static_cast<int>(rint(mm.coeff(ir, ic))));
+	    }
+	    else {
+	      snprintf(buf, buflen-1, "% 6.4f  ", mm.coeff(ir, ic));
+	    }
+#else // WIN32
+	    sprintf_s(buf, buflen-1, "% 6.4f  ", mm.coeff(ir, ic));
+#endif // WIN32
+	    os << buf;
+	  }
+	  os << "\n";
+	}
+      }
+    }
+    
   }
 }

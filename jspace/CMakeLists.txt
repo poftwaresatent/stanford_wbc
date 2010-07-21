@@ -8,6 +8,22 @@ include (../wbc.cmake)
 wbc_init (Stanford_WBC_Joint_Space_Dynamics)
 wbc_find_urdf ()
 
+if (NOT EIGEN2_DIR)
+  set (EIGEN2_DIR $ENV{EIGEN2_DIR})
+endif (NOT EIGEN2_DIR)
+if (EIGEN2_DIR)
+  message ("[JSPACE] EIGEN2_DIR is set to ${EIGEN2_DIR}")
+  list (APPEND CMAKE_REQUIRED_INCLUDES ${EIGEN2_DIR}/include ${EIGEN2_DIR})
+  include_directories (${EIGEN2_DIR}/include ${EIGEN2_DIR})
+endif (EIGEN2_DIR)
+
+check_include_file_cxx (eigen2/Eigen/Core HAVE_EIGEN2)
+if (${HAVE_EIGEN2})
+  message ("[JSPACE] found eigen2 headers")
+else (${HAVE_EIGEN2})
+  message (FATAL_ERROR "[JSPACE] Eigen2 library not found. Please install it e.g. using `sudo apt-get install libeigen2-dev' or from http://eigen.tuxfamily.org/ and tell me where to find it by passing the -DEIGEN2_DIR:path=/path/to/eigen2")
+endif (${HAVE_EIGEN2})
+
 list (APPEND SRCS
   jspace/State.cpp
   jspace/Model.cpp

@@ -36,5 +36,8 @@ namespace jspace {
     void pretty_print(jspace::Vector const & vv, std::ostream & os,
 		      std::string const & title, std::string const & prefix);
     
+    void pretty_print(jspace::Matrix const & mm, std::ostream & os,
+		      std::string const & title, std::string const & prefix);
+    
   }
 }
