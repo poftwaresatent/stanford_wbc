@@ -25,10 +25,16 @@
 
 #include <stdexcept>
 
+// for jspace::Vector, could move those typedefs into a separate file though...
+#include <jspace/Model.hpp>
+
 namespace jspace {
   namespace test {
     
     std::string create_tmpfile(char const * fname_template, char const * contents) throw(std::runtime_error);
+    
+    void pretty_print(jspace::Vector const & vv, std::ostream & os,
+		      std::string const & title, std::string const & prefix);
     
   }
 }

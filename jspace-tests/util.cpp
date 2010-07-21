@@ -24,9 +24,10 @@
 */
 
 #include "util.hpp"
+#include <stdio.h>
 #include <string.h>
 #include <errno.h>
-// #include <stdlib.h>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -56,6 +57,43 @@ namespace jspace {
       string result(tmpname);
       return result;
     }
-
+    
+    
+    void pretty_print(jspace::Vector const & vv, std::ostream & os,
+		      std::string const & title, std::string const & prefix)
+    {
+      if ( ! title.empty())
+	os << title << "\n";
+      if ( ! prefix.empty())
+	os << prefix;
+      if (vv.rows() <= 0)
+	os << " (empty)";
+      else {
+	static int const buflen(32);
+	static char buf[buflen];
+	memset(buf, 0, sizeof(buf));
+	for (int ii(0); ii < vv.rows(); ++ii) {
+#ifndef WIN32
+	  if (isinf(vv.coeff(ii))) {
+	    snprintf(buf, buflen-1, " inf    ");
+	  }
+	  else if (isnan(vv.coeff(ii))) {
+	    snprintf(buf, buflen-1, " nan    ");
+	  }
+	  else if (fabs(fmod(vv.coeff(ii), 1)) < 1e-6) {
+	    snprintf(buf, buflen-1, "%- 7d  ", static_cast<int>(rint(vv.coeff(ii))));
+	  }
+	  else {
+	    snprintf(buf, buflen-1, "% 6.4f  ", vv.coeff(ii));
+	  }
+#else
+	  sprintf_s(buf, buflen-1, "% 6.4f  ", vv.coeff(ii));
+#endif // WIN32
+	  os << buf;
+	}
+      }
+      os << "\n";
+    }
+    
   }
 }

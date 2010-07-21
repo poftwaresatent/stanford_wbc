@@ -25,12 +25,11 @@
 
 #include "Model.hpp"
 #include "tao_util.hpp"
-//DEBUG// #include "tao_dump.hpp"
 #include <tao/dynamics/taoNode.h>
 #include <tao/dynamics/taoJoint.h>
 #include <tao/dynamics/taoDynamics.h>
 
-#undef DEBUG
+#define DEBUG
 
 
 static deVector3 const zero_gravity(0, 0, 0);
@@ -209,7 +208,7 @@ namespace jspace {
   
   bool Model::
   getGlobalFrame(taoDNode const * node,
-		 SAITransform & global_transform) const
+		 Transform & global_transform) const
   {
     if ( ! node) {
       return false;
@@ -219,8 +218,12 @@ namespace jspace {
     deQuaternion const & tao_quat(tao_frame->rotation());
     deVector3 const & tao_trans(tao_frame->translation());
     
-    global_transform.rotation().values(tao_quat[3], tao_quat[0], tao_quat[1], tao_quat[2]);
-    global_transform.translation().values(tao_trans[0], tao_trans[1], tao_trans[2]);
+#warning "TO DO: maybe the other way around..."
+    // beware: Eigen::Quaternion(w, x, y, z) puts w first, whereas
+    // deQuaternion(qx, qy, qz, qw) puts w last. Of course.
+    global_transform =
+      Eigen::Quaternion<double>(tao_quat[3], tao_quat[0], tao_quat[1], tao_quat[2])
+      * Eigen::Translation<double, 3>(tao_trans[0], tao_trans[1], tao_trans[2]);
     
     return true;
   }
@@ -228,43 +231,42 @@ namespace jspace {
   
   bool Model::
   computeGlobalFrame(taoDNode const * node,
-		     SAITransform const & local_transform,
-		     SAITransform & global_transform) const
+		     Transform const & local_transform,
+		     Transform & global_transform) const
   {
-    SAITransform tmp;
-    if ( ! getGlobalFrame(node, tmp)) {
+    if ( ! getGlobalFrame(node, global_transform)) {
       return false;
     }
-    tmp.multiply(local_transform, global_transform);
+#warning "TO DO: maybe the other way around..."
+    global_transform = local_transform * global_transform;
     return true;
   }
   
   
   bool Model::
   computeGlobalFrame(taoDNode const * node,
-		     SAIVector local_translation,
-		     SAITransform & global_transform) const
+		     Vector const & local_translation,
+		     Transform & global_transform) const
   {
-    return computeGlobalFrame(node, SAITransform(local_translation), global_transform);
+    return computeGlobalFrame(node,
+			      local_translation.x(), local_translation.y(), local_translation.z(),
+			      global_transform);
   }
   
   
   bool Model::
   computeGlobalFrame(taoDNode const * node,
 		     double local_x, double local_y, double local_z,
-		     SAITransform & global_transform) const
+		     Transform & global_transform) const
   {
-    SAIVector trans(3);
-    trans[0] = local_x;
-    trans[1] = local_y;
-    trans[2] = local_z;
-    return computeGlobalFrame(node, SAITransform(trans), global_transform);
+    Transform const tt(Eigen::Translation<double, 3>(local_x, local_y, local_z));
+    return computeGlobalFrame(node, tt, global_transform);
   }
   
   
   bool Model::
   computeJacobian(taoDNode const * node,
-		  SAIMatrix & jacobian) const
+		  Matrix & jacobian) const
   {
     if ( ! node) {
       return false;
@@ -277,7 +279,7 @@ namespace jspace {
   bool Model::
   computeJacobian(taoDNode const * node,
 		  double gx, double gy, double gz,
-		  SAIMatrix & jacobian) const
+		  Matrix & jacobian) const
   {
     if ( ! node) {
       return false;
@@ -289,7 +291,7 @@ namespace jspace {
     
     // \todo Implement support for more than one joint per node, and
     // 	more than one DOF per joint.
-    jacobian.setSize(6, ndof_, true);
+    jacobian.resize(6, ndof_);
     for (size_t icol(0); icol < ndof_; ++icol) {
       deVector6 Jg_col;	// in NDOF case, this will become an array of deVector6...
       // in NOJ case, we will have to loop over all joints of a node...
@@ -303,7 +305,7 @@ namespace jspace {
 #endif // DEBUG
       
       for (size_t irow(0); irow < 6; ++irow) {
-	jacobian.elementAt(irow, icol) = Jg_col.elementAt(irow);
+	jacobian.coeffRef(irow, icol) = Jg_col.elementAt(irow);
       }
       
       // Add the effect of the joint rotation on the translational
@@ -313,15 +315,15 @@ namespace jspace {
       // Jg_col are v_x etc.  (And don't ask me why we have to
       // subtract the cross product, it probably got inverted
       // somewhere)
-      jacobian.elementAt(0, icol) -= -gz * Jg_col.elementAt(4) + gy * Jg_col.elementAt(5);
-      jacobian.elementAt(1, icol) -=  gz * Jg_col.elementAt(3) - gx * Jg_col.elementAt(5);
-      jacobian.elementAt(2, icol) -= -gy * Jg_col.elementAt(3) + gx * Jg_col.elementAt(4);
+      jacobian.coeffRef(0, icol) -= -gz * Jg_col.elementAt(4) + gy * Jg_col.elementAt(5);
+      jacobian.coeffRef(1, icol) -=  gz * Jg_col.elementAt(3) - gx * Jg_col.elementAt(5);
+      jacobian.coeffRef(2, icol) -= -gy * Jg_col.elementAt(3) + gx * Jg_col.elementAt(4);
       
 #ifdef DEBUG
       fprintf(stderr, "0Jg[%zu]: [ % 4.2f % 4.2f % 4.2f % 4.2f % 4.2f % 4.2f]\n",
 	      icol,
-	      jacobian.elementAt(0, icol), jacobian.elementAt(1, icol), jacobian.elementAt(2, icol),
-	      jacobian.elementAt(3, icol), jacobian.elementAt(4, icol), jacobian.elementAt(5, icol));
+	      jacobian.coeff(0, icol), jacobian.coeff(1, icol), jacobian.coeff(2, icol),
+	      jacobian.coeff(3, icol), jacobian.coeff(4, icol), jacobian.coeff(5, icol));
 #endif // DEBUG
       
     }
@@ -377,12 +379,12 @@ namespace jspace {
   
   
   bool Model::
-  getGravity(SAIVector & gravity) const
+  getGravity(Vector & gravity) const
   {
     if (g_torque_.empty()) {
       return false;
     }
-    gravity.setSize(g_torque_.size(), true);
+    gravity.resize(g_torque_.size());
     for (size_t ii(0); ii < g_torque_.size(); ++ii) {
       // Only copy over the gravity torque in case it has NOT been
       // DISabled for this index...
@@ -409,7 +411,7 @@ namespace jspace {
   
   
   bool Model::
-  getCoriolisCentrifugal(SAIVector & coriolis_centrifugal) const
+  getCoriolisCentrifugal(Vector & coriolis_centrifugal) const
   {
     if ( ! cc_tree_) {
       return false;
@@ -417,7 +419,7 @@ namespace jspace {
     if (cc_torque_.empty()) {
       return false;
     }
-    coriolis_centrifugal.setSize(cc_torque_.size());
+    coriolis_centrifugal.resize(cc_torque_.size());
     for (size_t ii(0); ii < cc_torque_.size(); ++ii) {
       coriolis_centrifugal[ii] = cc_torque_[ii];
     }
@@ -450,18 +452,10 @@ namespace jspace {
       // required for the column-selecting unit acceleration (into a
       // flattened upper triangular matrix).
       
-      //DEBUG//       double wtf;
-      //DEBUG//       cerr << "wtf [" << irow << "] q: ";
-      //DEBUG//       joint->getQ(&wtf);
-      //DEBUG//       cerr << wtf << " dq: ";
-      //DEBUG//       joint->getDQ(&wtf);
-      //DEBUG//       cerr << wtf << " aa:";
       for (size_t icol(0); icol <= irow; ++icol) {
 	joint = kgm_tree_->info[icol].node->getJointList();
 	joint->getTau(&a_upper_triangular_[squareToTriangularIndex(irow, icol, ndof_)]);
-	//DEBUG// 	cerr << " " << a_upper_triangular_[squareToTriangularIndex(irow, icol, ndof_)];
       }
-      //DEBUG//       cerr << "\n";
     }
     
     // Reset all the torques.
@@ -469,28 +463,22 @@ namespace jspace {
       taoJoint * joint(kgm_tree_->info[ii].node->getJointList());
       joint->zeroTau();
     }
-    
-    //DEBUG//     {
-    //DEBUG//       SAIMatrix wtf;
-    //DEBUG//       getMassInertia(wtf);
-    //DEBUG//       wtf.prettyPrint(cerr, "jspace::Model::computeMassInertia()", "  ");
-    //DEBUG//     }
   }
   
   
   bool Model::
-  getMassInertia(SAIMatrix & mass_inertia) const
+  getMassInertia(Matrix & mass_inertia) const
   {
     if (a_upper_triangular_.empty()) {
       return false;
     }
     
-    mass_inertia.setSize(ndof_, ndof_, true);
+    mass_inertia.resize(ndof_, ndof_);
     for (size_t irow(0); irow < ndof_; ++irow) {
       for (size_t icol(0); icol <= irow; ++icol) {
-	mass_inertia.elementAt(irow, icol) = a_upper_triangular_[squareToTriangularIndex(irow, icol, ndof_)];
+	mass_inertia.coeffRef(irow, icol) = a_upper_triangular_[squareToTriangularIndex(irow, icol, ndof_)];
 	if (irow != icol) {
-	  mass_inertia.elementAt(icol, irow) = mass_inertia.elementAt(irow, icol);
+	  mass_inertia.coeffRef(icol, irow) = mass_inertia.coeff(irow, icol);
 	}
       }
     }
@@ -538,18 +526,18 @@ namespace jspace {
   
   
   bool Model::
-  getInverseMassInertia(SAIMatrix & inverse_mass_inertia) const
+  getInverseMassInertia(Matrix & inverse_mass_inertia) const
   {
     if (ainv_upper_triangular_.empty()) {
       return false;
     }
     
-    inverse_mass_inertia.setSize(ndof_, ndof_, true);
+    inverse_mass_inertia.resize(ndof_, ndof_);
     for (size_t irow(0); irow < ndof_; ++irow) {
       for (size_t icol(0); icol <= irow; ++icol) {
-	inverse_mass_inertia.elementAt(irow, icol) = ainv_upper_triangular_[squareToTriangularIndex(irow, icol, ndof_)];
+	inverse_mass_inertia.coeffRef(irow, icol) = ainv_upper_triangular_[squareToTriangularIndex(irow, icol, ndof_)];
 	if (irow != icol) {
-	  inverse_mass_inertia.elementAt(icol, irow) = inverse_mass_inertia.elementAt(irow, icol);
+	  inverse_mass_inertia.coeffRef(icol, irow) = inverse_mass_inertia.coeff(irow, icol);
 	}
       }
     }

@@ -33,14 +33,13 @@ endif (HAVE_ROS)
 
 include_directories (
   .
-  ../saimatrix
   ../tao
   ../wbcnet
   )
 
 add_library (jspace SHARED ${SRCS})
 if (HAVE_ROS)
-  target_link_libraries (jspace wbcnet TAO_Dynamics_Engine SAI_Matrix urdf)
+  target_link_libraries (jspace wbcnet TAO_Dynamics_Engine urdf)
   # Some guesswork to make it easier for users of libjspace to handle
   # the optional ROS dependency.
   #  set_target_properties (jspace
@@ -48,7 +47,7 @@ if (HAVE_ROS)
   #    INSTALL_RPATH ${URDF_LIBDIRS}
   #    BUILD_WITH_INSTALL_RPATH True)
 else (HAVE_ROS)
-  target_link_libraries (jspace wbcnet TAO_Dynamics_Engine SAI_Matrix)
+  target_link_libraries (jspace wbcnet TAO_Dynamics_Engine)
 endif (HAVE_ROS)
 
 if (HAVE_GTEST)

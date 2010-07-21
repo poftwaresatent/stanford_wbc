@@ -28,7 +28,6 @@
 #include "urdf_dump.hpp"
 #include <urdf/model.h>
 #include <jspace/tao_dump.hpp>
-#include <saimatrix/SAIVector.h>
 #include <tao/dynamics/taoNode.h>
 #include <XmlRpcValue.h>
 #include <XmlRpcException.h>

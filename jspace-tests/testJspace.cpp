@@ -41,6 +41,12 @@
 #include <errno.h>
 // #include <string.h>
 
+// for "transform.rotation().isApprox(...)"
+#include <eigen2/Eigen/SVD>
+
+// for "MM_check.computeInverse(...)"
+#include <eigen2/Eigen/LU>
+
 using namespace std;
 using namespace jspace::test;
 
@@ -193,37 +199,26 @@ TEST (jspaceModel, kinematics)
 	FAIL () << frames_filename << ": line " << line_count << ": ID-frame entry " << id << " exceeds NDOF " << ndof;
       }
       
-      SAITransform transform;
+      jspace::Transform transform;
       if ( ! model->getGlobalFrame(model->getNode(id), transform)) {
 	FAIL() << frames_filename << ": line " << line_count << ": could not get global frame " << id << " from model";
       }
-      EXPECT_TRUE (transform.rotation().equal(SAIQuaternion(rw, rx, ry, rz), 1e-6))
+      jspace::Transform quat_expected(Eigen::Quaternion<double>(rw, rx, ry, rz));
+      EXPECT_TRUE (transform.rotation().isApprox(quat_expected.rotation(), 1e-6))
 	<< "rotation mismatch\n"
 	<< "  entry: " << joint_positions_count << "\n"
 	<< "  pos: " << state.position_ << "\n"
 	<< "  ID: " << id << "\n"
-	<< "  expected: " << SAIQuaternion(rw, rx, ry, rz) << "\n"
+	<< "  expected: " << quat_expected.rotation() << "\n"
 	<< "  computed: " << transform.rotation();
-      EXPECT_TRUE (transform.translation().equal(SAIVector3(tx, ty, tz), 1e-6))
+      Eigen::Vector3d trans_expected(tx, ty, tz);
+      EXPECT_TRUE (transform.translation().isApprox(trans_expected, 1e-6))
 	<< "translation mismatch\n"
 	<< "  entry: " << joint_positions_count << "\n"
 	<< "  pos: " << state.position_ << "\n"
 	<< "  ID: " << id << "\n"
-	<< "  expected: " << SAIVector3(tx, ty, tz) << "\n"
+	<< "  expected: " << trans_expected << "\n"
 	<< "  computed: " << transform.translation();
-      
-#ifdef VERBOSE
-      cout << "PASSED transform check\n"
-	   << "  entry: " << joint_positions_count << "\n"
-	   << "  pos: " << state.position_ << "\n"
-	   << "  ID: " << id << "\n"
-	   << "  rotation:\n"
-	   << "    expected: " << SAIQuaternion(rw, rx, ry, rz) << "\n"
-	   << "    computed: " << transform.rotation() << "\n"
-	   << "  translation:\n"
-	   << "    expected: " << SAIVector3(tx, ty, tz) << "\n"
-	   << "    computed: " << transform.translation() << "\n";
-#endif // VERBOSE
     }
   }
   catch (std::exception const & ee) {
@@ -243,13 +238,13 @@ static double smart_delta(double have, double want)
 
 
 template<typename mtype>
-int mnrows(mtype const & mm) { return mm.row(); }
+int mnrows(mtype const & mm) { return mm.rows(); }
 
 template<>
 int mnrows(deMatrix3 const & mm) { return 3; }
 
 template<typename mtype>
-int mncols(mtype const & mm) { return mm.column(); }
+int mncols(mtype const & mm) { return mm.cols(); }
 
 template<>
 int mncols(deMatrix3 const & mm) { return 3; }
@@ -277,12 +272,12 @@ bool check_matrix(char const * name,
   
   precision = fabs(precision);
   double maxdelta(0);
-  SAIMatrix delta(nrows, ncolumns);
+  jspace::Matrix delta(nrows, ncolumns);
   for (int ii(0); ii < nrows; ++ii) {
     for (int jj(0); jj < ncolumns; ++jj) {
-      delta[ii][jj] = fabs(smart_delta(have[ii][jj], want[ii][jj]));
-      if (delta[ii][jj] > precision) {
-	maxdelta = delta[ii][jj];
+      delta.coeffRef(ii, jj) = fabs(smart_delta(have.coeff(ii, jj), want.coeff(ii, jj)));
+      if (delta.coeff(ii, jj) > precision) {
+	maxdelta = delta.coeff(ii, jj);
       }
     }
   }
@@ -297,20 +292,20 @@ bool check_matrix(char const * name,
   }
   msg << "  precision = " << precision << "\n"
       << "  maxdelta = " << maxdelta << "\n";
-  delta.prettyPrint(msg, "  delta", "    ");
+  pretty_print(delta, msg, "  delta", "    ");
   msg << "  error pattern\n";
   for (int ii(0); ii < nrows; ++ii) {
     msg << "    ";
     for (int jj(0); jj < ncolumns; ++jj) {
-      if (delta[ii][jj] <= precision) {
-	if (delta[ii][jj] < halfmax) {
+      if (delta.coeff(ii, jj) <= precision) {
+	if (delta.coeff(ii, jj) < halfmax) {
 	  msg << ".";
 	}
 	else {
 	  msg << "o";
 	}
       }
-      else if (delta[ii][jj] >= tenprecision) {
+      else if (delta.coeff(ii, jj) >= tenprecision) {
 	msg << "#";
       }
       else {
@@ -335,12 +330,12 @@ void print_vector(vtype const & vv,
 
 
 template<>
-void print_vector(SAIVector const & vv,
+void print_vector(jspace::Vector const & vv,
 		  std::ostream & msg,
 		  std::string const & title,
 		  std::string const & prefix)
 {
-  vv.prettyPrint(msg, title, prefix);
+  pretty_print(vv, msg, title, prefix);
 }
 
 
@@ -377,11 +372,11 @@ bool check_vector(char const * name,
   
   precision = fabs(precision);
   double maxdelta(0);
-  SAIVector delta(nelems);
+  jspace::Vector delta(nelems);
   for (int ii(0); ii < nelems; ++ii) {
-    delta[ii] = fabs(smart_delta(vget(have, ii), vget(want, ii)));
-    if (delta[ii] > precision) {
-      maxdelta = delta[ii];
+    delta.coeffRef(ii) = fabs(smart_delta(vget(have, ii), vget(want, ii)));
+    if (delta.coeff(ii) > precision) {
+      maxdelta = delta.coeff(ii);
     }
   }
   double const halfmax(0.5 * maxdelta);
@@ -398,15 +393,15 @@ bool check_vector(char const * name,
   print_vector(delta, msg, "  delta", "    ");
   msg << "  error pattern\n    ";
   for (int ii(0); ii < nelems; ++ii) {
-    if (delta[ii] <= precision) {
-      if (delta[ii] < halfmax) {
+    if (delta.coeff(ii) <= precision) {
+      if (delta.coeff(ii) < halfmax) {
 	msg << ".";
       }
       else {
 	msg << "o";
       }
     }
-    else if (delta[ii] >= tenprecision) {
+    else if (delta.coeff(ii) >= tenprecision) {
       msg << "#";
     }
     else {
@@ -429,8 +424,7 @@ TEST (jspaceModel, Jacobian_R)
     jspace::State state(2, 2, 0); // here we're only gonna test the first joint though
     jspace::zero(state.position_);
     jspace::zero(state.velocity_);
-    SAITransform ee_lframe;
-    ee_lframe.translation().elementAt(1) = 1;
+    jspace::Transform ee_lframe(Eigen::Translation<double, 3>(0, 1, 0));
     
     for (double qq(-M_PI); qq <= M_PI; qq += 2 * M_PI / 7) {
       state.position_[0] = qq;
@@ -440,17 +434,17 @@ TEST (jspaceModel, Jacobian_R)
       double const c1(cos(q1));
       double const s1(sin(q1));
       
-      SAITransform ee_gframe;
+      jspace::Transform ee_gframe;
       ASSERT_TRUE (model->computeGlobalFrame(ee, ee_lframe, ee_gframe));
-      SAIVector const & ee_gpos(ee_gframe.translation());
+      jspace::Vector const ee_gpos(ee_gframe.translation());
       {
-	SAIVector ee_gpos_check(3);
-	ee_gpos_check.elementAt(1) = c1;
-	ee_gpos_check.elementAt(2) = s1;
+	jspace::Vector ee_gpos_check(3);
+	ee_gpos_check.coeffRef(1) = c1;
+	ee_gpos_check.coeffRef(2) = s1;
 	std::ostringstream msg;
 	msg << "Verifying end-effector frame (position only) for q = " << state.position_ << "\n";
-	ee_gpos_check.prettyPrint(msg, "  want", "    ");
-	ee_gpos.prettyPrint(msg, "  have", "    ");
+	pretty_print(ee_gpos_check, msg, "  want", "    ");
+	pretty_print(ee_gpos, msg, "  have", "    ");
 	bool const gpos_ok(check_vector("ee_pos", ee_gpos_check, ee_gpos, 1e-3, msg));
 	EXPECT_TRUE (gpos_ok) << msg.str();
 	if ( ! gpos_ok) {
@@ -458,18 +452,18 @@ TEST (jspaceModel, Jacobian_R)
 	}
       }
       
-      SAIMatrix Jg_all(6, 2);
+      jspace::Matrix Jg_all(6, 2);
       ASSERT_TRUE (model->computeJacobian(ee, ee_gpos, Jg_all));
-      SAIMatrix const Jg(Jg_all.submatrix(0, 0, 6, 1));
+      jspace::Matrix const Jg(Jg_all.block(0, 0, 6, 1));
       {
-	SAIMatrix Jg_check(6, 1);
-	Jg_check.elementAt(1, 0) = -s1;
-	Jg_check.elementAt(2, 0) =  c1;
-	Jg_check.elementAt(3, 0) =  1;
+	jspace::Matrix Jg_check(6, 1);
+	Jg_check.coeffRef(1, 0) = -s1;
+	Jg_check.coeffRef(2, 0) =  c1;
+	Jg_check.coeffRef(3, 0) =  1;
 	std::ostringstream msg;
 	msg << "Checking Jacobian for q = " << state.position_ << "\n";
-	Jg_check.prettyPrint(msg, "  want", "    ");
-	Jg.prettyPrint(msg, "  have", "    ");
+	pretty_print(Jg_check, msg, "  want", "    ");
+	pretty_print(Jg, msg, "  have", "    ");
 	EXPECT_TRUE (check_matrix("Jacobian", Jg_check, Jg, 1e-3, msg)) << msg.str();
       }
     }
@@ -490,8 +484,7 @@ TEST (jspaceModel, Jacobian_RR)
     ASSERT_NE ((void*)0, ee) << "no end effector (node ID 1)";
     jspace::State state(2, 2, 0);
     jspace::zero(state.velocity_);
-    SAITransform ee_lframe;
-    ee_lframe.translation().elementAt(1) = 1;
+    jspace::Transform ee_lframe(Eigen::Translation<double, 3>(0, 1, 0));
     
     for (double q1(-M_PI); q1 <= M_PI; q1 += 2 * M_PI / 7) {
       for (double q2(-M_PI); q2 <= M_PI; q2 += 2 * M_PI / 7) {
@@ -504,17 +497,17 @@ TEST (jspaceModel, Jacobian_RR)
 	double const s1(sin(q1));
 	double const s12(sin(q1+q2));
 	
-	SAITransform ee_gframe;
+	jspace::Transform ee_gframe;
 	ASSERT_TRUE (model->computeGlobalFrame(ee, ee_lframe, ee_gframe));
-	SAIVector const & ee_gpos(ee_gframe.translation());
+	jspace::Vector const ee_gpos(ee_gframe.translation());
 	{
-	  SAIVector ee_gpos_check(3);
-	  ee_gpos_check.elementAt(1) = c1 + c12;
-	  ee_gpos_check.elementAt(2) = s1 + s12;
+	  jspace::Vector ee_gpos_check(3);
+	  ee_gpos_check.coeffRef(1) = c1 + c12;
+	  ee_gpos_check.coeffRef(2) = s1 + s12;
 	  std::ostringstream msg;
 	  msg << "Verifying end-effector frame (position only) for q = " << state.position_ << "\n";
-	  ee_gpos_check.prettyPrint(msg, "  want", "    ");
-	  ee_gpos.prettyPrint(msg, "  have", "    ");
+	  pretty_print(ee_gpos_check, msg, "  want", "    ");
+	  pretty_print(ee_gpos, msg, "  have", "    ");
 	  bool const gpos_ok(check_vector("ee_pos", ee_gpos_check, ee_gpos, 1e-3, msg));
 	  EXPECT_TRUE (gpos_ok) << msg.str();
 	  if ( ! gpos_ok) {
@@ -522,20 +515,20 @@ TEST (jspaceModel, Jacobian_RR)
 	  }
 	}
 	
-	SAIMatrix Jg(6, 2);
+	jspace::Matrix Jg(6, 2);
 	ASSERT_TRUE (model->computeJacobian(ee, ee_gpos, Jg));
 	{
-	  SAIMatrix Jg_check(6, 2);
-	  Jg_check.elementAt(1, 0) = -s1 - s12;
-	  Jg_check.elementAt(2, 0) =  c1 + c12;
-	  Jg_check.elementAt(3, 0) =  1;
-	  Jg_check.elementAt(1, 1) = -s12;
-	  Jg_check.elementAt(2, 1) =  c12;
-	  Jg_check.elementAt(3, 1) =  1;
+	  jspace::Matrix Jg_check(6, 2);
+	  Jg_check.coeffRef(1, 0) = -s1 - s12;
+	  Jg_check.coeffRef(2, 0) =  c1 + c12;
+	  Jg_check.coeffRef(3, 0) =  1;
+	  Jg_check.coeffRef(1, 1) = -s12;
+	  Jg_check.coeffRef(2, 1) =  c12;
+	  Jg_check.coeffRef(3, 1) =  1;
 	  std::ostringstream msg;
 	  msg << "Checking Jacobian for q = " << state.position_ << "\n";
-	  Jg_check.prettyPrint(msg, "  want", "    ");
-	  Jg.prettyPrint(msg, "  have", "    ");
+	  pretty_print(Jg_check, msg, "  want", "    ");
+	  pretty_print(Jg, msg, "  have", "    ");
 	  EXPECT_TRUE (check_matrix("Jacobian", Jg_check, Jg, 1e-3, msg)) << msg.str();
 	}
       }
@@ -568,16 +561,16 @@ TEST (jspaceModel, Jacobian_RP)
 	double const s1(sin(q1));
 	
 	{
-	  SAITransform ee_gframe;
+	  jspace::Transform ee_gframe;
 	  ASSERT_TRUE (model->getGlobalFrame(ee, ee_gframe));
-	  SAIVector const & ee_gpos(ee_gframe.translation());
-	  SAIVector ee_gpos_check(3);
-	  ee_gpos_check.elementAt(1) = c1 - s1 * q2;
-	  ee_gpos_check.elementAt(2) = s1 + c1 * q2;
+	  jspace::Vector const ee_gpos(ee_gframe.translation());
+	  jspace::Vector ee_gpos_check(3);
+	  ee_gpos_check.coeffRef(1) = c1 - s1 * q2;
+	  ee_gpos_check.coeffRef(2) = s1 + c1 * q2;
 	  std::ostringstream msg;
 	  msg << "Verifying end-effector frame (position only) for q = " << state.position_ << "\n";
-	  ee_gpos_check.prettyPrint(msg, "  want", "    ");
-	  ee_gpos.prettyPrint(msg, "  have", "    ");
+	  pretty_print(ee_gpos_check, msg, "  want", "    ");
+	  pretty_print(ee_gpos, msg, "  have", "    ");
 	  bool const gpos_ok(check_vector("ee_pos", ee_gpos_check, ee_gpos, 1e-3, msg));
 	  EXPECT_TRUE (gpos_ok) << msg.str();
 	  if ( ! gpos_ok) {
@@ -585,20 +578,20 @@ TEST (jspaceModel, Jacobian_RP)
 	  }
 	}
 	
-	SAIMatrix Jg(6, 2);
+	jspace::Matrix Jg(6, 2);
 	ASSERT_TRUE (model->computeJacobian(ee, Jg));
 	{
-	  SAIMatrix Jg_check(6, 2);
-	  Jg_check.elementAt(1, 0) = -s1 - c1 * q2;
-	  Jg_check.elementAt(2, 0) =  c1 - s1 * q2;
-	  Jg_check.elementAt(3, 0) =  1;
-	  Jg_check.elementAt(1, 1) = -s1;
-	  Jg_check.elementAt(2, 1) =  c1;
-	  Jg_check.elementAt(3, 1) =  0;
+	  jspace::Matrix Jg_check(6, 2);
+	  Jg_check.coeffRef(1, 0) = -s1 - c1 * q2;
+	  Jg_check.coeffRef(2, 0) =  c1 - s1 * q2;
+	  Jg_check.coeffRef(3, 0) =  1;
+	  Jg_check.coeffRef(1, 1) = -s1;
+	  Jg_check.coeffRef(2, 1) =  c1;
+	  Jg_check.coeffRef(3, 1) =  0;
 	  std::ostringstream msg;
 	  msg << "Checking Jacobian for q = " << state.position_ << "\n";
-	  Jg_check.prettyPrint(msg, "  want", "    ");
-	  Jg.prettyPrint(msg, "  have", "    ");
+	  pretty_print(Jg_check, msg, "  want", "    ");
+	  pretty_print(Jg, msg, "  have", "    ");
 	  EXPECT_TRUE (check_matrix("Jacobian", Jg_check, Jg, 1e-3, msg)) << msg.str();
 	}
       }
@@ -611,31 +604,31 @@ TEST (jspaceModel, Jacobian_RP)
 }
 
 
-static void compute_unit_mass_RR_mass_inertia(double q1, double q2, SAIMatrix & MM_check)
+static void compute_unit_mass_RR_mass_inertia(double q1, double q2, jspace::Matrix & MM_check)
 {
   double const c1(cos(q1));
   double const c12(cos(q1+q2));
   double const s1(sin(q1));
   double const s12(sin(q1+q2));
-  MM_check.setSize(2, 2);
-  MM_check.elementAt(0, 0) = 1 + pow(s1 + s12, 2) + pow(c1 + c12, 2);
-  MM_check.elementAt(1, 0) = s12 * (s1 + s12) + c12 * (c1 + c12);
-  MM_check.elementAt(0, 1) = MM_check.elementAt(1, 0);
-  MM_check.elementAt(1, 1) = 1;
+  MM_check.resize(2, 2);
+  MM_check.coeffRef(0, 0) = 1 + pow(s1 + s12, 2) + pow(c1 + c12, 2);
+  MM_check.coeffRef(1, 0) = s12 * (s1 + s12) + c12 * (c1 + c12);
+  MM_check.coeffRef(0, 1) = MM_check.coeff(1, 0);
+  MM_check.coeffRef(1, 1) = 1;
 }
 
 
-static void compute_unit_inertia_RR_mass_inertia(double q1, double q2, SAIMatrix & MM_check)
+static void compute_unit_inertia_RR_mass_inertia(double q1, double q2, jspace::Matrix & MM_check)
 {
   double const c1(cos(q1));
   double const c12(cos(q1+q2));
   double const s1(sin(q1));
   double const s12(sin(q1+q2));
-  MM_check.setSize(2, 2);
-  MM_check.elementAt(0, 0) = 3 + pow(2*s1 + s12, 2) + pow(2*c1 + c12, 2);
-  MM_check.elementAt(1, 0) = 1 + s12 * (2*s1 + s12) + c12 * (2*c1 + c12);
-  MM_check.elementAt(0, 1) = MM_check.elementAt(1, 0);
-  MM_check.elementAt(1, 1) = 2;
+  MM_check.resize(2, 2);
+  MM_check.coeffRef(0, 0) = 3 + pow(2*s1 + s12, 2) + pow(2*c1 + c12, 2);
+  MM_check.coeffRef(1, 0) = 1 + s12 * (2*s1 + s12) + c12 * (2*c1 + c12);
+  MM_check.coeffRef(0, 1) = MM_check.coeff(1, 0);
+  MM_check.coeffRef(1, 1) = 2;
 }
 
 
@@ -647,7 +640,7 @@ TEST (jspaceModel, mass_inertia_RR)
     create_unit_inertia_RR_model
   };
   
-  typedef void (*compute_mass_inertia_t)(double, double, SAIMatrix &);
+  typedef void (*compute_mass_inertia_t)(double, double, jspace::Matrix &);
   compute_mass_inertia_t compute_mass_inertia[] = {
     compute_unit_mass_RR_mass_inertia,
     compute_unit_inertia_RR_mass_inertia
@@ -670,29 +663,29 @@ TEST (jspaceModel, mass_inertia_RR)
 	  state.position_[1] = q2;
 	  model->update(state);
 	  
-	  SAIMatrix MM(2, 2);
+	  jspace::Matrix MM(2, 2);
 	  model->getMassInertia(MM);
- 	  SAIMatrix MM_check;
+	  jspace::Matrix MM_check;
 	  compute_mass_inertia[test_index](q1, q2, MM_check);
 	  {
 	    std::ostringstream msg;
 	    msg << "Checking mass_inertia for test_index " << test_index
 		<< " q = " << state.position_ << "\n";
-	    MM_check.prettyPrint(msg, "  want", "    ");
-	    MM.prettyPrint(msg, "  have", "    ");
+	    pretty_print(MM_check, msg, "  want", "    ");
+	    pretty_print(MM, msg, "  have", "    ");
 	    EXPECT_TRUE (check_matrix("mass_inertia", MM_check, MM, 1e-3, msg)) << msg.str();
 	  }
 	  
-	  SAIMatrix MMinv(2, 2);
+	  jspace::Matrix MMinv(2, 2);
 	  model->getInverseMassInertia(MMinv);
-	  SAIMatrix MMinv_check;
-	  MM_check.inverse(MMinv_check);
+	  jspace::Matrix MMinv_check(2, 2);
+	  MM_check.computeInverse(&MMinv_check);
 	  {
 	    std::ostringstream msg;
 	    msg << "Checking inv_mass_inertia for test_index " << test_index
 		<< " q = " << state.position_ << "\n";
-	    MMinv_check.prettyPrint(msg, "  want", "    ");
-	    MMinv.prettyPrint(msg, "  have", "    ");
+	    pretty_print(MMinv_check, msg, "  want", "    ");
+	    pretty_print(MMinv, msg, "  have", "    ");
 	    EXPECT_TRUE (check_matrix("inv_mass_inertia", MMinv_check, MMinv, 1e-3, msg)) << msg.str();
 	  }
 	}
@@ -720,14 +713,14 @@ TEST (jspaceModel, mass_inertia_5R_nonzero)
 	state.position_[ii] = qq;
 	model->update(state);
 	
-	SAIMatrix MM;
+	jspace::Matrix MM;
 	model->getMassInertia(MM);
 	std::ostringstream msg;
 	bool ok(true);
 	for (size_t jj(0); jj < 5; ++jj) {
-	  if (MM.elementAt(jj, jj) < 1e-3) {
+	  if (MM.coeff(jj, jj) < 1e-3) {
 	    ok = false;
-	    msg << "  MM[" << jj << "][" << jj << "] = " << MM.elementAt(jj, jj) << "\n";
+	    msg << "  MM[" << jj << "][" << jj << "] = " << MM.coeff(jj, jj) << "\n";
 	  }
 	}
 	EXPECT_TRUE (ok) << "diagonal element below threshold\n" << msg.str();
@@ -762,32 +755,32 @@ TEST (jspaceModel, mass_inertia_RP)
 	double const c1(cos(q1));
 	double const s1(sin(q1));
 	
-	SAIMatrix MM(2, 2);
+	jspace::Matrix MM(2, 2);
 	model->getMassInertia(MM);
-	SAIMatrix MM_check(2, 2);
-	MM_check.elementAt(0, 0) = 1 + pow(s1 + c1 * q2, 2) + pow(c1 - s1 * q2, 2);
-	MM_check.elementAt(1, 0) = s1 * (s1 + c1 * q2) + c1 * (c1 - s1 * q2);
-	MM_check.elementAt(0, 1) = MM_check.elementAt(1, 0);
-	MM_check.elementAt(1, 1) = 1;
+	jspace::Matrix MM_check(2, 2);
+	MM_check.coeffRef(0, 0) = 1 + pow(s1 + c1 * q2, 2) + pow(c1 - s1 * q2, 2);
+	MM_check.coeffRef(1, 0) = s1 * (s1 + c1 * q2) + c1 * (c1 - s1 * q2);
+	MM_check.coeffRef(0, 1) = MM_check.coeff(1, 0);
+	MM_check.coeffRef(1, 1) = 1;
 	{
 	  std::ostringstream msg;
 	  msg << "Checking mass_inertia for q = " << state.position_ << "\n";
-	  MM_check.prettyPrint(msg, "  want", "    ");
-	  MM.prettyPrint(msg, "  have", "    ");
+	  pretty_print(MM_check, msg, "  want", "    ");
+	  pretty_print(MM, msg, "  have", "    ");
 	  EXPECT_TRUE (check_matrix("mass_inertia", MM_check, MM, 1e-3, msg)) << msg.str();
 	}
 	
-	SAIMatrix MMinv(2, 2);
+	jspace::Matrix MMinv(2, 2);
 	model->getInverseMassInertia(MMinv);
 	{
-	  SAIMatrix id_check;
-	  id_check.identity(2);
-	  SAIMatrix id;
+	  jspace::Matrix id_check(2, 2);
+	  id_check.setIdentity();
+	  jspace::Matrix id;
 	  id = MM * MMinv;
 	  std::ostringstream msg;
 	  msg << "Checking A * Ainv = I for q = " << state.position_ << "\n";
-	  id_check.prettyPrint(msg, "  want", "    ");
-	  id.prettyPrint(msg, "  have", "    ");
+	  pretty_print(id_check, msg, "  want", "    ");
+	  pretty_print(id, msg, "  have", "    ");
 	  EXPECT_TRUE (check_matrix("identity", id_check, id, 1e-3, msg)) << msg.str();
 	}
       }
@@ -828,11 +821,11 @@ TEST (jspaceController, mass_inertia_compensation_RR)
 	status = ctrl.computeCommand(*model, tau);
 	ASSERT_EQ (tau.size(), 2);
 	
-	SAIMatrix MM;
+	jspace::Matrix MM;
 	compute_unit_mass_RR_mass_inertia(q1, q2, MM);
-	double const m11(MM.elementAt(0, 0));
-	double const m12(MM.elementAt(0, 1));
-	double const m22(MM.elementAt(1, 1));
+	double const m11(MM.coeff(0, 0));
+	double const m12(MM.coeff(0, 1));
+	double const m22(MM.coeff(1, 1));
 	std::vector<double> tau_check(2);
 	tau_check[0] = - kp[0] * (m11 * q1 + m12 * q2);
 	tau_check[1] = - kp[0] * (m12 * q1 + m22 * q2);

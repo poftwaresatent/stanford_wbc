@@ -27,7 +27,8 @@
 #define JSPACE_MODEL_HPP
 
 #include <jspace/State.hpp>
-#include <saimatrix/SAITransform.h>
+#include <eigen2/Eigen/Geometry>
+#include <string>
 #include <vector>
 #include <set>
 
@@ -36,6 +37,11 @@
 class taoDNode;
 
 namespace jspace {
+
+  typedef Eigen::Transform<double, 3> Transform;
+  typedef Eigen::VectorXd Vector;
+  typedef Eigen::MatrixXd Matrix;
+  
   
   // declared in <jspace/tao_util.hpp>
   struct tao_tree_info_s;
@@ -150,7 +156,7 @@ namespace jspace {
 	an invalid node, so if you got that using getNode() or one of
 	the related methods you can safely ignore the return value. */
     bool getGlobalFrame(taoDNode const * node,
-			SAITransform & global_transform) const;
+			Transform & global_transform) const;
     
     /** Compute the global frame (translation and rotation)
 	corresponding to a local frame expressed wrt the origin of a
@@ -160,8 +166,8 @@ namespace jspace {
 	an invalid node, so if you got that using getNode() or one of
 	the related methods you can safely ignore the return value. */
     bool computeGlobalFrame(taoDNode const * node,
-			    SAITransform const & local_transform,
-			    SAITransform & global_transform) const;
+			    Transform const & local_transform,
+			    Transform & global_transform) const;
     
     /** Convenience method in case you are only interested in the
 	translational part and hold the local point in three
@@ -172,18 +178,18 @@ namespace jspace {
 	the related methods you can safely ignore the return value. */
     bool computeGlobalFrame(taoDNode const * node,
 			    double local_x, double local_y, double local_z,
-			    SAITransform & global_transform) const;
+			    Transform & global_transform) const;
     
     /** Convenience method in case you are only interested in the
 	translational part and hold the local point in a
-	three-dimensional SAIVector.
+	three-dimensional vector.
 	
 	\return True on success. The only possible failure stems from
 	an invalid node, so if you got that using getNode() or one of
 	the related methods you can safely ignore the return value. */
     bool computeGlobalFrame(taoDNode const * node,
-			    SAIVector local_translation,
-			    SAITransform & global_transform) const;
+			    Vector const & local_translation,
+			    Transform & global_transform) const;
     
     /** Compute the Jacobian (J_v over J_omega) at the origin of a
 	given node.
@@ -197,7 +203,7 @@ namespace jspace {
 	node using getNode() or one of the related methods, then you
 	need to extend this implementation when it returns false. */
     bool computeJacobian(taoDNode const * node,
-			 SAIMatrix & jacobian) const;
+			 Matrix & jacobian) const;
     
     /** Compute the Jacobian (J_v over J_omega) for a given node, at a
 	point expressed wrt to the global frame.
@@ -211,13 +217,13 @@ namespace jspace {
 	need to extend this implementation when it returns false. */
     bool computeJacobian(taoDNode const * node,
 			 double gx, double gy, double gz,
-			 SAIMatrix & jacobian) const;
+			 Matrix & jacobian) const;
     
     /** Convenience method in case you are holding the global position
-	in a SAIVector. */
+	in a three-dimensional vector. */
     inline bool computeJacobian(taoDNode const * node,
-				SAIVector const & global_point,
-				SAIMatrix & jacobian) const
+				Vector const & global_point,
+				Matrix & jacobian) const
     { return computeJacobian(node, global_point[0], global_point[1], global_point[2], jacobian); }
     
     //////////////////////////////////////////////////
@@ -246,7 +252,7 @@ namespace jspace {
 	\return True on success. The only possibility of receiving
 	false is if you never called updateDynamics(), which gets
 	called by updateDynamics(), which gets called by update(). */
-    bool getGravity(SAIVector & gravity) const;
+    bool getGravity(Vector & gravity) const;
     
     /** Compute the Coriolis and contrifugal joint-torque vector. If
 	you set cc_tree=NULL in the constructor, then this is a
@@ -260,7 +266,7 @@ namespace jspace {
 	or (ii) you never called computeCoriolisCentrifugal(), which
 	gets called by updateDynamics(), which gets called by
 	update(). */
-    bool getCoriolisCentrifugal(SAIVector & coriolis_centrifugal) const;
+    bool getCoriolisCentrifugal(Vector & coriolis_centrifugal) const;
     
     /** Compute the joint-space mass-inertia matrix, a.k.a. the
 	kinetic energy matrix. */
@@ -272,7 +278,7 @@ namespace jspace {
 	\return True on success. The only possibility of receiving
 	false is if you never called computeMassInertia(), which gets
 	called by updateDynamics(), which gets called by update(). */
-    bool getMassInertia(SAIMatrix & mass_inertia) const;
+    bool getMassInertia(Matrix & mass_inertia) const;
     
     /** Compute the inverse joint-space mass-inertia matrix. */
     void computeInverseMassInertia();
@@ -282,7 +288,7 @@ namespace jspace {
 	\return True on success. The only possibility of receiving
 	false is if you never called computeMassInertia(), which gets
 	called by updateDynamics(), which gets called by update(). */
-    bool getInverseMassInertia(SAIMatrix & inverse_mass_inertia) const;
+    bool getInverseMassInertia(Matrix & inverse_mass_inertia) const;
     
     
     /** For debugging only, access to the

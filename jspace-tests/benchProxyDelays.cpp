@@ -395,44 +395,41 @@ namespace {
     if ( ! ee) {
       errx(EXIT_FAILURE, "no end effector");
     }
-    SAITransform eeframe;
+    jspace::Transform eeframe;
     if ( ! model.getGlobalFrame(ee, eeframe)) {
       errx(EXIT_FAILURE, "no end effector frame");
     }
-    SAIMatrix6 J;
+    jspace::Matrix J;
     if ( ! model.computeJacobian(ee, J)) {
       errx(EXIT_FAILURE, "no end effector Jacobian");
     }
-    SAIMatrix A;
+    jspace::Matrix A;
     if ( ! model.getMassInertia(A)) {
       errx(EXIT_FAILURE, "no mass inertia");
     }
   
     // Compute torques.
-    SAIVector3 delta(eeframe.translation());
-    double const dist(delta.magnitude());
+    jspace::Vector delta(eeframe.translation());
+    double const dist(delta.norm());
     delta /= -dist;
     double strength(dist * dist * 10);
     if (strength > 1) {
       strength = 1;
     }
-    SAIVector6 F;
+    jspace::Vector F(6);
     F[0] = delta[0] * strength;
     F[1] = delta[1] * strength;
     F[2] = delta[2] * strength;
-    SAIVector6 tmp, tau;
-    J.multiplyTranspose(F, tmp);
-    A.multiply(tmp, tau);
-  
+    jspace::Vector tmp, tau;	// rfct from saimatrix to eigen2, can probably remove tmp
+    tmp = J.transpose() * F;
+    tau = A * tmp;
+    
     // Store the result in our custom data structure.
-    if (sizeof(double) != sizeof(Float)) {
-      errx(EXIT_FAILURE, "Please recompile with '#define Float double' somewhere in the saimatrix headers.");
-    }
-    memcpy(ds->tau, tau.dataPtr(), 6 * sizeof(double));
+    memcpy(ds->tau, tau.data(), 6 * sizeof(double));
     
     // Store the end-effector position as additional controller output
     // in the custom data structure.
-    memcpy(ds->eepos, eeframe.translation().dataPtr(), 3 * sizeof(double));
+    memcpy(ds->eepos, eeframe.translation().data(), 3 * sizeof(double));
   }
   
   

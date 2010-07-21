@@ -26,8 +26,6 @@
 #include "controller_library.hpp"
 #include "Model.hpp"
 #include <wbcnet/strutil.hpp>
-#include <saimatrix/SAIVector.h>
-#include <saimatrix/SAIMatrix.h>
 
 
 namespace jspace {
@@ -80,9 +78,10 @@ namespace jspace {
   Status FloatController::
   computeCommand(Model const & model, std::vector<double> & tau)
   {
-    SAIVector gg;
+    Vector gg;
     model.getGravity(gg);
-    gg.getValues(tau);
+    tau.resize(gg.rows());
+    memcpy(&tau[0], gg.data(), gg.rows() * sizeof(double));
     Status ok;
     return ok;
   }
@@ -216,56 +215,44 @@ namespace jspace {
     State const & state(model.getState());
     actual_ = state.position_;
 
-    //DEBUG//     cerr << "JointGoalController\n";
-    
-    SAIVector sai_tau(ndof);
+    Vector etau(ndof);
     for (size_t ii(0); ii < ndof; ++ii) {
-      sai_tau[ii] = - kp_[ii] * (actual_[ii] - goal_[ii]) - kd_[ii] * state.velocity_[ii];
+      etau[ii] = - kp_[ii] * (actual_[ii] - goal_[ii]) - kd_[ii] * state.velocity_[ii];
     }
     
-    //DEBUG//     sai_tau.prettyPrint(cerr, "  raw tau", "    ");
-    
     if (compensation_flags_ & COMP_MASS_INERTIA) {
-      SAIMatrix AA;
+      Matrix AA;
       if ( ! model.getMassInertia(AA)) {
 	status.ok = false;
 	status.errstr = "model.getMassInertia() failed";
 	return status;
       }
-      sai_tau = AA * sai_tau;
-      
-      //DEBUG//       AA.prettyPrint(cerr, "  MassInertia", "    ");
-      //DEBUG//       sai_tau.prettyPrint(cerr, "  after COMP_MASS_INERTIA", "    ");
-
+      etau = AA * etau;
     }
     
     if (compensation_flags_ & COMP_CORIOLIS) {
-      SAIVector BB;
+      Vector BB;
       if ( ! model.getCoriolisCentrifugal(BB)) {
 	status.ok = false;
 	status.errstr = "model.getCoriolisCentrifugal() failed";
 	return status;
       }
-      sai_tau += BB;
-      
-      //DEBUG//       sai_tau.prettyPrint(cerr, "  after COMP_CORIOLIS", "    ");
-
+      etau += BB;
     }
     
     if (compensation_flags_ & COMP_GRAVITY) {
-      SAIVector GG;
+      Vector GG;
       if ( ! model.getGravity(GG)) {
 	status.ok = false;
 	status.errstr = "model.getGravity() failed";
 	return status;
       }
-      sai_tau += GG;
-      
-      //DEBUG//       sai_tau.prettyPrint(cerr, "  after COMP_GRAVITY", "    ");
-      
+      etau += GG;
     }
     
-    sai_tau.getValues(tau);
+    tau.resize(etau.rows());
+    memcpy(&tau[0], etau.data(), etau.rows() * sizeof(double));
+    
     return status;
   }
   
