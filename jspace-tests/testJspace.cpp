@@ -41,10 +41,7 @@
 #include <errno.h>
 // #include <string.h>
 
-// for "transform.rotation().isApprox(...)"
 #include <eigen2/Eigen/SVD>
-
-// for "MM_check.computeInverse(...)"
 #include <eigen2/Eigen/LU>
 
 using namespace std;
@@ -203,22 +200,23 @@ TEST (jspaceModel, kinematics)
       if ( ! model->getGlobalFrame(model->getNode(id), transform)) {
 	FAIL() << frames_filename << ": line " << line_count << ": could not get global frame " << id << " from model";
       }
-      jspace::Transform quat_expected(Eigen::Quaternion<double>(rw, rx, ry, rz));
-      EXPECT_TRUE (transform.rotation().isApprox(quat_expected.rotation(), 1e-6))
+      jspace::Quaternion quat_computed(transform.rotation());
+      jspace::Quaternion quat_expected(rw, rx, ry, rz);
+      EXPECT_TRUE (equal(quat_computed, quat_expected, 1e-6))
 	<< "rotation mismatch\n"
 	<< "  entry: " << joint_positions_count << "\n"
 	<< "  pos: " << state.position_ << "\n"
 	<< "  ID: " << id << "\n"
-	<< "  expected: " << quat_expected.rotation() << "\n"
-	<< "  computed: " << transform.rotation();
+	<< "  expected: " << pretty_string(quat_expected) << "\n"
+	<< "  computed: " << pretty_string(quat_computed);
       Eigen::Vector3d trans_expected(tx, ty, tz);
-      EXPECT_TRUE (transform.translation().isApprox(trans_expected, 1e-6))
+      EXPECT_TRUE (equal(transform.translation(), trans_expected, 1e-6))
 	<< "translation mismatch\n"
 	<< "  entry: " << joint_positions_count << "\n"
 	<< "  pos: " << state.position_ << "\n"
 	<< "  ID: " << id << "\n"
-	<< "  expected: " << trans_expected << "\n"
-	<< "  computed: " << transform.translation();
+	<< "  expected: " << pretty_string(trans_expected) << "\n"
+	<< "  computed: " << pretty_string(transform.translation());
     }
   }
   catch (std::exception const & ee) {

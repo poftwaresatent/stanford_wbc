@@ -33,11 +33,23 @@ namespace jspace {
     
     std::string create_tmpfile(char const * fname_template, char const * contents) throw(std::runtime_error);
     
+    // should also work as-is for jspace::Vector
+    bool equal(jspace::Matrix const & lhs, jspace::Matrix const & rhs, double precision);
+    bool equal(jspace::Quaternion const & lhs, jspace::Quaternion const & rhs, double precision);
+    
+    std::string pretty_string(jspace::Vector const & vv);
+    std::string pretty_string(jspace::Quaternion const & qq);
+    std::string pretty_string(jspace::Matrix const & mm, std::string const & prefix);
+    
     void pretty_print(jspace::Vector const & vv, std::ostream & os,
-		      std::string const & title, std::string const & prefix);
+		      std::string const & title, std::string const & prefix, bool nonl = false);
+    
+    void pretty_print(jspace::Quaternion const & qq, std::ostream & os,
+		      std::string const & title, std::string const & prefix, bool nonl = false);
     
     void pretty_print(jspace::Matrix const & mm, std::ostream & os,
-		      std::string const & title, std::string const & prefix);
+		      std::string const & title, std::string const & prefix,
+		      bool vecmode = false, bool nonl = false);
     
   }
 }

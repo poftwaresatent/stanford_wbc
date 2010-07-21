@@ -29,7 +29,7 @@
 #include <tao/dynamics/taoJoint.h>
 #include <tao/dynamics/taoDynamics.h>
 
-#define DEBUG
+#undef DEBUG
 
 
 static deVector3 const zero_gravity(0, 0, 0);
@@ -221,9 +221,8 @@ namespace jspace {
 #warning "TO DO: maybe the other way around..."
     // beware: Eigen::Quaternion(w, x, y, z) puts w first, whereas
     // deQuaternion(qx, qy, qz, qw) puts w last. Of course.
-    global_transform =
-      Eigen::Quaternion<double>(tao_quat[3], tao_quat[0], tao_quat[1], tao_quat[2])
-      * Eigen::Translation<double, 3>(tao_trans[0], tao_trans[1], tao_trans[2]);
+    global_transform = Translation(tao_trans[0], tao_trans[1], tao_trans[2]);
+    global_transform *= Quaternion(tao_quat[3], tao_quat[0], tao_quat[1], tao_quat[2]);
     
     return true;
   }

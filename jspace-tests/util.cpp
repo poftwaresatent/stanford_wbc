@@ -59,79 +59,151 @@ namespace jspace {
     }
     
     
-    void pretty_print(jspace::Vector const & vv, std::ostream & os,
-		      std::string const & title, std::string const & prefix)
+    std::string pretty_string(jspace::Vector const & vv)
     {
-      if ( ! title.empty())
-	os << title << "\n";
-      if ( ! prefix.empty())
-	os << prefix;
-      if (vv.rows() <= 0)
-	os << " (empty)";
-      else {
-	static int const buflen(32);
-	static char buf[buflen];
-	memset(buf, 0, sizeof(buf));
-	for (int ii(0); ii < vv.rows(); ++ii) {
-#ifndef WIN32
-	  if (isinf(vv.coeff(ii))) {
-	    snprintf(buf, buflen-1, " inf    ");
-	  }
-	  else if (isnan(vv.coeff(ii))) {
-	    snprintf(buf, buflen-1, " nan    ");
-	  }
-	  else if (fabs(fmod(vv.coeff(ii), 1)) < 1e-6) {
-	    snprintf(buf, buflen-1, "%- 7d  ", static_cast<int>(rint(vv.coeff(ii))));
-	  }
-	  else {
-	    snprintf(buf, buflen-1, "% 6.4f  ", vv.coeff(ii));
-	  }
-#else
-	  sprintf_s(buf, buflen-1, "% 6.4f  ", vv.coeff(ii));
-#endif // WIN32
-	  os << buf;
-	}
-      }
-      os << "\n";
+      ostringstream os;
+      pretty_print(vv, os, "", "", true);
+      return os.str();
+    }
+    
+    
+    std::string pretty_string(jspace::Quaternion const & qq)
+    {
+      ostringstream os;
+      pretty_print(qq, os, "", "", true);
+      return os.str();
+    }
+    
+    
+    std::string pretty_string(jspace::Matrix const & mm, std::string const & prefix)
+    {
+      ostringstream os;
+      pretty_print(mm, os, "", prefix);
+      return os.str();
+    }
+    
+    
+    void pretty_print(jspace::Vector const & vv, std::ostream & os,
+		      std::string const & title, std::string const & prefix,
+		      bool nonl)
+    {
+      pretty_print((jspace::Matrix const &) vv, os, title, prefix, true, nonl);
+    }
+    
+    
+    void pretty_print(jspace::Quaternion const & qq, std::ostream & os,
+		      std::string const & title, std::string const & prefix,
+		      bool nonl)
+    {
+      pretty_print(qq.coeffs(), os, title, prefix, true, nonl);
     }
     
     
     void pretty_print(jspace::Matrix const & mm, std::ostream & os,
-		      std::string const & title, std::string const & prefix)
+		      std::string const & title, std::string const & prefix,
+		      bool vecmode, bool nonl)
     {
-      if ( ! title.empty())
-	os << title << "\n";
-      if ((mm.rows() <= 0) || (mm.cols() <= 0))
-	os << prefix << " (empty)\n";
+      char const * nlornot("\n");
+      if (nonl) {
+	nlornot = "";
+      }
+      if ( ! title.empty()) {
+	os << title << nlornot;
+      }
+      if ((mm.rows() <= 0) || (mm.cols() <= 0)) {
+	os << prefix << " (empty)" << nlornot;
+      }
       else {
+	// if (mm.cols() == 1) {
+	//   vecmode = true;
+	// }
+	
 	static int const buflen(32);
 	static char buf[buflen];
 	memset(buf, 0, sizeof(buf));
-	for (int ir(0); ir < mm.rows(); ++ir) {
+	
+	if (vecmode) {
 	  if ( ! prefix.empty())
 	    os << prefix;
-	  for (int ic(0); ic < mm.cols(); ++ic) {
+	  for (int ir(0); ir < mm.rows(); ++ir) {
 #ifndef WIN32
-	    if (isinf(mm.coeff(ir, ic))) {
+	    if (isinf(mm.coeff(ir, 0))) {
 	      snprintf(buf, buflen-1, " inf    ");
 	    }
-	    else if (isnan(mm.coeff(ir, ic))) {
+	    else if (isnan(mm.coeff(ir, 0))) {
 	      snprintf(buf, buflen-1, " nan    ");
 	    }
-	    else if (fabs(fmod(mm.coeff(ir, ic), 1)) < 1e-6) {
-	      snprintf(buf, buflen-1, "%- 7d  ", static_cast<int>(rint(mm.coeff(ir, ic))));
+	    else if (fabs(fmod(mm.coeff(ir, 0), 1)) < 1e-6) {
+	      snprintf(buf, buflen-1, "%- 7d  ", static_cast<int>(rint(mm.coeff(ir, 0))));
 	    }
 	    else {
-	      snprintf(buf, buflen-1, "% 6.4f  ", mm.coeff(ir, ic));
+	      snprintf(buf, buflen-1, "% 6.4f  ", mm.coeff(ir, 0));
 	    }
 #else // WIN32
-	    sprintf_s(buf, buflen-1, "% 6.4f  ", mm.coeff(ir, ic));
+	    sprintf_s(buf, buflen-1, "% 6.4f  ", mm.coeff(ir, 0));
 #endif // WIN32
 	    os << buf;
 	  }
-	  os << "\n";
+	  os << nlornot;
+	  
+	}
+	else {
+
+	  for (int ir(0); ir < mm.rows(); ++ir) {
+	    if ( ! prefix.empty())
+	      os << prefix;
+	    for (int ic(0); ic < mm.cols(); ++ic) {
+#ifndef WIN32
+	      if (isinf(mm.coeff(ir, ic))) {
+		snprintf(buf, buflen-1, " inf    ");
+	      }
+	      else if (isnan(mm.coeff(ir, ic))) {
+		snprintf(buf, buflen-1, " nan    ");
+	      }
+	      else if (fabs(fmod(mm.coeff(ir, ic), 1)) < 1e-6) {
+		snprintf(buf, buflen-1, "%- 7d  ", static_cast<int>(rint(mm.coeff(ir, ic))));
+	      }
+	      else {
+		snprintf(buf, buflen-1, "% 6.4f  ", mm.coeff(ir, ic));
+	      }
+#else // WIN32
+	      sprintf_s(buf, buflen-1, "% 6.4f  ", mm.coeff(ir, ic));
+#endif // WIN32
+	      os << buf;
+	    }
+	    os << nlornot;
+	  }
+	  
 	}
       }
+    }
+    
+    
+    bool equal(jspace::Matrix const & lhs, jspace::Matrix const & rhs, double precision)
+    {
+      if ( &lhs == &rhs ) {
+	return true;
+      }
+      if ( lhs.rows() != rhs.rows() ) {
+	return false;
+      }
+      if ( lhs.cols() != rhs.cols() ) {
+	return false;
+      }
+      for (int ii(0); ii < lhs.rows(); ++ii) {
+	for (int jj(0); jj < lhs.cols(); ++jj) {
+	  if (fabs(lhs.coeff(ii, jj) - rhs.coeff(ii, jj)) > precision) {
+	    return false;
+	  }
+	}
+      }
+      return true;
+    }
+    
+    
+    bool equal(jspace::Quaternion const & lhs, jspace::Quaternion const & rhs, double precision)
+    {
+      return equal(lhs.coeffs(), rhs.coeffs(), precision);
     }
     
   }

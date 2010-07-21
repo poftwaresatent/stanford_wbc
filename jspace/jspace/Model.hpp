@@ -38,7 +38,9 @@ class taoDNode;
 
 namespace jspace {
 
-  typedef Eigen::Transform<double, 3> Transform;
+  typedef Eigen::Transform3d Transform;
+  typedef Eigen::Translation3d Translation;
+  typedef Eigen::Quaternion<double> Quaternion;
   typedef Eigen::VectorXd Vector;
   typedef Eigen::MatrixXd Matrix;
   
