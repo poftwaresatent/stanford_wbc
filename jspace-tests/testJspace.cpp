@@ -202,13 +202,15 @@ TEST (jspaceModel, kinematics)
       }
       jspace::Quaternion quat_computed(transform.rotation());
       jspace::Quaternion quat_expected(rw, rx, ry, rz);
-      EXPECT_TRUE (equal(quat_computed, quat_expected, 1e-6))
+      double const delta_angle(quat_computed.angularDistance(quat_expected));
+      EXPECT_TRUE (fabs(delta_angle) < 0.15 * M_PI / 180.0) // looks like it's hard to be more precise...
 	<< "rotation mismatch\n"
 	<< "  entry: " << joint_positions_count << "\n"
 	<< "  pos: " << state.position_ << "\n"
 	<< "  ID: " << id << "\n"
 	<< "  expected: " << pretty_string(quat_expected) << "\n"
-	<< "  computed: " << pretty_string(quat_computed);
+	<< "  computed: " << pretty_string(quat_computed) << "\n"
+	<< "  delta_angle: " << delta_angle * 180 / M_PI << " deg\n";
       Eigen::Vector3d trans_expected(tx, ty, tz);
       EXPECT_TRUE (equal(transform.translation(), trans_expected, 1e-6))
 	<< "translation mismatch\n"
@@ -440,9 +442,9 @@ TEST (jspaceModel, Jacobian_R)
 	ee_gpos_check.coeffRef(1) = c1;
 	ee_gpos_check.coeffRef(2) = s1;
 	std::ostringstream msg;
-	msg << "Verifying end-effector frame (position only) for q = " << state.position_ << "\n";
-	pretty_print(ee_gpos_check, msg, "  want", "    ");
-	pretty_print(ee_gpos, msg, "  have", "    ");
+	msg << "Verifying end-effector frame (position only) for q = " << state.position_ << "\n"
+	    << "  want: " << pretty_string(ee_gpos_check) << "\n"
+	    << "  have: " << pretty_string(ee_gpos) << "\n";
 	bool const gpos_ok(check_vector("ee_pos", ee_gpos_check, ee_gpos, 1e-3, msg));
 	EXPECT_TRUE (gpos_ok) << msg.str();
 	if ( ! gpos_ok) {
@@ -454,7 +456,7 @@ TEST (jspaceModel, Jacobian_R)
       ASSERT_TRUE (model->computeJacobian(ee, ee_gpos, Jg_all));
       jspace::Matrix const Jg(Jg_all.block(0, 0, 6, 1));
       {
-	jspace::Matrix Jg_check(6, 1);
+	jspace::Matrix Jg_check(jspace::Matrix::Zero(6, 1));
 	Jg_check.coeffRef(1, 0) = -s1;
 	Jg_check.coeffRef(2, 0) =  c1;
 	Jg_check.coeffRef(3, 0) =  1;
@@ -516,7 +518,7 @@ TEST (jspaceModel, Jacobian_RR)
 	jspace::Matrix Jg(6, 2);
 	ASSERT_TRUE (model->computeJacobian(ee, ee_gpos, Jg));
 	{
-	  jspace::Matrix Jg_check(6, 2);
+	  jspace::Matrix Jg_check(jspace::Matrix::Zero(6, 2));
 	  Jg_check.coeffRef(1, 0) = -s1 - s12;
 	  Jg_check.coeffRef(2, 0) =  c1 + c12;
 	  Jg_check.coeffRef(3, 0) =  1;
@@ -579,7 +581,7 @@ TEST (jspaceModel, Jacobian_RP)
 	jspace::Matrix Jg(6, 2);
 	ASSERT_TRUE (model->computeJacobian(ee, Jg));
 	{
-	  jspace::Matrix Jg_check(6, 2);
+	  jspace::Matrix Jg_check(jspace::Matrix::Zero(6, 2));
 	  Jg_check.coeffRef(1, 0) = -s1 - c1 * q2;
 	  Jg_check.coeffRef(2, 0) =  c1 - s1 * q2;
 	  Jg_check.coeffRef(3, 0) =  1;

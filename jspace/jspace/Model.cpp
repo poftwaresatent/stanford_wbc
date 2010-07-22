@@ -236,8 +236,7 @@ namespace jspace {
     if ( ! getGlobalFrame(node, global_transform)) {
       return false;
     }
-#warning "TO DO: maybe the other way around..."
-    global_transform = local_transform * global_transform;
+    global_transform = global_transform * local_transform;
     return true;
   }
   
