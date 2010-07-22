@@ -73,11 +73,15 @@ else (LOG4CXX_DIR STREQUAL "DISABLED")
       message ("[WBCNET] log4cxx version check succeeded")
     else (LOG4CXX_VERSION_CHECK)
       message ("[WBCNET] LOG4CXX_VERSION_CHECK_LOG:\n${LOG4CXX_VERSION_CHECK_LOG}")
-      message (FATAL_ERROR "[WBCNET] The log4cxx version check failed (see try_compile log above). Please install log4cxx-0.10.0 (e.g. from the 3rdparty/ directory of stanford-wbc) and tell CMake where to find it by setting the LOG4CXX_DIR variable (either in the environment or by passing -DLOG4CXX:path=/foo/bar to cmake)")
+      message (FATAL_ERROR "[WBCNET] The log4cxx version check failed (see try_compile log above). Please install log4cxx-0.10.0 (e.g. from the 3rdparty/ directory of stanford-wbc) and tell CMake where to find it by setting the LOG4CXX_DIR variable (either in the environment or by passing -DLOG4CXX_DIR:path=/foo/bar to cmake). If that fails to do the trick, try disabling it by passing -DLOG4CXX_DIR=DISABLED.")
     endif (LOG4CXX_VERSION_CHECK)
     add_definitions (-DHAVE_LOG4CXX)
     list (APPEND WBCNET_LIBS log4cxx)
   else (WBCNET_HAVE_LOG4CXX)
+    # We're raising a fatal error above, so this warning will never be
+    # reached... but let's keep it here in case at some point we
+    # decide to treat missing log4cxx as a warning instead of an
+    # error.
     message ("[WBCNET] WARNING did not find log4cxx, will use simplistic logging")
   endif (WBCNET_HAVE_LOG4CXX)
 endif (LOG4CXX_DIR STREQUAL "DISABLED")
