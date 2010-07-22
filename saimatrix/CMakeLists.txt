@@ -53,11 +53,11 @@ if (SAI_Matrix_ENABLE_LAPACK)
 endif (SAI_Matrix_ENABLE_LAPACK)
 
 add_library (SAI_Matrix SHARED ${SAI_Matrix_SRCS})
-target_link_libraries (SAI_Matrix ${SAI_Matrix_LIBS})
+target_link_libraries (SAI_Matrix ${SAI_Matrix_LIBS} ${MAYBE_GCOV})
 
 if (SAI_Matrix_ENABLE_LAPACK)
   add_executable (test_SAILapack tests/test_SAILapack.cpp)
-  target_link_libraries (test_SAILapack SAI_Matrix)
+  target_link_libraries (test_SAILapack SAI_Matrix ${MAYBE_GCOV})
 endif (SAI_Matrix_ENABLE_LAPACK)
 
 include_directories (${SAI_Matrix_SOURCE_DIR})

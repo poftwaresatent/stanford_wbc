@@ -26,9 +26,12 @@ add_library (
   tao/utility/TaoDeMassProp.cpp
   tao/utility/TaoDeLogger.cpp)
 
+message ("[TAO] linking TAO_Dynamics_Engine against MAYBE_GCOV which is `${MAYBE_GCOV}'...")
+target_link_libraries (TAO_Dynamics_Engine gcov)
+
 if (HAVE_GTEST)
   add_executable (testTAO tests/testTAO.cpp)
-  target_link_libraries (testTAO TAO_Dynamics_Engine gtest)
+  target_link_libraries (testTAO TAO_Dynamics_Engine gtest ${MAYBE_GCOV})
 endif (HAVE_GTEST)
 
 include_directories (${TAO_Dynamics_Engine_SOURCE_DIR})

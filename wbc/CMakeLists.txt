@@ -113,7 +113,7 @@ include_directories (
   ../jspace
   )
 
-target_link_libraries (Stanford_WBC ${LIBS})
+target_link_libraries (Stanford_WBC ${LIBS} ${MAYBE_GCOV})
 
 subdirs (
   tests

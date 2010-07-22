@@ -17,23 +17,23 @@ include_directories (
   )
 
 add_library (jspace_tests util.cpp model_library.cpp)
-target_link_libraries (jspace_tests jspace Stanford_WBC)
+target_link_libraries (jspace_tests jspace Stanford_WBC ${MAYBE_GCOV})
 
 add_executable (benchProxyDelays benchProxyDelays.cpp)
-target_link_libraries (benchProxyDelays jspace_tests)
+target_link_libraries (benchProxyDelays jspace_tests ${MAYBE_GCOV})
 
 wbc_find_urdf ()
 
 if (HAVE_GTEST)
 
   add_executable (testJspace testJspace.cpp)
-  target_link_libraries (testJspace jspace_tests gtest)
+  target_link_libraries (testJspace jspace_tests gtest ${MAYBE_GCOV})
   
   if (HAVE_URDF)
     # seems somewhat redundant, but did not work without
     link_directories (${URDF_LIBDIRS})
     add_executable (testJspaceUrdf testJspaceUrdf.cpp)
-    target_link_libraries (testJspaceUrdf jspace_tests gtest urdf)
+    target_link_libraries (testJspaceUrdf jspace_tests gtest urdf ${MAYBE_GCOV})
   else (HAVE_URDF)
     message ("WARNING URDF not found")
   endif (HAVE_URDF)
