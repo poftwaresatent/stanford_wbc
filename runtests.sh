@@ -16,26 +16,28 @@
 ## segfaults
 # wbc_plugins/wbc_plugins/robotlog/test
 
+## lcov did not like these (truncated output files?)
+#    wbcnet/testLogWithoutLog4cxx \
+#    wbcnet/testDelayHistogram \
+#    wbcnet/testLogDisabled \
+#    wbcnet/testLogWithLog4cxx \
+#    saimatrix/test_SAILapack \
+
 MSG=""
 FAIL=""
 
 for test in \
     jspace/testServoProxy \
     wbcnet/testPack \
-    wbcnet/testLogWithoutLog4cxx \
-    wbcnet/testLogWithLog4cxx \
-    wbcnet/testLogDisabled \
     wbcnet/testTaskAtomizer \
     wbcnet/testMQWrap \
     wbcnet/testMuldex \
     wbcnet/testEndian \
     wbcnet/testID \
     wbcnet/testProxy \
-    wbcnet/testDelayHistogram \
     wbcnet/testFactory \
     jspace-tests/testJspace \
     tao/testTAO \
-    saimatrix/test_SAILapack \
     wbc/tests/testProcess \
     wbc_tinyxml/xmltest; do
     if [ -x $test ]; then
