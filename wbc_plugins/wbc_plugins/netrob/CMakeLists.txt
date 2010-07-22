@@ -2,10 +2,10 @@ cmake_minimum_required (VERSION 2.6)
 include (../../../wbc.cmake)
 
 add_library (netrob SHARED Robot.cpp RawRobot.cpp)
-target_link_libraries (netrob Stanford_WBC)
+target_link_libraries (netrob Stanford_WBC ${MAYBE_GCOV})
 
 wbc_add_plugin (netrob_plugin plugin.cpp)
-target_link_libraries (netrob_plugin netrob)
+target_link_libraries (netrob_plugin netrob ${MAYBE_GCOV})
 
 install (TARGETS netrob DESTINATION lib)
 

@@ -25,6 +25,9 @@ list (APPEND ROBARCH_SRC
 
 add_library (robarch SHARED ${ROBARCH_SRC})
 
+message ("[ROBARCH] linking with MAYBE_GCOV which is `${MAYBE_GCOV}'...")
+target_link_libraries (robarch ${MAYBE_GCOV})
+
 include_directories (
   .
   ../saimatrix

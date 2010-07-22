@@ -31,9 +31,9 @@ include (../../../wbc.cmake)
 list (APPEND LIBS expat Stanford_WBC)
 
 wbc_add_plugin (robotlog plugin.cpp readlog.cpp writelog.cpp)
-target_link_libraries (robotlog ${LIBS})
+target_link_libraries (robotlog ${LIBS} ${MAYBE_GCOV})
 
 if (HAVE_GTEST)
   add_executable (test test.cpp readlog.cpp writelog.cpp)
-  target_link_libraries (test gtest ${LIBS})
+  target_link_libraries (test gtest ${LIBS} ${MAYBE_GCOV})
 endif (HAVE_GTEST)

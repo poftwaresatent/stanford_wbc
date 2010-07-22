@@ -107,6 +107,7 @@ endmacro (wbc_getvars)
 # - compiler flags -pipe and -Wall will be set
 # - compiler flag -O0 will be set for debug build
 # - if desired (by setting ANSI=true), also add -ansi and -pedantic compiler flags
+# - if desired (by setting COVERAGE=true), also add -fprofile-arcs and -ftest-coverage compiler flags
 # - preprocessor symbol TIXML_USE_STL will be set, because that seems
 #   a good idea and if we mix in our optional ROS support, we have to
 #   (there is no end to headaches due to tinyxml version and
@@ -176,13 +177,32 @@ macro (wbc_init PROJECT_NAME)
     check_cxx_compiler_flag (-ansi CXX_FLAG_ansi)
     if (CXX_FLAG_ansi)
       add_definitions (-ansi)
+    else (CXX_FLAG_ansi)
+      message ("[WBC] oops, ANSI requested but compiler does not understand -ansi")
     endif (CXX_FLAG_ansi)
     check_cxx_compiler_flag (-pedantic CXX_FLAG_pedantic)
     if (CXX_FLAG_pedantic)
       add_definitions (-pedantic)
+    else (CXX_FLAG_pedantic)
+      message ("[WBC] oops, ANSI requested but compiler does not understand -pedantic")
     endif (CXX_FLAG_pedantic)
   endif (ANSI)
-  
+  if (COVERAGE)
+    check_cxx_compiler_flag (-fprofile-arcs CXX_FLAG_fprofile_arcs)
+## broken? my g++ accepts it, but cmake does not think so    if (CXX_FLAG_fprofile_arcs)
+      add_definitions (-fprofile-arcs)
+##    else (CXX_FLAG_fprofile_arcs)
+##      message ("[WBC] oops, COVERAGE requested but compiler does not understand -fprofile-arcs")
+##    endif (CXX_FLAG_fprofile_arcs)
+    check_cxx_compiler_flag (-ftest-coverage CXX_FLAG_ftest_coverage)
+    if (CXX_FLAG_ftest_coverage)
+      add_definitions (-ftest-coverage)
+    else (CXX_FLAG_ftest_coverage)
+      message ("[WBC] oops, COVERAGE requested but compiler does not understand -ftest-coverage")
+    endif (CXX_FLAG_ftest_coverage)
+    set (MAYBE_GCOV gcov)
+  endif (COVERAGE)
+
   # explicitly default to debug build and set -O0 in that case
   if (NOT CMAKE_BUILD_TYPE)
     SET (CMAKE_BUILD_TYPE Debug)
@@ -401,6 +421,9 @@ macro (wbc_add_plugin PLUGIN_NAME)
   
   add_library (${PLUGIN_NAME} MODULE ${ARGN})
   
+  message ("[WBC] linking plugin ${PLUGIN_NAME} with MAYBE_GCOV which is `${MAYBE_GCOV}'...")
+  target_link_libraries (${PLUGIN_NAME} ${MAYBE_GCOV})
+  
   set (PLUGIN_OUT_DIR ${WBC_PLUGIN_PATH})
   if (NOT PLUGIN_OUT_DIR)
     # Note that WBC_ROOT can come from the environment, this is done
@@ -433,7 +456,7 @@ endmacro (wbc_add_plugin)
 #
 macro (wbc_add_executable EXECUTABLE_NAME)
   add_executable (${EXECUTABLE_NAME} ${ARGN})
-  target_link_libraries (${EXECUTABLE_NAME} Stanford_WBC)
+  target_link_libraries (${EXECUTABLE_NAME} Stanford_WBC ${MAYBE_GCOV})
   wbc_find_urdf ()
   set_target_properties (${EXECUTABLE_NAME} PROPERTIES INSTALL_RPATH "${URDF_LIBDIRS};${CMAKE_INSTALL_PREFIX}/lib")
 endmacro (wbc_add_executable)

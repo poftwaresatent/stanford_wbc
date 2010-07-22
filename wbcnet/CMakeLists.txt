@@ -110,7 +110,7 @@ endif (WBCNET_HAVE_NETWRAP)
 include_directories (${WBCNET_SOURCE_DIR})
 
 add_library (wbcnet SHARED ${WBCNET_SRCS})
-target_link_libraries (wbcnet ${WBCNET_LIBS})
+target_link_libraries (wbcnet ${WBCNET_LIBS} ${MAYBE_GCOV})
 if (WBCNET_HAVE_NETWRAP)
   # This little thinggie is supposed to make it easier for users of
   # wbcnet to find the libraries that wbcnet is linked against,
@@ -122,68 +122,69 @@ if (WBCNET_HAVE_NETWRAP)
 endif (WBCNET_HAVE_NETWRAP)
 
 add_executable (testSockWrapMuldex test/testSockWrapMuldex.cpp)
-target_link_libraries (testSockWrapMuldex wbcnet ${WBCNET_LIBS})
+target_link_libraries (testSockWrapMuldex wbcnet ${WBCNET_LIBS} ${MAYBE_GCOV})
 
 add_executable (testEndian test/testEndian.cpp)
-target_link_libraries (testEndian wbcnet ${WBCNET_LIBS})
+target_link_libraries (testEndian wbcnet ${WBCNET_LIBS} ${MAYBE_GCOV})
 
 add_executable (testPack test/testPack.cpp)
-target_link_libraries (testPack wbcnet wbcnet ${WBCNET_LIBS})
+target_link_libraries (testPack wbcnet wbcnet ${WBCNET_LIBS} ${MAYBE_GCOV})
 
 add_executable (testProxy test/testProxy.cpp)
-target_link_libraries (testProxy wbcnet ${WBCNET_LIBS})
+target_link_libraries (testProxy wbcnet ${WBCNET_LIBS} ${MAYBE_GCOV})
 
 add_executable (testTaskAtomizer test/testTaskAtomizer.cpp)
-target_link_libraries (testTaskAtomizer wbcnet ${WBCNET_LIBS})
+target_link_libraries (testTaskAtomizer wbcnet ${WBCNET_LIBS} ${MAYBE_GCOV})
 
 add_executable (testStreamBufMgr test/testStreamBufMgr.cpp)
-target_link_libraries (testStreamBufMgr wbcnet ${WBCNET_LIBS})
+target_link_libraries (testStreamBufMgr wbcnet ${WBCNET_LIBS} ${MAYBE_GCOV})
 
 add_executable (testID test/testID.cpp)
-target_link_libraries (testID wbcnet ${WBCNET_LIBS})
+target_link_libraries (testID wbcnet ${WBCNET_LIBS} ${MAYBE_GCOV})
 
 add_executable (testMuldex test/testMuldex.cpp)
-target_link_libraries (testMuldex wbcnet ${WBCNET_LIBS})
+target_link_libraries (testMuldex wbcnet ${WBCNET_LIBS} ${MAYBE_GCOV})
 
 add_executable (testDelayHistogram test/testDelayHistogram.cpp)
-target_link_libraries (testDelayHistogram wbcnet ${WBCNET_LIBS})
+target_link_libraries (testDelayHistogram wbcnet ${WBCNET_LIBS} ${MAYBE_GCOV})
 
 add_executable (testLogDisabled test/testLogDisabled.cpp)
-target_link_libraries (testLogDisabled wbcnet ${WBCNET_LIBS})
+target_link_libraries (testLogDisabled wbcnet ${WBCNET_LIBS} ${MAYBE_GCOV})
 
 add_executable (testLogWithoutLog4cxx test/testLogWithoutLog4cxx.cpp)
-target_link_libraries (testLogWithoutLog4cxx wbcnet ${WBCNET_LIBS})
+target_link_libraries (testLogWithoutLog4cxx wbcnet ${WBCNET_LIBS} ${MAYBE_GCOV})
 
 add_library (TestModule MODULE test/TestModule.cpp)
+target_link_libraries (TestModule ${MAYBE_GCOV})
 add_executable (testTestModule test/testTestModule.cpp)
 if (CMAKE_SYSTEM_NAME MATCHES OpenBSD)
-  target_link_libraries (testTestModule wbcnet ${WBCNET_LIBS})
+  target_link_libraries (testTestModule wbcnet ${WBCNET_LIBS} ${MAYBE_GCOV})
 else (CMAKE_SYSTEM_NAME MATCHES OpenBSD)
-  target_link_libraries (testTestModule dl wbcnet ${WBCNET_LIBS})
+  target_link_libraries (testTestModule dl wbcnet ${WBCNET_LIBS} ${MAYBE_GCOV})
 endif (CMAKE_SYSTEM_NAME MATCHES OpenBSD)
 
 if (${WBCNET_HAVE_MQUEUE})
   add_executable (testMQWrap test/testMQWrap.cpp)
-  target_link_libraries (testMQWrap wbcnet ${WBCNET_LIBS})
+  target_link_libraries (testMQWrap wbcnet ${WBCNET_LIBS} ${MAYBE_GCOV})
   add_executable (testMQSpeed test/testMQSpeed.cpp)
-  target_link_libraries (testMQSpeed wbcnet ${WBCNET_LIBS})
+  target_link_libraries (testMQSpeed wbcnet ${WBCNET_LIBS} ${MAYBE_GCOV})
 endif (${WBCNET_HAVE_MQUEUE})
 
 if (WBCNET_HAVE_LOG4CXX)
   add_executable (testLogWithLog4cxx test/testLogWithLog4cxx.cpp)
-  target_link_libraries (testLogWithLog4cxx wbcnet ${WBCNET_LIBS})
+  target_link_libraries (testLogWithLog4cxx wbcnet ${WBCNET_LIBS} ${MAYBE_GCOV})
 endif (WBCNET_HAVE_LOG4CXX)
 
 if (WBCNET_HAVE_NETWRAP)
   add_executable (testNetWrapper test/testNetWrapper.cpp)
-  target_link_libraries (testNetWrapper wbcnet ${WBCNET_LIBS})
+  target_link_libraries (testNetWrapper wbcnet ${WBCNET_LIBS} ${MAYBE_GCOV})
 endif (WBCNET_HAVE_NETWRAP)
 
 check_include_file_cxx (gtest/gtest.h WBCNET_HAVE_GTEST)
 if (${WBCNET_HAVE_GTEST})
   message ("[WBCNET] Found Google testing framework.")
   add_executable (testFactory test/testFactory.cpp)
-  target_link_libraries (testFactory wbcnet ${WBCNET_LIBS} gtest)
+  target_link_libraries (testFactory wbcnet ${WBCNET_LIBS} gtest ${MAYBE_GCOV})
 else (${WBCNET_HAVE_GTEST})
   message ("[WBCNET] WARNING Google testing framework not found! If you do have it, use -DGTEST_DIR:path=/where/ever or set the GTEST_DIR environment variable")
 endif (${WBCNET_HAVE_GTEST})
