@@ -66,10 +66,14 @@ for test in \
     fi
 done
 
-echo $MSG
+echo -e $MSG
 if [ -n "$FAIL" ]; then
-    echo "There were failures in:$FAIL"
+    echo -e "\nThere were failures in:$FAIL"
     exit 1
 else
-    echo "All tests passed."
+    if [ -n "$MSG" ]; then
+	echo -e "\nAll tests passed."
+    else
+	echo -e "\nNo tests were run."
+    fi
 fi
