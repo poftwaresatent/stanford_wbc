@@ -1,5 +1,18 @@
 #!/bin/sh
 
+##################################################
+# HOW TO CREATE COVERAGE REPORTS WITH THIS SCRIPT
+# 
+#  cd build
+#  rm -rf * && cmake -DCOVERAGE=true .. && make -j 4
+#  cd ..
+#  lcov --directory build --zerocounters
+#  cd build
+#  ../runtests.sh 
+#  cd ..
+#  lcov --directory build --capture --output-file wbc.info
+#  genhtml wbc.info -o stanford-wbc-lcov/
+
 ## to do: make these standalone?
 # wbcnet/testStreamBufMgr
 # wbcnet/testMQSpeed
