@@ -114,7 +114,7 @@ namespace jspace {
       std::ostringstream msg;
       msg << "converted URDF to TAO\n";
       dump_tao_tree_info(msg, tao_trees_[0], "  ", false);
-      ROS_INFO (msg.str().c_str());
+      ROS_INFO ("%s", msg.str().c_str());
     }
     
     XmlRpc::XmlRpcValue gravity_compensated_links_value;

@@ -49,7 +49,7 @@ deLogger* deLogger::logger = NULL;
 
 void deLoggerOutputStd::Log(deChar *msg)
 {
-	printf(msg);
+        printf("%s", msg);
 	fflush(stdout);
 }
 
@@ -66,7 +66,7 @@ deLoggerOutputFile::~deLoggerOutputFile()
 void deLoggerOutputFile::Log(deChar *msg)
 {
 	if (!logfile) return;
-	fprintf(logfile, msg);
+	fprintf(logfile, "%s", msg);
 }
 
 //
