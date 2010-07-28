@@ -27,7 +27,7 @@
 #define JSPACE_MODEL_HPP
 
 #include <jspace/State.hpp>
-#include <eigen2/Eigen/Geometry>
+#include <Eigen/Geometry>
 #include <string>
 #include <vector>
 #include <set>

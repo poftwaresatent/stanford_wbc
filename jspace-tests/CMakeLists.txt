@@ -6,6 +6,7 @@ endif (COMMAND CMAKE_POLICY)
 
 include (../wbc.cmake)
 wbc_init (jspace_tests)
+wbc_find_eigen2 ()
 
 include_directories (
   .

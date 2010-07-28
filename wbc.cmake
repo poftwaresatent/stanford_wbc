@@ -337,6 +337,44 @@ endmacro (wbc_init)
 
 ##################################################
 #
+# wbc_find_eigen2()
+#
+# Try to find Eigen version 2.x (see http://eigen.tuxfamily.org/)
+#
+# Use the EIGEN2_DIR variable to point this macro to a custom
+# install location.
+#
+macro (wbc_find_eigen2)
+  # NOTE: the eigen2/ prefixing is a quick hack due to CMake
+  # quirks. We should actually explicit check for the
+  # eigen2/Eigen/COre header, and only then tweak the include
+  # path... but CMake does not seem to tell us where exactly it found
+  # a header, so we'd have to jump through some hoops via find_path()
+  # or so.
+  if (NOT EIGEN2_DIR)
+    set (EIGEN2_DIR $ENV{EIGEN2_DIR})
+  endif (NOT EIGEN2_DIR)
+  if (EIGEN2_DIR)
+    message ("[WBC] EIGEN2_DIR is set to ${EIGEN2_DIR}")
+    list (APPEND CMAKE_REQUIRED_INCLUDES ${EIGEN2_DIR}/include ${EIGEN2_DIR})
+    include_directories (${EIGEN2_DIR}/include ${EIGEN2_DIR} ${EIGEN2_DIR}/include/eigen2 ${EIGEN2_DIR}/eigen2)
+  else (EIGEN2_DIR)
+    # This is the standard install location under Debian, maybe others
+    # as well. See not on quick hack above.
+    include_directories (/usr/include/eigen2)
+  endif (EIGEN2_DIR)
+  
+  check_include_file_cxx (Eigen/Core HAVE_EIGEN2)
+  if (${HAVE_EIGEN2})
+    message ("[WBC] found Eigen headers")
+  else (${HAVE_EIGEN2})
+    message (FATAL_ERROR "[WBC] Eigen2 library not found. Please install it e.g. using `sudo apt-get install libeigen2-dev' or from http://eigen.tuxfamily.org/ and tell me where to find it by passing the -DEIGEN2_DIR:path=/path/to/eigen2")
+  endif (${HAVE_EIGEN2})
+endmacro (wbc_find_eigen2)
+
+
+##################################################
+#
 # wbc_find_urdf()
 #
 # Try to find ROS. If found, try to find URDF. If everything works as
