@@ -1,5 +1,7 @@
 ### included via subdir() command in top-level CMakeLists.txt
 
+wbc_find_eigen2 ()
+
 wbc_add_executable (wbcuser wbcuser.cpp)
 wbc_add_executable (wbcmodel wbcmodel.cpp)
 wbc_add_executable (wbcservo wbcservo.cpp)
