@@ -76,6 +76,14 @@ namespace jspace {
   
   
   Status FloatController::
+  latch(Model const & model)
+  {
+    Status ok;
+    return ok;
+  }
+  
+  
+  Status FloatController::
   computeCommand(Model const & model, std::vector<double> & tau)
   {
     Vector gg;
@@ -196,6 +204,15 @@ namespace jspace {
   getActual(std::vector<double> & actual) const
   {
     actual = actual_;
+    Status ok;
+    return ok;
+  }
+  
+  
+  Status JointGoalController::
+  latch(Model const & model)
+  {
+    goal_ = model.getState().position_;
     Status ok;
     return ok;
   }

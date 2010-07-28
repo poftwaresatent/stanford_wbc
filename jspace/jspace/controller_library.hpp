@@ -52,6 +52,7 @@ namespace jspace {
     virtual Status setGains(std::vector<double> const & kp, std::vector<double> const & kd);
     virtual Status getGains(std::vector<double> & kp, std::vector<double> & kd) const;
     
+    virtual Status latch(Model const & model);
     virtual Status computeCommand(Model const & model, std::vector<double> & tau);
   };
   
@@ -91,6 +92,7 @@ namespace jspace {
 		       std::vector<double> const & default_kd);
     
     virtual Status getActual(std::vector<double> & actual) const;
+    virtual Status latch(Model const & model);
     virtual Status computeCommand(Model const & model, std::vector<double> & tau);
     
   protected:
