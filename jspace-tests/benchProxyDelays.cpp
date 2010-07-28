@@ -79,6 +79,7 @@ namespace {
     virtual jspace::Status setGains(std::vector<double> const & kp, std::vector<double> const & kd);
     virtual jspace::Status getGains(std::vector<double> & kp, std::vector<double> & kd) const;
     
+    virtual jspace::Status latch(jspace::Model const & model);
     virtual jspace::Status computeCommand(jspace::Model const & model, std::vector<double> & tau);
     
   protected:
@@ -514,6 +515,14 @@ namespace {
   {
     jspace::Status zonk(false, "not implemented");
     return zonk;
+  }
+  
+  
+  jspace::Status CustomController::
+  latch(jspace::Model const & model)
+  {
+    jspace::Status ok;
+    return ok;
   }
   
   
