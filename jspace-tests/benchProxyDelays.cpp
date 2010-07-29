@@ -34,6 +34,7 @@
 #include <wbcnet/imp/RawMemChannel.hpp>
 #include <err.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 
 namespace {

@@ -14,11 +14,11 @@ include_directories (
   ../saimatrix
   ../wbcnet
   ../tao
-  ../wbc
+  ../wbc_tinyxml
   )
 
-add_library (jspace_tests util.cpp model_library.cpp)
-target_link_libraries (jspace_tests jspace Stanford_WBC ${MAYBE_GCOV})
+add_library (jspace_tests util.cpp model_library.cpp sai_brep.cpp sai_brep_parser.cpp)
+target_link_libraries (jspace_tests jspace wbc_tinyxml ${MAYBE_GCOV})
 
 add_executable (benchProxyDelays benchProxyDelays.cpp)
 target_link_libraries (benchProxyDelays jspace_tests ${MAYBE_GCOV})

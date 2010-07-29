@@ -25,6 +25,7 @@
 
 #include "model_library.hpp"
 #include "util.hpp"
+#include "sai_brep_parser.hpp"
 #include <tao/dynamics/taoNode.h>
 #include <tao/dynamics/taoDynamics.h>
 #include <tao/dynamics/taoJoint.h>
@@ -32,14 +33,11 @@
 #include <jspace/vector_util.hpp>
 #include <jspace/controller_library.hpp>
 #include <wbcnet/strutil.hpp>
-// #include <wbc/core/RobotControlModel.hpp>
-#include <wbc/parse/BRParser.hpp>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <gtest/gtest.h>
 #include <errno.h>
-// #include <string.h>
 
 #include <eigen2/Eigen/SVD>
 #include <eigen2/Eigen/LU>

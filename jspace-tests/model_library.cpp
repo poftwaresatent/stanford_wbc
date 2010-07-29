@@ -25,14 +25,15 @@
 
 #include "model_library.hpp"
 #include "util.hpp"
-#include <wbc/core/RobotControlModel.hpp>
-#include <wbc/parse/BRParser.hpp>
+#include "sai_brep.hpp"
+#include "sai_brep_parser.hpp"
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
 
 
 using namespace jspace::test;
+using namespace std;
 
 
 static std::string create_puma_xml() throw(runtime_error)
@@ -150,13 +151,14 @@ static std::string create_puma_xml() throw(runtime_error)
 }
 
 
-static wbc::BranchingRepresentation * create_puma_brep() throw(runtime_error)
+static BranchingRepresentation * create_puma_brep() throw(runtime_error)
 {
   static string xml_filename("");
   if (xml_filename.empty()) {
     xml_filename = create_puma_xml();
   }
-  wbc::BranchingRepresentation * brep(wbc::BRParser::parse("sai", xml_filename));
+  BRParser brp;
+  BranchingRepresentation * brep(brp.parse(xml_filename));
   return brep;
 }
 
@@ -165,11 +167,11 @@ namespace jspace {
     
     jspace::Model * create_puma_model() throw(runtime_error)
     {
-      wbc::BranchingRepresentation * kg_brep(create_puma_brep());
+      BranchingRepresentation * kg_brep(create_puma_brep());
       jspace::tao_tree_info_s * kg_tree(kg_brep->createTreeInfo());
       delete kg_brep;
       
-      wbc::BranchingRepresentation * cc_brep(create_puma_brep());
+      BranchingRepresentation * cc_brep(create_puma_brep());
       jspace::tao_tree_info_s * cc_tree(cc_brep->createTreeInfo());
       delete cc_brep;
       
@@ -217,13 +219,14 @@ static std::string create_unit_mass_RR_xml() throw(runtime_error)
 }
 
 
-static wbc::BranchingRepresentation * create_unit_mass_RR_brep() throw(runtime_error)
+static BranchingRepresentation * create_unit_mass_RR_brep() throw(runtime_error)
 {
   static string xml_filename("");
   if (xml_filename.empty()) {
     xml_filename = create_unit_mass_RR_xml();
   }
-  wbc::BranchingRepresentation * brep(wbc::BRParser::parse("sai", xml_filename));
+  BRParser brp;
+  BranchingRepresentation * brep(brp.parse(xml_filename));
   return brep;
 }
 
@@ -233,11 +236,11 @@ namespace jspace {
     
     jspace::Model * create_unit_mass_RR_model() throw(runtime_error)
     {
-      wbc::BranchingRepresentation * kg_brep(create_unit_mass_RR_brep());
+      BranchingRepresentation * kg_brep(create_unit_mass_RR_brep());
       jspace::tao_tree_info_s * kg_tree(kg_brep->createTreeInfo());
       delete kg_brep;
       
-      wbc::BranchingRepresentation * cc_brep(create_unit_mass_RR_brep());
+      BranchingRepresentation * cc_brep(create_unit_mass_RR_brep());
       jspace::tao_tree_info_s * cc_tree(cc_brep->createTreeInfo());
       delete cc_brep;
       
@@ -318,24 +321,25 @@ static std::string create_unit_mass_5R_xml() throw(runtime_error)
 namespace jspace {
   namespace test {
     
-    wbc::BranchingRepresentation * create_unit_mass_5R_brep() throw(runtime_error)
+    BranchingRepresentation * create_unit_mass_5R_brep() throw(runtime_error)
     {
       static string xml_filename("");
       if (xml_filename.empty()) {
 	xml_filename = create_unit_mass_5R_xml();
       }
-      wbc::BranchingRepresentation * brep(wbc::BRParser::parse("sai", xml_filename));
+      BRParser brp;
+      BranchingRepresentation * brep(brp.parse(xml_filename));
       return brep;
     }
     
     
     jspace::Model * create_unit_mass_5R_model() throw(runtime_error)
     {
-      wbc::BranchingRepresentation * kg_brep(create_unit_mass_5R_brep());
+      BranchingRepresentation * kg_brep(create_unit_mass_5R_brep());
       jspace::tao_tree_info_s * kg_tree(kg_brep->createTreeInfo());
       delete kg_brep;
       
-      wbc::BranchingRepresentation * cc_brep(create_unit_mass_5R_brep());
+      BranchingRepresentation * cc_brep(create_unit_mass_5R_brep());
       jspace::tao_tree_info_s * cc_tree(cc_brep->createTreeInfo());
       delete cc_brep;
       
@@ -383,13 +387,14 @@ static std::string create_unit_inertia_RR_xml() throw(runtime_error)
 }
 
 
-static wbc::BranchingRepresentation * create_unit_inertia_RR_brep() throw(runtime_error)
+static BranchingRepresentation * create_unit_inertia_RR_brep() throw(runtime_error)
 {
   static string xml_filename("");
   if (xml_filename.empty()) {
     xml_filename = create_unit_inertia_RR_xml();
   }
-  wbc::BranchingRepresentation * brep(wbc::BRParser::parse("sai", xml_filename));
+  BRParser brp;
+  BranchingRepresentation * brep(brp.parse(xml_filename));
   return brep;
 }
 
@@ -399,11 +404,11 @@ namespace jspace {
     
     jspace::Model * create_unit_inertia_RR_model() throw(runtime_error)
     {
-      wbc::BranchingRepresentation * kg_brep(create_unit_inertia_RR_brep());
+      BranchingRepresentation * kg_brep(create_unit_inertia_RR_brep());
       jspace::tao_tree_info_s * kg_tree(kg_brep->createTreeInfo());
       delete kg_brep;
       
-      wbc::BranchingRepresentation * cc_brep(create_unit_inertia_RR_brep());
+      BranchingRepresentation * cc_brep(create_unit_inertia_RR_brep());
       jspace::tao_tree_info_s * cc_tree(cc_brep->createTreeInfo());
       delete cc_brep;
       
@@ -451,13 +456,14 @@ static std::string create_unit_mass_RP_xml() throw(runtime_error)
 }
 
 
-static wbc::BranchingRepresentation * create_unit_mass_RP_brep() throw(runtime_error)
+static BranchingRepresentation * create_unit_mass_RP_brep() throw(runtime_error)
 {
   static string xml_filename("");
   if (xml_filename.empty()) {
     xml_filename = create_unit_mass_RP_xml();
   }
-  wbc::BranchingRepresentation * brep(wbc::BRParser::parse("sai", xml_filename));
+  BRParser brp;
+  BranchingRepresentation * brep(brp.parse(xml_filename));
   return brep;
 }
 
@@ -467,11 +473,11 @@ namespace jspace {
     
     jspace::Model * create_unit_mass_RP_model() throw(runtime_error)
     {
-      wbc::BranchingRepresentation * kg_brep(create_unit_mass_RP_brep());
+      BranchingRepresentation * kg_brep(create_unit_mass_RP_brep());
       jspace::tao_tree_info_s * kg_tree(kg_brep->createTreeInfo());
       delete kg_brep;
       
-      wbc::BranchingRepresentation * cc_brep(create_unit_mass_RP_brep());
+      BranchingRepresentation * cc_brep(create_unit_mass_RP_brep());
       jspace::tao_tree_info_s * cc_tree(cc_brep->createTreeInfo());
       delete cc_brep;
       
