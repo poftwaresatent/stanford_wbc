@@ -51,11 +51,6 @@ else (HAVE_ROS)
   target_link_libraries (jspace wbcnet TAO_Dynamics_Engine ${MAYBE_GCOV})
 endif (HAVE_ROS)
 
-if (HAVE_GTEST)
-  add_executable (testServoProxy tests/testServoProxy.cpp)
-  target_link_libraries (testServoProxy jspace gtest ${MAYBE_GCOV})
-endif (HAVE_GTEST)
-
 file (GLOB headers "jspace/*.hpp")
 install (FILES ${headers} DESTINATION include/jspace)
 
@@ -68,3 +63,5 @@ install (TARGETS jspace
          RUNTIME DESTINATION bin
          LIBRARY DESTINATION lib
          ARCHIVE DESTINATION lib)
+
+subdirs (tests)

@@ -4,17 +4,16 @@ if (COMMAND CMAKE_POLICY)
   cmake_policy (SET CMP0005 NEW)
 endif (COMMAND CMAKE_POLICY)
 
-include (../wbc.cmake)
+include (../../wbc.cmake)
 wbc_init (jspace_tests)
 wbc_find_eigen2 ()
 
 include_directories (
-  .
-  ../jspace
-  ../saimatrix
-  ../wbcnet
-  ../tao
-  ../wbc_tinyxml
+  ../../jspace
+  ../../saimatrix
+  ../../wbcnet
+  ../../tao
+  ../../wbc_tinyxml
   )
 
 add_library (jspace_tests util.cpp model_library.cpp sai_brep.cpp sai_brep_parser.cpp)
@@ -26,7 +25,10 @@ target_link_libraries (benchProxyDelays jspace_tests ${MAYBE_GCOV})
 wbc_find_urdf ()
 
 if (HAVE_GTEST)
-
+  
+  add_executable (testServoProxy testServoProxy.cpp)
+  target_link_libraries (testServoProxy jspace gtest ${MAYBE_GCOV})
+  
   add_executable (testJspace testJspace.cpp)
   target_link_libraries (testJspace jspace_tests gtest ${MAYBE_GCOV})
   

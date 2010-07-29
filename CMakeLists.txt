@@ -49,7 +49,6 @@ subdirs (
   wbcnet
   robarch
   jspace
-  jspace-tests
   wbc
   wbc_plugins
   )

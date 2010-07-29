@@ -38,9 +38,10 @@
 
 MSG=""
 FAIL=""
+NOTFOUND=""
 
 for test in \
-    jspace/testServoProxy \
+    jspace/tests/testServoProxy \
     wbcnet/testPack \
     wbcnet/testTaskAtomizer \
     wbcnet/testMQWrap \
@@ -49,7 +50,7 @@ for test in \
     wbcnet/testID \
     wbcnet/testProxy \
     wbcnet/testFactory \
-    jspace-tests/testJspace \
+    jspace/tests/testJspace \
     tao/testTAO \
     wbc/tests/testProcess \
     wbc_tinyxml/xmltest; do
@@ -63,12 +64,18 @@ for test in \
 	fi
     else
 	MSG="$MSG\n$test not found"
+	NOTFOUND="$NOTFOUND $test"
     fi
 done
 
 echo -e $MSG
+if [ -n "$NOTFOUND" ]; then
+    echo -e "\nNot found:$NOTFOUND"
+else
+    echo -e "\nAll tests were found."
+fi
 if [ -n "$FAIL" ]; then
-    echo -e "\nThere were failures in:$FAIL"
+    echo -e "\nFailures in:$FAIL"
     exit 1
 else
     if [ -n "$MSG" ]; then
