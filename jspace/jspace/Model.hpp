@@ -27,7 +27,7 @@
 #define JSPACE_MODEL_HPP
 
 #include <jspace/State.hpp>
-#include <Eigen/Geometry>
+#include <jspace/wrap_eigen.hpp>
 #include <string>
 #include <vector>
 #include <set>
@@ -37,12 +37,6 @@
 class taoDNode;
 
 namespace jspace {
-
-  typedef Eigen::Transform3d Transform;
-  typedef Eigen::Translation3d Translation;
-  typedef Eigen::Quaternion<double> Quaternion;
-  typedef Eigen::VectorXd Vector;
-  typedef Eigen::MatrixXd Matrix;
   
   
   // declared in <jspace/tao_util.hpp>
