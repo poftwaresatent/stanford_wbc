@@ -394,7 +394,7 @@ namespace wbc {
     bar_t const & link_bar(linkNameToNodeMap(false));
     bar_t const & joint_bar(jointNameToNodeMap(false));
     SAIVector const & upper(upperJointLimits());
-    SAIVector const & lower(upperJointLimits());
+    SAIVector const & lower(lowerJointLimits());
     
     for (foo_t::const_iterator ifoo(foo.begin()); ifoo != foo.end(); ++ifoo) {
       if (ifoo->first >= 0) {
