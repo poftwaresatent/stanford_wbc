@@ -356,11 +356,12 @@ macro (wbc_find_eigen2)
   endif (NOT EIGEN2_DIR)
   if (EIGEN2_DIR)
     message ("[WBC] EIGEN2_DIR is set to ${EIGEN2_DIR}")
-    list (APPEND CMAKE_REQUIRED_INCLUDES ${EIGEN2_DIR}/include ${EIGEN2_DIR})
+    list (APPEND CMAKE_REQUIRED_INCLUDES ${EIGEN2_DIR}/include ${EIGEN2_DIR} ${EIGEN2_DIR}/include/eigen2 ${EIGEN2_DIR}/eigen2)
     include_directories (${EIGEN2_DIR}/include ${EIGEN2_DIR} ${EIGEN2_DIR}/include/eigen2 ${EIGEN2_DIR}/eigen2)
   else (EIGEN2_DIR)
     # This is the standard install location under Debian, maybe others
     # as well. See not on quick hack above.
+    list (APPEND CMAKE_REQUIRED_INCLUDES /usr/include/eigen2)
     include_directories (/usr/include/eigen2)
   endif (EIGEN2_DIR)
   
