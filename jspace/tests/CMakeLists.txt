@@ -1,16 +1,5 @@
-cmake_minimum_required (VERSION 2.6)
-if (COMMAND CMAKE_POLICY)
-  cmake_policy (SET CMP0003 NEW)
-  cmake_policy (SET CMP0005 NEW)
-endif (COMMAND CMAKE_POLICY)
-
-include (../../wbc.cmake)
-wbc_init (jspace_tests)
-wbc_find_eigen2 ()
-
 include_directories (
   ../../jspace
-  ../../saimatrix
   ../../wbcnet
   ../../tao
   ../../wbc_tinyxml
@@ -21,8 +10,6 @@ target_link_libraries (jspace_tests jspace wbc_tinyxml ${MAYBE_GCOV})
 
 add_executable (benchProxyDelays benchProxyDelays.cpp)
 target_link_libraries (benchProxyDelays jspace_tests ${MAYBE_GCOV})
-
-wbc_find_urdf ()
 
 if (HAVE_GTEST)
   
