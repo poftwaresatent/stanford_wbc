@@ -37,6 +37,9 @@ namespace jspace {
     jspace::Model * create_unit_mass_5R_model() throw(std::runtime_error);
     jspace::Model * create_unit_inertia_RR_model() throw(std::runtime_error);
     jspace::Model * create_unit_mass_RP_model() throw(std::runtime_error);
-
+    
+    void compute_unit_mass_RR_mass_inertia(double q1, double q2, jspace::Matrix & AA);
+    void compute_unit_inertia_RR_mass_inertia(double q1, double q2, jspace::Matrix & AA);
+    
   }
 }

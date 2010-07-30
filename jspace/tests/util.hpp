@@ -23,13 +23,32 @@
    \author Roland Philippsen
 */
 
+#include <jspace/wrap_eigen.hpp>
 #include <stdexcept>
-
-// for jspace::Vector, could move those typedefs into a separate file though...
-#include <jspace/Model.hpp>
+#include <vector>
 
 namespace jspace {
   namespace test {
+    
+    double smart_delta(double have, double want, double epsilon = 1e-6);
+    
+    bool check_matrix(char const * name,
+		      jspace::Matrix const & want,
+		      jspace::Matrix const & have,
+		      double precision,
+		      std::ostringstream & msg);
+    
+    bool check_vector(char const * name,
+		      jspace::Vector const & want,
+		      jspace::Vector const & have,
+		      double precision,
+		      std::ostream & msg);
+    
+    bool check_vector(char const * name,
+		      std::vector<double> const & want,
+		      std::vector<double> const & have,
+		      double precision,
+		      std::ostream & msg);
     
     std::string create_tmpfile(char const * fname_template, char const * contents) throw(std::runtime_error);
     
