@@ -38,6 +38,12 @@ namespace jspace {
     jspace::Model * create_unit_inertia_RR_model() throw(std::runtime_error);
     jspace::Model * create_unit_mass_RP_model() throw(std::runtime_error);
     
+    jspace::Model * create_fork_4R_model() throw(std::runtime_error);
+    
+    void compute_fork_4R_kinematics(double q1, double q2, double q3, double q4,
+				    jspace::Vector & o1, jspace::Vector & o2, jspace::Vector & o3, jspace::Vector & o4,
+				    jspace::Matrix & J1, jspace::Matrix & J2, jspace::Matrix & J3, jspace::Matrix & J4);
+    
     void compute_unit_mass_RR_mass_inertia(double q1, double q2, jspace::Matrix & AA);
     void compute_unit_inertia_RR_mass_inertia(double q1, double q2, jspace::Matrix & AA);
     

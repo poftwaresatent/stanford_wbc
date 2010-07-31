@@ -36,7 +36,11 @@ using namespace std;
 namespace jspace {
   namespace test {
 
-
+    
+    typedef std::string (*create_xml_t)();
+    typedef BranchingRepresentation * (*create_brep_t)();
+    
+    
     static std::string create_puma_xml() throw(runtime_error)
     {
       static char const * xml = 
@@ -150,32 +154,39 @@ namespace jspace {
       std::string result(create_tmpfile("puma.xml.XXXXXX", xml));
       return result;
     }
-
-
-    static BranchingRepresentation * create_puma_brep() throw(runtime_error)
+    
+    
+    static BranchingRepresentation * _create_brep(create_xml_t create_xml) throw(runtime_error)
     {
-      static string xml_filename("");
-      if (xml_filename.empty()) {
-	xml_filename = create_puma_xml();
-      }
+      string const xml_filename(create_xml());
       BRParser brp;
       BranchingRepresentation * brep(brp.parse(xml_filename));
       return brep;
     }
-
+    
+    
+    static BranchingRepresentation * create_puma_brep() throw(runtime_error)
+    {
+      return _create_brep(create_puma_xml);
+    }
+    
+    
+    static jspace::Model * _create_model(create_brep_t create_brep) throw(runtime_error)
+    {
+      BranchingRepresentation * kg_brep(create_brep());
+      jspace::tao_tree_info_s * kg_tree(kg_brep->createTreeInfo());
+      delete kg_brep;
+      BranchingRepresentation * cc_brep(create_brep());
+      jspace::tao_tree_info_s * cc_tree(cc_brep->createTreeInfo());
+      delete cc_brep;
+      jspace::Model * model(new jspace::Model(kg_tree, cc_tree));
+      return model;
+    }
+    
     
     jspace::Model * create_puma_model() throw(runtime_error)
     {
-      BranchingRepresentation * kg_brep(create_puma_brep());
-      jspace::tao_tree_info_s * kg_tree(kg_brep->createTreeInfo());
-      delete kg_brep;
-      
-      BranchingRepresentation * cc_brep(create_puma_brep());
-      jspace::tao_tree_info_s * cc_tree(cc_brep->createTreeInfo());
-      delete cc_brep;
-      
-      jspace::Model * model(new jspace::Model(kg_tree, cc_tree));
-      return model;
+      return _create_model(create_puma_brep);
     }
     
 
@@ -217,28 +228,13 @@ namespace jspace {
 
     static BranchingRepresentation * create_unit_mass_RR_brep() throw(runtime_error)
     {
-      static string xml_filename("");
-      if (xml_filename.empty()) {
-	xml_filename = create_unit_mass_RR_xml();
-      }
-      BRParser brp;
-      BranchingRepresentation * brep(brp.parse(xml_filename));
-      return brep;
+      return _create_brep(create_unit_mass_RR_xml);
     }
 
 
     jspace::Model * create_unit_mass_RR_model() throw(runtime_error)
     {
-      BranchingRepresentation * kg_brep(create_unit_mass_RR_brep());
-      jspace::tao_tree_info_s * kg_tree(kg_brep->createTreeInfo());
-      delete kg_brep;
-      
-      BranchingRepresentation * cc_brep(create_unit_mass_RR_brep());
-      jspace::tao_tree_info_s * cc_tree(cc_brep->createTreeInfo());
-      delete cc_brep;
-      
-      jspace::Model * model(new jspace::Model(kg_tree, cc_tree));
-      return model;
+      return _create_model(create_unit_mass_RR_brep);
     }
 
 
@@ -310,28 +306,13 @@ namespace jspace {
 
     BranchingRepresentation * create_unit_mass_5R_brep() throw(runtime_error)
     {
-      static string xml_filename("");
-      if (xml_filename.empty()) {
-	xml_filename = create_unit_mass_5R_xml();
-      }
-      BRParser brp;
-      BranchingRepresentation * brep(brp.parse(xml_filename));
-      return brep;
+      return _create_brep(create_unit_mass_5R_xml);
     }
     
     
     jspace::Model * create_unit_mass_5R_model() throw(runtime_error)
     {
-      BranchingRepresentation * kg_brep(create_unit_mass_5R_brep());
-      jspace::tao_tree_info_s * kg_tree(kg_brep->createTreeInfo());
-      delete kg_brep;
-      
-      BranchingRepresentation * cc_brep(create_unit_mass_5R_brep());
-      jspace::tao_tree_info_s * cc_tree(cc_brep->createTreeInfo());
-      delete cc_brep;
-      
-      jspace::Model * model(new jspace::Model(kg_tree, cc_tree));
-      return model;
+      return _create_model(create_unit_mass_5R_brep);
     }
 
 
@@ -373,28 +354,13 @@ namespace jspace {
 
     static BranchingRepresentation * create_unit_inertia_RR_brep() throw(runtime_error)
     {
-      static string xml_filename("");
-      if (xml_filename.empty()) {
-	xml_filename = create_unit_inertia_RR_xml();
-      }
-      BRParser brp;
-      BranchingRepresentation * brep(brp.parse(xml_filename));
-      return brep;
+      return _create_brep(create_unit_inertia_RR_xml);
     }
 
     
     jspace::Model * create_unit_inertia_RR_model() throw(runtime_error)
     {
-      BranchingRepresentation * kg_brep(create_unit_inertia_RR_brep());
-      jspace::tao_tree_info_s * kg_tree(kg_brep->createTreeInfo());
-      delete kg_brep;
-      
-      BranchingRepresentation * cc_brep(create_unit_inertia_RR_brep());
-      jspace::tao_tree_info_s * cc_tree(cc_brep->createTreeInfo());
-      delete cc_brep;
-      
-      jspace::Model * model(new jspace::Model(kg_tree, cc_tree));
-      return model;
+      return _create_model(create_unit_inertia_RR_brep);
     }
 
 
@@ -436,31 +402,149 @@ namespace jspace {
 
     static BranchingRepresentation * create_unit_mass_RP_brep() throw(runtime_error)
     {
-      static string xml_filename("");
-      if (xml_filename.empty()) {
-	xml_filename = create_unit_mass_RP_xml();
-      }
-      BRParser brp;
-      BranchingRepresentation * brep(brp.parse(xml_filename));
-      return brep;
+      return _create_brep(create_unit_mass_RP_xml);
     }
 
     
     jspace::Model * create_unit_mass_RP_model() throw(runtime_error)
     {
-      BranchingRepresentation * kg_brep(create_unit_mass_RP_brep());
-      jspace::tao_tree_info_s * kg_tree(kg_brep->createTreeInfo());
-      delete kg_brep;
-      
-      BranchingRepresentation * cc_brep(create_unit_mass_RP_brep());
-      jspace::tao_tree_info_s * cc_tree(cc_brep->createTreeInfo());
-      delete cc_brep;
-      
-      jspace::Model * model(new jspace::Model(kg_tree, cc_tree));
-      return model;
+      return _create_model(create_unit_mass_RP_brep);
     }
-
-
+    
+    
+    static std::string create_fork_4R_xml() throw(runtime_error)
+    {
+      static char const * xml = 
+	"<?xml version=\"1.0\" ?>\n"
+	"<dynworld>\n"
+	"  <baseNode>\n"
+	"    <gravity>0, 0, -9.81</gravity>\n"
+	"    <pos>0, 0, 0</pos>\n"
+	"    <rot>1, 0, 0, 0</rot>\n"
+	"    <jointNode>\n"
+	"      <ID>0</ID>\n"
+	"      <type>R</type>\n"
+	"      <axis>Z</axis>\n"
+	"      <mass>1</mass>\n"
+	"      <inertia>0, 0, 0</inertia>\n"
+	"      <com>0.5, 0, 0</com>\n"
+	"      <pos>0, 0, 0</pos>\n"
+	"      <rot>1, 0, 0, 0</rot>\n"
+	"      <jointNode>\n"
+	"        <ID>1</ID>\n"
+	"        <type>R</type>\n"
+	"        <axis>Z</axis>\n"
+	"        <mass>1</mass>\n"
+	"        <inertia>0, 0, 0</inertia>\n"
+	"        <com>0, 0, 0</com>\n"
+	"        <pos>1, 0, 0</pos>\n"
+	"        <rot>1, 1, 1, 2.09439510239 </rot>\n" // A third of a turn (2 * M_PI / 3)
+	"        <jointNode>\n"
+	"          <ID>2</ID>\n"
+	"          <type>R</type>\n"
+	"          <axis>Z</axis>\n"
+	"          <mass>1</mass>\n"
+	"          <inertia>0, 0, 0</inertia>\n"
+	"          <com>0.5, 0, 0</com>\n"
+	"          <pos>-1, 0, 0</pos>\n"
+	"          <rot>0, 1, 0, 1.57079632679 </rot>\n" // A quarter turn (M_PI / 2)
+	"        </jointNode>\n"
+	"        <jointNode>\n"
+	"          <ID>3</ID>\n"
+	"          <type>R</type>\n"
+	"          <axis>Z</axis>\n"
+	"          <mass>1</mass>\n"
+	"          <inertia>0, 0, 0</inertia>\n"
+	"          <com>0.5, 0, 0</com>\n"
+	"          <pos>1, 0, 0</pos>\n"
+	"          <rot>1, 0, 1, 1.57079632679 </rot>\n" // A quarter turn (M_PI / 2)
+	"	 </jointNode>\n"
+	"      </jointNode>\n"
+	"    </jointNode>\n"
+	"  </baseNode>\n"
+	"</dynworld>\n";
+      std::string result(create_tmpfile("fork_4R.xml.XXXXXX", xml));
+      return result;
+    }
+    
+    
+    static BranchingRepresentation * create_fork_4R_brep() throw(runtime_error)
+    {
+      return _create_brep(create_fork_4R_xml);
+    }
+    
+    
+    jspace::Model * create_fork_4R_model() throw(std::runtime_error)
+    {
+      return _create_model(create_fork_4R_brep);
+    }
+    
+    
+    void compute_fork_4R_kinematics(double q1, double q2, double q3, double q4,
+				    jspace::Vector & o1, jspace::Vector & o2, jspace::Vector & o3, jspace::Vector & o4,
+				    jspace::Matrix & J1, jspace::Matrix & J2, jspace::Matrix & J3, jspace::Matrix & J4)
+    {
+      static double const l1(1);
+      static double const l2(1);
+      
+      double const c1(cos(q1));
+      double const s1(sin(q1));
+      double const c2(cos(q2));
+      double const s2(sin(q2));
+      double const c3(cos(q3));
+      double const s3(sin(q3));
+      double const c4(cos(q4));
+      double const s4(sin(q4));
+      
+      // X1_0 means axes of joint 1 expressed wrt frame 0, etc
+      Eigen::Matrix3d X1_0, X2_1, X3_2, X4_2;
+      X1_0 << c1, -s1, 0, s1, c1, 0, 0, 0, 1;
+      X2_1 << 0, 0, 1, c2, -s2, 0, s2, c2, 0;
+      X3_2 << 0, 0, -1, s3, c3, 0, c3, -s3, 0;
+      X4_2 << 0, 0, 1, -s4, -c4, 0, c4, -s4, 0;
+      
+      // o2_1 means origin of joint 2 expressed wrt frame 1, etc
+      Eigen::Vector3d o2_1, o3_2, o4_2;
+      o2_1 << l1, 0, 0;
+      o3_2 << -l2, 0, 0;
+      o4_2 << l2, 0, 0;
+      
+      o1 = Eigen::Vector3d::Zero();
+      o2 = X1_0 * o2_1;
+      o3 = X1_0 * X2_1 * o3_2;
+      o4 = X1_0 * X2_1 * o4_2;
+      
+      // z1 means Z-axis of joint 1 expressed in global frame (which is frame 0)
+      Eigen::Vector3d z1, z2, z3, z4;
+      z1 = X1_0.col(2);		// Eigen indices start at zero (?)
+      z2 = X1_0 * X2_1.col(2);
+      z3 = X1_0 * X2_1 * X3_2.col(2);
+      z4 = X1_0 * X2_1 * X4_2.col(2);
+      
+      J1 = Eigen::MatrixXd::Zero(6, 4);
+      J1.coeffRef(5, 0) = 1;
+      
+      J2 = Eigen::MatrixXd::Zero(6, 4);
+      J2.block(0, 0, 3, 1) = z1.cross(o2 - o1);
+      J2.block(3, 0, 3, 1) = z1;
+      J2.block(3, 1, 3, 1) = z2;
+      
+      J3 = Eigen::MatrixXd::Zero(6, 4);
+      J3.block(0, 0, 3, 1) = z1.cross(o3 - o1);
+      J3.block(3, 0, 3, 1) = z1;
+      J3.block(0, 1, 3, 1) = z2.cross(o3 - o2);
+      J3.block(3, 1, 3, 1) = z2;
+      J3.block(3, 2, 3, 1) = z3;
+      
+      J4 = Eigen::MatrixXd::Zero(6, 4);
+      J4.block(0, 0, 3, 1) = z1.cross(o4 - o1);
+      J4.block(3, 0, 3, 1) = z1;
+      J4.block(0, 1, 3, 1) = z2.cross(o4 - o2);
+      J4.block(3, 1, 3, 1) = z2;
+      J4.block(3, 3, 3, 1) = z4;
+    }
+    
+    
     void compute_unit_mass_RR_mass_inertia(double q1, double q2, jspace::Matrix & AA)
     {
       double const c1(cos(q1));

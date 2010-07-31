@@ -416,6 +416,90 @@ TEST (jspaceModel, Jacobian_RP)
 }
 
 
+TEST (jspaceModel, kinematics_fork_4R)
+{
+  jspace::Model * model(0);
+  try {
+    model = create_fork_4R_model();
+    taoDNode * node[4];
+    for (size_t ii(0); ii < 4; ++ii) {
+      node[ii] = model->getNode(ii);
+      ASSERT_NE ((void*)0, node[ii]) << "no node " << ii+1 << " (ID " << ii << ")";
+    }
+    jspace::State state(4, 4, 0);
+    jspace::zero(state.velocity_);
+    
+    struct kinematics_s {
+      jspace::Transform gframe;
+      jspace::Vector origin;
+      jspace::Matrix Jacobian;
+    };
+    
+    kinematics_s have[4], want[4];
+    bool keep_running(true);
+    
+    for (double q1(-M_PI); keep_running && (q1 <= M_PI); q1 += 2 * M_PI / 7) {
+      for (double q2(-M_PI); keep_running && (q2 <= M_PI); q2 += 2 * M_PI / 7) {
+	for (double q3(-M_PI); keep_running && (q3 <= M_PI); q3 += 2 * M_PI / 7) {
+	  for (double q4(-M_PI); keep_running && (q4 <= M_PI); q4 += 2 * M_PI / 7) {
+	    state.position_[0] = q1;
+	    state.position_[1] = q2;
+	    state.position_[2] = q3;
+	    state.position_[3] = q4;
+	    model->update(state);
+	    
+	    for (size_t ii(0); ii < 4; ++ii) {
+	      ASSERT_TRUE (model->getGlobalFrame(node[ii], have[ii].gframe))
+		<< "failed to get global frame of node " << ii+1 << " (ID " << ii << ")";
+	      have[ii].origin = have[ii].gframe.translation();
+	      ASSERT_TRUE (model->computeJacobian(node[ii], have[ii].Jacobian))
+		<< "failed to compute Jacobian of node " << ii+1 << " (ID " << ii << ")";
+	    }
+	    
+	    compute_fork_4R_kinematics(q1, q2, q3, q4,
+				       want[0].origin, want[1].origin, want[2].origin, want[3].origin,
+				       want[0].Jacobian, want[1].Jacobian, want[2].Jacobian, want[3].Jacobian);
+	    
+	    for (size_t ii(0); ii < 4; ++ii) {
+	      std::ostringstream msg;
+	      msg << "Verifying origin of node " << ii+1 << " (ID " << ii << ") for q = "
+		  << state.position_ << "\n";
+	      pretty_print(want[ii].origin, msg, "  want", "    ");
+	      pretty_print(have[ii].origin, msg, "  have", "    ");
+	      const bool ok(check_vector("origin", want[ii].origin, have[ii].origin, 1e-3, msg));
+	      EXPECT_TRUE (ok) << msg.str();
+	      if ( ! ok) {
+		keep_running = false;
+	      }
+	    }
+	    if ( ! keep_running) {
+	      break;		// others will fail as well, just skip them...
+	    }
+	    
+	    for (size_t ii(0); ii < 4; ++ii) {
+	      std::ostringstream msg;
+	      msg << "Verifying Jacobian of node " << ii+1 << " (ID " << ii << ") for q = "
+		  << state.position_ << "\n";
+	      pretty_print(want[ii].Jacobian, msg, "  want", "    ");
+	      pretty_print(have[ii].Jacobian, msg, "  have", "    ");
+	      const bool ok(check_matrix("Jacobian", want[ii].Jacobian, have[ii].Jacobian, 1e-3, msg));
+	      EXPECT_TRUE (ok) << msg.str();
+	      if ( ! ok) {
+		keep_running = false;
+	      }
+	    }
+	  }
+	}
+      }
+    }
+  }
+  catch (std::exception const & ee) {
+    ADD_FAILURE () << "exception " << ee.what();
+  }
+  delete model;
+}
+
+
 TEST (jspaceModel, mass_inertia_RR)
 {
   typedef jspace::Model * (*create_model_t)();
