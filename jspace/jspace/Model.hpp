@@ -62,14 +62,28 @@ namespace jspace {
     /** Calls setState(), updateKinematics(), and
 	updateDynamics(). After calling the update() method, you can
 	use any of the other methods without worrying whether you have
-	already called the corresponding computeFoo() method. */
+	already called the corresponding computeFoo() method.
+	
+	\note The given state has to have the correct dimensions, but
+	this is not checked by the implementation. If the given state
+	has too few dimensions, then some positions and velocities of
+	the model will remain at their old values. If there are too
+	many dimensions, they will be ignored.
+    */
     void update(State const & state);
     
     /** Inform the model about the joint state. We have to separate
 	the state update from the computation of the various
 	quantities in order to efficiently use the TAO tree
 	representation, which forces us to distribute the state over
-	its nodes before computing the model. */
+	its nodes before computing the model.
+	
+	\note The given state has to have the correct dimensions, but
+	this is not checked by the implementation. If the given state
+	has too few dimensions, then some positions and velocities of
+	the model will remain at their old values. If there are too
+	many dimensions, they will be ignored.
+    */
     void setState(State const & state);
     
     /** Retrieve the state passed to setState() (or update(), for that

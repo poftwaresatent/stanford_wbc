@@ -45,6 +45,10 @@ namespace jspace {
     State(State const & orig);
     State(size_t npos, size_t nvel, size_t nforce);
     
+    /**
+       Resizes and zeros-out position_, velocity_, and force_ to the
+       desired lengths. Also sets the timestamp to zero.
+    */
     void init(size_t npos, size_t nvel, size_t nforce);
     
     bool equal(State const & rhs,
