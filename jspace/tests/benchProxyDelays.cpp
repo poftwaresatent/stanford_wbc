@@ -23,7 +23,7 @@
    \author Roland Philippsen
 */
 
-#include "model_library.hpp"
+#include <jspace/test/model_library.hpp>
 #include <jspace/State.hpp>
 #include <jspace/Model.hpp>
 #include <jspace/RobotAPI.hpp>

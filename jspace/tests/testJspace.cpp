@@ -23,9 +23,9 @@
    \author Roland Philippsen
 */
 
-#include "model_library.hpp"
-#include "util.hpp"
-#include "sai_brep_parser.hpp"
+#include <jspace/test/model_library.hpp>
+#include <jspace/test/util.hpp>
+#include <jspace/test/sai_brep_parser.hpp>
 #include <tao/dynamics/taoNode.h>
 #include <tao/dynamics/taoDynamics.h>
 #include <tao/dynamics/taoJoint.h>

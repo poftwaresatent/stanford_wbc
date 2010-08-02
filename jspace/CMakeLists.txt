@@ -36,9 +36,11 @@ include_directories (
   .
   ../tao
   ../wbcnet
+  ../wbc_tinyxml
   )
 
 add_library (jspace SHARED ${SRCS})
+
 if (HAVE_ROS)
   target_link_libraries (jspace wbcnet TAO_Dynamics_Engine urdf ${MAYBE_GCOV})
   # Some guesswork to make it easier for users of libjspace to handle
@@ -51,15 +53,26 @@ else (HAVE_ROS)
   target_link_libraries (jspace wbcnet TAO_Dynamics_Engine ${MAYBE_GCOV})
 endif (HAVE_ROS)
 
+add_library (jspace_test SHARED
+  jspace/test/util.cpp
+  jspace/test/model_library.cpp
+  jspace/test/sai_brep.cpp
+  jspace/test/sai_brep_parser.cpp
+  )
+target_link_libraries (jspace_test jspace wbc_tinyxml ${MAYBE_GCOV})
+
 file (GLOB headers "jspace/*.hpp")
 install (FILES ${headers} DESTINATION include/jspace)
+
+file (GLOB test_headers "jspace/test/*.hpp")
+install (FILES ${test_headers} DESTINATION include/jspace/test)
 
 if (HAVE_ROS)
   file (GLOB ros_headers "jspace/ros/*.hpp")
   install (FILES ${ros_headers} DESTINATION include/jspace/ros)
 endif (HAVE_ROS)
 
-install (TARGETS jspace
+install (TARGETS jspace jspace_test
          RUNTIME DESTINATION bin
          LIBRARY DESTINATION lib
          ARCHIVE DESTINATION lib)

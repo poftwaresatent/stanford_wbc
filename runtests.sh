@@ -55,11 +55,11 @@ for test in \
     wbc/tests/testProcess \
     wbc_tinyxml/xmltest; do
     if [ -x $test ]; then
-	$test 2>&1 | tee $test.log
+	$test 2>&1
 	if [ $? -eq 0 ]; then
 	    MSG="$MSG\n$test OK"
 	else
-	    MSG="$MSG\n$test failed, see $foo.log for details"
+	    MSG="$MSG\n$test failed"
 	    FAIL="$FAIL $test"
 	fi
     else
