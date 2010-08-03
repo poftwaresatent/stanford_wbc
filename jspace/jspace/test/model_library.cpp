@@ -414,7 +414,7 @@ namespace jspace {
     
     static std::string create_fork_4R_xml() throw(runtime_error)
     {
-      static char const * xml = 
+      static char const * xml =
 	"<?xml version=\"1.0\" ?>\n"
 	"<dynworld>\n"
 	"  <baseNode>\n"
@@ -438,7 +438,11 @@ namespace jspace {
 	"        <inertia>0, 0, 0</inertia>\n"
 	"        <com>0, 0, 0</com>\n"
 	"        <pos>1, 0, 0</pos>\n"
-	"        <rot>1, 1, 1, 2.09439510239 </rot>\n" // A third of a turn (2 * M_PI / 3)
+	"	<!-- Beware: the axis is not renormalized by the legacy SAI\n"
+	"	     parser! So, 0.57735026919=sqrt(1/3) and\n"
+	"	     2.09439510239=2pi/3 will rotate Z onto X, X onto Y, and Y\n"
+	"	     onto Z -->\n"
+	"        <rot>0.57735026919, 0.57735026919, 0.57735026919, 2.09439510239 </rot>\n"
 	"        <jointNode>\n"
 	"          <ID>2</ID>\n"
 	"          <type>R</type>\n"
@@ -447,7 +451,7 @@ namespace jspace {
 	"          <inertia>0, 0, 0</inertia>\n"
 	"          <com>0.5, 0, 0</com>\n"
 	"          <pos>-1, 0, 0</pos>\n"
-	"          <rot>0, 1, 0, 1.57079632679 </rot>\n" // A quarter turn (M_PI / 2)
+	"          <rot>0, 1, 0, -1.57079632679 </rot> -->\n"
 	"        </jointNode>\n"
 	"        <jointNode>\n"
 	"          <ID>3</ID>\n"
@@ -457,7 +461,7 @@ namespace jspace {
 	"          <inertia>0, 0, 0</inertia>\n"
 	"          <com>0.5, 0, 0</com>\n"
 	"          <pos>1, 0, 0</pos>\n"
-	"          <rot>1, 0, 1, 1.57079632679 </rot>\n" // A quarter turn (M_PI / 2)
+	"          <rot>0.707106781187, 0, 0.707106781187, 3.14159265359 </rot>\n"
 	"	 </jointNode>\n"
 	"      </jointNode>\n"
 	"    </jointNode>\n"
