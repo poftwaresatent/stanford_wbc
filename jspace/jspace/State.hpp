@@ -51,6 +51,19 @@ namespace jspace {
     */
     void init(size_t npos, size_t nvel, size_t nforce);
     
+    /**
+       Resize position_, velocity_, and force_ to the desired lengths
+       and, if necessary, pad them with zeros. Neither the existing
+       values nor the timestamp get modified by this method.
+       
+       \note This method is intended as a cheap way to avoid segfaults
+       when feeding user-provided data to jspace::Model::update() or
+       similar. In a "real" application, your State and Model should
+       definitely be guaranteed to agree on the dimensions of
+       position_, velocity_, and force_.
+    */
+    void resizeAndPadWithZeros(size_t npos, size_t nvel, size_t nforce);
+    
     bool equal(State const & rhs,
 	       int flags = COMPARE_POSITION | COMPARE_VELOCITY,
 	       double precision = 1e-3) const;

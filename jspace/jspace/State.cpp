@@ -66,6 +66,27 @@ namespace jspace {
   }
   
   
+  static void _pad(std::vector<double> & vv, size_t nn)
+  {
+    size_t const old(vv.size());
+    if (old != nn) {
+      vv.resize(nn);
+      if (old < nn) {
+	memset(&vv[old], 0, (nn - old) * sizeof(double));
+      }
+    }
+  }
+  
+  
+  void State::
+  resizeAndPadWithZeros(size_t npos, size_t nvel, size_t nforce)
+  {
+    _pad(position_, npos);
+    _pad(velocity_, nvel);
+    _pad(force_, nforce);
+  }
+  
+  
   State & State::
   operator = (State const & rhs)
   {
