@@ -203,6 +203,10 @@ namespace jspace {
   {
     taoDynamics::updateTransformation(kgm_tree_->root);
     taoDynamics::globalJacobian(kgm_tree_->root);
+    if (cc_tree_) {
+      taoDynamics::updateTransformation(cc_tree_->root);
+      taoDynamics::globalJacobian(cc_tree_->root);
+    }
   }
   
   
