@@ -26,6 +26,10 @@
 #ifndef JSPACE_INERTIA_UTIL_HPP
 #define JSPACE_INERTIA_UTIL_HPP
 
+#include <jspace/Model.hpp>
+#include <stdexcept>
+#include <iosfwd>
+
 class deMatrix3;
 class deVector3;
 class deQuaternion;
@@ -105,7 +109,10 @@ namespace jspace {
 			    deFrame const & home_of_additional_wrt_original,
 			    /** OK to pass same ref as original */
 			    deMassProp & fused);
-
+  
+  void mass_inertia_explicit_form(Model const & model, Matrix & mass_inertia,
+				  std::ostream * dbgos = 0)
+    throw(std::runtime_error);
   
 }
 

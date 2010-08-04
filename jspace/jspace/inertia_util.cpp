@@ -24,7 +24,11 @@
 */
 
 #include "inertia_util.hpp"
+#include "tao_dump.hpp"
 #include <tao/dynamics/tao.h>
+#include <sstream>
+
+using namespace std;
 
 namespace jspace {
   
@@ -230,5 +234,152 @@ namespace jspace {
 			 fused_mass, fused_inertia, fused_com);
     fused.set(&fused_mass, &fused_com.translation(), &fused_inertia);
   }
-
+  
+  
+  void mass_inertia_explicit_form(Model const & model, Matrix & mass_inertia,
+				  std::ostream * dbgos)
+    throw(std::runtime_error)
+  {
+    size_t const ndof(model.getNDOF());
+    mass_inertia = Matrix::Zero(ndof, ndof);
+    
+    if (dbgos) {
+      *dbgos << "jspace::mass_inertia_explicit_form()\n"
+	     << "  ndof = " << ndof << "\n";
+    }
+    
+    for (size_t ii(0); ii < ndof; ++ii) {
+      
+      if (dbgos) {
+	*dbgos << "  computing contributions of node " << ii << "\n";
+      }
+      
+      taoDNode * node(model.getNode(ii));
+      if ( ! node) {
+	ostringstream msg;
+	msg << "jspace::mass_inertia_explicit_form(): no node for index " << ii;
+	throw runtime_error(msg.str());
+      }
+      
+      Transform global_com;
+      Matrix Jacobian;
+      deVector3 const * com(node->center());
+      if (com) {
+	if ( ! model.computeGlobalFrame(node, *com[0], *com[1], *com[2], global_com)) {
+	  ostringstream msg;
+	  msg << "jspace::mass_inertia_explicit_form(): computeGlobalFrame() of COM failed for index " << ii;
+	  throw runtime_error(msg.str());
+	}
+      }
+      else {
+	// pretend the COM is at the node origin
+	if ( ! model.getGlobalFrame(node, global_com)) {
+	  ostringstream msg;
+	  msg << "jspace::mass_inertia_explicit_form(): getGlobalFrame() failed for index " << ii;
+	  throw runtime_error(msg.str());
+	}
+      }
+      if ( ! model.computeJacobian(node, global_com.translation(), Jacobian)) {
+	ostringstream msg;
+	msg << "jspace::mass_inertia_explicit_form(): computeJacobian() of COM failed for index " << ii;
+	throw runtime_error(msg.str());
+      }
+      
+      if (dbgos) {
+	if (com) {
+	  *dbgos << "    local COM: " << *com << "\n";
+	}
+	else {
+	  *dbgos << "    local COM: null\n";
+	}
+	*dbgos << "    global COM: " << pretty_string(global_com.translation()) << "\n"
+	       << "    Jacobian:\n" << pretty_string(Jacobian, "        ");
+      }
+      
+      if (Jacobian.rows() != 6) {
+	ostringstream msg;
+	msg << "jspace::mass_inertia_explicit_form(): Jacobian of node " << ii
+	    << " has " << Jacobian.rows() << " rows instead of 6";
+	throw runtime_error(msg.str());
+      }
+      if (Jacobian.cols() != ndof) {
+	ostringstream msg;
+	msg << "jspace::mass_inertia_explicit_form(): Jacobian of node " << ii
+	    << " has " << Jacobian.cols() << " columns instead of " << ndof;
+	throw runtime_error(msg.str());
+      }
+      
+      // A problem that we will be having with TAO's inertia info a
+      // bit further down is that it contains the contribution from
+      // the mass, and we have to remove that before proceeding with
+      // the rotational contribution to the mass-inertia matrix.
+      Eigen::Matrix3d Im(Eigen::Matrix3d::Zero());
+      deFloat const * mass(node->mass());
+      if (mass) {
+	Matrix const mass_contrib(Jacobian.block(0, 0, 3, ndof).transpose() * Jacobian.block(0, 0, 3, ndof));
+	mass_inertia += *mass * mass_contrib;
+	if (com) {
+	  double const xx(pow(*com[0], 2));
+	  double const yy(pow(*com[1], 2));
+	  double const zz(pow(*com[2], 2));
+	  double const xy(*com[0] * *com[1]);
+	  double const xz(*com[0] * *com[2]);
+	  double const yz(*com[1] * *com[2]);
+	  Im <<
+	    yy+zz, -xy, -xz,
+	    -xy, zz+xx, -yz,
+	    -xz, -yz, xx+yy;
+	}
+	if (dbgos) {
+	  *dbgos << "    mass: " << *mass << "\n"
+		 << "    JvT x Jv:\n" << pretty_string(mass_contrib, "        ")
+		 << "    contribution of mass:\n" << pretty_string(*mass * mass_contrib, "        ")
+		 << "    Im (for subsequent use):\n" << pretty_string(Im, "        ");
+	}
+      }
+      else if (dbgos) {
+	*dbgos << "    no mass\n";
+      }
+      
+      // I think this is expressed wrt node origin, not COM. But in
+      // any case, what matters is the instantaneous rotational
+      // velocity due to joint ii, which is the same throughout the
+      // entire link. Given that the COM frame is assumed to be
+      // aligned with the node origin frame anyway, all we have to do
+      // is express the rotational contribution of the Jacobian the
+      // local frame and use that.
+      //
+      //
+      deMatrix3 const * inertia(node->inertia());
+      if (inertia) {
+	// NOTE: global_com.rotation() would require SVD, but we know
+	// that we are dealing with an affine transform, so taking
+	// what Eign2 calls the "linear" part is fine, because that's
+	// simply the 3x3 upper left block of the homogeneous
+	// transformation matrix. Hopefully anyway.
+	Matrix const J_omega(global_com.linear() * Jacobian.block(3, 0, 3, ndof));
+	Eigen::Matrix3d Ic;
+	Ic <<
+	  inertia->elementAt(0, 0), inertia->elementAt(0, 1), inertia->elementAt(0, 2),
+	  inertia->elementAt(1, 0), inertia->elementAt(1, 1), inertia->elementAt(1, 2),
+	  inertia->elementAt(2, 0), inertia->elementAt(2, 1), inertia->elementAt(2, 2);
+	mass_inertia += J_omega.transpose() * (Ic - Im) * J_omega;
+	if (dbgos) {
+	  *dbgos << "    Ic:\n" << pretty_string(Ic, "        ")
+		 << "    Ic - Im:\n" << pretty_string(Ic - Im, "        ")
+		 << "    J_omega:\n" << pretty_string(J_omega, "        ")
+		 << "    JoT x (Ic-Im) x Jo:\n"
+		 << pretty_string(J_omega.transpose() * (Ic - Im) * J_omega, "        ");
+	}
+      }
+      else if (dbgos) {
+	*dbgos << "    no inertia\n";
+      }
+      
+      if (dbgos) {
+	*dbgos << "  mass_inertia so far:\n" << pretty_string(mass_inertia, "    ");
+      }
+    }
+  }
+  
 }
