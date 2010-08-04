@@ -500,30 +500,39 @@ namespace jspace {
       double const c4(cos(q4));
       double const s4(sin(q4));
       
-      // X1_0 means axes of joint 1 expressed wrt frame 0, etc
-      Eigen::Matrix3d X1_0, X2_1, X3_2, X4_2;
-      X1_0 << c1, -s1, 0, s1, c1, 0, 0, 0, 1;
-      X2_1 << 0, 0, 1, c2, -s2, 0, s2, c2, 0;
-      X3_2 << 0, 0, -1, s3, c3, 0, c3, -s3, 0;
-      X4_2 << 0, 0, 1, -s4, -c4, 0, c4, -s4, 0;
-      
-      // o2_1 means origin of joint 2 expressed wrt frame 1, etc
-      Eigen::Vector3d o2_1, o3_2, o4_2;
-      o2_1 << l1, 0, 0;
-      o3_2 << -l2, 0, 0;
-      o4_2 << l2, 0, 0;
+      Eigen::Matrix4d X1_0, X2_1, X3_2, X4_2;
+      X1_0 <<
+	c1, -s1, 0, 0,
+	s1,  c1, 0, 0,
+	0,    0, 1, 0,
+	0,    0, 0, 1;
+      X2_1 <<
+	0,    0, 1, l1,
+	c2, -s2, 0,  0,
+	s2,  c2, 0,  0,
+	0,    0, 0,  1;
+      X3_2 <<
+	0,    0, 1, -l2,
+	s3,  c3, 0,   0,
+	c3, -s3, 0,   0,
+	0,    0, 0,   1;
+      X4_2 <<
+	0,     0, 1, l2,
+	-s4, -c4, 0,  0,
+	c4,  -s4, 0,  0,
+	0,     0, 0,  1;
       
       o1 = Eigen::Vector3d::Zero();
-      o2 = X1_0 * o2_1;
-      o3 = X1_0 * X2_1 * o3_2;
-      o4 = X1_0 * X2_1 * o4_2;
+      o2 = (X1_0 * X2_1.col(3)).block(0, 0, 3, 1);
+      o3 = (X1_0 * (X2_1 * X3_2.col(3))).block(0, 0, 3, 1);
+      o4 = (X1_0 * (X2_1 * X4_2.col(3))).block(0, 0, 3, 1);
       
       // z1 means Z-axis of joint 1 expressed in global frame (which is frame 0)
       Eigen::Vector3d z1, z2, z3, z4;
-      z1 = X1_0.col(2);		// Eigen indices start at zero (?)
-      z2 = X1_0 * X2_1.col(2);
-      z3 = X1_0 * X2_1 * X3_2.col(2);
-      z4 = X1_0 * X2_1 * X4_2.col(2);
+      z1 = X1_0.block(0, 2, 3, 1);
+      z2 = X1_0.block(0, 0, 3, 3) * X2_1.block(0, 2, 3, 1);
+      z3 = X1_0.block(0, 0, 3, 3) * X2_1.block(0, 0, 3, 3) * X3_2.block(0, 2, 3, 1);
+      z4 = X1_0.block(0, 0, 3, 3) * X2_1.block(0, 0, 3, 3) * X4_2.block(0, 2, 3, 1);
       
       J1 = Eigen::MatrixXd::Zero(6, 4);
       J1.coeffRef(5, 0) = 1;

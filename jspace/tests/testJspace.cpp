@@ -468,9 +468,9 @@ TEST (jspaceModel, kinematics_fork_4R)
 	      pretty_print(have[ii].origin, msg, "  have", "    ");
 	      const bool ok(check_vector("origin", want[ii].origin, have[ii].origin, 1e-3, msg));
 	      EXPECT_TRUE (ok) << msg.str();
-	      if ( ! ok) {
-		keep_running = false;
-	      }
+	      // if ( ! ok) {
+	      // 	keep_running = false;
+	      // }
 	    }
 	    if ( ! keep_running) {
 	      break;		// others will fail as well, just skip them...
@@ -484,9 +484,9 @@ TEST (jspaceModel, kinematics_fork_4R)
 	      pretty_print(have[ii].Jacobian, msg, "  have", "    ");
 	      const bool ok(check_matrix("Jacobian", want[ii].Jacobian, have[ii].Jacobian, 1e-3, msg));
 	      EXPECT_TRUE (ok) << msg.str();
-	      if ( ! ok) {
-		keep_running = false;
-	      }
+	      // if ( ! ok) {
+	      // 	keep_running = false;
+	      // }
 	    }
 	  }
 	}
