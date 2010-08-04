@@ -613,10 +613,6 @@ TEST (jspaceModel, kinematics_fork_4R)
 }
 
 
-
-
-
-
 TEST (jspaceModel, mass_inertia_fork_4R)
 {
   jspace::Model * model(0);
@@ -660,10 +656,6 @@ TEST (jspaceModel, mass_inertia_fork_4R)
   }
   delete model;
 }
-
-
-
-
 
 
 TEST (jspaceModel, mass_inertia_RR)
