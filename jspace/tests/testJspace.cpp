@@ -23,6 +23,7 @@
    \author Roland Philippsen
 */
 
+#include <jspace/inertia_util.hpp>
 #include <jspace/test/model_library.hpp>
 #include <jspace/test/util.hpp>
 #include <jspace/test/sai_brep_parser.hpp>
@@ -43,6 +44,7 @@
 #include <eigen2/Eigen/LU>
 
 using namespace std;
+using namespace jspace;
 using namespace jspace::test;
 
 static std::string create_puma_frames() throw(runtime_error);
@@ -200,7 +202,7 @@ TEST (jspaceModel, kinematics)
       }
       jspace::Quaternion quat_computed(transform.rotation());
       jspace::Quaternion quat_expected(rw, rx, ry, rz);
-      double const delta_angle(quat_computed.angularDistance(quat_expected));
+      double delta_angle(quat_computed.angularDistance(quat_expected));
       EXPECT_TRUE (fabs(delta_angle) < 0.15 * M_PI / 180.0) // looks like it's hard to be more precise...
 	<< "rotation mismatch\n"
 	<< "  entry: " << joint_positions_count << "\n"
@@ -210,13 +212,69 @@ TEST (jspaceModel, kinematics)
 	<< "  computed: " << pretty_string(quat_computed) << "\n"
 	<< "  delta_angle: " << delta_angle * 180 / M_PI << " deg\n";
       Eigen::Vector3d trans_expected(tx, ty, tz);
-      EXPECT_TRUE (equal(transform.translation(), trans_expected, 1e-6))
+      EXPECT_TRUE (test_equal(transform.translation(), trans_expected, 1e-6))
 	<< "translation mismatch\n"
 	<< "  entry: " << joint_positions_count << "\n"
 	<< "  pos: " << state.position_ << "\n"
 	<< "  ID: " << id << "\n"
 	<< "  expected: " << pretty_string(trans_expected) << "\n"
 	<< "  computed: " << pretty_string(transform.translation());
+      
+      // exercise (some of) the jspace::Model::computeGlobalFrame() methods
+      {
+	Transform check_t;
+	
+	Transform idt(Transform::Identity());
+	if ( ! model->computeGlobalFrame(model->getNode(id), idt, check_t)) {
+	  FAIL() << frames_filename << ": line " << line_count
+		 << ": computeGlobalFrame() failed on local identity transform";
+	}
+	Quaternion check_q(check_t.rotation());
+	delta_angle = quat_computed.angularDistance(check_q);
+	EXPECT_TRUE (fabs(delta_angle) < 0.15 * M_PI / 180.0)
+	  << "model->computeGlobalFrame() rotation mismatch on local identity transform\n"
+	  << "  computed: " << pretty_string(check_q) << "\n"
+	  << "  expected: " << pretty_string(quat_computed) << "\n"
+	  << "  delta_angle: " << delta_angle * 180 / M_PI << " deg\n";
+	EXPECT_TRUE (test_equal(transform.translation(), check_t.translation(), 1e-6))
+	  << "model->computeGlobalFrame() translation mismatch on local identity transform\n"
+	  << "  computed: " << pretty_string(check_t.translation()) << "\n"
+	  << "  expected: " << pretty_string(transform.translation());
+	
+	if ( ! model->computeGlobalFrame(model->getNode(id), 0, 0, 0, check_t)) {
+	  FAIL() << frames_filename << ": line " << line_count
+		 << ": computeGlobalFrame() failed on (0,0,0) translation";
+	}
+	check_q = check_t.rotation();
+	delta_angle = quat_computed.angularDistance(check_q);
+	EXPECT_TRUE (fabs(delta_angle) < 0.15 * M_PI / 180.0)
+	  << "model->computeGlobalFrame() rotation mismatch on (0,0,0) translation\n"
+	  << "  computed: " << pretty_string(check_q) << "\n"
+	  << "  expected: " << pretty_string(quat_computed) << "\n"
+	  << "  delta_angle: " << delta_angle * 180 / M_PI << " deg\n";
+	EXPECT_TRUE (test_equal(transform.translation(), check_t.translation(), 1e-6))
+	  << "model->computeGlobalFrame() translation mismatch on (0,0,0) translation\n"
+	  << "  computed: " << pretty_string(check_t.translation()) << "\n"
+	  << "  expected: " << pretty_string(transform.translation());
+	
+	Vector zerov(Vector::Zero(3));
+	if ( ! model->computeGlobalFrame(model->getNode(id), zerov, check_t)) {
+	  FAIL() << frames_filename << ": line " << line_count
+		 << ": computeGlobalFrame() failed on zero translation";
+	}
+	check_q = check_t.rotation();
+	delta_angle = quat_computed.angularDistance(check_q);
+	EXPECT_TRUE (fabs(delta_angle) < 0.15 * M_PI / 180.0)
+	  << "model->computeGlobalFrame() rotation mismatch on zero translation\n"
+	  << "  computed: " << pretty_string(check_q) << "\n"
+	  << "  expected: " << pretty_string(quat_computed) << "\n"
+	  << "  delta_angle: " << delta_angle * 180 / M_PI << " deg\n";
+	EXPECT_TRUE (test_equal(transform.translation(), check_t.translation(), 1e-6))
+	  << "model->computeGlobalFrame() translation mismatch on zero translation\n"
+	  << "  computed: " << pretty_string(check_t.translation()) << "\n"
+	  << "  expected: " << pretty_string(transform.translation());
+      }
+      
     }
   }
   catch (std::exception const & ee) {
@@ -413,6 +471,61 @@ TEST (jspaceModel, Jacobian_RP)
     ADD_FAILURE () << "exception " << ee.what();
   }
   delete model;
+}
+
+
+TEST (jspaceModel, explicit_mass_inertia_RR)
+{
+  typedef jspace::Model * (*create_model_t)();
+  create_model_t create_model[] = {
+    create_unit_mass_RR_model,
+    create_unit_inertia_RR_model
+  };
+  
+  typedef void (*compute_mass_inertia_t)(double, double, jspace::Matrix &);
+  compute_mass_inertia_t compute_mass_inertia[] = {
+    compute_unit_mass_RR_mass_inertia,
+    compute_unit_inertia_RR_mass_inertia
+  };
+  
+  for (size_t test_index(0); test_index < 2; ++test_index) {
+    jspace::Model * model(0);
+    try {
+      model = create_model[test_index]();
+      taoDNode * n1(model->getNode(0));
+      taoDNode * n2(model->getNode(1));
+      ASSERT_NE ((void*)0, n1);
+      ASSERT_NE ((void*)0, n2);
+      jspace::State state(2, 2, 0);
+      jspace::zero(state.velocity_);
+      
+      for (double q1(-M_PI); q1 <= M_PI; q1 += 2 * M_PI / 7) {
+	for (double q2(-M_PI); q2 <= M_PI; q2 += 2 * M_PI / 7) {
+	  state.position_[0] = q1;
+	  state.position_[1] = q2;
+	  model->update(state);
+	  
+	  jspace::Matrix MM(2, 2);
+	  std::ostringstream dbgos;
+	  mass_inertia_explicit_form(*model, MM, &dbgos);
+	  jspace::Matrix MM_check;
+	  compute_mass_inertia[test_index](q1, q2, MM_check);
+	  {
+	    std::ostringstream msg;
+	    msg << "Checking explicit mass-inertia for test_index " << test_index
+		<< " q = " << state.position_ << "\n";
+	    pretty_print(MM_check, msg, "  want", "    ");
+	    pretty_print(MM, msg, "  have", "    ");
+	    EXPECT_TRUE (check_matrix("mass_inertia", MM_check, MM, 1e-3, msg)) << msg.str() << dbgos.str();
+	  }
+	}
+      }
+    }
+    catch (std::exception const & ee) {
+      ADD_FAILURE () << "exception " << ee.what();
+    }
+    delete model;
+  }
 }
 
 
