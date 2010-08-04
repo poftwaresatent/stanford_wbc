@@ -30,11 +30,14 @@
 #include <jspace/wrap_eigen.hpp>
 #include <string>
 #include <vector>
+#include <list>
+#include <map>
 #include <set>
 
 // Clients of Model never really need to worry about what exactly lies
 // behind TAO, they can treat this as an opaque pointer type.
 class taoDNode;
+class taoJoint;
 
 namespace jspace {
   
@@ -324,6 +327,14 @@ namespace jspace {
     std::vector<double> cc_torque_;
     std::vector<double> a_upper_triangular_;
     std::vector<double> ainv_upper_triangular_;
+    
+    struct ancestry_entry_s {
+      int id;
+      taoJoint * joint;
+    };
+    typedef std::list<ancestry_entry_s> ancestry_list_t;
+    typedef std::map<taoDNode *, ancestry_list_t> ancestry_table_t;
+    ancestry_table_t ancestry_table_;
   };
   
 }

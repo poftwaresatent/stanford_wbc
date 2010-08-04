@@ -63,9 +63,26 @@ namespace jspace {
       kgm_tree_(kgm_tree),
       cc_tree_(cc_tree)
   {
+    // Create ancestry table of all nodes in the KGM tree, for correct
+    // (and slightly more efficient) computation of the Jacobian.
+    typedef tao_tree_info_s::node_info_t::const_iterator cit_t;
+    cit_t in(kgm_tree->info.begin());
+    cit_t iend(kgm_tree->info.end());
+    for (/**/; in != iend; ++in) {
+      taoDNode * node(in->node);
+      ancestry_list_t & alist(ancestry_table_[node]); // first reference creates the instance
+      for (/**/; 0 != node; node = node->getDParent()) {
+	ancestry_entry_s entry;
+	entry.id = node->getID(); // XXXX assumes that node IDs are properly assigned
+	entry.joint = node->getJointList(); // XXXX assumes only one joint per node
+	if (0 != entry.joint) {
+	  alist.push_back(entry);
+	}
+      }
+    }
   }
-
-
+  
+  
   Model::
   ~Model()
   {
@@ -286,6 +303,11 @@ namespace jspace {
     if ( ! node) {
       return false;
     }
+    ancestry_table_t::const_iterator iae(ancestry_table_.find(const_cast<taoDNode*>(node)));
+    if (iae == ancestry_table_.end()) {
+      return false;
+    }
+    ancestry_list_t const & alist(iae->second);
     
 #ifdef DEBUG
     fprintf(stderr, "computeJacobian()\ng: [% 4.2f % 4.2f % 4.2f]\n", gx, gy, gz);
@@ -293,14 +315,16 @@ namespace jspace {
     
     // \todo Implement support for more than one joint per node, and
     // 	more than one DOF per joint.
-    jacobian.resize(6, ndof_);
-    for (size_t icol(0); icol < ndof_; ++icol) {
-      deVector6 Jg_col;	// in NDOF case, this will become an array of deVector6...
-      // in NOJ case, we will have to loop over all joints of a node...
-      kgm_tree_->info[icol].node->getJointList()->getJgColumns(&Jg_col);
+    jacobian = Matrix::Zero(6, ndof_);
+    ancestry_list_t::const_iterator ia(alist.begin());
+    ancestry_list_t::const_iterator iend(alist.end());
+    for (/**/; ia != iend; ++ia) {
+      deVector6 Jg_col;
+      ia->joint->getJgColumns(&Jg_col);
+      int const icol(ia->id);
       
 #ifdef DEBUG
-      fprintf(stderr, "iJg[%zu]: [ % 4.2f % 4.2f % 4.2f % 4.2f % 4.2f % 4.2f]\n",
+      fprintf(stderr, "iJg[%d]: [ % 4.2f % 4.2f % 4.2f % 4.2f % 4.2f % 4.2f]\n",
 	      icol,
 	      Jg_col.elementAt(0), Jg_col.elementAt(1), Jg_col.elementAt(2),
 	      Jg_col.elementAt(3), Jg_col.elementAt(4), Jg_col.elementAt(5));
@@ -322,7 +346,7 @@ namespace jspace {
       jacobian.coeffRef(2, icol) -= -gy * Jg_col.elementAt(3) + gx * Jg_col.elementAt(4);
       
 #ifdef DEBUG
-      fprintf(stderr, "0Jg[%zu]: [ % 4.2f % 4.2f % 4.2f % 4.2f % 4.2f % 4.2f]\n",
+      fprintf(stderr, "0Jg[%d]: [ % 4.2f % 4.2f % 4.2f % 4.2f % 4.2f % 4.2f]\n",
 	      icol,
 	      jacobian.coeff(0, icol), jacobian.coeff(1, icol), jacobian.coeff(2, icol),
 	      jacobian.coeff(3, icol), jacobian.coeff(4, icol), jacobian.coeff(5, icol));
