@@ -613,6 +613,59 @@ TEST (jspaceModel, kinematics_fork_4R)
 }
 
 
+
+
+
+
+TEST (jspaceModel, mass_inertia_fork_4R)
+{
+  jspace::Model * model(0);
+  try {
+    model = create_fork_4R_model();
+    jspace::State state(4, 4, 0);
+    jspace::zero(state.velocity_);
+    
+    for (double q1(-M_PI); q1 <= M_PI; q1 += 2 * M_PI / 7) {
+      for (double q2(-M_PI); q2 <= M_PI; q2 += 2 * M_PI / 7) {
+	for (double q3(-M_PI); q3 <= M_PI; q3 += 2 * M_PI / 7) {
+	  for (double q4(-M_PI); q4 <= M_PI; q4 += 2 * M_PI / 7) {
+	    state.position_[0] = q1;
+	    state.position_[1] = q2;
+	    state.position_[2] = q3;
+	    state.position_[3] = q4;
+	    model->update(state);
+	    
+	    Matrix recursive_mass_inertia;
+	    if ( ! model->getMassInertia(recursive_mass_inertia)) {
+	      FAIL() << "jspace::Model::getMassInertia() failed";
+	    }
+	    
+	    ostringstream dbgos;
+	    Matrix explicit_mass_inertia;
+	    mass_inertia_explicit_form(*model, explicit_mass_inertia, &dbgos);
+	    
+	    std::ostringstream msg;
+	    msg << "Comparing recursive with explicit mass inertia for q = " << state.position_ << "\n";
+	    pretty_print(recursive_mass_inertia, msg, "  recursive", "    ");
+	    pretty_print(explicit_mass_inertia, msg, "  explicit", "    ");
+	    EXPECT_TRUE (check_matrix("mass_inertia", recursive_mass_inertia, explicit_mass_inertia, 1e-3, msg))
+	      << msg.str() << dbgos.str();
+	  }
+	}
+      }
+    }
+  }
+  catch (std::exception const & ee) {
+    ADD_FAILURE () << "exception " << ee.what();
+  }
+  delete model;
+}
+
+
+
+
+
+
 TEST (jspaceModel, mass_inertia_RR)
 {
   typedef jspace::Model * (*create_model_t)();
