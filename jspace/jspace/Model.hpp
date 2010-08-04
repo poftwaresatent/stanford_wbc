@@ -184,7 +184,8 @@ namespace jspace {
     
     /** Convenience method in case you are only interested in the
 	translational part and hold the local point in three
-	doubles.
+	doubles. The copmuted global_transform will have the same
+	rotational component as the node's origin.
 	
 	\return True on success. The only possible failure stems from
 	an invalid node, so if you got that using getNode() or one of
@@ -195,7 +196,8 @@ namespace jspace {
     
     /** Convenience method in case you are only interested in the
 	translational part and hold the local point in a
-	three-dimensional vector.
+	three-dimensional vector. The copmuted global_transform will
+	have the same rotational component as the node's origin.
 	
 	\return True on success. The only possible failure stems from
 	an invalid node, so if you got that using getNode() or one of
