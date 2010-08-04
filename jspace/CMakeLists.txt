@@ -21,6 +21,7 @@ list (APPEND SRCS
   jspace/proxy_util.cpp
   jspace/servo_proxy.cpp
   jspace/robot_proxy.cpp
+  jspace/inertia_util.cpp
   )
 
 if (HAVE_ROS)
