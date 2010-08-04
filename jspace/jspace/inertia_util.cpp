@@ -312,7 +312,9 @@ namespace jspace {
       // A problem that we will be having with TAO's inertia info a
       // bit further down is that it contains the contribution from
       // the mass, and we have to remove that before proceeding with
-      // the rotational contribution to the mass-inertia matrix.
+      // the rotational contribution to the mass-inertia matrix. Thus
+      // the introduction of Im.
+      
       Eigen::Matrix3d Im(Eigen::Matrix3d::Zero());
       deFloat const * mass(node->mass());
       if (mass) {
@@ -329,6 +331,7 @@ namespace jspace {
 	    yy+zz, -xy, -xz,
 	    -xy, zz+xx, -yz,
 	    -xz, -yz, xx+yy;
+	  Im *= *mass;
 	}
 	if (dbgos) {
 	  *dbgos << "    mass: " << *mass << "\n"
@@ -346,17 +349,18 @@ namespace jspace {
       // velocity due to joint ii, which is the same throughout the
       // entire link. Given that the COM frame is assumed to be
       // aligned with the node origin frame anyway, all we have to do
-      // is express the rotational contribution of the Jacobian the
+      // is express the rotational contribution of the Jacobian in the
       // local frame and use that.
-      //
-      //
+      
       deMatrix3 const * inertia(node->inertia());
       if (inertia) {
+	
 	// NOTE: global_com.rotation() would require SVD, but we know
 	// that we are dealing with an affine transform, so taking
 	// what Eign2 calls the "linear" part is fine, because that's
 	// simply the 3x3 upper left block of the homogeneous
 	// transformation matrix. Hopefully anyway.
+	
 	Matrix const J_omega(global_com.linear() * Jacobian.block(3, 0, 3, ndof));
 	Eigen::Matrix3d Ic;
 	Ic <<
