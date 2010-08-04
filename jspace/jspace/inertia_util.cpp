@@ -265,7 +265,7 @@ namespace jspace {
       Matrix Jacobian;
       deVector3 const * com(node->center());
       if (com) {
-	if ( ! model.computeGlobalFrame(node, *com[0], *com[1], *com[2], global_com)) {
+	if ( ! model.computeGlobalFrame(node, com->elementAt(0), com->elementAt(1), com->elementAt(2), global_com)) {
 	  ostringstream msg;
 	  msg << "jspace::mass_inertia_explicit_form(): computeGlobalFrame() of COM failed for index " << ii;
 	  throw runtime_error(msg.str());
@@ -319,12 +319,12 @@ namespace jspace {
 	Matrix const mass_contrib(Jacobian.block(0, 0, 3, ndof).transpose() * Jacobian.block(0, 0, 3, ndof));
 	mass_inertia += *mass * mass_contrib;
 	if (com) {
-	  double const xx(pow(*com[0], 2));
-	  double const yy(pow(*com[1], 2));
-	  double const zz(pow(*com[2], 2));
-	  double const xy(*com[0] * *com[1]);
-	  double const xz(*com[0] * *com[2]);
-	  double const yz(*com[1] * *com[2]);
+	  double const xx(pow(com->elementAt(0), 2));
+	  double const yy(pow(com->elementAt(1), 2));
+	  double const zz(pow(com->elementAt(2), 2));
+	  double const xy(com->elementAt(0) * com->elementAt(1));
+	  double const xz(com->elementAt(0) * com->elementAt(2));
+	  double const yz(com->elementAt(1) * com->elementAt(2));
 	  Im <<
 	    yy+zz, -xy, -xz,
 	    -xy, zz+xx, -yz,
