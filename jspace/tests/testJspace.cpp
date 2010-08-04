@@ -602,7 +602,11 @@ TEST (jspaceModel, kinematics_fork_4R)
 	      pretty_print(have[ii].com, msg, "  have", "    ");
 	      deVector3 const * local_com(node[ii]->center());
 	      if (local_com) {
-		msg << "  local COM according to TAO: " << *local_com << "\n";
+		msg << "  local COM according to TAO: " << *local_com << "\n"
+		    << "  and what we make of it: "
+		    << local_com->elementAt(0) << "  "
+		    << local_com->elementAt(1) << "  "
+		    << local_com->elementAt(2) << "\n";
 	      }
 	      else {
 		msg << "  local COM according to TAO: null\n";

@@ -301,7 +301,10 @@ namespace jspace {
       return getGlobalFrame(node, global_com_transform);
     }
     
-    return computeGlobalFrame(node, *com[0], *com[1], *com[2], global_com_transform);
+    //// AAARGHHHL!!! Do NOT use "*com[0], *com[1], *com[2]" because
+    //// deVector3 somehow gives garbage if you do that. Yet another
+    //// case where hours were wasted because of TAO weirdness...
+    return computeGlobalFrame(node, com->elementAt(0), com->elementAt(1), com->elementAt(2), global_com_transform);
   }
   
   
