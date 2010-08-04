@@ -40,8 +40,14 @@ namespace jspace {
     
     jspace::Model * create_fork_4R_model() throw(std::runtime_error);
     
+    /** q1...q4 are the joint angles in rad. o1...o4 are the node
+	origins in global frame. c1...c4 are the COM positions in
+	global frame. J1...J4 are the Jacobians at the node
+	origins. */
     void compute_fork_4R_kinematics(double q1, double q2, double q3, double q4,
 				    jspace::Vector & o1, jspace::Vector & o2, jspace::Vector & o3, jspace::Vector & o4,
+				    jspace::Vector & com1, jspace::Vector & com2,
+				    jspace::Vector & com3, jspace::Vector & com4,
 				    jspace::Matrix & J1, jspace::Matrix & J2, jspace::Matrix & J3, jspace::Matrix & J4);
     
     void compute_unit_mass_RR_mass_inertia(double q1, double q2, jspace::Matrix & AA);

@@ -267,9 +267,11 @@ namespace jspace {
 		     Vector const & local_translation,
 		     Transform & global_transform) const
   {
-    return computeGlobalFrame(node,
-			      local_translation.x(), local_translation.y(), local_translation.z(),
-			      global_transform);
+    if ( ! getGlobalFrame(node, global_transform)) {
+      return false;
+    }
+    global_transform.translation() += global_transform.linear() * local_translation;
+    return true;
   }
   
   
@@ -278,8 +280,28 @@ namespace jspace {
 		     double local_x, double local_y, double local_z,
 		     Transform & global_transform) const
   {
-    Transform const tt(Eigen::Translation<double, 3>(local_x, local_y, local_z));
-    return computeGlobalFrame(node, tt, global_transform);
+    if ( ! getGlobalFrame(node, global_transform)) {
+      return false;
+    }
+    global_transform.translation() += global_transform.linear() * Eigen::Vector3d(local_x, local_y, local_z);
+    return true;
+  }
+
+    
+  bool Model::
+  computeGlobalCOMFrame(taoDNode const * node,
+			Transform & global_com_transform) const
+  {
+    if ( ! node) {
+      return false;
+    }
+    
+    deVector3 const * com(const_cast<taoDNode*>(node)->center());
+    if ( ! com) {
+      return getGlobalFrame(node, global_com_transform);
+    }
+    
+    return computeGlobalFrame(node, *com[0], *com[1], *com[2], global_com_transform);
   }
   
   

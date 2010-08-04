@@ -206,6 +206,9 @@ namespace jspace {
 			    Vector const & local_translation,
 			    Transform & global_transform) const;
     
+    bool computeGlobalCOMFrame(taoDNode const * node,
+			       Transform & global_com_transform) const;
+    
     /** Compute the Jacobian (J_v over J_omega) at the origin of a
 	given node.
 	

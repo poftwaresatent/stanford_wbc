@@ -543,8 +543,8 @@ TEST (jspaceModel, kinematics_fork_4R)
     jspace::zero(state.velocity_);
     
     struct kinematics_s {
-      jspace::Transform gframe;
       jspace::Vector origin;
+      jspace::Vector com;
       jspace::Matrix Jacobian;
     };
     
@@ -562,15 +562,20 @@ TEST (jspaceModel, kinematics_fork_4R)
 	    model->update(state);
 	    
 	    for (size_t ii(0); ii < 4; ++ii) {
-	      ASSERT_TRUE (model->getGlobalFrame(node[ii], have[ii].gframe))
+	      jspace::Transform gframe;
+	      ASSERT_TRUE (model->getGlobalFrame(node[ii], gframe))
 		<< "failed to get global frame of node " << ii+1 << " (ID " << ii << ")";
-	      have[ii].origin = have[ii].gframe.translation();
+	      have[ii].origin = gframe.translation();
+	      ASSERT_TRUE (model->computeGlobalCOMFrame(node[ii], gframe))
+		<< "failed to compute global COM of node " << ii+1 << " (ID " << ii << ")";
+	      have[ii].com = gframe.translation();
 	      ASSERT_TRUE (model->computeJacobian(node[ii], have[ii].Jacobian))
 		<< "failed to compute Jacobian of node " << ii+1 << " (ID " << ii << ")";
 	    }
 	    
 	    compute_fork_4R_kinematics(q1, q2, q3, q4,
 				       want[0].origin, want[1].origin, want[2].origin, want[3].origin,
+				       want[0].com, want[1].com, want[2].com, want[3].com,
 				       want[0].Jacobian, want[1].Jacobian, want[2].Jacobian, want[3].Jacobian);
 	    
 	    for (size_t ii(0); ii < 4; ++ii) {
@@ -580,6 +585,29 @@ TEST (jspaceModel, kinematics_fork_4R)
 	      pretty_print(want[ii].origin, msg, "  want", "    ");
 	      pretty_print(have[ii].origin, msg, "  have", "    ");
 	      const bool ok(check_vector("origin", want[ii].origin, have[ii].origin, 1e-3, msg));
+	      EXPECT_TRUE (ok) << msg.str();
+	      if ( ! ok) {
+	      	keep_running = false;
+	      }
+	    }
+	    if ( ! keep_running) {
+	      break;		// others will fail as well, just skip them...
+	    }
+	    
+	    for (size_t ii(0); ii < 4; ++ii) {
+	      std::ostringstream msg;
+	      msg << "Verifying COM of node " << ii+1 << " (ID " << ii << ") for q = "
+		  << state.position_ << "\n";
+	      pretty_print(want[ii].com, msg, "  want", "    ");
+	      pretty_print(have[ii].com, msg, "  have", "    ");
+	      deVector3 const * local_com(node[ii]->center());
+	      if (local_com) {
+		msg << "  local COM according to TAO: " << *local_com << "\n";
+	      }
+	      else {
+		msg << "  local COM according to TAO: null\n";
+	      }
+	      const bool ok(check_vector("COM", want[ii].com, have[ii].com, 1e-3, msg));
 	      EXPECT_TRUE (ok) << msg.str();
 	      if ( ! ok) {
 	      	keep_running = false;

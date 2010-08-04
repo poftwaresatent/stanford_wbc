@@ -486,6 +486,8 @@ namespace jspace {
     
     void compute_fork_4R_kinematics(double q1, double q2, double q3, double q4,
 				    jspace::Vector & o1, jspace::Vector & o2, jspace::Vector & o3, jspace::Vector & o4,
+				    jspace::Vector & com1, jspace::Vector & com2,
+				    jspace::Vector & com3, jspace::Vector & com4,
 				    jspace::Matrix & J1, jspace::Matrix & J2, jspace::Matrix & J3, jspace::Matrix & J4)
     {
       static double const l1(1);
@@ -526,6 +528,16 @@ namespace jspace {
       o2 = (X1_0 * X2_1.col(3)).block(0, 0, 3, 1);
       o3 = (X1_0 * (X2_1 * X3_2.col(3))).block(0, 0, 3, 1);
       o4 = (X1_0 * (X2_1 * X4_2.col(3))).block(0, 0, 3, 1);
+      
+      Eigen::Vector4d com1_1, com2_2, com3_3, com4_4;
+      com1_1 << 0.5, 0, 0, 1;
+      com2_2 << 0,   0, 0, 1;
+      com3_3 << 0.5, 0, 0, 1;
+      com4_4 << 0.5, 0, 0, 1;
+      com1 = (X1_0 * com1_1).block(0, 0, 3, 1);
+      com2 = (X1_0 * X2_1 * com2_2).block(0, 0, 3, 1);
+      com3 = (X1_0 * X2_1 * X3_2 * com3_3).block(0, 0, 3, 1);
+      com4 = (X1_0 * X2_1 * X4_2 * com4_4).block(0, 0, 3, 1);
       
       // z1 means Z-axis of joint 1 expressed in global frame (which is frame 0)
       Eigen::Vector3d z1, z2, z3, z4;
