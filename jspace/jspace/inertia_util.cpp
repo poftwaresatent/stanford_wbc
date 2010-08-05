@@ -89,7 +89,8 @@ namespace jspace {
     bb.transpose(aa);
     cc.multiply(aa, out_inertia); // cc = rotation * inertia
     aa.multiply(cc, bb);	// aa = cc * rotation_transpose
-    out_inertia += aa;
+    //AAARGH no! copy-paste error! out_inertia += aa;
+    out_inertia = aa;		// could directly to the ops in out_inertia, aa is just tmp
   }
   
   
@@ -361,7 +362,9 @@ namespace jspace {
 	// simply the 3x3 upper left block of the homogeneous
 	// transformation matrix. Hopefully anyway.
 	
-	Matrix const J_omega(global_com.linear() * Jacobian.block(3, 0, 3, ndof));
+	// Use the transpose to get the inverse of the rotation.
+	Matrix const J_omega(global_com.linear().transpose() * Jacobian.block(3, 0, 3, ndof));
+	
 	Eigen::Matrix3d Ic;
 	Ic <<
 	  inertia->elementAt(0, 0), inertia->elementAt(0, 1), inertia->elementAt(0, 2),

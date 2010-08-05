@@ -132,6 +132,12 @@ TEST (jspaceModel, branching)
 TEST (jspaceModel, kinematics)
 {
   jspace::Model * model(0);
+  
+  //// Eigen version trouble?
+  // Transform identity_transform(Transform::Identity());
+  Transform identity_transform;
+  identity_transform.setIdentity();
+  
   try {
     model = create_puma_model();
     int const ndof(model->getNDOF());
@@ -224,8 +230,7 @@ TEST (jspaceModel, kinematics)
       {
 	Transform check_t;
 	
-	Transform idt(Transform::Identity());
-	if ( ! model->computeGlobalFrame(model->getNode(id), idt, check_t)) {
+	if ( ! model->computeGlobalFrame(model->getNode(id), identity_transform, check_t)) {
 	  FAIL() << frames_filename << ": line " << line_count
 		 << ": computeGlobalFrame() failed on local identity transform";
 	}
@@ -529,6 +534,87 @@ TEST (jspaceModel, explicit_mass_inertia_RR)
 }
 
 
+TEST (jspaceModel, com_frame_fork_4R)
+{
+  jspace::Model * model(0);
+  try {
+    model = create_fork_4R_model();
+    taoDNode * node[4];
+    jspace::Vector lcompos[4];
+    for (size_t ii(0); ii < 4; ++ii) {
+      node[ii] = model->getNode(ii);
+      ASSERT_NE ((void*)0, node[ii]) << "no node " << ii+1 << " (ID " << ii << ")";
+      deVector3 const * com(node[ii]->center());
+      lcompos[ii] = jspace::Vector::Zero(3);
+      if (com) {
+	lcompos[ii].x() = com->elementAt(0);
+	lcompos[ii].y() = com->elementAt(1);
+	lcompos[ii].z() = com->elementAt(2);
+      }
+    }
+    jspace::State state(4, 4, 0);
+    jspace::zero(state.velocity_);
+    
+    bool keep_running(true);
+    
+    for (double q1(-M_PI); keep_running && (q1 <= M_PI); q1 += 2 * M_PI / 7) {
+      for (double q2(-M_PI); keep_running && (q2 <= M_PI); q2 += 2 * M_PI / 7) {
+	for (double q3(-M_PI); keep_running && (q3 <= M_PI); q3 += 2 * M_PI / 7) {
+	  for (double q4(-M_PI); keep_running && (q4 <= M_PI); q4 += 2 * M_PI / 7) {
+	    state.position_[0] = q1;
+	    state.position_[1] = q2;
+	    state.position_[2] = q3;
+	    state.position_[3] = q4;
+	    model->update(state);
+	    
+	    for (size_t ii(0); ii < 4; ++ii) {
+	      jspace::Transform gframe;
+	      ASSERT_TRUE (model->getGlobalFrame(node[ii], gframe))
+		<< "failed to get global frame of node " << ii+1 << " (ID " << ii << ")";
+	      jspace::Transform gcomframe;
+	      ASSERT_TRUE (model->computeGlobalCOMFrame(node[ii], gcomframe))
+		<< "failed to compute global COM frame of node " << ii+1 << " (ID " << ii << ")";
+	      // Eigen doc says we should be able to just write
+	      // "gframe * lcompos[ii]" but that does not actually
+	      // work.
+	      jspace::Vector check_gcompos((gframe * Eigen::Translation3d(lcompos[ii])).translation());
+	      {
+		std::ostringstream msg;
+		msg << "Verifying COM position of node " << ii+1 << " (ID " << ii << ") for q = "
+		    << state.position_ << "\n";
+		pretty_print(check_gcompos, msg, "  want", "    ");
+		pretty_print(static_cast<jspace::Vector const &>(gcomframe.translation()), msg, "  have", "    ");
+		const bool ok(check_vector("gcompos", check_gcompos, gcomframe.translation(), 1e-6, msg));
+		EXPECT_TRUE (ok) << msg.str();
+		if ( ! ok) {
+		  keep_running = false;
+		}
+	      }
+	      {
+		std::ostringstream msg;
+		msg << "Verifying COM frame rotation of node " << ii+1 << " (ID " << ii << ") for q = "
+		    << state.position_ << "\n";
+		pretty_print(static_cast<jspace::Matrix const &>(gframe.linear()), msg, "  want", "    ");
+		pretty_print(static_cast<jspace::Matrix const &>(gcomframe.linear()), msg, "  have", "    ");
+		const bool ok(check_matrix("gcomrot", gframe.linear(), gcomframe.linear(), 1e-6, msg));
+		EXPECT_TRUE (ok) << msg.str();
+		if ( ! ok) {
+		  keep_running = false;
+		}
+	      }
+	    }
+	  }
+	}
+      }
+    }
+  }
+  catch (std::exception const & ee) {
+    ADD_FAILURE () << "exception " << ee.what();
+  }
+  delete model;
+}
+
+
 TEST (jspaceModel, kinematics_fork_4R)
 {
   jspace::Model * model(0);
@@ -653,10 +739,12 @@ TEST (jspaceModel, mass_inertia_fork_4R)
     jspace::State state(4, 4, 0);
     jspace::zero(state.velocity_);
     
-    for (double q1(-M_PI); q1 <= M_PI; q1 += 2 * M_PI / 7) {
-      for (double q2(-M_PI); q2 <= M_PI; q2 += 2 * M_PI / 7) {
-	for (double q3(-M_PI); q3 <= M_PI; q3 += 2 * M_PI / 7) {
-	  for (double q4(-M_PI); q4 <= M_PI; q4 += 2 * M_PI / 7) {
+    bool keep_running(true);
+    
+    for (double q1(-M_PI); keep_running && (q1 <= M_PI); q1 += 2 * M_PI / 7) {
+      for (double q2(-M_PI); keep_running && (q2 <= M_PI); q2 += 2 * M_PI / 7) {
+	for (double q3(-M_PI); keep_running && (q3 <= M_PI); q3 += 2 * M_PI / 7) {
+	  for (double q4(-M_PI); keep_running && (q4 <= M_PI); q4 += 2 * M_PI / 7) {
 	    state.position_[0] = q1;
 	    state.position_[1] = q2;
 	    state.position_[2] = q3;
@@ -676,8 +764,11 @@ TEST (jspaceModel, mass_inertia_fork_4R)
 	    msg << "Comparing recursive with explicit mass inertia for q = " << state.position_ << "\n";
 	    pretty_print(recursive_mass_inertia, msg, "  recursive", "    ");
 	    pretty_print(explicit_mass_inertia, msg, "  explicit", "    ");
-	    EXPECT_TRUE (check_matrix("mass_inertia", recursive_mass_inertia, explicit_mass_inertia, 1e-3, msg))
-	      << msg.str() << dbgos.str();
+	    bool const ok(check_matrix("mass_inertia", recursive_mass_inertia, explicit_mass_inertia, 1e-3, msg));
+	    EXPECT_TRUE (ok) << msg.str() << dbgos.str();
+	    if ( ! ok) {
+	      keep_running = false;
+	    }
 	  }
 	}
       }
