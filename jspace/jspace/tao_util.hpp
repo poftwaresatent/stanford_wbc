@@ -61,7 +61,15 @@ namespace jspace {
     typedef std::vector<tao_node_info_s> node_info_t;
     node_info_t info;
   };
-
+  
+  
+  /**
+     Create a minimal tao_tree_info_s from a TAO tree. The created
+     structure will use dummy names like "joint12" and humongous
+     limits.
+  */
+  tao_tree_info_s * create_bare_tao_tree_info(taoNodeRoot * root);
+  
   
   typedef std::map<int, taoDNode *> idToNodeMap_t;
   

@@ -23,6 +23,7 @@
 #include <tao/dynamics/taoDNode.h>
 #include <tao/dynamics/taoJoint.h>
 #include <wbcnet/strutil.hpp>
+#include <limits>
 
 
 namespace jspace {
@@ -140,6 +141,34 @@ namespace jspace {
   ~tao_tree_info_s()
   {
     delete root;
+  }
+  
+  
+  static void _recurse_create_bare_tao_tree_info(tao_tree_info_s * tree_info,
+						 taoDNode * node)
+  {
+    tree_info->info.push_back(tao_node_info_s());
+    tao_node_info_s & node_info(tree_info->info.back());
+    node_info.node = node;
+    node_info.id = node->getID();
+    node_info.link_name = "link" + sfl::to_string(node_info.id);
+    node_info.joint_name = "joint" + sfl::to_string(node_info.id);
+    node_info.limit_lower = std::numeric_limits<double>::min();
+    node_info.limit_upper = std::numeric_limits<double>::max();
+    for (taoDNode * child(node->getDChild()); child != NULL; child = child->getDSibling()) {
+      _recurse_create_bare_tao_tree_info(tree_info, child);
+    }
+  }
+  
+  
+  tao_tree_info_s * create_bare_tao_tree_info(taoNodeRoot * root)
+  {
+    tao_tree_info_s * tree_info(new tao_tree_info_s());
+    tree_info->root = root;
+    for (taoDNode * child(root->getDChild()); child != NULL; child = child->getDSibling()) {
+      _recurse_create_bare_tao_tree_info(tree_info, child);
+    }
+    return tree_info;
   }
   
 }
