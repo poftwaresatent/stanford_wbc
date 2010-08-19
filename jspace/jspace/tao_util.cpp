@@ -18,6 +18,11 @@
  * <http://www.gnu.org/licenses/>
  */
 
+/**
+   \file jspace/tao_util.cpp
+   \author Roland Philippsen (roland DOT philippsen AT gmx DOT net)
+*/
+
 #include "tao_util.hpp"
 #include <tao/dynamics/taoNode.h>
 #include <tao/dynamics/taoDNode.h>

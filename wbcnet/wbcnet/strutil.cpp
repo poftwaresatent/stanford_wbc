@@ -29,6 +29,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+   \file wbcnet/strutil.cpp
+   \author Roland Philippsen (roland DOT philippsen AT gmx DOT net)
+*/
+
 
 #include "strutil.hpp"
 using namespace std;

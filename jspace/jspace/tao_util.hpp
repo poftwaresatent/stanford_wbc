@@ -18,6 +18,11 @@
  * <http://www.gnu.org/licenses/>
  */
 
+/**
+   \file jspace/tao_util.hpp
+   \author Roland Philippsen (roland DOT philippsen AT gmx DOT net)
+*/
+
 #ifndef JSPACE_TAO_UTIL_H
 #define JSPACE_TAO_UTIL_H
 

@@ -29,6 +29,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+   \file wbcnet/strutil.hpp
+   \author Roland Philippsen (roland DOT philippsen AT gmx DOT net)
+*/
+
 
 #ifndef SFL_STRUTIL_HPP
 #define SFL_STRUTIL_HPP
