@@ -432,16 +432,14 @@ namespace jspace {
   bool Model::
   getGravity(Vector & gravity) const
   {
-    if (g_torque_.empty()) {
+    if (0 == g_torque_.size()) {
       return false;
     }
-    gravity.resize(g_torque_.size());
-    for (size_t ii(0); ii < g_torque_.size(); ++ii) {
-      // Only copy over the gravity torque in case it has NOT been
-      // DISabled for this index...
-      if (gravity_disabled_.end() == gravity_disabled_.find(ii)) {
-	gravity[ii] = g_torque_[ii];
-      }
+    gravity = g_torque_;
+    // knock away gravity torque from links that are already otherwise compensated
+    dof_set_t::const_iterator iend(gravity_disabled_.end());
+    for (dof_set_t::const_iterator ii(gravity_disabled_.begin()); ii != iend; ++ii) {
+      gravity[*ii] = 0;
     }
     return true;
   }
@@ -467,13 +465,10 @@ namespace jspace {
     if ( ! cc_tree_) {
       return false;
     }
-    if (cc_torque_.empty()) {
+    if (0 == cc_torque_.size()) {
       return false;
     }
-    coriolis_centrifugal.resize(cc_torque_.size());
-    for (size_t ii(0); ii < cc_torque_.size(); ++ii) {
-      coriolis_centrifugal[ii] = cc_torque_[ii];
-    }
+    coriolis_centrifugal = cc_torque_;
     return true;
   }
   

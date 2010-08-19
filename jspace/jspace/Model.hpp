@@ -328,8 +328,8 @@ namespace jspace {
     tao_tree_info_s * cc_tree_;
     
     State state_;
-    std::vector<double> g_torque_;
-    std::vector<double> cc_torque_;
+    Vector g_torque_;
+    Vector cc_torque_;
     std::vector<double> a_upper_triangular_;
     std::vector<double> ainv_upper_triangular_;
     
