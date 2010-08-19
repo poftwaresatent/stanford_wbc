@@ -32,7 +32,7 @@ namespace jspace {
   
   
   Status FloatController::
-  setGoal(std::vector<double> const & goal)
+  setGoal(Vector const & goal)
   {
     Status ok;
     return ok;
@@ -40,25 +40,25 @@ namespace jspace {
   
   
   Status FloatController::
-  getGoal(std::vector<double> & goal) const
+  getGoal(Vector & goal) const
   {
-    goal.clear();
+    goal.resize(0);
     Status ok;
     return ok;
   }
   
   
   Status FloatController::
-  getActual(std::vector<double> & actual) const
+  getActual(Vector & actual) const
   {
-    actual.clear();
+    actual.resize(0);
     Status ok;
     return ok;
   }
   
   
   Status FloatController::
-  setGains(std::vector<double> const & kp, std::vector<double> const & kd)
+  setGains(Vector const & kp, Vector const & kd)
   {
     Status ok;
     return ok;
@@ -66,10 +66,10 @@ namespace jspace {
   
   
   Status FloatController::
-  getGains(std::vector<double> & kp, std::vector<double> & kd) const
+  getGains(Vector & kp, Vector & kd) const
   {
-    kp.clear();
-    kd.clear();
+    kp.resize(0);
+    kd.resize(0);
     Status ok;
     return ok;
   }
@@ -84,7 +84,7 @@ namespace jspace {
   
   
   Status FloatController::
-  computeCommand(Model const & model, std::vector<double> & tau)
+  computeCommand(Model const & model, Vector & tau)
   {
     Vector gg;
     model.getGravity(gg);
@@ -97,8 +97,8 @@ namespace jspace {
   
   GoalControllerBase::
   GoalControllerBase(int compensation_flags,
-		     std::vector<double> const & default_kp,
-		     std::vector<double> const & default_kd)
+		     Vector const & default_kp,
+		     Vector const & default_kd)
     : compensation_flags_(compensation_flags),
       default_kp_(default_kp),
       default_kd_(default_kd)
@@ -142,7 +142,7 @@ namespace jspace {
   
   
   Status GoalControllerBase::
-  setGoal(std::vector<double> const & goal)
+  setGoal(Vector const & goal)
   {
     Status status;
     if (goal.size() != goal_.size()) {
@@ -158,7 +158,7 @@ namespace jspace {
   
   
   Status GoalControllerBase::
-  getGoal(std::vector<double> & goal) const
+  getGoal(Vector & goal) const
   {
     goal = goal_;
     Status ok;
@@ -167,7 +167,7 @@ namespace jspace {
   
   
   Status GoalControllerBase::
-  setGains(std::vector<double> const & kp, std::vector<double> const & kd)
+  setGains(Vector const & kp, Vector const & kd)
   {
     Status status;
     if ((kp.size() != kp_.size()) || (kd.size() != kd_.size())) {
@@ -182,7 +182,7 @@ namespace jspace {
   
   
   Status GoalControllerBase::
-  getGains(std::vector<double> & kp, std::vector<double> & kd) const
+  getGains(Vector & kp, Vector & kd) const
   {
     kp = kp_;
     kd = kd_;
@@ -193,15 +193,15 @@ namespace jspace {
   
   JointGoalController::
   JointGoalController(int compensation_flags,
-		      std::vector<double> const & default_kp,
-		      std::vector<double> const & default_kd)
+		      Vector const & default_kp,
+		      Vector const & default_kd)
     : GoalControllerBase(compensation_flags, default_kp, default_kd)
   {
   }
   
   
   Status JointGoalController::
-  getActual(std::vector<double> & actual) const
+  getActual(Vector & actual) const
   {
     actual = actual_;
     Status ok;
@@ -219,7 +219,7 @@ namespace jspace {
   
   
   Status JointGoalController::
-  computeCommand(Model const & model, std::vector<double> & tau)
+  computeCommand(Model const & model, Vector & tau)
   {
     size_t const ndof(model.getNDOF());
     Status status;

@@ -45,15 +45,15 @@ namespace jspace {
     : public Controller
   {
   public:
-    virtual Status setGoal(std::vector<double> const & goal);
-    virtual Status getGoal(std::vector<double> & goal) const;
-    virtual Status getActual(std::vector<double> & actual) const;
+    virtual Status setGoal(Vector const & goal);
+    virtual Status getGoal(Vector & goal) const;
+    virtual Status getActual(Vector & actual) const;
     
-    virtual Status setGains(std::vector<double> const & kp, std::vector<double> const & kd);
-    virtual Status getGains(std::vector<double> & kp, std::vector<double> & kd) const;
+    virtual Status setGains(Vector const & kp, Vector const & kd);
+    virtual Status getGains(Vector & kp, Vector & kd) const;
     
     virtual Status latch(Model const & model);
-    virtual Status computeCommand(Model const & model, std::vector<double> & tau);
+    virtual Status computeCommand(Model const & model, Vector & tau);
   };
   
   
@@ -62,24 +62,24 @@ namespace jspace {
   {
   public:
     GoalControllerBase(int compensation_flags,
-		       std::vector<double> const & default_kp,
-		       std::vector<double> const & default_kd);
+		       Vector const & default_kp,
+		       Vector const & default_kd);
     
     virtual Status init(Model const & model);
     
-    virtual Status setGoal(std::vector<double> const & goal);
-    virtual Status getGoal(std::vector<double> & goal) const;
+    virtual Status setGoal(Vector const & goal);
+    virtual Status getGoal(Vector & goal) const;
     
-    virtual Status setGains(std::vector<double> const & kp, std::vector<double> const & kd);
-    virtual Status getGains(std::vector<double> & kp, std::vector<double> & kd) const;
+    virtual Status setGains(Vector const & kp, Vector const & kd);
+    virtual Status getGains(Vector & kp, Vector & kd) const;
     
   protected:
     int compensation_flags_;
-    std::vector<double> default_kp_;
-    std::vector<double> default_kd_;
-    std::vector<double> goal_;
-    std::vector<double> kp_;
-    std::vector<double> kd_;
+    Vector default_kp_;
+    Vector default_kd_;
+    Vector goal_;
+    Vector kp_;
+    Vector kd_;
   };
   
   
@@ -88,15 +88,15 @@ namespace jspace {
   {
   public:
     JointGoalController(int compensation_flags,
-		       std::vector<double> const & default_kp,
-		       std::vector<double> const & default_kd);
+			Vector const & default_kp,
+			Vector const & default_kd);
     
-    virtual Status getActual(std::vector<double> & actual) const;
+    virtual Status getActual(Vector & actual) const;
     virtual Status latch(Model const & model);
-    virtual Status computeCommand(Model const & model, std::vector<double> & tau);
+    virtual Status computeCommand(Model const & model, Vector & tau);
     
   protected:
-    std::vector<double> actual_;
+    Vector actual_;
   };
   
 }

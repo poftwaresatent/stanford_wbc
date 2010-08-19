@@ -73,9 +73,9 @@ namespace jspace {
     
     virtual Status selectController(std::string const & name);
     
-    virtual Status setGoal(std::vector<double> const & goal);
+    virtual Status setGoal(Vector const & goal);
     
-    virtual Status setGains(std::vector<double> const & kp, std::vector<double> const & kd);
+    virtual Status setGains(Vector const & kp, Vector const & kd);
     
   protected:
     wbcnet::Channel * channel_;

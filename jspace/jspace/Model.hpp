@@ -153,8 +153,8 @@ namespace jspace {
 	case no joint limit information is available, it sets the
 	lower limit to \c std::numeric_limits<double>::min() and the
 	upper limit to \c std::numeric_limits<double>::max(). */
-    void getJointLimits(std::vector<double> & joint_limits_lower,
-			std::vector<double> & joint_limits_upper) const;
+    void getJointLimits(Vector & joint_limits_lower,
+			Vector & joint_limits_upper) const;
     
     //////////////////////////////////////////////////
     // kinematic facet

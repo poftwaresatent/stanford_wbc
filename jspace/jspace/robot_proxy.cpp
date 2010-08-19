@@ -127,7 +127,7 @@ namespace jspace {
       
     case RQ_ROBOT_WRITE_COMMAND:
       {
-	std::vector<double> command;
+	Vector command;
 	if ( ! unpack_vector(request, sizeof(msg_rq_t), command) ) {
 	  mst.ok = false;
 	  mst.errstr = "error unpacking command";
@@ -286,7 +286,7 @@ namespace jspace {
   
   
   Status RobotProxyClient::
-  writeCommand(std::vector<double> const & command)
+  writeCommand(Vector const & command)
   {
     Status mst;
     

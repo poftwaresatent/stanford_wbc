@@ -121,7 +121,7 @@ namespace jspace {
   };
   
   msg_size_t packsize_name(std::string const & name);
-  msg_size_t packsize_vector(std::vector<double> const & data);
+  msg_size_t packsize_vector(Vector const & data);
   msg_size_t packsize_status(jspace::Status const & status);
   msg_size_t packsize_servo_info(jspace::ServoInfo const & info);
   msg_size_t packsize_servo_state(jspace::ServoState const & state);
@@ -129,14 +129,14 @@ namespace jspace {
   
   bool pack_rq(wbcnet::Buffer & buffer, size_t offset, msg_rq_t rq);
   bool pack_name(wbcnet::Buffer & buffer, size_t offset, std::string const & name);
-  bool pack_vector(wbcnet::Buffer & buffer, size_t offset, std::vector<double> const & data);
+  bool pack_vector(wbcnet::Buffer & buffer, size_t offset, Vector const & data);
   bool pack_status(wbcnet::Buffer & buffer, size_t offset, jspace::Status const & status);
   bool pack_servo_info(wbcnet::Buffer & buffer, size_t offset, jspace::ServoInfo const & info);
   bool pack_servo_state(wbcnet::Buffer & buffer, size_t offset, jspace::ServoState const & state);
   bool pack_state(wbcnet::Buffer & buffer, size_t offset, jspace::State const & state);
   
   bool unpack_name(wbcnet::Buffer const & buffer, size_t offset, std::string & name);
-  bool unpack_vector(wbcnet::Buffer const & buffer, size_t offset, std::vector<double> & data);
+  bool unpack_vector(wbcnet::Buffer const & buffer, size_t offset, Vector & data);
   bool unpack_status(wbcnet::Buffer const & buffer, size_t offset, jspace::Status & status);
   bool unpack_servo_info(wbcnet::Buffer const & buffer, size_t offset, jspace::ServoInfo & info);
   bool unpack_servo_state(wbcnet::Buffer const & buffer, size_t offset, jspace::ServoState & state);

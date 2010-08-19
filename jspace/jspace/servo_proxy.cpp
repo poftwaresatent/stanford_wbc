@@ -110,7 +110,7 @@ namespace jspace {
       
     case RQ_SERVO_GET_INFO:
       {
-	ServoInfo info;
+	ServoInfo info(0, 0);
 	Status const sst(servo_->getInfo(info));
 	if ( ! pack_status(reply, 0, sst)) {
 	  mst.ok = false;
@@ -127,7 +127,7 @@ namespace jspace {
       
     case RQ_SERVO_GET_STATE:
       {
-	ServoState state;
+	ServoState state(0);
 	Status const sst(servo_->getState(state));
 	if ( ! pack_status(reply, 0, sst)) {
 	  mst.ok = false;
@@ -161,7 +161,7 @@ namespace jspace {
       
     case RQ_SERVO_SET_GOAL:
       {
-	std::vector<double> goal;
+	Vector goal;
 	if ( ! unpack_vector(request, sizeof(msg_rq_t), goal) ) {
 	  mst.ok = false;
 	  mst.errstr = "error unpacking goal";
@@ -178,13 +178,13 @@ namespace jspace {
       
     case RQ_SERVO_SET_GAINS:
       {
-	std::vector<double> kp;
+	Vector kp;
 	if ( ! unpack_vector(request, sizeof(msg_rq_t), kp) ) {
 	  mst.ok = false;
 	  mst.errstr = "error unpacking kp";
 	  return mst;
 	}
-	std::vector<double> kd;
+	Vector kd;
 	if ( ! unpack_vector(request, sizeof(msg_rq_t) + packsize_vector(kp), kd) ) {
 	  mst.ok = false;
 	  mst.errstr = "error unpacking kd";
@@ -459,7 +459,7 @@ namespace jspace {
   
   
   Status ServoProxyClient::
-  setGoal(std::vector<double> const & goal)
+  setGoal(Vector const & goal)
   {
     Status mst;
     
@@ -519,7 +519,7 @@ namespace jspace {
   
   
   Status ServoProxyClient::
-  setGains(std::vector<double> const & kp, std::vector<double> const & kd)
+  setGains(Vector const & kp, Vector const & kd)
   {
     Status mst;
     

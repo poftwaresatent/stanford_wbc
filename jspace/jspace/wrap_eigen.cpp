@@ -30,7 +30,7 @@ using namespace std;
 
 namespace jspace {
   
-  bool test_equal(jspace::Matrix const & lhs, jspace::Matrix const & rhs, double precision)
+  bool compare(jspace::Matrix const & lhs, jspace::Matrix const & rhs, double precision)
   {
     if ( &lhs == &rhs ) {
       return true;
@@ -52,9 +52,9 @@ namespace jspace {
   }
     
     
-  bool test_equal(jspace::Quaternion const & lhs, jspace::Quaternion const & rhs, double precision)
+  bool compare(jspace::Quaternion const & lhs, jspace::Quaternion const & rhs, double precision)
   {
-    return test_equal(lhs.coeffs(), rhs.coeffs(), precision);
+    return compare(lhs.coeffs(), rhs.coeffs(), precision);
   }
   
   

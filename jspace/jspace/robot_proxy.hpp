@@ -68,7 +68,7 @@ namespace jspace {
     
     virtual Status readState(State & state);
     
-    virtual Status writeCommand(std::vector<double> const & command);
+    virtual Status writeCommand(Vector const & command);
     
     virtual void shutdown();
     

@@ -26,7 +26,7 @@
 #ifndef JSPACE_STATE_HPP
 #define JSPACE_STATE_HPP
 
-#include <vector>
+#include <jspace/wrap_eigen.hpp>
 
 namespace jspace {
   
@@ -72,9 +72,9 @@ namespace jspace {
     
     size_t time_sec_;
     size_t time_usec_;
-    std::vector<double> position_;
-    std::vector<double> velocity_;
-    std::vector<double> force_;
+    Vector position_;
+    Vector velocity_;
+    Vector force_;
   };
   
 }

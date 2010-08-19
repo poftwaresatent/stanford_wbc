@@ -57,16 +57,29 @@ namespace jspace {
   {
     time_sec_ = 0;
     time_usec_ = 0;
-    position_.resize(npos);
-    velocity_.resize(nvel);
-    force_.resize(nforce);
-    memset(&position_[0], 0, npos * sizeof(double));
-    memset(&velocity_[0], 0, nvel * sizeof(double));
-    memset(&force_[0], 0, nforce * sizeof(double));
+    // Grrr, Eigen2 does not gracefully handle MatrixBase::Zero(0);
+    if (0 == npos) {
+      position_.resize(0);
+    }
+    else {
+      position_ = Vector::Zero(npos);
+    }
+    if (0 == nvel) {
+      velocity_.resize(0);
+    }
+    else {
+      velocity_ = Vector::Zero(nvel);
+    }
+    if (0 == nforce) {
+      force_.resize(0);
+    }
+    else {
+      force_ = Vector::Zero(nforce);
+    }
   }
   
   
-  static void _pad(std::vector<double> & vv, size_t nn)
+  static void _pad(Vector & vv, size_t nn)
   {
     size_t const old(vv.size());
     if (old != nn) {

@@ -106,7 +106,7 @@ namespace jspace {
     state_ = state;
     for (size_t ii(0); ii < ndof_; ++ii) {
       taoJoint * joint(kgm_tree_->info[ii].node->getJointList());
-      joint->setQ(&state.position_[ii]);
+      joint->setQ(&const_cast<State&>(state).position_.coeffRef(ii));
       joint->zeroDQ();
       joint->zeroDDQ();
       joint->zeroTau();
@@ -114,8 +114,8 @@ namespace jspace {
     if (cc_tree_) {
       for (size_t ii(0); ii < ndof_; ++ii) {
 	taoJoint * joint(cc_tree_->info[ii].node->getJointList());
-	joint->setQ(&state.position_[ii]);
-	joint->setDQ(&state.velocity_[ii]);
+	joint->setQ(&const_cast<State&>(state).position_.coeffRef(ii));
+	joint->setDQ(&const_cast<State&>(state).velocity_.coeffRef(ii));
 	joint->zeroDDQ();
 	joint->zeroTau();
       }
@@ -203,8 +203,8 @@ namespace jspace {
   
   
   void Model::
-  getJointLimits(std::vector<double> & joint_limits_lower,
-		 std::vector<double> & joint_limits_upper) const
+  getJointLimits(Vector & joint_limits_lower,
+		 Vector & joint_limits_upper) const
   {
     joint_limits_lower.resize(ndof_);
     joint_limits_upper.resize(ndof_);

@@ -38,8 +38,8 @@ namespace jspace {
   
   
   // should also work as-is for jspace::Vector
-  bool test_equal(jspace::Matrix const & lhs, jspace::Matrix const & rhs, double precision);
-  bool test_equal(jspace::Quaternion const & lhs, jspace::Quaternion const & rhs, double precision);
+  bool compare(jspace::Matrix const & lhs, jspace::Matrix const & rhs, double precision);
+  bool compare(jspace::Quaternion const & lhs, jspace::Quaternion const & rhs, double precision);
   
   std::string pretty_string(jspace::Vector const & vv);
   std::string pretty_string(jspace::Quaternion const & qq);

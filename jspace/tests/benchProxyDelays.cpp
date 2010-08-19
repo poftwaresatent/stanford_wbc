@@ -59,7 +59,7 @@ namespace {
     explicit CustomRobot(custom_ds_t * ds);
     
     virtual jspace::Status readState(jspace::State & state);
-    virtual jspace::Status writeCommand(std::vector<double> const & command);
+    virtual jspace::Status writeCommand(jspace::Vector const & command);
     virtual void shutdown();
     
   protected:
@@ -73,15 +73,15 @@ namespace {
   public:
     explicit CustomController(custom_ds_t * ds);
     
-    virtual jspace::Status setGoal(std::vector<double> const & goal);
-    virtual jspace::Status getGoal(std::vector<double> & goal) const;
-    virtual jspace::Status getActual(std::vector<double> & actual) const;
+    virtual jspace::Status setGoal(jspace::Vector const & goal);
+    virtual jspace::Status getGoal(jspace::Vector & goal) const;
+    virtual jspace::Status getActual(jspace::Vector & actual) const;
     
-    virtual jspace::Status setGains(std::vector<double> const & kp, std::vector<double> const & kd);
-    virtual jspace::Status getGains(std::vector<double> & kp, std::vector<double> & kd) const;
+    virtual jspace::Status setGains(jspace::Vector const & kp, jspace::Vector const & kd);
+    virtual jspace::Status getGains(jspace::Vector & kp, jspace::Vector & kd) const;
     
     virtual jspace::Status latch(jspace::Model const & model);
-    virtual jspace::Status computeCommand(jspace::Model const & model, std::vector<double> & tau);
+    virtual jspace::Status computeCommand(jspace::Model const & model, jspace::Vector & tau);
     
   protected:
     custom_ds_t * ds_;
@@ -187,7 +187,7 @@ void bench_raw(jspace::Model & model, jspace::State & state, custom_ds_t * ds,
     
     // Update controller... this could of course just as easily call
     // something from jspace/controller_library, in which case we'd
-    // have to convert from std::vector<double> to double[6], which
+    // have to convert from jspace::Vector to double[6], which
     // is a trivial memcpy.
     if (0 != gettimeofday(&t2, 0)) {
       err(EXIT_FAILURE, "gettimeofday");
@@ -218,7 +218,7 @@ void bench_wrapped(jspace::Model & model, jspace::State & state, custom_ds_t * d
   CustomRobot robot(ds);
   CustomController controller(ds);
   jspace::Status status;
-  std::vector<double> tau;
+  jspace::Vector tau;
   
   for (int tick(0); tick < nticks; ++tick) {
     fill_ds(tick, ds);
@@ -273,7 +273,7 @@ void bench_proxified(jspace::Model & model, jspace::State & state, custom_ds_t *
   CustomRobot custom_robot(ds);
   CustomController controller(ds);
   jspace::Status status;
-  std::vector<double> tau;
+  jspace::Vector tau;
   
   static int const bufsize(512);
   std::vector<char> buffer(bufsize);
@@ -452,7 +452,7 @@ namespace {
   
   
   jspace::Status CustomRobot::
-  writeCommand(std::vector<double> const & command)
+  writeCommand(jspace::Vector const & command)
   {
     jspace::Status status;
     if (command.size() != 6) {
@@ -460,7 +460,7 @@ namespace {
       status.errstr = "wrong dimension";
       return status;
     }
-    memcpy(ds_->tau, &command[0], 6 * sizeof(double));
+    memcpy(ds_->tau, &const_cast<jspace::Vector&>(command).coeffRef(0), 6 * sizeof(double));
     return status;
   }
   
@@ -480,7 +480,7 @@ namespace {
   
   
   jspace::Status CustomController::
-  setGoal(std::vector<double> const & goal)
+  setGoal(jspace::Vector const & goal)
   {
     jspace::Status zonk(false, "not implemented");
     return zonk;
@@ -488,7 +488,7 @@ namespace {
   
   
   jspace::Status CustomController::
-  getGoal(std::vector<double> & goal) const
+  getGoal(jspace::Vector & goal) const
   {
     jspace::Status zonk(false, "not implemented");
     return zonk;
@@ -496,7 +496,7 @@ namespace {
   
   
   jspace::Status CustomController::
-  getActual(std::vector<double> & actual) const
+  getActual(jspace::Vector & actual) const
   {
     jspace::Status zonk(false, "not implemented");
     return zonk;
@@ -504,7 +504,7 @@ namespace {
   
   
   jspace::Status CustomController::
-  setGains(std::vector<double> const & kp, std::vector<double> const & kd)
+  setGains(jspace::Vector const & kp, jspace::Vector const & kd)
   {
     jspace::Status zonk(false, "not implemented");
     return zonk;
@@ -512,7 +512,7 @@ namespace {
   
   
   jspace::Status CustomController::
-  getGains(std::vector<double> & kp, std::vector<double> & kd) const
+  getGains(jspace::Vector & kp, jspace::Vector & kd) const
   {
     jspace::Status zonk(false, "not implemented");
     return zonk;
@@ -528,7 +528,7 @@ namespace {
   
   
   jspace::Status CustomController::
-  computeCommand(jspace::Model const & model, std::vector<double> & tau)
+  computeCommand(jspace::Model const & model, jspace::Vector & tau)
   {
     custom_controller(model, ds_);
     tau.resize(6);

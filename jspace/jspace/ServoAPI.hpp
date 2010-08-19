@@ -23,6 +23,7 @@
 
 #include <jspace/State.hpp>
 #include <jspace/Status.hpp>
+#include <vector>
 
 
 namespace jspace {
@@ -31,21 +32,41 @@ namespace jspace {
   class ServoInfo
   {
   public:
+    ServoInfo(size_t ndof, size_t ncontrollers)
+      : controller_name(ncontrollers),
+	dof_name(ndof)
+    {
+      if (0 != ndof) {
+	limit_lower = Vector::Zero(ndof);
+	limit_upper = Vector::Zero(ndof);
+      }
+    }
+    
     std::vector<std::string> controller_name;
     std::vector<std::string> dof_name;
-    std::vector<double> limit_lower;
-    std::vector<double> limit_upper;
+    Vector limit_lower;
+    Vector limit_upper;
   };
   
   
   class ServoState
   {
   public:
+    explicit ServoState(size_t ndof)
+    {
+      if (0 != ndof) {
+	goal = Vector::Zero(ndof);
+	actual = Vector::Zero(ndof);
+	kp = Vector::Zero(ndof);
+	kd = Vector::Zero(ndof);
+      }
+    }
+    
     std::string active_controller;
-    std::vector<double> goal;
-    std::vector<double> actual;
-    std::vector<double> kp;
-    std::vector<double> kd;
+    Vector goal;
+    Vector actual;
+    Vector kp;
+    Vector kd;
   };
   
   
@@ -63,9 +84,9 @@ namespace jspace {
     
     virtual Status selectController(std::string const & name) = 0;
     
-    virtual Status setGoal(std::vector<double> const & goal) = 0;
+    virtual Status setGoal(Vector const & goal) = 0;
     
-    virtual Status setGains(std::vector<double> const & kp, std::vector<double> const & kd) = 0;
+    virtual Status setGains(Vector const & kp, Vector const & kd) = 0;
   };
   
 }

@@ -218,7 +218,7 @@ TEST (jspaceModel, kinematics)
 	<< "  computed: " << pretty_string(quat_computed) << "\n"
 	<< "  delta_angle: " << delta_angle * 180 / M_PI << " deg\n";
       Eigen::Vector3d trans_expected(tx, ty, tz);
-      EXPECT_TRUE (test_equal(transform.translation(), trans_expected, 1e-6))
+      EXPECT_TRUE (compare(transform.translation(), trans_expected, 1e-6))
 	<< "translation mismatch\n"
 	<< "  entry: " << joint_positions_count << "\n"
 	<< "  pos: " << state.position_ << "\n"
@@ -241,7 +241,7 @@ TEST (jspaceModel, kinematics)
 	  << "  computed: " << pretty_string(check_q) << "\n"
 	  << "  expected: " << pretty_string(quat_computed) << "\n"
 	  << "  delta_angle: " << delta_angle * 180 / M_PI << " deg\n";
-	EXPECT_TRUE (test_equal(transform.translation(), check_t.translation(), 1e-6))
+	EXPECT_TRUE (compare(transform.translation(), check_t.translation(), 1e-6))
 	  << "model->computeGlobalFrame() translation mismatch on local identity transform\n"
 	  << "  computed: " << pretty_string(check_t.translation()) << "\n"
 	  << "  expected: " << pretty_string(transform.translation());
@@ -257,7 +257,7 @@ TEST (jspaceModel, kinematics)
 	  << "  computed: " << pretty_string(check_q) << "\n"
 	  << "  expected: " << pretty_string(quat_computed) << "\n"
 	  << "  delta_angle: " << delta_angle * 180 / M_PI << " deg\n";
-	EXPECT_TRUE (test_equal(transform.translation(), check_t.translation(), 1e-6))
+	EXPECT_TRUE (compare(transform.translation(), check_t.translation(), 1e-6))
 	  << "model->computeGlobalFrame() translation mismatch on (0,0,0) translation\n"
 	  << "  computed: " << pretty_string(check_t.translation()) << "\n"
 	  << "  expected: " << pretty_string(transform.translation());
@@ -274,7 +274,7 @@ TEST (jspaceModel, kinematics)
 	  << "  computed: " << pretty_string(check_q) << "\n"
 	  << "  expected: " << pretty_string(quat_computed) << "\n"
 	  << "  delta_angle: " << delta_angle * 180 / M_PI << " deg\n";
-	EXPECT_TRUE (test_equal(transform.translation(), check_t.translation(), 1e-6))
+	EXPECT_TRUE (compare(transform.translation(), check_t.translation(), 1e-6))
 	  << "model->computeGlobalFrame() translation mismatch on zero translation\n"
 	  << "  computed: " << pretty_string(check_t.translation()) << "\n"
 	  << "  expected: " << pretty_string(transform.translation());
@@ -297,8 +297,6 @@ TEST (jspaceModel, Jacobian_R)
     taoDNode * ee(model->getNode(0));
     ASSERT_NE ((void*)0, ee) << "no end effector (node ID 0)";
     jspace::State state(2, 2, 0); // here we're only gonna test the first joint though
-    jspace::zero(state.position_);
-    jspace::zero(state.velocity_);
     jspace::Transform ee_lframe(Eigen::Translation<double, 3>(0, 1, 0));
     
     for (double qq(-M_PI); qq <= M_PI; qq += 2 * M_PI / 7) {
@@ -358,7 +356,6 @@ TEST (jspaceModel, Jacobian_RR)
     taoDNode * ee(model->getNode(1));
     ASSERT_NE ((void*)0, ee) << "no end effector (node ID 1)";
     jspace::State state(2, 2, 0);
-    jspace::zero(state.velocity_);
     jspace::Transform ee_lframe(Eigen::Translation<double, 3>(0, 1, 0));
     
     for (double q1(-M_PI); q1 <= M_PI; q1 += 2 * M_PI / 7) {
@@ -424,7 +421,6 @@ TEST (jspaceModel, Jacobian_RP)
     taoDNode * ee(model->getNode(1));
     ASSERT_NE ((void*)0, ee) << "no end effector (node ID 1)";
     jspace::State state(2, 2, 0);
-    jspace::zero(state.velocity_);
     
     for (double q1(-M_PI); q1 <= M_PI; q1 += 2 * M_PI / 7) {
       for (double q2(-1); q2 <= 1; q2 += 2.0 / 7) {
@@ -502,7 +498,6 @@ TEST (jspaceModel, explicit_mass_inertia_RR)
       ASSERT_NE ((void*)0, n1);
       ASSERT_NE ((void*)0, n2);
       jspace::State state(2, 2, 0);
-      jspace::zero(state.velocity_);
       
       for (double q1(-M_PI); q1 <= M_PI; q1 += 2 * M_PI / 7) {
 	for (double q2(-M_PI); q2 <= M_PI; q2 += 2 * M_PI / 7) {
@@ -553,7 +548,6 @@ TEST (jspaceModel, com_frame_fork_4R)
       }
     }
     jspace::State state(4, 4, 0);
-    jspace::zero(state.velocity_);
     
     bool keep_running(true);
     
@@ -626,7 +620,6 @@ TEST (jspaceModel, kinematics_fork_4R)
       ASSERT_NE ((void*)0, node[ii]) << "no node " << ii+1 << " (ID " << ii << ")";
     }
     jspace::State state(4, 4, 0);
-    jspace::zero(state.velocity_);
     
     struct kinematics_s {
       jspace::Vector origin;
@@ -737,7 +730,6 @@ TEST (jspaceModel, mass_inertia_fork_4R)
   try {
     model = create_fork_4R_model();
     jspace::State state(4, 4, 0);
-    jspace::zero(state.velocity_);
     
     bool keep_running(true);
     
@@ -804,7 +796,6 @@ TEST (jspaceModel, mass_inertia_RR)
       ASSERT_NE ((void*)0, n1);
       ASSERT_NE ((void*)0, n2);
       jspace::State state(2, 2, 0);
-      jspace::zero(state.velocity_);
       
       for (double q1(-M_PI); q1 <= M_PI; q1 += 2 * M_PI / 7) {
 	for (double q2(-M_PI); q2 <= M_PI; q2 += 2 * M_PI / 7) {
@@ -854,7 +845,6 @@ TEST (jspaceModel, mass_inertia_5R_nonzero)
   try {
     model = create_unit_mass_5R_model();
     jspace::State state(5, 5, 0);
-    jspace::zero(state.velocity_);
     
     for (size_t ii(0); ii < 5; ++ii) {
       for (double qq(-M_PI); qq <= M_PI; qq += 2 * M_PI / 7) {
@@ -893,7 +883,6 @@ TEST (jspaceModel, mass_inertia_RP)
     ASSERT_NE ((void*)0, n1);
     ASSERT_NE ((void*)0, n2);
     jspace::State state(2, 2, 0);
-    jspace::zero(state.velocity_);
     
     for (double q1(-M_PI); q1 <= M_PI; q1 += 2 * M_PI / 7) {
       for (double q2(-1); q2 <= 1; q2 += 2.0 / 7) {
@@ -950,17 +939,15 @@ TEST (jspaceController, mass_inertia_compensation_RR)
     ASSERT_EQ (model->getNDOF(), 2);
     jspace::State state(2, 2, 0);
     model->update(state);	// otherwise ctrl.init() complains (further down)
-    std::vector<double> kp, kd;
-    kp.push_back(100);
-    kp.push_back(100);
-    kd.push_back(20);
-    kd.push_back(20);
+    Vector kp(2), kd(2);
+    kp << 100, 100;
+    kd << 20, 20;
     jspace::JointGoalController ctrl(jspace::COMP_MASS_INERTIA, kp, kd);
     jspace::Status status(ctrl.init(*model));
     ASSERT_TRUE (status) << "ctrl.init failed: " << status.errstr;
     status = ctrl.setGoal(state.position_);
     ASSERT_TRUE (status) << "ctrl.setGoal failed: " << status.errstr;
-    std::vector<double> tau;
+    Vector tau;
     
     for (double q1(-M_PI); q1 <= M_PI; q1 += 2 * M_PI / 7) {
       for (double q2(-M_PI); q2 <= M_PI; q2 += 2 * M_PI / 7) {
@@ -975,7 +962,7 @@ TEST (jspaceController, mass_inertia_compensation_RR)
 	double const m11(MM.coeff(0, 0));
 	double const m12(MM.coeff(0, 1));
 	double const m22(MM.coeff(1, 1));
-	std::vector<double> tau_check(2);
+	Vector tau_check(2);
 	tau_check[0] = - kp[0] * (m11 * q1 + m12 * q2);
 	tau_check[1] = - kp[0] * (m12 * q1 + m22 * q2);
 	

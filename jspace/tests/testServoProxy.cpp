@@ -40,14 +40,14 @@ namespace {
     virtual jspace::Status getInfo(jspace::ServoInfo & info) const;
     virtual jspace::Status getState(jspace::ServoState & state) const;
     virtual jspace::Status selectController(std::string const & name);
-    virtual jspace::Status setGoal(std::vector<double> const & goal);
-    virtual jspace::Status setGains(std::vector<double> const & kp, std::vector<double> const & kd);
+    virtual jspace::Status setGoal(jspace::Vector const & goal);
+    virtual jspace::Status setGains(jspace::Vector const & kp, jspace::Vector const & kd);
 
   private:
     std::string active_controller_;
-    std::vector<double> goal_;
-    std::vector<double> kp_;
-    std::vector<double> kd_;
+    jspace::Vector goal_;
+    jspace::Vector kp_;
+    jspace::Vector kd_;
   };
   
   
@@ -72,16 +72,14 @@ namespace {
 
 TEST_F (ServoProxyTest, getInfo)
 {
-  jspace::ServoInfo sinfo;
-  sinfo.controller_name.push_back("blahblah");
-  sinfo.dof_name.push_back("kasejbdf");
-  sinfo.limit_lower.push_back(42);
-  sinfo.limit_upper.push_back(17);
-  sinfo.limit_upper.push_back(-17);
+  jspace::ServoInfo sinfo(3, 1);
+  sinfo.controller_name[0] = "blahblah";
+  sinfo.dof_name[0] = "kasejbdf";
+  sinfo.limit_lower << 42, 17, -17;
   jspace::Status const sst(servo->getInfo(sinfo));
   ASSERT_TRUE (sst.ok) << sst.errstr;
   
-  jspace::ServoInfo cinfo;
+  jspace::ServoInfo cinfo(0, 0);
   jspace::Status const cst(client->getInfo(cinfo));
   ASSERT_TRUE (cst.ok) << cst.errstr;
   
@@ -96,12 +94,12 @@ TEST_F (ServoProxyTest, getInfo)
   }
   
   ASSERT_EQ (sinfo.limit_lower.size(), cinfo.limit_lower.size());
-  for (size_t ii(0); ii < sinfo.limit_lower.size(); ++ii) {
+  for (ssize_t ii(0); ii < sinfo.limit_lower.size(); ++ii) {
     ASSERT_EQ (sinfo.limit_lower[ii], cinfo.limit_lower[ii]);
   }
   
   ASSERT_EQ (sinfo.limit_upper.size(), cinfo.limit_upper.size());
-  for (size_t ii(0); ii < sinfo.limit_upper.size(); ++ii) {
+  for (ssize_t ii(0); ii < sinfo.limit_upper.size(); ++ii) {
     ASSERT_EQ (sinfo.limit_upper[ii], cinfo.limit_upper[ii]);
   }
 }
@@ -109,18 +107,19 @@ TEST_F (ServoProxyTest, getInfo)
 
 TEST_F (ServoProxyTest, getState)
 {
-  jspace::ServoState sstate;
+  jspace::ServoState sstate(3);
   sstate.active_controller = "2k34u5";
-  for (double foo(0.1); foo <= 0.3; foo += 0.1) {
-    sstate.goal.push_back(foo);
-    sstate.actual.push_back(-foo);
-    sstate.kp.push_back(100*foo);
-    sstate.kd.push_back(10*foo);
+  for (size_t ii(0); ii < 3; ++ii) {
+    double const foo(0.1 * (ii+1));
+    sstate.goal[ii] = foo;
+    sstate.actual[ii] = -foo;
+    sstate.kp[ii] = 100*foo;
+    sstate.kd[ii] = 10*foo;
   }
   jspace::Status const sst(servo->getState(sstate));
   ASSERT_TRUE (sst.ok) << sst.errstr;
   
-  jspace::ServoState cstate;
+  jspace::ServoState cstate(0);
   jspace::Status const cst(client->getState(cstate));
   ASSERT_TRUE (cst.ok) << cst.errstr;
   
@@ -157,7 +156,7 @@ TEST_F (ServoProxyTest, selectController)
   jspace::Status cst(client->selectController("foobar"));
   ASSERT_TRUE (cst.ok) << cst.errstr;
   
-  jspace::ServoState sstate;
+  jspace::ServoState sstate(0);
   sst = servo->getState(sstate);
   ASSERT_TRUE (sst.ok) << sst.errstr;
   
@@ -170,21 +169,17 @@ TEST_F (ServoProxyTest, selectController)
 
 TEST_F (ServoProxyTest, setGoal)
 {
-  std::vector<double> sgoal;
-  for (double foo(0.1); foo <= 0.3; foo += 0.1) {
-    sgoal.push_back(foo);
-  }
+  jspace::Vector sgoal(3);
+  sgoal << 0.1, 0.2, 0.3;
   jspace::Status sst(servo->setGoal(sgoal));
   ASSERT_TRUE (sst.ok) << sst.errstr;
   
-  std::vector<double> cgoal;
-  for (double foo(1.1); foo <= 1.3; foo += 0.05) {
-    cgoal.push_back(foo);
-  }
+  jspace::Vector cgoal(5);
+  cgoal << 1.1, 1.15, 1.2, 1.25, 1.3;
   jspace::Status cst(client->setGoal(cgoal));
   ASSERT_TRUE (cst.ok) << cst.errstr;
   
-  jspace::ServoState sstate;
+  jspace::ServoState sstate(0);
   sst = servo->getState(sstate);
   ASSERT_TRUE (sst.ok) << sst.errstr;
   
@@ -197,23 +192,19 @@ TEST_F (ServoProxyTest, setGoal)
 
 TEST_F (ServoProxyTest, setGains)
 {
-  std::vector<double> skp, skd;
-  for (double foo(100); foo <= 300; foo += 100) {
-    skp.push_back(foo);
-    skd.push_back(foo/17);
-  }
+  jspace::Vector skp(3), skd(3);
+  skp << 100.0, 200.0, 300.0;
+  skd << 100.0/17, 200.0/17, 300.0/17;
   jspace::Status sst(servo->setGains(skp, skd));
   ASSERT_TRUE (sst.ok) << sst.errstr;
   
-  std::vector<double> ckp, ckd;
-  for (double foo(200); foo <= 1000; foo *= 1.2) {
-    ckp.push_back(foo);
-    ckd.push_back(foo/21.3);
-  }
+  jspace::Vector ckp(7), ckd(7);
+  ckp << 200, 240, 288, 345.6, 414.72, 497.664, 597.1968;
+  ckd << 200/21.3, 240/21.3, 288/21.3, 345.6/21.3, 414.72/21.3, 497.664/21.3, 597.1968/21.3;
   jspace::Status cst(client->setGains(ckp, ckd));
   ASSERT_TRUE (cst.ok) << cst.errstr;
   
-  jspace::ServoState sstate;
+  jspace::ServoState sstate(0);
   sst = servo->getState(sstate);
   ASSERT_TRUE (sst.ok) << sst.errstr;
   
@@ -250,8 +241,6 @@ namespace {
   {
     info.controller_name.clear();
     info.dof_name.clear();
-    info.limit_lower.clear();
-    info.limit_upper.clear();
     
     info.controller_name.push_back("controller one");
     info.controller_name.push_back("controller two");
@@ -260,9 +249,12 @@ namespace {
     info.dof_name.push_back("dof two");
     info.dof_name.push_back("dof three");
     
-    for (double foo(-0.1); foo <= 0.1; foo += 0.1) {
-      info.limit_lower.push_back(foo - 17);
-      info.limit_upper.push_back(foo + 42);
+    info.limit_lower = jspace::Vector::Zero(3);
+    info.limit_upper = jspace::Vector::Zero(3);
+    for (int ii(0); ii <= 2; ++ii) {
+      double const foo(0.1 * (ii-1));
+      info.limit_lower[ii] = foo - 17;
+      info.limit_upper[ii] = foo + 42;
     }
     
     jspace::Status st(true, "dummy servo info");
@@ -303,10 +295,10 @@ namespace {
   
   
   jspace::Status DummyServo::
-  setGoal(std::vector<double> const & goal)
+  setGoal(jspace::Vector const & goal)
   {
     jspace::Status st(true, "dummy servo set goal");
-    if (goal.empty()) {
+    if (0 == goal.size()) {
       st.ok = false;
     }
     goal_ = goal;
@@ -315,10 +307,10 @@ namespace {
   
   
   jspace::Status DummyServo::
-  setGains(std::vector<double> const & kp, std::vector<double> const & kd)
+  setGains(jspace::Vector const & kp, jspace::Vector const & kd)
   {
     jspace::Status st(true, "dummy servo set gains");
-    if ((kp.empty()) || (kd.empty())) {
+    if ((0 == kp.size()) || (0 == kd.size())) {
       st.ok = false;
     }
     kp_ = kp;

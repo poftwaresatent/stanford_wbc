@@ -105,7 +105,7 @@ namespace imp {
     RobotAPI(int ndof, wbc::RobotAPI * wbc_robot);
     
     virtual jspace::Status readState(jspace::State & state);
-    virtual jspace::Status writeCommand(std::vector<double> const & command);
+    virtual jspace::Status writeCommand(jspace::Vector const & command);
     virtual void shutdown();
     
     wbc::RobotAPI * wbc_robot_;
@@ -185,8 +185,8 @@ int main(int argc, char*argv[])
   
   LOG_INFO (logger, "creating and initializing controller");
   // XXXX selectable at runtime...
-  std::vector<double> initial_kp(ndof);
-  std::vector<double> initial_kd(ndof);
+  jspace::Vector initial_kp(ndof);
+  jspace::Vector initial_kd(ndof);
   for (int ii(0); ii < ndof; ++ii) {
     initial_kp[ii] = 100;
     initial_kd[ii] = 20;
@@ -202,7 +202,7 @@ int main(int argc, char*argv[])
   }
   
   LOG_INFO (logger, "entering control loop");
-  std::vector<double> tau(ndof);
+  jspace::Vector tau(ndof);
   while (true) {
     
     status = jspace_controller->computeCommand(*jspace_model, tau);
@@ -301,16 +301,18 @@ namespace imp {
     memcpy(&state.position_[0], joint_angles_.dataPtr(), joint_angles_.size() * sizeof(double));
     state.velocity_.resize(joint_velocities_.size());
     memcpy(&state.velocity_[0], joint_velocities_.dataPtr(), joint_velocities_.size() * sizeof(double));
-    state.force_.clear();
+    state.force_.resize(0);
     return st;
   }
   
   
   jspace::Status RobotAPI::
-  writeCommand(std::vector<double> const & command)
+  writeCommand(jspace::Vector const & command)
   {
     command_torques_.setSize(command.size());
-    memcpy(command_torques_.dataPtr(), &command[0], command.size() * sizeof(double));
+    memcpy(command_torques_.dataPtr(),
+	   &const_cast<jspace::Vector&>(command).coeffRef(0),
+	   command.size() * sizeof(double));
     jspace::Status st;
     if ( ! wbc_robot_->writeCommand(command_torques_)) {
       st.ok = false;

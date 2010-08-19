@@ -74,7 +74,7 @@ namespace jspace {
   
   
   void jspace_controller_info_getter_s::
-  getLimits(Model const & model, std::vector<double> & limits_lower, std::vector<double> & limits_upper) const
+  getLimits(Model const & model, Vector & limits_lower, Vector & limits_upper) const
   {
     model.getJointLimits(limits_lower, limits_upper);
   }

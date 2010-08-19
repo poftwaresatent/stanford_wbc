@@ -85,7 +85,7 @@ namespace jspace {
   }
   
   
-  msg_size_t packsize_vector(std::vector<double> const & data)
+  msg_size_t packsize_vector(Vector const & data)
   {
     return sizeof(msg_size_t) + data.size() * sizeof(double);
   }
@@ -169,14 +169,16 @@ namespace jspace {
   }
   
   
-  bool pack_vector(wbcnet::Buffer & buffer, size_t offset, std::vector<double> const & data)
+  bool pack_vector(wbcnet::Buffer & buffer, size_t offset, Vector const & data)
   {
     msg_size_t const packsize(packsize_vector(data));
     if ( ! buffer.Resize(offset + packsize)) {
       return false;
     }
     memcpy(buffer.GetData() + offset, &packsize, sizeof(packsize));
-    memcpy(buffer.GetData() + offset + sizeof(packsize), &data[0], packsize - sizeof(packsize));
+    memcpy(buffer.GetData() + offset + sizeof(packsize),
+	   &const_cast<Vector &>(data).coeffRef(0),
+	   packsize - sizeof(packsize));
     
     PDEBUG ("pack_vector(): %s\n",
 	    wbcnet::hexdump_buffer(buffer.GetData() + offset, packsize).c_str());
@@ -240,13 +242,17 @@ namespace jspace {
     nelem = info.limit_lower.size();
     memcpy(buf, &nelem, sizeof(nelem));
     buf += sizeof(nelem);
-    memcpy(buf, &info.limit_lower[0], nelem * sizeof(double));
+    memcpy(buf,
+	   &const_cast<jspace::ServoInfo &>(info).limit_lower.coeffRef(0),
+	   nelem * sizeof(double));
     buf += nelem * sizeof(double);
     
     nelem = info.limit_upper.size();
     memcpy(buf, &nelem, sizeof(nelem));
     buf += sizeof(nelem);
-    memcpy(buf, &info.limit_upper[0], nelem * sizeof(double));
+    memcpy(buf,
+	   &const_cast<jspace::ServoInfo &>(info).limit_upper.coeffRef(0),
+	   nelem * sizeof(double));
     //buf += nelem * sizeof(double);
     
     PDEBUG ("pack_servo_info(): %s\n",
@@ -276,25 +282,33 @@ namespace jspace {
     nelem = state.goal.size();
     memcpy(buf, &nelem, sizeof(nelem));
     buf += sizeof(nelem);
-    memcpy(buf, &state.goal[0], nelem * sizeof(double));
+    memcpy(buf,
+	   &const_cast<jspace::ServoState&>(state).goal.coeffRef(0),
+	   nelem * sizeof(double));
     buf += nelem * sizeof(double);
     
     nelem = state.actual.size();
     memcpy(buf, &nelem, sizeof(nelem));
     buf += sizeof(nelem);
-    memcpy(buf, &state.actual[0], nelem * sizeof(double));
+    memcpy(buf,
+	   &const_cast<jspace::ServoState&>(state).actual.coeffRef(0),
+	   nelem * sizeof(double));
     buf += nelem * sizeof(double);
     
     nelem = state.kp.size();
     memcpy(buf, &nelem, sizeof(nelem));
     buf += sizeof(nelem);
-    memcpy(buf, &state.kp[0], nelem * sizeof(double));
+    memcpy(buf,
+	   &const_cast<jspace::ServoState&>(state).kp.coeffRef(0),
+	   nelem * sizeof(double));
     buf += nelem * sizeof(double);
     
     nelem = state.kd.size();
     memcpy(buf, &nelem, sizeof(nelem));
     buf += sizeof(nelem);
-    memcpy(buf, &state.kd[0], nelem * sizeof(double));
+    memcpy(buf,
+	   &const_cast<jspace::ServoState&>(state).kd.coeffRef(0),
+	   nelem * sizeof(double));
     //buf += nelem * sizeof(double);
     
     PDEBUG ("pack_servo_state(): %s\n",
@@ -326,19 +340,25 @@ namespace jspace {
     msg_size_t nelem(state.position_.size());
     memcpy(buf, &nelem, sizeof(nelem));
     buf += sizeof(nelem);
-    memcpy(buf, &state.position_[0], nelem * sizeof(double));
+    memcpy(buf,
+	   &const_cast<jspace::State&>(state).position_.coeffRef(0),
+	   nelem * sizeof(double));
     buf += nelem * sizeof(double);
     
     nelem = state.velocity_.size();
     memcpy(buf, &nelem, sizeof(nelem));
     buf += sizeof(nelem);
-    memcpy(buf, &state.velocity_[0], nelem * sizeof(double));
+    memcpy(buf,
+	   &const_cast<jspace::State&>(state).velocity_.coeffRef(0),
+	   nelem * sizeof(double));
     buf += nelem * sizeof(double);
     
     nelem = state.force_.size();
     memcpy(buf, &nelem, sizeof(nelem));
     buf += sizeof(nelem);
-    memcpy(buf, &state.force_[0], nelem * sizeof(double));
+    memcpy(buf,
+	   &const_cast<jspace::State&>(state).force_.coeffRef(0),
+	   nelem * sizeof(double));
     //buf += nelem * sizeof(double);
     
     PDEBUG ("pack_state(): %s\n",
@@ -374,7 +394,7 @@ namespace jspace {
   }
   
   
-  bool unpack_vector(wbcnet::Buffer const & buffer, size_t offset, std::vector<double> & data)
+  bool unpack_vector(wbcnet::Buffer const & buffer, size_t offset, Vector & data)
   {
     msg_size_t arrlen;
     if (buffer.GetSize() < offset + sizeof(arrlen)) {
@@ -394,7 +414,7 @@ namespace jspace {
     }
     
     data.resize(arrlen / sizeof(double));
-    memcpy(&data[0], buf, arrlen);
+    memcpy(&data.coeffRef(0), buf, arrlen);
     
     PDEBUG ("unpack_vector(): %s\n",
 	    wbcnet::hexdump_buffer(buffer.GetData() + offset, arrlen + sizeof(arrlen)).c_str());
@@ -529,26 +549,34 @@ namespace jspace {
     memcpy(&nelem, buf, sizeof(nelem));
     buf += sizeof(nelem);
     state.goal.resize(nelem);
-    memcpy(&state.goal[0], buf, nelem * sizeof(double));
-    buf += nelem * sizeof(double);
+    if (0 < nelem) {
+      memcpy(&state.goal[0], buf, nelem * sizeof(double));
+      buf += nelem * sizeof(double);
+    }
     
     memcpy(&nelem, buf, sizeof(nelem));
     buf += sizeof(nelem);
     state.actual.resize(nelem);
-    memcpy(&state.actual[0], buf, nelem * sizeof(double));
-    buf += nelem * sizeof(double);
+    if (0 < nelem) {
+      memcpy(&state.actual[0], buf, nelem * sizeof(double));
+      buf += nelem * sizeof(double);
+    }
     
     memcpy(&nelem, buf, sizeof(nelem));
     buf += sizeof(nelem);
     state.kp.resize(nelem);
-    memcpy(&state.kp[0], buf, nelem * sizeof(double));
-    buf += nelem * sizeof(double);
+    if (0 < nelem) {
+      memcpy(&state.kp[0], buf, nelem * sizeof(double));
+      buf += nelem * sizeof(double);
+    }
     
     memcpy(&nelem, buf, sizeof(nelem));
     buf += sizeof(nelem);
     state.kd.resize(nelem);
-    memcpy(&state.kd[0], buf, nelem * sizeof(double));
-    //buf += nelem * sizeof(double);
+    if (0 < nelem) {
+      memcpy(&state.kd[0], buf, nelem * sizeof(double));
+      //buf += nelem * sizeof(double);
+    }
     
     PDEBUG ("unpack_servo_state(): %s\n",
 	    wbcnet::hexdump_buffer(buffer.GetData() + offset, packsize).c_str());
