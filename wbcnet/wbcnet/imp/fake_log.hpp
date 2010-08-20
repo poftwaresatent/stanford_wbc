@@ -85,7 +85,7 @@ namespace wbcnet {
 #else // DISABLE_LOGGING
   
   typedef fake_logger logger_t;
-  static logger_t get_root_logger() { return fake_logger(""); }
+  inline logger_t get_root_logger() { return fake_logger(""); }
   template<typename string_t> logger_t get_logger(string_t const & name) { fake_logger foo(name); return foo; }
   
 #endif // DISABLE_LOGGING

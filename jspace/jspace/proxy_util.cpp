@@ -371,12 +371,12 @@ namespace jspace {
   bool unpack_name(wbcnet::Buffer const & buffer, size_t offset, std::string & name)
   {
     msg_size_t namelen;
-    if (buffer.GetSize() < offset + sizeof(namelen)) {
+    if (static_cast<size_t>(buffer.GetSize()) < offset + sizeof(namelen)) {
       return false;
     }
     char * buf(buffer.GetData() + offset);
     memcpy(&namelen, buf, sizeof(namelen));
-    if (buffer.GetSize() < offset + namelen) {
+    if (static_cast<size_t>(buffer.GetSize()) < offset + namelen) {
       return false;
     }
     buf += sizeof(namelen);
@@ -397,12 +397,12 @@ namespace jspace {
   bool unpack_vector(wbcnet::Buffer const & buffer, size_t offset, Vector & data)
   {
     msg_size_t arrlen;
-    if (buffer.GetSize() < offset + sizeof(arrlen)) {
+    if (static_cast<size_t>(buffer.GetSize()) < offset + sizeof(arrlen)) {
       return false;
     }
     char * buf(buffer.GetData() + offset);
     memcpy(&arrlen, buf, sizeof(arrlen));
-    if (buffer.GetSize() < offset + arrlen) {
+    if (static_cast<size_t>(buffer.GetSize()) < offset + arrlen) {
       return false;
     }
     buf += sizeof(arrlen);
@@ -426,12 +426,12 @@ namespace jspace {
   bool unpack_status(wbcnet::Buffer const & buffer, size_t offset, jspace::Status & status)
   {
     msg_size_t packsize;
-    if (buffer.GetSize() < offset + sizeof(packsize)) {
+    if (static_cast<size_t>(buffer.GetSize()) < offset + sizeof(packsize)) {
       return false;
     }
     char * buf(buffer.GetData() + offset);
     memcpy(&packsize, buf, sizeof(packsize));
-    if (buffer.GetSize() < offset + packsize) {
+    if (static_cast<size_t>(buffer.GetSize()) < offset + packsize) {
       return false;
     }
     buf += sizeof(packsize);
@@ -466,12 +466,12 @@ namespace jspace {
   bool unpack_servo_info(wbcnet::Buffer const & buffer, size_t offset, jspace::ServoInfo & info)
   {
     msg_size_t packsize;
-    if (buffer.GetSize() < offset + sizeof(packsize)) {
+    if (static_cast<size_t>(buffer.GetSize()) < offset + sizeof(packsize)) {
       return false;
     }
     char * buf(buffer.GetData() + offset);
     memcpy(&packsize, buf, sizeof(packsize));
-    if (buffer.GetSize() < offset + packsize) {
+    if (static_cast<size_t>(buffer.GetSize()) < offset + packsize) {
       return false;
     }
     buf += sizeof(packsize);
@@ -529,12 +529,12 @@ namespace jspace {
   bool unpack_servo_state(wbcnet::Buffer const & buffer, size_t offset, jspace::ServoState & state)
   {
     msg_size_t packsize;
-    if (buffer.GetSize() < offset + sizeof(packsize)) {
+    if (static_cast<size_t>(buffer.GetSize()) < offset + sizeof(packsize)) {
       return false;
     }
     char * buf(buffer.GetData() + offset);
     memcpy(&packsize, buf, sizeof(packsize));
-    if (buffer.GetSize() < offset + packsize) {
+    if (static_cast<size_t>(buffer.GetSize()) < offset + packsize) {
       return false;
     }
     buf += sizeof(packsize);
@@ -588,12 +588,12 @@ namespace jspace {
   bool unpack_state(wbcnet::Buffer const & buffer, size_t offset, jspace::State & state)
   {
     msg_size_t packsize;
-    if (buffer.GetSize() < offset + sizeof(packsize)) {
+    if (static_cast<size_t>(buffer.GetSize()) < offset + sizeof(packsize)) {
       return false;
     }
     char * buf(buffer.GetData() + offset);
     memcpy(&packsize, buf, sizeof(packsize));
-    if (buffer.GetSize() < offset + packsize) {
+    if (static_cast<size_t>(buffer.GetSize()) < offset + packsize) {
       return false;
     }
     buf += sizeof(packsize);

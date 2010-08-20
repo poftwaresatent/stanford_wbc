@@ -176,5 +176,12 @@ namespace jspace {
       }
     }
   }
-
+  
+  
+  void convert(jspace::Vector const & from, std::vector<double> & to)
+  {
+    to.resize(from.size());
+    Vector::Map(&to[0], to.size()) = from;
+  }
+  
 }

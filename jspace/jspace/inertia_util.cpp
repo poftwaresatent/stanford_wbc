@@ -303,7 +303,7 @@ namespace jspace {
 	    << " has " << Jacobian.rows() << " rows instead of 6";
 	throw runtime_error(msg.str());
       }
-      if (Jacobian.cols() != ndof) {
+      if (static_cast<size_t>(Jacobian.cols()) != ndof) {
 	ostringstream msg;
 	msg << "jspace::mass_inertia_explicit_form(): Jacobian of node " << ii
 	    << " has " << Jacobian.cols() << " columns instead of " << ndof;

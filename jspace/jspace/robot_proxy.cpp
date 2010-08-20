@@ -99,7 +99,7 @@ namespace jspace {
       return mst;
     }
     
-    if (request.GetSize() < sizeof(msg_rq_t)) {
+    if (static_cast<size_t>(request.GetSize()) < sizeof(msg_rq_t)) {
       mst.ok = false;
       mst.errstr = "truncated request";
       return mst;

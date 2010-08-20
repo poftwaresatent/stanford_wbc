@@ -27,6 +27,7 @@
 #define JSPACE_WRAP_EIGEN_HPP
 
 #include <Eigen/Geometry>
+#include <vector>
 
 namespace jspace {
 
@@ -36,7 +37,13 @@ namespace jspace {
   typedef Eigen::VectorXd Vector;
   typedef Eigen::MatrixXd Matrix;
   
+  // ...an idea that needs more thought...
+  // typedef Eigen::Map<Eigen::VectorXd> VectorMap;
+  // inline VectorMap map(std::vector<double> & from) { return Vector::Map(&from[0], from.size()); }
+  // inline VectorMap const map(std::vector<double> const & from) { return Vector::Map(&from[0], from.size()); }
   
+  void convert(jspace::Vector const & from, std::vector<double> & to);
+ 
   // should also work as-is for jspace::Vector
   bool compare(jspace::Matrix const & lhs, jspace::Matrix const & rhs, double precision);
   bool compare(jspace::Quaternion const & lhs, jspace::Quaternion const & rhs, double precision);

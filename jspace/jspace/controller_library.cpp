@@ -110,7 +110,7 @@ namespace jspace {
   init(Model const & model)
   {
     Status status;
-    size_t const ndof(model.getNDOF());
+    ssize_t const ndof(model.getNDOF());
     
     if (model.getState().position_.size() != ndof) {
       status.ok = false;
@@ -221,7 +221,7 @@ namespace jspace {
   Status JointGoalController::
   computeCommand(Model const & model, Vector & tau)
   {
-    size_t const ndof(model.getNDOF());
+    ssize_t const ndof(model.getNDOF());
     Status status;
     if (ndof != goal_.size()) {
       status.ok = false;
