@@ -43,6 +43,7 @@ namespace jspace {
   // inline VectorMap const map(std::vector<double> const & from) { return Vector::Map(&from[0], from.size()); }
   
   void convert(jspace::Vector const & from, std::vector<double> & to);
+  void convert(std::vector<double> const & from, jspace::Vector & to);
  
   // should also work as-is for jspace::Vector
   bool compare(jspace::Matrix const & lhs, jspace::Matrix const & rhs, double precision);
