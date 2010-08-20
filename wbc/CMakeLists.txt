@@ -6,7 +6,6 @@ endif (COMMAND CMAKE_POLICY)
 
 include (../wbc.cmake)
 wbc_init (Stanford_WBC)
-wbc_find_urdf ()
 
 if (HAVE_CURSES)
   list (APPEND LIBS curses)
@@ -92,13 +91,6 @@ if (HAVE_XMLRPC)
   list (APPEND SRCS wbc/bin/XMLRPCDirectoryServer.cpp)
   list (APPEND LIBS XmlRpc)
 endif (HAVE_XMLRPC)
-
-if (HAVE_ROS)
-  list (APPEND SRCS
-    wbc/ros/Model.cpp
-    wbc/ros/BehaviorLibrary.cpp
-    )
-endif (HAVE_ROS)
 
 
 add_library (Stanford_WBC SHARED ${SRCS})

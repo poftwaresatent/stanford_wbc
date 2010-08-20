@@ -6,7 +6,6 @@ endif (COMMAND CMAKE_POLICY)
 
 include (../wbc.cmake)
 wbc_init (Stanford_WBC_Joint_Space_Dynamics)
-wbc_find_urdf ()
 wbc_find_eigen2 ()
 
 list (APPEND SRCS
@@ -25,15 +24,6 @@ list (APPEND SRCS
   jspace/wrap_eigen.cpp
   )
 
-if (HAVE_ROS)
-  message ("[jspace] adding ROS and URDF support")
-  list (APPEND SRCS
-    jspace/ros/urdf_to_tao.cpp
-    jspace/ros/urdf_dump.cpp
-    jspace/ros/Model.cpp
-    )
-endif (HAVE_ROS)
-
 include_directories (
   .
   ../tao
@@ -42,18 +32,7 @@ include_directories (
   )
 
 add_library (jspace SHARED ${SRCS})
-
-if (HAVE_ROS)
-  target_link_libraries (jspace wbcnet TAO_Dynamics_Engine urdf ${MAYBE_GCOV})
-  # Some guesswork to make it easier for users of libjspace to handle
-  # the optional ROS dependency.
-  #  set_target_properties (jspace
-  #    PROPERTIES
-  #    INSTALL_RPATH ${URDF_LIBDIRS}
-  #    BUILD_WITH_INSTALL_RPATH True)
-else (HAVE_ROS)
-  target_link_libraries (jspace wbcnet TAO_Dynamics_Engine ${MAYBE_GCOV})
-endif (HAVE_ROS)
+target_link_libraries (jspace wbcnet TAO_Dynamics_Engine ${MAYBE_GCOV})
 
 add_library (jspace_test SHARED
   jspace/test/util.cpp
@@ -68,11 +47,6 @@ install (FILES ${headers} DESTINATION include/jspace)
 
 file (GLOB test_headers "jspace/test/*.hpp")
 install (FILES ${test_headers} DESTINATION include/jspace/test)
-
-if (HAVE_ROS)
-  file (GLOB ros_headers "jspace/ros/*.hpp")
-  install (FILES ${ros_headers} DESTINATION include/jspace/ros)
-endif (HAVE_ROS)
 
 install (TARGETS jspace jspace_test
          RUNTIME DESTINATION bin

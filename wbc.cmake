@@ -374,64 +374,64 @@ macro (wbc_find_eigen2)
 endmacro (wbc_find_eigen2)
 
 
-##################################################
-#
-# wbc_find_urdf()
-#
-# Try to find ROS. If found, try to find URDF. If everything works as
-# desired, it sets up the include and link directives for inclusion of
-# the URDF package. The following variables will be set if URDF was
-# found:
-# - HAVE_ROS=true
-# - HAVE_URDF=true
-# - URDF_INCLUDES the directories to include
-# - URDF_CFLAGS other CFLAGS required to build the URDF
-# - URDF_LIBDIRS the directories to add to the linker search path
-# - URDF_LIBS the libraries to link with
-#
-# You can set TRY_ROS=false on the CMake command line in order to skip
-# all of this.
-#
-macro (wbc_find_urdf)
-  
-  if (NOT TRY_ROS)
-    set (TRY_ROS true)
-  endif (NOT TRY_ROS)
-  
-  if (TRY_ROS)
-    if (NOT $ENV{ROS_ROOT} STREQUAL "")
-      if (NOT EXISTS $ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
-	message ("[WBC] WARNING ROS_ROOT is set but rosbuild.cmake not found")
-	set (HAVE_ROS-NOTFOUND)
-      else (NOT EXISTS $ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
-	set (HAVE_ROS true)
-	include ($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
-	rosbuild_find_ros_package (urdf)
-	if (${urdf_PACKAGE_PATH} STREQUAL "")
-	  message (FATAL_ERROR "ROS support enabled but urdf package not found, try running 'rosmake urdf'")
-	  set (HAVE_URDF-NOTFOUND)
-	else (${urdf_PACKAGE_PATH} STREQUAL "")
-	  message ("[WBC] enabling ROS support for URDF")
-	  set (HAVE_URDF true)
-	  rosbuild_invoke_rospack (urdf URDF INCLUDES cflags-only-I)
-	  include_directories (${URDF_INCLUDES})
-#	  message ("[WBC] URDF_INCLUDES is ${URDF_INCLUDES}")
-	  rosbuild_invoke_rospack (urdf URDF OTHER_CFLAGS cflags-only-other)
-	  add_definitions (${URDF_CFLAGS})
-#	  message ("[WBC] URDF_CFLAGS is ${URDF_CFLAGS}")
-	  rosbuild_invoke_rospack (urdf URDF LIBDIRS libs-only-L)
-#	  message ("[WBC] URDF_LIBDIRS is ${URDF_LIBDIRS}")
-	  link_directories (${URDF_LIBDIRS})
-	  rosbuild_invoke_rospack (urdf URDF LIBS libs-only-l)
-	endif (${urdf_PACKAGE_PATH} STREQUAL "")
-      endif (NOT EXISTS $ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
-    endif (NOT $ENV{ROS_ROOT} STREQUAL "")
-    if (NOT HAVE_ROS)
-      message ("ROS support disabled, will skip URDF conversion stuff")
-    endif (NOT HAVE_ROS)
-  endif (TRY_ROS)
-  
-endmacro (wbc_find_urdf)
+#ATTIC# ##################################################
+#ATTIC# #
+#ATTIC# # wbc_find_urdf()
+#ATTIC# #
+#ATTIC# # Try to find ROS. If found, try to find URDF. If everything works as
+#ATTIC# # desired, it sets up the include and link directives for inclusion of
+#ATTIC# # the URDF package. The following variables will be set if URDF was
+#ATTIC# # found:
+#ATTIC# # - HAVE_ROS=true
+#ATTIC# # - HAVE_URDF=true
+#ATTIC# # - URDF_INCLUDES the directories to include
+#ATTIC# # - URDF_CFLAGS other CFLAGS required to build the URDF
+#ATTIC# # - URDF_LIBDIRS the directories to add to the linker search path
+#ATTIC# # - URDF_LIBS the libraries to link with
+#ATTIC# #
+#ATTIC# # You can set TRY_ROS=false on the CMake command line in order to skip
+#ATTIC# # all of this.
+#ATTIC# #
+#ATTIC# macro (wbc_find_urdf)
+#ATTIC#   
+#ATTIC#   if (NOT TRY_ROS)
+#ATTIC#     set (TRY_ROS true)
+#ATTIC#   endif (NOT TRY_ROS)
+#ATTIC#   
+#ATTIC#   if (TRY_ROS)
+#ATTIC#     if (NOT $ENV{ROS_ROOT} STREQUAL "")
+#ATTIC#       if (NOT EXISTS $ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+#ATTIC# 	message ("[WBC] WARNING ROS_ROOT is set but rosbuild.cmake not found")
+#ATTIC# 	set (HAVE_ROS-NOTFOUND)
+#ATTIC#       else (NOT EXISTS $ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+#ATTIC# 	set (HAVE_ROS true)
+#ATTIC# 	include ($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+#ATTIC# 	rosbuild_find_ros_package (urdf)
+#ATTIC# 	if (${urdf_PACKAGE_PATH} STREQUAL "")
+#ATTIC# 	  message (FATAL_ERROR "ROS support enabled but urdf package not found, try running 'rosmake urdf'")
+#ATTIC# 	  set (HAVE_URDF-NOTFOUND)
+#ATTIC# 	else (${urdf_PACKAGE_PATH} STREQUAL "")
+#ATTIC# 	  message ("[WBC] enabling ROS support for URDF")
+#ATTIC# 	  set (HAVE_URDF true)
+#ATTIC# 	  rosbuild_invoke_rospack (urdf URDF INCLUDES cflags-only-I)
+#ATTIC# 	  include_directories (${URDF_INCLUDES})
+#ATTIC# #	  message ("[WBC] URDF_INCLUDES is ${URDF_INCLUDES}")
+#ATTIC# 	  rosbuild_invoke_rospack (urdf URDF OTHER_CFLAGS cflags-only-other)
+#ATTIC# 	  add_definitions (${URDF_CFLAGS})
+#ATTIC# #	  message ("[WBC] URDF_CFLAGS is ${URDF_CFLAGS}")
+#ATTIC# 	  rosbuild_invoke_rospack (urdf URDF LIBDIRS libs-only-L)
+#ATTIC# #	  message ("[WBC] URDF_LIBDIRS is ${URDF_LIBDIRS}")
+#ATTIC# 	  link_directories (${URDF_LIBDIRS})
+#ATTIC# 	  rosbuild_invoke_rospack (urdf URDF LIBS libs-only-l)
+#ATTIC# 	endif (${urdf_PACKAGE_PATH} STREQUAL "")
+#ATTIC#       endif (NOT EXISTS $ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+#ATTIC#     endif (NOT $ENV{ROS_ROOT} STREQUAL "")
+#ATTIC#     if (NOT HAVE_ROS)
+#ATTIC#       message ("ROS support disabled, will skip URDF conversion stuff")
+#ATTIC#     endif (NOT HAVE_ROS)
+#ATTIC#   endif (TRY_ROS)
+#ATTIC#   
+#ATTIC# endmacro (wbc_find_urdf)
 
 
 ##################################################
@@ -496,6 +496,5 @@ endmacro (wbc_add_plugin)
 macro (wbc_add_executable EXECUTABLE_NAME)
   add_executable (${EXECUTABLE_NAME} ${ARGN})
   target_link_libraries (${EXECUTABLE_NAME} Stanford_WBC ${MAYBE_GCOV})
-  wbc_find_urdf ()
   set_target_properties (${EXECUTABLE_NAME} PROPERTIES INSTALL_RPATH "${URDF_LIBDIRS};${CMAKE_INSTALL_PREFIX}/lib")
 endmacro (wbc_add_executable)

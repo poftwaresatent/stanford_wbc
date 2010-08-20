@@ -6,12 +6,6 @@ endif (COMMAND CMAKE_POLICY)
 
 include (../wbc.cmake)
 wbc_init (Stanford_WBC_Plugins)
-wbc_find_urdf ()
-
-if (HAVE_ROS)
-  message ("[wbc_plugins] adding ROS support")
-  subdirs (wbc_plugins/rosrob)
-endif (HAVE_ROS)
 
 include_directories (
   ../wbc
@@ -39,8 +33,3 @@ install (FILES ${headers} DESTINATION include/wbc_plugins/nwrobot)
 
 file (GLOB headers "netrob/*.hpp")
 install (FILES ${headers} DESTINATION include/wbc_plugins/netrob)
-
-if (HAVE_ROS)
-  file (GLOB headers "rosrob/*.hpp")
-  install (FILES ${headers} DESTINATION include/wbc_plugins/rosrob)
-endif (HAVE_ROS)

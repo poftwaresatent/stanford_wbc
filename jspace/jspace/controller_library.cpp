@@ -233,7 +233,7 @@ namespace jspace {
     actual_ = state.position_;
 
     Vector etau(ndof);
-    for (size_t ii(0); ii < ndof; ++ii) {
+    for (ssize_t ii(0); ii < ndof; ++ii) {
       etau[ii] = - kp_[ii] * (actual_[ii] - goal_[ii]) - kd_[ii] * state.velocity_[ii];
     }
     
