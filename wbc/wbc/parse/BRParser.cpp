@@ -25,7 +25,6 @@
 
 #include "BRParser.hpp"
 #include "TiXmlBRParser.hpp"
-#include "OsimBRParser.hpp"
 
 
 namespace wbc {
@@ -36,12 +35,15 @@ namespace wbc {
     throw(std::runtime_error)
   {
     wbc::BRParser * brp(0);
+
     if (parserName.empty() || ("sai" == parserName))
       brp = new wbc::TiXmlBRParser();
-    else if ("osim" == parserName)
-      brp = new wbc::OsimBRParser();
+    // moved to attic...
+    //     else if ("osim" == parserName)
+    //       brp = new wbc::OsimBRParser();
+
     if (0 == brp)
-      throw runtime_error("wbc::BRParser::parse(): invalid parserName `" + parserName + "' (use `sai' or `osim')");
+      throw std::runtime_error("wbc::BRParser::parse(): invalid parserName `" + parserName + "' (use `sai' or `osim')");
     BranchingRepresentation * br(brp->parse(fileName));
     delete brp;
     return br;

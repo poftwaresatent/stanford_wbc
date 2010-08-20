@@ -26,7 +26,6 @@ list (APPEND LIBS
   TAO_Dynamics_Engine
   wbcnet
   jspace
-  robarch
   dl
   expat
   )
@@ -63,7 +62,6 @@ list (APPEND SRCS
 
   wbc/parse/BRParser.cpp
   wbc/parse/BehaviorParser.cpp
-  wbc/parse/OsimBRParser.cpp
   wbc/parse/TiXmlBRParser.cpp
 
   wbc/util/ShuffleVector.cpp
@@ -101,7 +99,6 @@ include_directories (
   ../tao
   ../wbc_tinyxml
   ../wbcnet
-  ../robarch
   ../jspace
   )
 

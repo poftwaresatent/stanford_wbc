@@ -28,7 +28,6 @@
 #include <wbc/core/BehaviorFactory.hpp>
 #include <wbc/core/BehaviorDescription.hpp>
 #include <wbc/parse/TiXmlBRParser.hpp>
-#include <wbc/parse/OsimBRParser.hpp>
 #include <wbc/core/BranchingRepresentation.hpp>
 #include <wbc/core/RobotControlModel.hpp>
 #include <wbc/core/MobileManipulatorTaskModel.hpp>

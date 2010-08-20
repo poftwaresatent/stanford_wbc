@@ -47,11 +47,15 @@ subdirs (
   tao
   wbc_tinyxml
   wbcnet
-  robarch
   jspace
   wbc
-  wbc_plugins
   )
+
+if (APPLE)
+  message ("[WBC] Skipping plugins on Mac OS X")
+else (APPLE)
+  subdirs (wbc_plugins)
+endif (APPLE)
 
 install (FILES wbc.cmake DESTINATION share)
 
