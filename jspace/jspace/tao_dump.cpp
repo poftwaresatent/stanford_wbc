@@ -355,8 +355,8 @@ std::string inertia_matrix_to_string(deMatrix3 const & mx)
 	 << "      <inertia>" << inertia->elementAt(0, 0) - mixx
 	 << "  " << inertia->elementAt(1, 1) - miyy
 	 << "  " << inertia->elementAt(2, 2) - mizz << "</inertia>\n"
-	 << "      <center_of_mass>" << com[0] << ", " << com[1] << ", " << com[2] << "</center_of_mass>\n"
-	 << "      <position_in_parent>" << pos[0] << ", " << pos[1] << ", " << pos[2] << "</position_in_parent>\n"
+	 << "      <center_of_mass>" << com[0] << "  " << com[1] << "  " << com[2] << "</center_of_mass>\n"
+	 << "      <position_in_parent>" << pos[0] << "  " << pos[1] << "  " << pos[2] << "</position_in_parent>\n"
 	 << "      <orientation_in_parent>"
 	 << rot[0] << "  " << rot[1] << "  " << rot[2] <<  "  " << rot[3] << "</orientation_in_parent>\n"
 	 << "      <joint_name>" << inode->joint_name << "</joint_name>\n"
