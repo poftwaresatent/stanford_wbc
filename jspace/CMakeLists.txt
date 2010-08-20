@@ -79,4 +79,4 @@ install (TARGETS jspace jspace_test
          LIBRARY DESTINATION lib
          ARCHIVE DESTINATION lib)
 
-subdirs (tests)
+subdirs (tests applications)

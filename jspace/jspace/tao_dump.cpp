@@ -157,12 +157,12 @@ std::string inertia_matrix_to_string(deMatrix3 const & mx)
   }
   
   
-  static void _xmldump_tao_tree_info(std::ostream & os, taoDNode * root, tao_tree_info_s::node_info_t const & info,
-				     std::string prefix) throw(std::runtime_error)
+  static void _dump_tao_tree_info_saixml(std::ostream & os, taoDNode * root, tao_tree_info_s::node_info_t const & info,
+					 std::string prefix) throw(std::runtime_error)
   {
     deFrame * const home(root->frameHome());
     if ( ! home) {
-	throw std::runtime_error("_xmldump_tao_tree_info(): no home frame");
+	throw std::runtime_error("_dump_tao_tree_info_saixml(): no home frame");
     }
     deVector3 const & pos(home->translation());
     deVector3 raxis;
@@ -183,7 +183,7 @@ std::string inertia_matrix_to_string(deMatrix3 const & mx)
       deMatrix3 const * inertia(root->inertia());
       taoJoint const * joint(root->getJointList());
       if ( ! joint) {
-	throw std::runtime_error("_xmldump_tao_tree_info(): no joint");
+	throw std::runtime_error("_dump_tao_tree_info_saixml(): no joint");
       }
       std::string jtype;
       double mixx(0);
@@ -200,7 +200,7 @@ std::string inertia_matrix_to_string(deMatrix3 const & mx)
 	mizz = (pow(com[0], 2) + pow(com[1], 2)) * *(root->mass());
       }
       else {
-	throw std::runtime_error("_xmldump_tao_tree_info(): invalid joint type");
+	throw std::runtime_error("_dump_tao_tree_info_saixml(): invalid joint type");
       }
       std::string jaxis;
       taoJointDOF1 const * jdof1(dynamic_cast<taoJointDOF1 const *>(joint));
@@ -214,7 +214,7 @@ std::string inertia_matrix_to_string(deMatrix3 const & mx)
 	jaxis = "Z";
       }
       else {
-	throw std::runtime_error("_xmldump_tao_tree_info(): invalid joint axis");
+	throw std::runtime_error("_dump_tao_tree_info_saixml(): invalid joint axis");
       }
       
       os << prefix << "<jointNode>\n"
@@ -233,19 +233,147 @@ std::string inertia_matrix_to_string(deMatrix3 const & mx)
     
     prefix += "  ";
     for (taoDNode * child(root->getDChild()); child != 0; child = child->getDSibling())
-      _xmldump_tao_tree_info(os, child, info, prefix);
+      _dump_tao_tree_info_saixml(os, child, info, prefix);
     
     os << closing;
   }
   
   
-  void xmldump_tao_tree_info(std::ostream & os, tao_tree_info_s * tree) throw(std::runtime_error)
+  void dump_tao_tree_info_saixml(std::ostream & os, tao_tree_info_s * tree) throw(std::runtime_error)
   {
     os << "<?xml version=\"1.0\" ?>\n"
        << "<dynworld>\n";
     std::string prefix("  ");
-    _xmldump_tao_tree_info(os, tree->root, tree->info, prefix);
+    _dump_tao_tree_info_saixml(os, tree->root, tree->info, prefix);
     os << "</dynworld>\n";
+  }
+  
+  
+  void dump_tao_tree_info_lotusxml(std::ostream & os,
+				   std::string const & robot_name,
+				   std::string const & root_link_name,
+				   tao_tree_info_s * tree) throw(std::runtime_error)
+  {
+    os << "<?xml version=\"1.0\" ?>\n"
+       << "<lotus_world>\n"
+       << "  <globals>\n"
+       << "    <gravity> 0.000 0.000 -9.81 </gravity>\n"
+       << "  </globals>\n"
+       << "  <robot name=\"" << robot_name << "\">\n";
+    
+    //////////////////////////////////////////////////
+    // root
+    
+    deFrame * home(tree->root->frameHome());
+    if ( ! home) {
+      throw std::runtime_error("dump_tao_tree_info_lotusxml(): no root home frame");
+    }
+    deVector3 & pos(home->translation());
+    deQuaternion & rot(home->rotation());
+    
+    os << "    <root_link>\n"
+       << "      <link_name>" << root_link_name << "</link_name>\n"
+       << "      <position_in_parent>" << pos[0] << "  " << pos[1] << "  " << pos[2] << "</position_in_parent>\n"
+       << "      <orientation_in_parent>"
+       << rot[0] << "  " << rot[1] << "  " << rot[2] <<  "  " << rot[3] << "</orientation_in_parent>\n"
+       << "    </root_link>\n";
+
+    //////////////////////////////////////////////////
+    // links
+    
+    for (tao_tree_info_s::node_info_t::const_iterator inode(tree->info.begin());
+	 inode != tree->info.end(); ++inode) {
+      home = inode->node->frameHome();
+      if ( ! home) {
+	throw std::runtime_error("dump_tao_tree_info_lotusxml(): no home frame in link `" + inode->link_name + "'");
+      }
+      pos = home->translation();
+      rot = home->rotation();
+      deVector3 const & com(*inode->node->center());
+      deMatrix3 const * inertia(inode->node->inertia());
+      taoJoint const * joint(inode->node->getJointList());
+      if ( ! joint) {
+	throw std::runtime_error("dump_tao_tree_info_lotusxml(): no joint in link `" + inode->link_name + "'");
+      }
+      std::string jtype;
+      double mixx(0);
+      double miyy(0);
+      double mizz(0);
+      if (0 != dynamic_cast<taoJointPrismatic const *>(joint)) {
+	jtype = "p";
+      }
+      else if (0 != dynamic_cast<taoJointRevolute const *>(joint)) {
+	jtype = "r";
+	mixx = (pow(com[1], 2) + pow(com[2], 2)) * *(inode->node->mass());
+	miyy = (pow(com[0], 2) + pow(com[2], 2)) * *(inode->node->mass());
+	mizz = (pow(com[0], 2) + pow(com[1], 2)) * *(inode->node->mass());
+      }
+      else {
+	throw std::runtime_error("dump_tao_tree_info_lotusxml(): invalid joint type in link `"
+				 + inode->link_name + "'");
+      }
+      std::string jaxis;
+      taoJointDOF1 const * jdof1(dynamic_cast<taoJointDOF1 const *>(joint));
+      if (TAO_AXIS_X == jdof1->getAxis()) {
+	jaxis = "x";
+      }
+      else if (TAO_AXIS_Y == jdof1->getAxis()) {
+	jaxis = "y";
+      }
+      else if (TAO_AXIS_Z == jdof1->getAxis()) {
+	jaxis = "z";
+      }
+      else {
+	throw std::runtime_error("dump_tao_tree_info_lotusxml(): invalid joint axis in link `"
+				 + inode->link_name + "'");
+      }
+      
+      std::string parent_link_name;
+      {	// Yes, this way of finding the parent link name is braindead, please look away...
+	taoDNode * parent(inode->node->getDParent());
+	if (parent == tree->root) {
+	  parent_link_name = root_link_name;
+	}
+	else {
+	  for (tao_tree_info_s::node_info_t::const_iterator jj(tree->info.begin());
+	       jj != tree->info.end(); ++jj) {
+	    if (jj->node == parent) {
+	      parent_link_name = jj->link_name;
+	      break;
+	    }
+	  }
+	  if (parent_link_name.empty()) {
+	    throw std::runtime_error("dump_tao_tree_info_lotusxml(): invalid parent for link `"
+				     + inode->link_name + "'");
+	  }
+	}
+      }
+      
+      os << "    <link>\n"
+	 << "      <link_name>" << inode->link_name << "</link_name>\n"
+	 << "      <mass>" << *(inode->node->mass()) << "</mass>\n"
+	 << "      <inertia>" << inertia->elementAt(0, 0) - mixx
+	 << "  " << inertia->elementAt(1, 1) - miyy
+	 << "  " << inertia->elementAt(2, 2) - mizz << "</inertia>\n"
+	 << "      <center_of_mass>" << com[0] << ", " << com[1] << ", " << com[2] << "</center_of_mass>\n"
+	 << "      <position_in_parent>" << pos[0] << ", " << pos[1] << ", " << pos[2] << "</position_in_parent>\n"
+	 << "      <orientation_in_parent>"
+	 << rot[0] << "  " << rot[1] << "  " << rot[2] <<  "  " << rot[3] << "</orientation_in_parent>\n"
+	 << "      <joint_name>" << inode->joint_name << "</joint_name>\n"
+	 << "      <parent_link_name>" << parent_link_name << "</parent_link_name>\n"
+	 << "      <lower_joint_limit>" << inode->limit_lower << "</lower_joint_limit>\n"
+	 << "      <upper_joint_limit>" << inode->limit_upper << "</upper_joint_limit>\n"
+	 << "      <default_joint_position>" << 0 << "</default_joint_position>\n"
+	 << "      <axis>" << jaxis << "</axis>\n"
+	 << "      <joint_type>" << jtype << "</joint_type>\n"
+	 << "    </link>\n";
+    }
+    
+    //////////////////////////////////////////////////
+    // done
+    
+    os << "  </robot>\n"
+       << "</lotus_world>";
   }
   
 }
