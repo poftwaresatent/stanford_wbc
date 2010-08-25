@@ -387,7 +387,7 @@ namespace jspace {
       new_child_node->addABNode();
 
       robot_->linkNameToNodeMap_[ linkName ] = new_child_node;
-      robot_->jointNameToNodeMap_[ jointName_ ] = new_child_node;
+      robot_->jointNameToNodeMap_[ jointName ] = new_child_node;
     }
     
   }
