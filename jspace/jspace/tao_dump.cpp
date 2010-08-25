@@ -191,7 +191,6 @@ std::string inertia_matrix_to_string(deMatrix3 const & mx)
       double mizz(0);
       if (0 != dynamic_cast<taoJointPrismatic const *>(joint)) {
 	jtype = "P";
-	
       }
       else if (0 != dynamic_cast<taoJointRevolute const *>(joint)) {
 	jtype = "R";
@@ -219,8 +218,12 @@ std::string inertia_matrix_to_string(deMatrix3 const & mx)
       
       os << prefix << "<jointNode>\n"
 	 << prefix << "  <ID>" << id << "</ID>\n"
+	 << prefix << "  <linkName>" << info[id].link_name << "</linkName>\n"
+	 << prefix << "  <jointName>" << info[id].joint_name << "</jointName>\n"
 	 << prefix << "  <type>" << jtype << "</type>\n"
 	 << prefix << "  <axis>" << jaxis << "</axis>\n"
+	 << prefix << "  <lowerJointLimit>" << info[id].limit_lower << "</lowerJointLimit>\n"
+	 << prefix << "  <upperJointLimit>" << info[id].limit_upper << "</upperJointLimit>\n"
 	 << prefix << "  <mass>" << *(root->mass()) << "</mass>\n"
 	 << prefix << "  <inertia>" << inertia->elementAt(0, 0) - mixx
 	 << ", " << inertia->elementAt(1, 1) - miyy
@@ -315,13 +318,13 @@ std::string inertia_matrix_to_string(deMatrix3 const & mx)
       std::string jaxis;
       taoJointDOF1 const * jdof1(dynamic_cast<taoJointDOF1 const *>(joint));
       if (TAO_AXIS_X == jdof1->getAxis()) {
-	jaxis = "x";
+	jaxis = "0";//XXXX really soon: "x";
       }
       else if (TAO_AXIS_Y == jdof1->getAxis()) {
-	jaxis = "y";
+	jaxis = "1";//XXXX really soon: "y";
       }
       else if (TAO_AXIS_Z == jdof1->getAxis()) {
-	jaxis = "z";
+	jaxis = "2";//XXXX really soon: "z";
       }
       else {
 	throw std::runtime_error("dump_tao_tree_info_lotusxml(): invalid joint axis in link `"
