@@ -171,8 +171,12 @@ int main(int argc, char*argv[])
   
   LOG_INFO (logger, "creating and initializing model and state");
   jspace::tao_tree_info_s * kg_tree(attr->robmodel->branching()->createTreeInfo());
-  jspace_model = new jspace::Model(/* transfers ownership */ kg_tree,
-				   /* no Coriolis */ 0);
+  jspace_model = new jspace::Model();
+  if ( 0 != jspace_model->init(/* transfers ownership */ kg_tree,
+			       /* no Coriolis */ 0,
+			       &cerr)) {
+    errx(EXIT_FAILURE, "jspace_model->init() failed");
+  }
   int const ndof(jspace_model->getNDOF());
   jspace::State jspace_state;
   jspace_state.init(ndof, ndof, 0);

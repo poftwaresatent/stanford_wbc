@@ -179,7 +179,12 @@ namespace jspace {
       BranchingRepresentation * cc_brep(create_brep());
       jspace::tao_tree_info_s * cc_tree(cc_brep->createTreeInfo());
       delete cc_brep;
-      jspace::Model * model(new jspace::Model(kg_tree, cc_tree));
+      jspace::Model * model(new jspace::Model());
+      std::ostringstream msg;
+      if ( 0 != model->init(kg_tree, cc_tree, &msg)) {
+	delete model;
+	throw std::runtime_error("jspace::test::_create_model(): model->init() failed: " + msg.str());
+      }
       return model;
     }
     

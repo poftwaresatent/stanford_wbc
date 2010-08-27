@@ -48,16 +48,46 @@ namespace jspace {
   class Model
   {
   public:
-    Model(/** TAO tree info used for computing kinematics, the gravity
-	      torque vector, the mass-inertia matrix, and its
-	      inverse. */
-	  tao_tree_info_s * kgm_tree,
-	  /** Optional TAO tree info for computing Coriolis and
-	      centrifugal torques. If you set this to NULL, then the
-	      Coriolis and centrifugal forces won't be computed. */
-	  tao_tree_info_s * cc_tree);
+    /** Please use the init() method in order to initialize your
+	jspace::Model. It does some sanity checking, and error
+	handling from within a constructor is just not so great.
+    */
+    Model();
     
     ~Model();
+    
+    /** Initialize the model with a TAO tree. Actually, it needs two
+	copies of the same tree if you want to estimate centrifugal
+	and Coriolis effects, but that is optional.
+	
+	This method also does some sanity checks and will return a
+	non-zero error code if something is amiss. In order to get
+	human-readable error strings, just pass a non-NULL msg pointer
+	in as well. For instance, &std::cout will do nicely in most
+	cases.
+	
+	\note Transfers ownership of the given TAO trees. They will be
+	deleted when this jspace::Model instance is destructed. Also
+	note that their info vector might get reordered in order to
+	ensure that each node sits at the index that corresponds to
+	its ID.
+	
+	\return 0 on success.
+    */
+    int init(/** TAO tree info used for computing kinematics, the
+		 gravity torque vector, the mass-inertia matrix, and
+		 its inverse. This tree will be deleted in the
+		 jspace::Model destructor. */
+	     tao_tree_info_s * kgm_tree,
+	     /** Optional TAO tree info for computing Coriolis and
+		 centrifugal torques. If you set this to NULL, then
+		 the Coriolis and centrifugal forces won't be
+		 computed. This tree will be deleted in the
+		 jspace::Model destructor. */
+	     tao_tree_info_s * cc_tree,
+	     /** Optional stream that will receive error messages from
+		 the consistency checks. */
+	     std::ostream * msg);
     
     //////////////////////////////////////////////////
     // fire-and-forget facet
@@ -134,19 +164,28 @@ namespace jspace {
     /** Retrieve a node by ID. */
     taoDNode * getNode(size_t id) const;
     
-    /** Retrieve a node by its name or registered alias. A typical
-	alias would be "end-effector" or "End_Effector" or so, which
-	might correspond to "right-gripper" or so depending on the
-	robot. */
-    taoDNode * getNodeByName(std::string const & name_or_alias) const;
+    /** Retrieve a node by its name.
+	
+	\todo Add support for registering aliases, such as
+	"end-effector" or "End_Effector", which might correspond to
+	"right-gripper" or so depending on the robot.
+    */
+    taoDNode * getNodeByName(std::string const & name) const;
     
-    /** Retrieve a node by a joint name or registered alias. This will
-	find and retrieve the node to which the joint is attached (see
-	also getNodeByName()), which allows you to retrieve the
-	taoJoint instance itself. Note that a taoDNode can have any
-	number of joints, so you might have to search through them to
-	find the exact one you're looking for. */
-    taoDNode * getNodeByJointName(std::string const & name_or_alias) const;
+    /** Retrieve a node by joint name.  This will find and retrieve
+	the node to which the joint is attached (see also
+	getNodeByName()), which allows you to retrieve the taoJoint
+	instance itself.
+	
+	\note In principle, a taoDNode can have any number of joints,
+	so you might have to search through them to find the exact one
+	you're looking for. However, all use cases so far seem to be
+	limited to exactly one joint per node (and each node having
+	exactly one joint).
+	
+	\todo Add support for registering aliases, just as for getNodeByName().
+    */
+    taoDNode * getNodeByJointName(std::string const & name) const;
     
     /** Retrieve joint limit information. This method fills the
 	provided vectors with the lower and upper joint limits. In
@@ -323,7 +362,7 @@ namespace jspace {
     typedef std::set<size_t> dof_set_t;
     dof_set_t gravity_disabled_;
     
-    std::size_t const ndof_;
+    std::size_t ndof_;
     tao_tree_info_s * kgm_tree_;
     tao_tree_info_s * cc_tree_;
     

@@ -57,29 +57,83 @@ namespace jspace {
   
   
   Model::
-  Model(tao_tree_info_s * kgm_tree,
-	tao_tree_info_s * cc_tree)
-    : ndof_(kgm_tree->info.size()), // XXXX only works for one joint per node and one DOF per joint
-      kgm_tree_(kgm_tree),
-      cc_tree_(cc_tree)
+  Model()
+    : ndof_(0),
+      kgm_tree_(0),
+      cc_tree_(0)
   {
+  }
+  
+  
+  int Model::
+  init(tao_tree_info_s * kgm_tree,
+       tao_tree_info_s * cc_tree,
+       std::ostream * msg)
+  {
+    int const status(tao_consistency_check(kgm_tree->root, msg));
+    if (0 != status) {
+      return status;
+    }
+    
+    if (kgm_tree_) {
+      if (msg) {
+	*msg << "jspace::Model::init(): already initialized\n";
+      }
+      return -1;
+    }
+    
+    if ( ! kgm_tree->sort()) {
+      if (msg) {
+	*msg << "jspace::Model::init(): could not sort KGM nodes according to IDs\n";
+      }
+      return -2;
+    }
+    
+    if ((0 != cc_tree) && ( ! cc_tree->sort())) {
+      if (msg) {
+	*msg << "jspace::Model::init(): could not sort CC nodes according to IDs\n";
+      }
+      return -3;
+    }
+    
     // Create ancestry table of all nodes in the KGM tree, for correct
     // (and slightly more efficient) computation of the Jacobian.
+    ancestry_table_.clear();	// just paranoid...
     typedef tao_tree_info_s::node_info_t::const_iterator cit_t;
     cit_t in(kgm_tree->info.begin());
     cit_t iend(kgm_tree->info.end());
     for (/**/; in != iend; ++in) {
-      taoDNode * node(in->node);
-      ancestry_list_t & alist(ancestry_table_[node]); // first reference creates the instance
-      for (/**/; 0 != node; node = node->getDParent()) {
+      // ...paranoid checks...
+      if ( ! in->node) {
+	if (msg) {
+	  *msg << "jspace::Model::init(): NULL node at entry #" << in->id << "\n";
+	}
+	return -4;
+      }
+      if (in->id != in->node->getID()) {
+	if (msg) {
+	  *msg << "jspace::Model::init(): node ID of entry #" << in->id << " is " << in->node->getID() << "\n";
+	}
+	return -5;
+      }
+      ancestry_list_t & alist(ancestry_table_[in->node]); // first reference creates the instance
+      // walk up the ancestry, append each parent to the list of
+      // ancestors of this node
+      for (taoDNode * node(in->node); 0 != node; node = node->getDParent()) {
 	ancestry_entry_s entry;
-	entry.id = node->getID(); // XXXX assumes that node IDs are properly assigned
-	entry.joint = node->getJointList(); // XXXX assumes only one joint per node
+	entry.id = node->getID();
+	entry.joint = node->getJointList();
 	if (0 != entry.joint) {
 	  alist.push_back(entry);
 	}
       }
     }
+    
+    kgm_tree_ = kgm_tree;
+    cc_tree_ = cc_tree;
+    ndof_ = kgm_tree->info.size();
+    
+    return 0;
   }
   
   
@@ -105,7 +159,7 @@ namespace jspace {
   {
     state_ = state;
     for (size_t ii(0); ii < ndof_; ++ii) {
-      taoJoint * joint(kgm_tree_->info[ii].node->getJointList());
+      taoJoint * joint(kgm_tree_->info[ii].joint);
       joint->setQ(&const_cast<State&>(state).position_.coeffRef(ii));
       joint->zeroDQ();
       joint->zeroDDQ();
@@ -113,7 +167,7 @@ namespace jspace {
     }
     if (cc_tree_) {
       for (size_t ii(0); ii < ndof_; ++ii) {
-	taoJoint * joint(cc_tree_->info[ii].node->getJointList());
+	taoJoint * joint(cc_tree_->info[ii].joint);
 	joint->setQ(&const_cast<State&>(state).position_.coeffRef(ii));
 	joint->setDQ(&const_cast<State&>(state).velocity_.coeffRef(ii));
 	joint->zeroDDQ();
@@ -179,10 +233,10 @@ namespace jspace {
   
   
   taoDNode * Model::
-  getNodeByName(std::string const & name_or_alias) const
+  getNodeByName(std::string const & name) const
   {
     for (size_t ii(0); ii < ndof_; ++ii) {
-      if (name_or_alias == kgm_tree_->info[ii].link_name) {
+      if (name == kgm_tree_->info[ii].link_name) {
 	return  kgm_tree_->info[ii].node;
       }
     }
@@ -191,10 +245,10 @@ namespace jspace {
   
   
   taoDNode * Model::
-  getNodeByJointName(std::string const & name_or_alias) const
+  getNodeByJointName(std::string const & name) const
   {
     for (size_t ii(0); ii < ndof_; ++ii) {
-      if (name_or_alias == kgm_tree_->info[ii].joint_name) {
+      if (name == kgm_tree_->info[ii].joint_name) {
 	return  kgm_tree_->info[ii].node;
       }
     }
@@ -398,8 +452,7 @@ namespace jspace {
     g_torque_.resize(ndof_);
     taoDynamics::invDynamics(kgm_tree_->root, &earth_gravity);
     for (size_t ii(0); ii < ndof_; ++ii) {
-      taoJoint * joint(kgm_tree_->info[ii].node->getJointList());
-      joint->getTau(&g_torque_[ii]);
+      kgm_tree_->info[ii].joint->getTau(&g_torque_[ii]);
     }
   }
   
@@ -452,8 +505,7 @@ namespace jspace {
       cc_torque_.resize(ndof_);
       taoDynamics::invDynamics(cc_tree_->root, &zero_gravity);
       for (size_t ii(0); ii < ndof_; ++ii) {
-	taoJoint * joint(cc_tree_->info[ii].node->getJointList());
-	joint->getTau(&cc_torque_[ii]);
+	cc_tree_->info[ii].joint->getTau(&cc_torque_[ii]);
       }
     }
   }
@@ -482,7 +534,7 @@ namespace jspace {
     
     deFloat const one(1);
     for (size_t irow(0); irow < ndof_; ++irow) {
-      taoJoint * joint(kgm_tree_->info[irow].node->getJointList());
+      taoJoint * joint(kgm_tree_->info[irow].joint);
       
       // Compute one column of A by solving inverse dynamics of the
       // corresponding joint having a unit acceleration, while all the
@@ -499,15 +551,13 @@ namespace jspace {
       // flattened upper triangular matrix).
       
       for (size_t icol(0); icol <= irow; ++icol) {
-	joint = kgm_tree_->info[icol].node->getJointList();
-	joint->getTau(&a_upper_triangular_[squareToTriangularIndex(irow, icol, ndof_)]);
+	kgm_tree_->info[icol].joint->getTau(&a_upper_triangular_[squareToTriangularIndex(irow, icol, ndof_)]);
       }
     }
     
     // Reset all the torques.
     for (size_t ii(0); ii < ndof_; ++ii) {
-      taoJoint * joint(kgm_tree_->info[ii].node->getJointList());
-      joint->zeroTau();
+      kgm_tree_->info[ii].joint->zeroTau();
     }
   }
   
@@ -542,7 +592,7 @@ namespace jspace {
     
     deFloat const one(1);
     for (size_t irow(0); irow < ndof_; ++irow) {
-      taoJoint * joint(kgm_tree_->info[irow].node->getJointList());
+      taoJoint * joint(kgm_tree_->info[irow].joint);
       
       // Compute one column of Ainv by solving forward dynamics of the
       // corresponding joint having a unit torque, while all the
@@ -558,15 +608,13 @@ namespace jspace {
       // accelerations generated by the column-selecting unit torque
       // (into a flattened upper triangular matrix).
       for (size_t icol(0); icol <= irow; ++icol) {
-	joint = kgm_tree_->info[icol].node->getJointList();
-	joint->getDDQ(&ainv_upper_triangular_[squareToTriangularIndex(irow, icol, ndof_)]);
+	kgm_tree_->info[icol].joint->getDDQ(&ainv_upper_triangular_[squareToTriangularIndex(irow, icol, ndof_)]);
       }
     }
     
     // Reset all the accelerations.
     for (size_t ii(0); ii < ndof_; ++ii) {
-      taoJoint * joint(kgm_tree_->info[ii].node->getJointList());
-      joint->zeroDDQ();
+      kgm_tree_->info[ii].joint->zeroDDQ();
     }
   }
   

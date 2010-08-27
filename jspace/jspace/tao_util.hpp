@@ -34,6 +34,7 @@
 
 class taoNodeRoot;
 class taoDNode;
+class taoJoint;
 
 
 namespace jspace {
@@ -52,6 +53,7 @@ namespace jspace {
     
     int id;
     taoDNode * node;
+    taoJoint * joint;
     std::string link_name;
     std::string joint_name;
     double limit_lower;
@@ -62,6 +64,18 @@ namespace jspace {
   struct tao_tree_info_s {
     /** deletes the taoNodeRoot. */
     virtual ~tao_tree_info_s();
+    
+    /** Iterates over the info vector, making sure that each node sits
+	at the position specified by its ID. Also does a sanity check
+	afterwards, so don't ignore the return value. See also
+	tao_consistency_check().
+	
+	\return true if the sort succeeded (info[ii].id == id for all
+	nodes), false if something went wrong (this happens e.g. when
+	you have duplicate IDs or gaps in the sequence from 0..N-1).
+    */
+    bool sort();
+    
     taoNodeRoot * root;
     typedef std::vector<tao_node_info_s> node_info_t;
     node_info_t info;
@@ -74,6 +88,23 @@ namespace jspace {
      limits.
   */
   tao_tree_info_s * create_bare_tao_tree_info(taoNodeRoot * root);
+  
+  
+  /**
+     Run a consistency check on a TAO tree. For the time being, this
+     simply checks that each node has a unique ID, that the IDs range
+     from 0 to N-1, and that the root has an ID of -1.
+     
+     \return 0 on success, 1 if the root node's ID is wrong, 2 if
+     there's a gap in the ID sequence, and 3 if there's a duplicate
+     ID.
+   */
+  int tao_consistency_check(/** The TAO tree which should be checked. */
+			    taoNodeRoot * root,
+			    /** An optional pointer to a stream, where
+				error messages get printed in case you
+				specify a non-NULL pointer here. */
+			    std::ostream * msg);
   
   
   typedef std::map<int, taoDNode *> idToNodeMap_t;

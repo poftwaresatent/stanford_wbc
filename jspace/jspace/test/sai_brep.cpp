@@ -85,6 +85,7 @@ namespace jspace {
 	
 	  tree->info[ifoo->first].id = ifoo->first;
 	  tree->info[ifoo->first].node = ifoo->second;
+	  tree->info[ifoo->first].joint = ifoo->second->getJointList();
 	
 	  tree->info[ifoo->first].link_name = "(not found)";
 	  for (bar_t::const_iterator ibar(link_bar.begin()); ibar != link_bar.end(); ++ibar) {
