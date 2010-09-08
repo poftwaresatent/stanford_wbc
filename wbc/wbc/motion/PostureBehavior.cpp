@@ -264,6 +264,32 @@ namespace wbc {
       return true;
     }
     
+    else if ("float_key" == key) {
+      istringstream is(value);
+      if ( ! is) {
+	throw runtime_error("wbc::PostureBehavior::handleInit(" + key + ", " + value
+			    + "): gimme a key!");
+      }
+      char keycode;
+      is >> keycode;
+      setFloatKey(keycode);
+      LOG_INFO (logger, "wbc::PostureBehavior::handleInit(): float_key set to " << (int) keycode);
+      return true;
+    }
+    
+    else if ("freeze_key" == key) {
+      istringstream is(value);
+      if ( ! is) {
+	throw runtime_error("wbc::PostureBehavior::handleInit(" + key + ", " + value
+			    + "): gimme a key!");
+      }
+      char keycode;
+      is >> keycode;
+      setFreezeKey(keycode);
+      LOG_INFO (logger, "wbc::PostureBehavior::handleInit(): freeze_key set to " << (int) keycode);
+      return true;
+    }
+    
     else if ("whole_body_prop_gain" == key) {
       istringstream is(value);
       double kp;
