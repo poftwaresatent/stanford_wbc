@@ -1,14 +1,5 @@
-cmake_minimum_required (VERSION 2.6)
-if (COMMAND CMAKE_POLICY)
-  cmake_policy (SET CMP0003 NEW)
-  cmake_policy (SET CMP0005 NEW)
-endif (COMMAND CMAKE_POLICY)
-
-include (../wbc.cmake)
-wbc_init (TAO_Dynamics_Engine)
-
 add_library (
-  TAO_Dynamics_Engine SHARED
+  tao-de SHARED
   tao/dynamics/taoCNode.cpp
   tao/dynamics/taoABJoint.cpp
   tao/dynamics/taoNode.cpp
@@ -26,15 +17,14 @@ add_library (
   tao/utility/TaoDeMassProp.cpp
   tao/utility/TaoDeLogger.cpp)
 
-message ("[TAO] linking TAO_Dynamics_Engine against MAYBE_GCOV which is `${MAYBE_GCOV}'...")
-target_link_libraries (TAO_Dynamics_Engine gcov)
+target_link_libraries (tao-de ${MAYBE_GCOV})
 
 if (HAVE_GTEST)
   add_executable (testTAO tests/testTAO.cpp)
-  target_link_libraries (testTAO TAO_Dynamics_Engine gtest ${MAYBE_GCOV})
+  target_link_libraries (testTAO tao-de gtest ${MAYBE_GCOV})
 endif (HAVE_GTEST)
 
-include_directories (${TAO_Dynamics_Engine_SOURCE_DIR})
+include_directories (.)
 
 install (DIRECTORY tao/
   DESTINATION include/tao
@@ -46,4 +36,4 @@ install (DIRECTORY tao/
   FILES_MATCHING PATTERN "*.inl"
   PATTERN ".svn" EXCLUDE)
 
-install (TARGETS TAO_Dynamics_Engine DESTINATION lib)
+install (TARGETS tao-de DESTINATION lib)

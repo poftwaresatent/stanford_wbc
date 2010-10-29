@@ -24,10 +24,10 @@
 */
 
 #include "tao_util.hpp"
+#include "strutil.hpp"
 #include <tao/dynamics/taoNode.h>
 #include <tao/dynamics/taoDNode.h>
 #include <tao/dynamics/taoJoint.h>
-#include <wbcnet/strutil.hpp>
 #include <limits>
 
 

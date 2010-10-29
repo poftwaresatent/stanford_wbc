@@ -25,7 +25,7 @@
 
 #include "controller_library.hpp"
 #include "Model.hpp"
-#include <wbcnet/strutil.hpp>
+#include "strutil.hpp"
 
 
 namespace jspace {
