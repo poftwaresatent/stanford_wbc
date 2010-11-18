@@ -93,38 +93,38 @@ them.
 <table>
  <tr><th>variable name</th><th>meaning</th><th>example</th></tr>
  <tr>
-  <td><pre>EIGEN2_DIR</pre></td>
-  <td>Path where the Eigen matrix library is installed. This will end
+  <td valign="top"><code>EIGEN2_DIR</code></td>
+  <td valign="top">Path where the Eigen matrix library is installed. This will end
       up adding several directories to the header search path:
-      <pre>EIGEN2_DIR</pre> itself, <pre>EIGEN2_DIR/include</pre>,
-      <pre>EIGEN2_DIR/eigen2</pre>, and
-      <pre>EIGEN2_DIR/include/eigen2</pre>.  Note that CMake will fail
+      <code>EIGEN2_DIR</code> itself, <code>EIGEN2_DIR/include</code>,
+      <code>EIGEN2_DIR/eigen2</code>, and
+      <code>EIGEN2_DIR/include/eigen2</code>.  Note that CMake will fail
       with an error message if it cannot find Eigen2, and <strong>you
       have to clear its cache</strong> before reconfiguring with a
-      different <pre>EIGEN2_DIR</pre> setting. The easiest way to
-      achieve that is to remove the entire <pre>build</pre> directory.</td>
-  <td>If you installed Eigen2 underneath <pre>/home/toto/eigen2</pre>,
-      then you have to pass <pre>-DEIGEN2_DIR=/home/toto/eigen2</pre>
+      different <code>EIGEN2_DIR</code> setting. The easiest way to
+      achieve that is to remove the entire <code>build</code> directory.</td>
+  <td valign="top">If you installed Eigen2 underneath <code>/home/toto/eigen2</code>,
+      then you have to pass <code>-DEIGEN2_DIR=/home/toto/eigen2</code>
       to the CMake command.</td>
  </tr>
  <tr>
-  <td><pre>GTEST_DIR</pre></td>
-  <td>Path where the Google Testing Framework is installed. This will
+  <td valign="top"><code>GTEST_DIR</code></td>
+  <td valign="top">Path where the Google Testing Framework is installed. This will
       end up adding two directories to the header search path, and two
-      directories to the library search path: <pre>GTEST_DIR</pre>
+      directories to the library search path: <code>GTEST_DIR</code>
       itself is added to the header and library path,
-      <pre>GTEST_DIR/include</pre> is added to the header path, and
-      <pre>GTEST_DIR/lib</pre> is added to the library path.  CMake
+      <code>GTEST_DIR/include</code> is added to the header path, and
+      <code>GTEST_DIR/lib</code> is added to the library path.  CMake
       will not fail when Gtest is not found (even if you explicitly
-      pass <pre>GTEST_DIR</pre>), although a warning is issued. Again,
-      if you add or change <pre>GTEST_DIR</pre> after a CMake run, you
-      should wipe its cache (e.g. the entire <pre>build</pre>
+      pass <code>GTEST_DIR</code>), although a warning is issued. Again,
+      if you add or change <code>GTEST_DIR</code> after a CMake run, you
+      should wipe its cache (e.g. the entire <code>build</code>
       directory) before re-running CMake. Note that CMake will fail
       with an error if the Gtest headers are found but the library is
       not.</td>
-  <td>Suppose you have ROS cturtle installed underneath
-      <pre>/opt/ros/cturtle</pre>, then all you have to do is pass
-      <pre>-DGTEST_DIR=/opt/ros/cturtle/ros/3rdparty/gtest/gtest</pre>
+  <td valign="top">Suppose you have ROS cturtle installed underneath
+      <code>/opt/ros/cturtle</code>, then all you have to do is pass
+      <code>-DGTEST_DIR=/opt/ros/cturtle/ros/3rdparty/gtest/gtest</code>
       to the CMake command for Stanford-WBC.</td>
  </tr>
 </table>
