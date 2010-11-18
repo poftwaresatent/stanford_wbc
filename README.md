@@ -17,17 +17,18 @@ Stanford Whole-Body Control Framework
         BSD license (new and simplified)
         zlib/libpng license
 
-The Whole-Body Control framework developed at the Stanford Robotics
-and AI Lab http://ai.stanford.edu/groups/manips/ provides advanced
-control for human-centered robotics and mobile manipulation. This
-project provides a framework for developing robot behaviors that use
-operational-space hierarchical task decompositions, based on the
-thesis of Luis Sentis
-http://www.me.utexas.edu/directory/faculty/sentis/luis/. The software
-provides the foundations for flexibly controlling motions that
-simultaneously take into account multiple objectives, such as
+The Whole-Body Control framework developed at the [Stanford Robotics
+and AI Lab][] provides advanced control for human-centered robotics
+and mobile manipulation. This project provides a framework for
+developing robot behaviors that use operational-space hierarchical
+task decompositions, based on the thesis of [Luis Sentis][]. The
+software provides the foundations for flexibly controlling motions
+that simultaneously take into account multiple objectives, such as
 achieving end-effector positions while avoiding obstacles and choosing
 appropriate postures for redundant degrees of freedom.
+
+[Stanford Robotics and AI Lab]: http://ai.stanford.edu/groups/manips/
+[Luis Sentis]: http://www.me.utexas.edu/directory/faculty/sentis/luis/
 
 
 Download
@@ -42,7 +43,7 @@ Clone our GIT repository or download a tarball.
 
         git clone git://stanford-wbc.git.sourceforge.net/gitroot/stanford-wbc/stanford-wbc.git
 
-* Minimal clone of Github: this repos contains the same code, but many
+* Minimal clone on Github: this repos contains the same code, but many
   sub-projects have been moved into an attic area from which they will
   re-emerge when they get cleaned up and made ready for general
   consumption. So you will only be exposed to things that have reached
@@ -50,10 +51,12 @@ Clone our GIT repository or download a tarball.
 
         git://github.com/poftwaresatent/stanford_wbc.git
 
-* Grab a tarball from Sourceforge:
-  http://sourceforge.net/projects/stanford-wbc/files/ contains
+* Grab a tarball from Sourceforge: the [download area][] contains
   official releases of the Stanford-WBC project. Up to version 0.8 the
-  releases are based on the Sourceforge repository.
+  releases are based on the Sourceforge repository, later ones are
+  (probably) based on the Github clone.
+
+[download area]: http://sourceforge.net/projects/stanford-wbc/files/
 
 
 Build
@@ -61,11 +64,15 @@ Build
 
 The dependencis for the minimal version from Github are:
 
-* a C++ compiler (we use GCC for development http://gcc.gnu.org/)
-* CMake cross-platform build system version 2.6 http://www.cmake.org/
-* Eigen matrix library version 2 http://eigen.tuxfamily.org/
-* Google Testing Framework http://code.google.com/p/googletest/
-  _(optional but highly recommended)_
+* a C++ compiler (we use [GCC][] for development)
+* [CMake][] cross-platform build system version 2.6 (or higher)
+* [Eigen][] matrix library version 2 
+* [Google Testing][gtest] Framework _(optional but highly recommended)_
+
+[gcc]: http://gcc.gnu.org/
+[cmake]: http://www.cmake.org/
+[eigen]: http://eigen.tuxfamily.org/
+[gtest]: http://code.google.com/p/googletest/
 
 The full version from Sourceforge has some additional dependencies:
 GNU ncurses, LAPACK and BLAS, expat, log4cxx (optional), XmlRpc++
@@ -144,24 +151,26 @@ If any of these tests fail, there is a regression that should be
 fixed. Please let us know:
 
 * Check if the issue is already known, and possibly resolved in a more
-  recent version, by looking at our ticketing system on the
+  recent version, by looking at our [ticketing system][] on the
   project TRAC on Sourceforge
-  http://sourceforge.net/apps/trac/stanford-wbc/report
 * You can open a new ticket on our project TRAC on Sourceforge (you
   will need a Sourceforge account to do so).
 * You can send an email to `stanford-wbc-devel@lists.sourceforge.net`
+
+[ticketing system]: http://sourceforge.net/apps/trac/stanford-wbc/report
 
 
 Documentation
 -------------
 
-If you have Doxygen http://doxygen.org/ then you can generate code
-documentation for the various sub-projects. There is a little
-`rundox.sh` script in the `jspace/doc` and `tao/doc` subdirectories
-(look for the same pattern in other parts of the project as well, we
-might forget to update this README file when adding sub-projects and
-documentation).
+If you have [Doxygen][] then you can generate code documentation for
+the various sub-projects. There is a little `rundox.sh` script in the
+`jspace/doc` and `tao/doc` subdirectories (look for the same pattern
+in other parts of the project as well, we might forget to update this
+README file when adding sub-projects and documentation).
 
     cd /path/to/stanford_wbc/jspace/doc
     ./rundox
     then open html/index.html in a web browser
+
+[doxygen]: http://doxygen.org/
