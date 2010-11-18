@@ -44,6 +44,7 @@ namespace jspace {
   
   void convert(jspace::Vector const & from, std::vector<double> & to);
   void convert(std::vector<double> const & from, jspace::Vector & to);
+  void convert(double const * from, size_t length, jspace::Vector & to);
  
   // should also work as-is for jspace::Vector
   bool compare(jspace::Matrix const & lhs, jspace::Matrix const & rhs, double precision);

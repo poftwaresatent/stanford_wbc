@@ -190,4 +190,10 @@ namespace jspace {
     to = Vector::Map(&from[0], from.size());
   }
   
+  
+  void convert(double const * from, size_t length, jspace::Vector & to)
+  {
+    to = Vector::Map(from, length);
+  }
+  
 }
