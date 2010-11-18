@@ -33,7 +33,7 @@
 #include <jspace/tao_dump.hpp>
 #include <jspace/vector_util.hpp>
 #include <jspace/controller_library.hpp>
-#include <wbcnet/strutil.hpp>
+#include <jspace/strutil.hpp>
 #include <iostream>
 #include <fstream>
 #include <sstream>
