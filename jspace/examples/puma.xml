@@ -1,0 +1,108 @@
+<?xml version="1.0" ?>
+<!-- The venerable PUMA robot. -->
+<dynworld>
+  <baseNode>
+    <robotName>Puma</robotName>
+    <gravity>0, 0, -9.81</gravity>
+    <pos>0, 0, 0</pos>
+    <rot>1, 0, 0, 0</rot>
+    <name>base</name>
+    <ID>-1</ID>
+    <jointNode>
+      <jointName>shoulder-yaw</jointName>
+      <linkName>base</linkName>
+      <upperJointLimit>0.1</upperJointLimit>
+      <lowerJointLimit>-0.1</lowerJointLimit>
+      <defaultJointPosition>0</defaultJointPosition>
+      <type>R</type>
+      <axis>Z</axis>
+      <mass>34.40</mass>
+      <inertia>0.00, 0.00, 1.49</inertia>
+      <com>0, 0, 0</com>
+      <pos>0, 0, 0</pos>
+      <rot>0, 0, 1, 0</rot>
+      <name>NoName</name>
+      <ID>0</ID>
+      <jointNode>
+        <jointName>shoulder-pitch</jointName>
+        <linkName>upper_arm</linkName>
+        <upperJointLimit>0.1</upperJointLimit>
+        <lowerJointLimit>-0.1</lowerJointLimit>
+        <defaultJointPosition>0</defaultJointPosition>
+        <type>R</type>
+        <axis>Z</axis>
+        <mass>17.40</mass>
+        <inertia>0.13, 0.524, 5.249</inertia>
+        <com>0.068, 0.006, -0.016</com>
+        <pos>0.0, 0.2435, 0.0</pos>
+        <rot>1, 0, 0, -1.57079632679489661923</rot>
+        <name>upper_arm</name>
+        <ID>1</ID>
+        <jointNode>
+          <jointName>elbow</jointName>
+          <linkName>lower_arm</linkName>
+          <upperJointLimit>0.1</upperJointLimit>
+          <lowerJointLimit>-0.1</lowerJointLimit>
+          <defaultJointPosition>0</defaultJointPosition>
+          <type>R</type>
+          <axis>Z</axis>
+          <mass>6.04</mass>
+          <inertia>0.192, 0.0154, 1.042</inertia>
+          <com>0, -0.143, 0.014</com>
+          <pos>0.4318, 0, -0.0934</pos>
+          <rot>1, 0, 0, 0</rot>
+          <name>lower_arm</name>
+          <ID>2</ID>
+          <jointNode>
+            <jointName>wrist-roll1</jointName>
+            <linkName>wrist-hand</linkName>
+            <upperJointLimit>0.1</upperJointLimit>
+            <lowerJointLimit>-0.1</lowerJointLimit>
+            <defaultJointPosition>0</defaultJointPosition>
+            <type>R</type>
+            <axis>Z</axis>
+            <mass>0.82</mass>
+            <inertia>0.0018, 0.0018, 0.2013</inertia>
+            <com>0.0, 0.0, -0.019</com>
+            <pos>-0.0203, -0.4331, 0.0</pos>
+            <rot>1, 0, 0, 1.57079632679489661923</rot>
+            <name>wrist-hand</name>
+            <ID>3</ID>
+            <jointNode>
+              <jointName>wrist-pitch</jointName>
+              <linkName>wrist-finger</linkName>
+              <upperJointLimit>0.1</upperJointLimit>
+              <lowerJointLimit>-0.1</lowerJointLimit>
+              <defaultJointPosition>0</defaultJointPosition>
+              <type>R</type>
+              <axis>Z</axis>
+              <mass>0.34</mass>
+              <inertia>0.0003, 0.0003, 0.1794</inertia>
+              <com>0.0, 0.0, 0.0</com>
+              <pos>0, 0, 0</pos>
+              <rot>1, 0, 0, -1.57079632679489661923</rot>
+              <name>wrist-finger</name>
+              <ID>4</ID>
+              <jointNode>
+                <jointName>wrist-roll2</jointName>
+                <linkName>end-effector</linkName>
+                <upperJointLimit>0.1</upperJointLimit>
+                <lowerJointLimit>-0.1</lowerJointLimit>
+                <defaultJointPosition>0</defaultJointPosition>
+                <type>R</type>
+                <axis>Z</axis>
+                <mass>0.09</mass>
+                <inertia>0.00015, 0.00015, 0.19304</inertia>
+                <com>0.0, 0.0, 0.032</com>
+                <pos>0, 0, 0</pos>
+                <rot>1, 0, 0, 1.57079632679489661923</rot>
+                <name>end-effector</name>
+                <ID>5</ID>
+              </jointNode>
+            </jointNode>
+          </jointNode>
+        </jointNode>
+      </jointNode>
+    </jointNode>
+  </baseNode>
+</dynworld>

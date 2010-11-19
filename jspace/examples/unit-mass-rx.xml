@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<!-- A mass of 1kg, sitting 1m from the origin on the Y-axis, rotating
+     around the X-axis -->
+<dynworld>
+  <baseNode>
+    <gravity>0, 0, -9.81</gravity>
+    <pos>0, 0, 0</pos>
+    <rot>1, 0, 0, 0</rot>
+    <jointNode>
+      <ID>0</ID>
+      <type>R</type>
+      <axis>X</axis>
+      <mass>1</mass>
+      <inertia>0, 0, 0</inertia>
+      <com>0, 1, 0</com>
+      <pos>0, 0, 0</pos>
+      <rot>0, 0, 1, 0</rot>
+    </jointNode>
+  </baseNode>
+</dynworld>

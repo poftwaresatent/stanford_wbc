@@ -181,6 +181,9 @@ int main(int argc, char ** argv)
 	array.push_back(value);
       }
       if (ndof2 != array.size()) {
+	if (0 != prevstate.position_.size()) {
+	  break;
+	}
 	errx(EXIT_FAILURE,
 	     "%s:%zu: error: expected 2*ndof = %zu entries but got %zu",
 	     infname.c_str(), lineno, ndof2, array.size());
@@ -191,7 +194,7 @@ int main(int argc, char ** argv)
     
     if (0 != prevstate.position_.size()) {
       jspace::Vector acc;
-      acc = (prevstate.velocity_ - nextstate.velocity_) / timestep;
+      acc = (nextstate.velocity_ - prevstate.velocity_) / timestep;
       
       model.update(prevstate);
       jspace::Matrix aa;
@@ -207,7 +210,9 @@ int main(int argc, char ** argv)
       tau_nog = aa * acc;
       tau = tau_nog + gg;
       
-      *os << jspace::pretty_string(acc) << "   "
+      *os << jspace::pretty_string(prevstate.position_) << "   "
+	  << jspace::pretty_string(prevstate.velocity_) << "   "
+	  << jspace::pretty_string(acc) << "   "
 	  << jspace::pretty_string(tau_nog) << "   "
 	  << jspace::pretty_string(tau) << "\n";
     }
@@ -215,12 +220,40 @@ int main(int argc, char ** argv)
     prevstate = nextstate;
   }
   
-  printf("for printing in gnuplot:\n"
-	 "- acceleration:\n"
-	 "  plot '%s' u $0:$1 w l t 'joint 0', '%s' u $0:$2 w l t 'joint 1', ...\n"
-	 "- torque without gravity compensation:\n"
-	 "  plot '%s' u $0:$%zu w l t 'joint 0', '%s' u $0:$%zu w l t 'joint 1', ...\n"
-	 "- torque with gravity compensation:\n"
-	 "  plot '%s' u $0:$%zu w l t 'joint 0', '%s' u $0:$%zu w l t 'joint 1', ...\n",
-	 ndof + 1, ndof + 2, ndof2 + 1, ndof2 + 2);
+  if (ndof > 1) {
+    printf("for printing in gnuplot:\n"
+	   "- position:\n"
+	   "  plot '%s' u 0:1 w l t 'joint 0', '%s' u 0:2 w l t 'joint 1', ...\n"
+	   "- velocity:\n"
+	   "  plot '%s' u 0:%zu w l t 'joint 0', '%s' u 0:%zu w l t 'joint 1', ...\n"
+	   "- acceleration:\n"
+	   "  plot '%s' u 0:%zu w l t 'joint 0', '%s' u 0:%zu w l t 'joint 1', ...\n"
+	   "- torque without gravity compensation:\n"
+	   "  plot '%s' u 0:%zu w l t 'joint 0', '%s' u 0:%zu w l t 'joint 1', ...\n"
+	   "- torque with gravity compensation:\n"
+	   "  plot '%s' u 0:%zu w l t 'joint 0', '%s' u 0:%zu w l t 'joint 1', ...\n",
+	   outfname.c_str(), outfname.c_str(),
+	   outfname.c_str(), ndof + 1, outfname.c_str(), ndof + 2,
+	   outfname.c_str(), 2 * ndof + 1, outfname.c_str(), 2 * ndof + 2,
+	   outfname.c_str(), 3 * ndof + 1, outfname.c_str(), 3 * ndof + 2,
+	   outfname.c_str(), 4 * ndof + 1, outfname.c_str(), 4 * ndof + 2);
+  }
+  else {
+    printf("for printing in gnuplot:\n"
+	   "- position:\n"
+	   "  plot '%s' u 0:1 w l t 'pos'\n"
+	   "- velocity:\n"
+	   "  plot '%s' u 0:%zu w l t 'vel'\n"
+	   "- acceleration:\n"
+	   "  plot '%s' u 0:%zu w l t 'acc'\n"
+	   "- torque without gravity compensation:\n"
+	   "  plot '%s' u 0:%zu w l t 'tau'\n"
+	   "- torque with gravity compensation:\n"
+	   "  plot '%s' u 0:%zu w l t 't+g'\n",
+	   outfname.c_str(),
+	   outfname.c_str(), ndof + 1,
+	   outfname.c_str(), 2 * ndof + 1,
+	   outfname.c_str(), 3 * ndof + 1,
+	   outfname.c_str(), 4 * ndof + 1);
+  }
 }
