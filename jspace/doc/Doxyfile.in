@@ -87,7 +87,7 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 INPUT                  = . ../jspace
 INPUT_ENCODING         = UTF-8
-FILE_PATTERNS          = *.hpp *.dox
+FILE_PATTERNS          = *.hpp *.dox *.cpp
 RECURSIVE              = NO
 EXCLUDE                = 
 EXCLUDE_SYMLINKS       = NO

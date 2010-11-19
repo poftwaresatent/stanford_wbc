@@ -30,7 +30,7 @@
  */
 
 /**
-   \file wbcnet/strutil.hpp
+   \file jspace/strutil.hpp
    \author Roland Philippsen (roland DOT philippsen AT gmx DOT net)
 */
 
