@@ -19,7 +19,7 @@
  */
 
 /**
-   \file trjcheck.cpp
+   \file trjsim.cpp
    \author Roland Philippsen
 */
 
@@ -38,7 +38,9 @@ using namespace std;
 
 int main(int argc, char ** argv)
 {
+  //////////////////////////////////////////////////
   // parse options
+  
   string infname("-");
   string outfname("-");
   string saifname("robot.xml");
@@ -87,7 +89,7 @@ int main(int argc, char ** argv)
       verbosity += 3;
     }
     else if ("-h" == opt) {
-      printf("Trajectory checker from stanford-wbc.sf.net\n"
+      printf("Trajectory simulator from stanford-wbc.sf.net\n"
 	     "  Copyright (c) 2010 Stanford University. All rights reserved.\n"
 	     "  Redistribution, use, and modification permitted under the LGPLv3.\n"
 	     "\n"
@@ -111,7 +113,7 @@ int main(int argc, char ** argv)
   }
   
   if (verbosity > 0) {
-    printf("Trajectory checker from stanford-wbc.sf.net\n"
+    printf("Trajectory simulator from stanford-wbc.sf.net\n"
 	   "  Copyright (c) 2010 Stanford University. All rights reserved.\n"
 	   "  Redistribution, use, and modification permitted under the LGPLv3.\n"
 	   "input file: %s\n"
@@ -119,6 +121,9 @@ int main(int argc, char ** argv)
 	   "robot file: %s\n",
 	   infname.c_str(), outfname.c_str(), saifname.c_str());
   }
+  
+  //////////////////////////////////////////////////
+  // set up the joint-space model and the file streams
   
   jspace::Model model;
   try {
@@ -164,6 +169,14 @@ int main(int argc, char ** argv)
     }
     os = &outfile;
   }
+  
+  //////////////////////////////////////////////////
+  // main processing loop:
+
+  // Read positions and velocities, one line at a time. Compute the
+  // corresponding acceleration and use the jspace model to determine
+  // the forces that would be required to produce these
+  // accelerations. Write all of that to the output file.
   
   jspace::State prevstate;
   size_t const ndof(model.getNDOF());
@@ -219,6 +232,10 @@ int main(int argc, char ** argv)
     
     prevstate = nextstate;
   }
+
+  //////////////////////////////////////////////////
+  // give a little hint on how to extract the various parts from the
+  // generated output
   
   if (ndof > 1) {
     printf("for printing in gnuplot:\n"
