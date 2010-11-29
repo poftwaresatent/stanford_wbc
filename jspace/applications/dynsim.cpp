@@ -85,18 +85,15 @@ static void set_tau(jspace::tao_tree_info_s * tree, double const * tau)
 }
 
 
-// /** \note This implementation assumes that all joints are 1 DOF. */
-// static void add_command(jspace::tao_tree_info_s * tree, double const * tau)
-// {
-//   typedef jspace::tao_tree_info_s::node_info_t::iterator it_t;
-//   it_t const iend(tree->info.end());
-//   for (it_t ii(tree->info.begin()); ii != iend; ++ii) {
-//     double tmp;
-//     ii->joint->getTau(&tmp);
-//     tmp += *(tau++);
-//     ii->joint->setTau(&tmp);
-//   }
-// }
+static void str2vec(std::string const & str, vector<double> & vec)
+{
+  vec.clear();
+  istringstream is(str);
+  double val;
+  while (is >> val) {
+    vec.push_back(val);
+  }
+}
 
 
 int main(int argc, char ** argv)
@@ -113,6 +110,9 @@ int main(int argc, char ** argv)
   string saifname("robot.xml");
   double timestep(1e-3);
   size_t nsubsteps(10);
+  vector<double> state[2];
+  vector<double> & position(state[0]);
+  vector<double> & velocity(state[1]);
   int verbosity(0);
   for (int iopt(1); iopt < argc; ++iopt) {
     string const opt(argv[iopt]);
@@ -168,6 +168,20 @@ int main(int argc, char ** argv)
     else if ("-vvv" == opt) {
       verbosity += 3;
     }
+    else if ("-P" == opt) {
+      ++iopt;
+      if (iopt >= argc) {
+	errx(EXIT_FAILURE, "-P requires an argument (use -h for some help)");
+      }
+      str2vec(argv[iopt], position);
+    }
+    else if ("-V" == opt) {
+      ++iopt;
+      if (iopt >= argc) {
+	errx(EXIT_FAILURE, "-V requires an argument (use -h for some help)");
+      }
+      str2vec(argv[iopt], velocity);
+    }
     else if ("-h" == opt) {
       printf("Rigid-body dynamics simulator from stanford-wbc.sf.net\n"
 	     "  Copyright (c) 2010 Stanford University. All rights reserved.\n"
@@ -183,8 +197,10 @@ int main(int argc, char ** argv)
 	     "                        (default is `robot.xml')\n"
 	     "  -t  milliseconds      timestep between samples (input and output) in milliseconds\n"
 	     "                        (default is 1ms, i.e. a 1kHz control loop)\n"
-	     "  -n nsubsteps          the number of integration substeps\n"
+	     "  -n  nsubsteps         the number of integration substeps\n"
 	     "                        (default is 10)\n"
+	     "  -P  startpos          start position (vector of space-delimited numbers)\n"
+	     "  -V  startvel          start velocity (vector of space-delimited numbers)\n"
 	     "  -v                    verbose mode (multiple times makes it more verbose)\n"
 	     "  -h                    this message\n");
       exit(EXIT_SUCCESS);
@@ -205,7 +221,7 @@ int main(int argc, char ** argv)
   }
   
   //////////////////////////////////////////////////
-  // set up the TAO tree and the file streams
+  // set up the TAO tree, initial state, and the file streams
   
   try {
     jspace::test::BRParser brp;
@@ -217,6 +233,24 @@ int main(int argc, char ** argv)
   }
   catch (exception const & ee) {
     errx(EXIT_FAILURE, "exception: %s", ee.what());
+  }
+  
+  size_t const ndof(tao_tree->info.size());
+  
+  static char const * param_name[] = { "startpos", "startvel" };
+  for (size_t ii(0); ii < 2; ++ii) {
+    if (state[ii].size() != ndof) {
+      if (state[ii].size() == 0) {
+	state[ii].assign(ndof, 0.0);
+      }
+      else if (state[ii].size() == 1) {
+	state[ii].assign(ndof, state[ii][0]);
+      }
+      else {
+	errx(EXIT_FAILURE, "dimension mismatch: %s has %zu entries, but should have %zu (or 0 or 1)",
+	     param_name[ii], state[ii].size(), ndof);
+      }
+    }
   }
   
   ifstream infile;
@@ -252,10 +286,7 @@ int main(int argc, char ** argv)
   // motion of the robot, and write out the resulting positions and
   // velocities.
   
-  size_t const ndof(tao_tree->info.size());
-  std::vector<double> pos(ndof); // XXXX to do: read from arg
-  std::vector<double> vel(ndof); // XXXX to do: read from arg
-  set_state(tao_tree, &pos[0], &vel[0]);
+  set_state(tao_tree, &position[0], &velocity[0]);
   taoDynamics::updateTransformation(tao_tree->root);
   
   static deVector3 gravity(0, 0, -9.81); // let's assume we're on Earth
@@ -289,15 +320,15 @@ int main(int argc, char ** argv)
       taoDynamics::updateTransformation(tao_tree->root);
     }
     
-    get_state(tao_tree, &pos[0], &vel[0]);
+    get_state(tao_tree, &position[0], &velocity[0]);
     for (size_t ii(0); ii < ndof; ++ii) {
       *os << tau[ii] << "  ";
     }
     for (size_t ii(0); ii < ndof; ++ii) {
-      *os << pos[ii] << "  ";
+      *os << position[ii] << "  ";
     }
     for (size_t ii(0); ii < ndof; ++ii) {
-      *os << vel[ii] << "  ";
+      *os << velocity[ii] << "  ";
     }
     *os << "\n";
     
