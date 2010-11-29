@@ -75,17 +75,28 @@ static void set_state(jspace::tao_tree_info_s * tree, double const * pos, double
 
 
 /** \note This implementation assumes that all joints are 1 DOF. */
-static void add_command(jspace::tao_tree_info_s * tree, double const * tau)
+static void set_tau(jspace::tao_tree_info_s * tree, double const * tau)
 {
   typedef jspace::tao_tree_info_s::node_info_t::iterator it_t;
   it_t const iend(tree->info.end());
   for (it_t ii(tree->info.begin()); ii != iend; ++ii) {
-    double tmp;
-    ii->joint->getTau(&tmp);
-    tmp += *(tau++);
-    ii->joint->setTau(&tmp);
+    ii->joint->setTau(tau++);
   }
 }
+
+
+// /** \note This implementation assumes that all joints are 1 DOF. */
+// static void add_command(jspace::tao_tree_info_s * tree, double const * tau)
+// {
+//   typedef jspace::tao_tree_info_s::node_info_t::iterator it_t;
+//   it_t const iend(tree->info.end());
+//   for (it_t ii(tree->info.begin()); ii != iend; ++ii) {
+//     double tmp;
+//     ii->joint->getTau(&tmp);
+//     tmp += *(tau++);
+//     ii->joint->setTau(&tmp);
+//   }
+// }
 
 
 int main(int argc, char ** argv)
@@ -261,6 +272,9 @@ int main(int argc, char ** argv)
       while (ls >> value) {
 	tau.push_back(value);
       }
+      if (tau.empty()) {
+	break;
+      }
       if (ndof != tau.size()) {
 	errx(EXIT_FAILURE,
 	     "%s:%zu: error: expected ndof = %zu entries but got %zu",
@@ -269,8 +283,8 @@ int main(int argc, char ** argv)
     }
     
     for (size_t ii(0); ii < nsubsteps; ++ii) {
+      set_tau(tao_tree, &tau[0]);
       taoDynamics::fwdDynamics(tao_tree->root, &gravity);
-      add_command(tao_tree, &tau[0]);
       taoDynamics::integrate(tao_tree->root, substep_dt);
       taoDynamics::updateTransformation(tao_tree->root);
     }
@@ -293,28 +307,30 @@ int main(int argc, char ** argv)
   // give a little hint on how to extract the various parts from the
   // generated output
   
-  if (ndof > 1) {
-    printf("for printing in gnuplot:\n"
-	   "- position:\n"
-	   "  plot '%s' u 0:1 w l t 'joint 0', '%s' u 0:2 w l t 'joint 1', ...\n"
-	   "- velocity:\n"
-	   "  plot '%s' u 0:%zu w l t 'joint 0', '%s' u 0:%zu w l t 'joint 1', ...\n"
-	   "- torque:\n"
-	   "  plot '%s' u 0:%zu w l t 'joint 0', '%s' u 0:%zu w l t 'joint 1', ...\n",
-	   outfname.c_str(), outfname.c_str(),
-	   outfname.c_str(), ndof + 1, outfname.c_str(), ndof + 2,
-	   outfname.c_str(), 2 * ndof + 1, outfname.c_str(), 2 * ndof + 2);
-  }
-  else {
-    printf("for printing in gnuplot:\n"
-	   "- position:\n"
-	   "  plot '%s' u 0:1 w l t 'pos'\n"
-	   "- velocity:\n"
-	   "  plot '%s' u 0:%zu w l t 'vel'\n"
-	   "- torque:\n"
-	   "  plot '%s' u 0:%zu w l t 'tau'\n",
-	   outfname.c_str(),
-	   outfname.c_str(), ndof + 1,
-	   outfname.c_str(), 2 * ndof + 1);
+  if (("-" != outfname) || (verbosity > 0)) {
+    if (ndof > 1) {
+      printf("for printing in gnuplot:\n"
+	     "- torque:\n"
+	     "  plot '%s' u 0:1 w l t 'joint 0', '%s' u 0:2 w l t 'joint 1', ...\n"
+	     "- position:\n"
+	     "  plot '%s' u 0:%zu w l t 'joint 0', '%s' u 0:%zu w l t 'joint 1', ...\n"
+	     "- velocity:\n"
+	     "  plot '%s' u 0:%zu w l t 'joint 0', '%s' u 0:%zu w l t 'joint 1', ...\n",
+	     outfname.c_str(), outfname.c_str(),
+	     outfname.c_str(), ndof + 1, outfname.c_str(), ndof + 2,
+	     outfname.c_str(), 2 * ndof + 1, outfname.c_str(), 2 * ndof + 2);
+    }
+    else {
+      printf("for printing in gnuplot:\n"
+	     "- torque:\n"
+	     "  plot '%s' u 0:1 w l t 'tau'\n"
+	     "- position:\n"
+	     "  plot '%s' u 0:%zu w l t 'pos'\n"
+	     "- velocity:\n"
+	     "  plot '%s' u 0:%zu w l t 'vel'\n",
+	     outfname.c_str(),
+	     outfname.c_str(), ndof + 1,
+	     outfname.c_str(), 2 * ndof + 1);
+    }
   }
 }

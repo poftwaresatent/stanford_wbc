@@ -101,7 +101,7 @@ int main(int argc, char ** argv)
 	     "                        (use `-' for stdout, which is the default)\n"
 	     "  -s  SAI XML file name name of the robot description file\n"
 	     "                        (default is `robot.xml')\n"
-	     "  -t  milliseconds      timestep between samples (input and output) in milliseconds\n"
+	     "  -t  milliseconds      timestep between samples in milliseconds\n"
 	     "                        (default is 1ms, i.e. a 1kHz control loop)\n"
 	     "  -v                    verbose mode (multiple times makes it more verbose)\n"
 	     "  -h                    this message\n");
@@ -237,40 +237,42 @@ int main(int argc, char ** argv)
   // give a little hint on how to extract the various parts from the
   // generated output
   
-  if (ndof > 1) {
-    printf("for printing in gnuplot:\n"
-	   "- position:\n"
-	   "  plot '%s' u 0:1 w l t 'joint 0', '%s' u 0:2 w l t 'joint 1', ...\n"
-	   "- velocity:\n"
-	   "  plot '%s' u 0:%zu w l t 'joint 0', '%s' u 0:%zu w l t 'joint 1', ...\n"
-	   "- acceleration:\n"
-	   "  plot '%s' u 0:%zu w l t 'joint 0', '%s' u 0:%zu w l t 'joint 1', ...\n"
-	   "- torque without gravity compensation:\n"
-	   "  plot '%s' u 0:%zu w l t 'joint 0', '%s' u 0:%zu w l t 'joint 1', ...\n"
-	   "- torque with gravity compensation:\n"
-	   "  plot '%s' u 0:%zu w l t 'joint 0', '%s' u 0:%zu w l t 'joint 1', ...\n",
-	   outfname.c_str(), outfname.c_str(),
-	   outfname.c_str(), ndof + 1, outfname.c_str(), ndof + 2,
-	   outfname.c_str(), 2 * ndof + 1, outfname.c_str(), 2 * ndof + 2,
-	   outfname.c_str(), 3 * ndof + 1, outfname.c_str(), 3 * ndof + 2,
-	   outfname.c_str(), 4 * ndof + 1, outfname.c_str(), 4 * ndof + 2);
-  }
-  else {
-    printf("for printing in gnuplot:\n"
-	   "- position:\n"
-	   "  plot '%s' u 0:1 w l t 'pos'\n"
-	   "- velocity:\n"
-	   "  plot '%s' u 0:%zu w l t 'vel'\n"
-	   "- acceleration:\n"
-	   "  plot '%s' u 0:%zu w l t 'acc'\n"
-	   "- torque without gravity compensation:\n"
-	   "  plot '%s' u 0:%zu w l t 'tau'\n"
-	   "- torque with gravity compensation:\n"
-	   "  plot '%s' u 0:%zu w l t 't+g'\n",
-	   outfname.c_str(),
-	   outfname.c_str(), ndof + 1,
-	   outfname.c_str(), 2 * ndof + 1,
-	   outfname.c_str(), 3 * ndof + 1,
-	   outfname.c_str(), 4 * ndof + 1);
+  if (("-" != outfname) || (verbosity > 0)) {
+    if (ndof > 1) {
+      printf("for printing in gnuplot:\n"
+	     "- position:\n"
+	     "  plot '%s' u 0:1 w l t 'joint 0', '%s' u 0:2 w l t 'joint 1', ...\n"
+	     "- velocity:\n"
+	     "  plot '%s' u 0:%zu w l t 'joint 0', '%s' u 0:%zu w l t 'joint 1', ...\n"
+	     "- acceleration:\n"
+	     "  plot '%s' u 0:%zu w l t 'joint 0', '%s' u 0:%zu w l t 'joint 1', ...\n"
+	     "- torque without gravity compensation:\n"
+	     "  plot '%s' u 0:%zu w l t 'joint 0', '%s' u 0:%zu w l t 'joint 1', ...\n"
+	     "- torque with gravity compensation:\n"
+	     "  plot '%s' u 0:%zu w l t 'joint 0', '%s' u 0:%zu w l t 'joint 1', ...\n",
+	     outfname.c_str(), outfname.c_str(),
+	     outfname.c_str(), ndof + 1, outfname.c_str(), ndof + 2,
+	     outfname.c_str(), 2 * ndof + 1, outfname.c_str(), 2 * ndof + 2,
+	     outfname.c_str(), 3 * ndof + 1, outfname.c_str(), 3 * ndof + 2,
+	     outfname.c_str(), 4 * ndof + 1, outfname.c_str(), 4 * ndof + 2);
+    }
+    else {
+      printf("for printing in gnuplot:\n"
+	     "- position:\n"
+	     "  plot '%s' u 0:1 w l t 'pos'\n"
+	     "- velocity:\n"
+	     "  plot '%s' u 0:%zu w l t 'vel'\n"
+	     "- acceleration:\n"
+	     "  plot '%s' u 0:%zu w l t 'acc'\n"
+	     "- torque without gravity compensation:\n"
+	     "  plot '%s' u 0:%zu w l t 'tau'\n"
+	     "- torque with gravity compensation:\n"
+	     "  plot '%s' u 0:%zu w l t 't+g'\n",
+	     outfname.c_str(),
+	     outfname.c_str(), ndof + 1,
+	     outfname.c_str(), 2 * ndof + 1,
+	     outfname.c_str(), 3 * ndof + 1,
+	     outfname.c_str(), 4 * ndof + 1);
+    }
   }
 }
