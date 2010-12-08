@@ -1,0 +1,125 @@
+<?xml version="1.0" ?>
+<dynworld>
+  <baseNode>
+    <gravity>0, 0, -9.81</gravity>
+    <pos>-0.05, 0, 0.790675</pos>
+    <rot>0, 0, 1, 0</rot>
+    <jointNode>
+      <ID>0</ID>
+      <linkName>l_shoulder_pan_link</linkName>
+      <jointName>l_shoulder_pan_joint</jointName>
+      <type>R</type>
+      <axis>Z</axis>
+      <lowerJointLimit>-0.714602</lowerJointLimit>
+      <upperJointLimit>2.2854</upperJointLimit>
+      <mass>25.7993</mass>
+      <!-- shoulder pan: Ixx and Iyy were way too small, but we never
+           rotate around them so it probably does not matter. Izz
+	   looked reasonable. -->
+      <inertia>3.74, 3.74, 0.22</inertia>
+      <com>-0.001201, 0.024513, -0.098231</com>
+      <pos>0, 0.188, 0</pos>
+      <rot>0, 0, 1, 0</rot>
+      <jointNode>
+        <ID>1</ID>
+        <linkName>l_shoulder_lift_link</linkName>
+        <jointName>l_shoulder_lift_joint</jointName>
+        <type>R</type>
+        <axis>Y</axis>
+        <lowerJointLimit>-0.5236</lowerJointLimit>
+        <upperJointLimit>1.3963</upperJointLimit>
+        <mass>2.74988</mass>
+	<!-- shoulder lift: the inertias looked reasonable -->
+        <inertia>0.025, 0.02, 0.025</inertia>
+        <com>0.02195, -0.02664, -0.03127</com>
+        <pos>0.1, 0, 0</pos>
+        <rot>0, 0, 1, 0</rot>
+        <jointNode>
+          <ID>2</ID>
+          <linkName>l_upper_arm_roll_link</linkName>
+          <jointName>l_upper_arm_roll_joint</jointName>
+          <type>R</type>
+          <axis>X</axis>
+          <lowerJointLimit>-0.8</lowerJointLimit>
+          <upperJointLimit>3.9</upperJointLimit>
+          <mass>6.11769</mass>
+	  <!-- upper arm roll: the inertias looked reasonable -->
+          <inertia>0.020, 0.077, 0.083</inertia>
+          <com>0.210551, 0.016309, -0.000560683</com>
+          <pos>0, 0, 0</pos>
+          <rot>0, 0, 1, 0</rot>
+          <jointNode>
+            <ID>3</ID>
+            <linkName>l_elbow_flex_link</linkName>
+            <jointName>l_elbow_flex_joint</jointName>
+            <type>R</type>
+            <axis>Y</axis>
+            <lowerJointLimit>-2.3213</lowerJointLimit>
+            <upperJointLimit>0</upperJointLimit>
+            <mass>1.90327</mass>
+	    <!-- elbow flex: Iyy was 5x too low, Izz was almost 10x
+	         too low. Ixx looked good. Then again, these estimates
+	         are based on the assumption of uniformly distributed
+	         mass in a box, which is guaranteed to overestimate
+	         the moments of inertia. -->
+	    <inertia>0.0039, 0.023, 0.024</inertia>
+            <com>0.01014, 0.00032, -0.01211</com>
+            <pos>0.4, 0, 0</pos>
+            <rot>0, 0, 1, 0</rot>
+            <jointNode>
+              <ID>4</ID>
+              <linkName>l_forearm_roll_link</linkName>
+              <jointName>l_forearm_roll_joint</jointName>
+              <type>R</type>
+              <axis>X</axis>
+              <lowerJointLimit>2.22507e-308</lowerJointLimit>
+              <upperJointLimit>1.79769e+308</upperJointLimit>
+              <mass>2.68968</mass>
+	      <!-- forearm roll: Ixx was 3x too high, but see above
+	           notice concerning the box-based estimation
+	           method. -->
+	      <inertia>0.0055, 0.033, 0.034</inertia>
+              <com>0.180727, -0.000163048, -0.00858343</com>
+              <pos>0, 0, 0</pos>
+              <rot>0, 0, 1, 0</rot>
+              <jointNode>
+                <ID>5</ID>
+                <linkName>l_wrist_flex_link</linkName>
+                <jointName>l_wrist_flex_joint</jointName>
+                <type>R</type>
+                <axis>Y</axis>
+                <lowerJointLimit>-2.094</lowerJointLimit>
+                <upperJointLimit>0</upperJointLimit>
+                <mass>0.61402</mass>
+		<!-- wrist flex: let's set them to zero, given that
+		     the wrist is (probably?) a parallel mechanism -->
+                <inertia>0.0, 0.0, 0.0</inertia>
+                <com>-0.00157, 0, -0.00075</com>
+                <pos>0.321, 0, 0</pos>
+                <rot>0, 0, 1, 0</rot>
+                <jointNode>
+                  <ID>6</ID>
+                  <linkName>l_wrist_roll_link</linkName>
+                  <jointName>l_wrist_roll_joint</jointName>
+                  <type>R</type>
+                  <axis>X</axis>
+                  <lowerJointLimit>2.22507e-308</lowerJointLimit>
+                  <upperJointLimit>1.79769e+308</upperJointLimit>
+                  <mass>1.1146</mass>
+		  <!-- wrist roll: values were 3x too high, but the
+		       following estimate is based on a solid sphere
+		       assumption, which probably underestimates the
+		       inertia. -->
+                  <inertia>0.0035, 0.0035, 0.0035</inertia>
+                  <com>0.0830703, 0.00020205, -0.00101951</com>
+                  <pos>0, 0, 0</pos>
+                  <rot>0, 0, 1, 0</rot>
+                </jointNode>
+              </jointNode>
+            </jointNode>
+          </jointNode>
+        </jointNode>
+      </jointNode>
+    </jointNode>
+  </baseNode>
+</dynworld>
