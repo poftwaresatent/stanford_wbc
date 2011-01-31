@@ -91,7 +91,7 @@ namespace jspace {
     virtual Status getGains(Vector & kp, Vector & kd) const = 0;
     
     /** This method is supposed to be called just before the first
-	call to computeCOmmand(), in order to allow the controller to
+	call to computeCommand(), in order to allow the controller to
 	set the goal to the current state. This is important for
 	applications where we switch controllers at runtime. */
     virtual Status latch(Model const & model) = 0;
