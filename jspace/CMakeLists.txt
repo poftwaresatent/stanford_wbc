@@ -26,6 +26,7 @@ add_library (jspace_test SHARED
   jspace/test/model_library.cpp
   jspace/test/sai_brep.cpp
   jspace/test/sai_brep_parser.cpp
+  jspace/test/sai_util.cpp
   )
 target_link_libraries (jspace_test jspace wbc_tinyxml ${MAYBE_GCOV})
 
