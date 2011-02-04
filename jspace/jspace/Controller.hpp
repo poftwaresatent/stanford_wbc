@@ -98,7 +98,7 @@ namespace jspace {
     
     virtual Status computeCommand(Model const & model, Vector & tau) = 0;
     
-  private:
+  protected:
     mutable jspace_controller_info_getter_s * info_getter_;
   };
   
