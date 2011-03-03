@@ -56,6 +56,12 @@ namespace jspace {
   
   void pretty_print(jspace::Vector const & vv, std::ostream & os,
 		    std::string const & title, std::string const & prefix, bool nonl = false);
+
+  inline void pretty_print(Eigen::Vector3d const & vv, std::ostream & os,
+			   std::string const & title, std::string const & prefix, bool nonl = false)
+  {
+    pretty_print(static_cast<jspace::Vector const &>(vv), os, title, prefix, nonl);
+  }
   
   void pretty_print(jspace::Quaternion const & qq, std::ostream & os,
 		    std::string const & title, std::string const & prefix, bool nonl = false);
