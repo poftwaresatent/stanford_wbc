@@ -50,6 +50,7 @@ namespace jspace {
   bool compare(jspace::Matrix const & lhs, jspace::Matrix const & rhs, double precision);
   bool compare(jspace::Quaternion const & lhs, jspace::Quaternion const & rhs, double precision);
   
+  std::string pretty_string(double vv);
   std::string pretty_string(jspace::Vector const & vv);
   std::string pretty_string(jspace::Quaternion const & qq);
   std::string pretty_string(jspace::Matrix const & mm, std::string const & prefix);

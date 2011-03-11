@@ -98,6 +98,31 @@ namespace jspace {
   }
     
     
+  std::string pretty_string(double vv)
+  {
+    static int const buflen(32);
+    std::string str;
+    str.assign(buflen, '\0');
+#ifndef WIN32
+    if (isinf(vv)) {
+      snprintf(&str[0], buflen-1, " inf    ");
+    }
+    else if (isnan(vv)) {
+      snprintf(&str[0], buflen-1, " nan    ");
+    }
+    else if (fabs(fmod(vv, 1)) < 1e-6) {
+      snprintf(&str[0], buflen-1, "%- 7d  ", static_cast<int>(rint(vv)));
+    }
+    else {
+      snprintf(&str[0], buflen-1, "% 6.4f  ", vv);
+    }
+#else // WIN32
+    sprintf_s(&str[0], buflen-1, "% 6.4f  ", vv);
+#endif // WIN32
+    return str;
+  }
+  
+  
   void pretty_print(jspace::Matrix const & mm, std::ostream & os,
 		    std::string const & title, std::string const & prefix,
 		    bool vecmode, bool nonl)
@@ -117,34 +142,14 @@ namespace jspace {
       //   vecmode = true;
       // }
 	
-      static int const buflen(32);
-      static char buf[buflen];
-      memset(buf, 0, sizeof(buf));
-	
       if (vecmode) {
 	if ( ! prefix.empty())
 	  os << prefix;
 	for (int ir(0); ir < mm.rows(); ++ir) {
-#ifndef WIN32
-	  if (isinf(mm.coeff(ir, 0))) {
-	    snprintf(buf, buflen-1, " inf    ");
-	  }
-	  else if (isnan(mm.coeff(ir, 0))) {
-	    snprintf(buf, buflen-1, " nan    ");
-	  }
-	  else if (fabs(fmod(mm.coeff(ir, 0), 1)) < 1e-6) {
-	    snprintf(buf, buflen-1, "%- 7d  ", static_cast<int>(rint(mm.coeff(ir, 0))));
-	  }
-	  else {
-	    snprintf(buf, buflen-1, "% 6.4f  ", mm.coeff(ir, 0));
-	  }
-#else // WIN32
-	  sprintf_s(buf, buflen-1, "% 6.4f  ", mm.coeff(ir, 0));
-#endif // WIN32
-	  os << buf;
+	  os << pretty_string(mm.coeff(ir, 0));
 	}
 	os << nlornot;
-	  
+	
       }
       else {
 
@@ -152,23 +157,7 @@ namespace jspace {
 	  if ( ! prefix.empty())
 	    os << prefix;
 	  for (int ic(0); ic < mm.cols(); ++ic) {
-#ifndef WIN32
-	    if (isinf(mm.coeff(ir, ic))) {
-	      snprintf(buf, buflen-1, " inf    ");
-	    }
-	    else if (isnan(mm.coeff(ir, ic))) {
-	      snprintf(buf, buflen-1, " nan    ");
-	    }
-	    else if (fabs(fmod(mm.coeff(ir, ic), 1)) < 1e-6) {
-	      snprintf(buf, buflen-1, "%- 7d  ", static_cast<int>(rint(mm.coeff(ir, ic))));
-	    }
-	    else {
-	      snprintf(buf, buflen-1, "% 6.4f  ", mm.coeff(ir, ic));
-	    }
-#else // WIN32
-	    sprintf_s(buf, buflen-1, "% 6.4f  ", mm.coeff(ir, ic));
-#endif // WIN32
-	    os << buf;
+	    os << pretty_string(mm.coeff(ir, ic));
 	  }
 	  os << nlornot;
 	}
