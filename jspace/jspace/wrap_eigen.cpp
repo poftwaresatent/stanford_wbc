@@ -101,24 +101,25 @@ namespace jspace {
   std::string pretty_string(double vv)
   {
     static int const buflen(32);
-    std::string str;
-    str.assign(buflen, '\0');
+    static char buf[buflen];
+    memset(buf, 0, sizeof(buf));
 #ifndef WIN32
     if (isinf(vv)) {
-      snprintf(&str[0], buflen-1, " inf    ");
+      snprintf(buf, buflen-1, " inf    ");
     }
     else if (isnan(vv)) {
-      snprintf(&str[0], buflen-1, " nan    ");
+      snprintf(buf, buflen-1, " nan    ");
     }
     else if (fabs(fmod(vv, 1)) < 1e-6) {
-      snprintf(&str[0], buflen-1, "%- 7d  ", static_cast<int>(rint(vv)));
+      snprintf(buf, buflen-1, "%- 7d  ", static_cast<int>(rint(vv)));
     }
     else {
-      snprintf(&str[0], buflen-1, "% 6.4f  ", vv);
+      snprintf(buf, buflen-1, "% 6.4f  ", vv);
     }
 #else // WIN32
-    sprintf_s(&str[0], buflen-1, "% 6.4f  ", vv);
+    sprintf_s(buf, buflen-1, "% 6.4f  ", vv);
 #endif // WIN32
+    string str(buf);
     return str;
   }
   
