@@ -21,7 +21,7 @@ target_link_libraries (tao-de ${MAYBE_GCOV})
 
 if (HAVE_GTEST)
   add_executable (testTAO tests/testTAO.cpp)
-  target_link_libraries (testTAO tao-de gtest ${MAYBE_GCOV})
+  target_link_libraries (testTAO tao-de gtest pthread ${MAYBE_GCOV})
 endif (HAVE_GTEST)
 
 include_directories (.)
