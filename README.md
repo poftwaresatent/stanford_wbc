@@ -36,27 +36,15 @@ stanford-wbc project, we forked it (from [here][tao-on-simtk]) and
 added an easy-to-use facade in form of the jspace library (designed
 and implemented by [Roland Philippsen][]).
 
-The related [utaustin-wbc][] project, developed and maintained at the
-University of Texas at Austin, is based on the notion of task
-primitives developed in the thesis of [Luis Sentis][].  In particular,
-the [opspace][] library contained therein provides the foundations for
-flexibly controlling motions that simultaneously take into account
-multiple objectives, such as achieving end-effector positions while
-avoiding obstacles and choosing appropriate postures for redundant
-degrees of freedom.
-
 [Stanford Robotics and AI Lab]: http://ai.stanford.edu/groups/manips/
 [Oussama Khatib]: http://cs.stanford.edu/groups/manips/people/oussama-khatib
 [Jaeheung Park]: http://plaza4.snu.ac.kr/~park73/wiki/index.php5/People
 [Roy Featherstone]: http://users.cecs.anu.edu.au/~roy/
 [François Conti]: http://cs.stanford.edu/groups/manips/people/francois-conti
-[Luis Sentis]: http://www.me.utexas.edu/directory/faculty/sentis/luis/
 [stanford-wbc]: https://github.com/poftwaresatent/stanford_wbc
 [SimTK]: https://simtk.org/xml/index.xml
 [tao-on-simtk]: https://simtk.org/home/tao_de
 [Roland Philippsen]: http://cs.stanford.edu/groups/manips/people/roland-philippsen
-[utaustin-wbc]: https://github.com/poftwaresatent/utaustin-wbc
-[opspace]: https://github.com/poftwaresatent/utaustin_wbc_opspace
 
 
 Download
