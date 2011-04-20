@@ -19,16 +19,44 @@ Stanford Whole-Body Control Framework
 
 The Whole-Body Control framework developed at the [Stanford Robotics
 and AI Lab][] provides advanced control for human-centered robotics
-and mobile manipulation. This project provides a framework for
+and mobile manipulation.  This project provides a framework for
 developing robot behaviors that use operational-space hierarchical
-task decompositions, based on the thesis of [Luis Sentis][]. The
-software provides the foundations for flexibly controlling motions
-that simultaneously take into account multiple objectives, such as
-achieving end-effector positions while avoiding obstacles and choosing
-appropriate postures for redundant degrees of freedom.
+task decompositions, based on the work of many contributors over many
+years, under the guidance of and in collaboration with [Oussama
+Khatib][]: most notably [Jaeheung Park][], K. C. Chang, Diego Ruspini,
+[Roy Featherstone][], Bob Holmberg, [François Conti][], and [Luis
+Sentis][].
+
+The core [stanford-wbc][] library provides a joint-space dynamics
+model for branching structures of rigid bodies.  It has two main
+components: TAO and jspace. The TAO dynamics engine, developed by
+K. C. Chang and Diego Ruspini, was released under an MIT licence and
+integrated into the [SimTK][] simulation framework. In the
+stanford-wbc project, we forked it (from [here][tao-on-simtk]) and
+added an easy-to-use facade in form of the jspace library (designed
+and implemented by [Roland Philippsen][]).
+
+The related [utaustin-wbc][] project, developed and maintained at the
+University of Texas at Austin, is based on the notion of task
+primitives developed in the thesis of [Luis Sentis][].  In particular,
+the [opspace][] library contained therein provides the foundations for
+flexibly controlling motions that simultaneously take into account
+multiple objectives, such as achieving end-effector positions while
+avoiding obstacles and choosing appropriate postures for redundant
+degrees of freedom.
 
 [Stanford Robotics and AI Lab]: http://ai.stanford.edu/groups/manips/
+[Oussama Khatib]: http://cs.stanford.edu/groups/manips/people/oussama-khatib
+[Jaeheung Park]: http://plaza4.snu.ac.kr/~park73/wiki/index.php5/People
+[Roy Featherstone]: http://users.cecs.anu.edu.au/~roy/
+[François Conti]: http://cs.stanford.edu/groups/manips/people/francois-conti
 [Luis Sentis]: http://www.me.utexas.edu/directory/faculty/sentis/luis/
+[stanford-wbc]: https://github.com/poftwaresatent/stanford_wbc
+[SimTK]: https://simtk.org/xml/index.xml
+[tao-on-simtk]: https://simtk.org/home/tao_de
+[Roland Philippsen]: http://cs.stanford.edu/groups/manips/people/roland-philippsen
+[utaustin-wbc]: https://github.com/poftwaresatent/utaustin-wbc
+[opspace]: https://github.com/poftwaresatent/utaustin_wbc_opspace
 
 
 Download
