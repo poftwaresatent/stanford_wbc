@@ -41,6 +41,7 @@ and implemented by [Roland Philippsen][]).
 [Jaeheung Park]: http://plaza4.snu.ac.kr/~park73/wiki/index.php5/People
 [Roy Featherstone]: http://users.cecs.anu.edu.au/~roy/
 [François Conti]: http://cs.stanford.edu/groups/manips/people/francois-conti
+[Luis Sentis]: http://www.me.utexas.edu/directory/faculty/sentis/luis/
 [stanford-wbc]: https://github.com/poftwaresatent/stanford_wbc
 [SimTK]: https://simtk.org/xml/index.xml
 [tao-on-simtk]: https://simtk.org/home/tao_de
