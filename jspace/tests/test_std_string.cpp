@@ -1,3 +1,5 @@
+// This file is placed in the public domain.
+
 // g++ -Wall -g -O0 -o test_std_string test_std_string.cpp
 
 #include <string>

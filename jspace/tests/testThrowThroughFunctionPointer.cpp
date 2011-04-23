@@ -1,3 +1,5 @@
+// This file is placed in the public domain.
+
 // g++ -Wall -o testThrowThroughFunctionPointer testThrowThroughFunctionPointer.cpp
 
 #include <stdexcept>

@@ -1,7 +1,7 @@
 /*
  * Stanford Whole-Body Control Framework http://stanford-wbc.sourceforge.net/
  *
- * Copyright (c) 2010 Stanford University. All rights reserved.
+ * Copyright (C) 2010 The Board of Trustees of The Leland Stanford Junior University. All rights reserved.
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -90,7 +90,8 @@ int main(int argc, char ** argv)
     }
     else if ("-h" == opt) {
       printf("Trajectory simulator from stanford-wbc.sf.net\n"
-	     "  Copyright (c) 2010 Stanford University. All rights reserved.\n"
+	     "  Copyright (C) 2010 The Board of Trustees of The Leland Stanford Junior University.\n"
+	     "                     All rights reserved.\n"
 	     "  Redistribution, use, and modification permitted under the LGPLv3.\n"
 	     "\n"
 	     "usage [-i infile] [-o outfile] [-s saifile] [-vh]\n"
@@ -114,7 +115,8 @@ int main(int argc, char ** argv)
   
   if (verbosity > 0) {
     printf("Trajectory simulator from stanford-wbc.sf.net\n"
-	   "  Copyright (c) 2010 Stanford University. All rights reserved.\n"
+	   "  Copyright (C) 2010 The Board of Trustees of The Leland Stanford Junior University.\n"
+	   "                     All rights reserved.\n"
 	   "  Redistribution, use, and modification permitted under the LGPLv3.\n"
 	   "input file: %s\n"
 	   "output file: %s\n"

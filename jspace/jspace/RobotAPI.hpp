@@ -1,7 +1,7 @@
 /*
  * Stanford Whole-Body Control Framework http://stanford-wbc.sourceforge.net/
  *
- * Copyright (C) 2008-2010 Stanford University
+ * Copyright (C) 2010 The Board of Trustees of The Leland Stanford Junior University. All rights reserved.
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
