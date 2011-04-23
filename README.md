@@ -2,7 +2,7 @@ Stanford Whole-Body Control Framework
 =====================================
 
     Core project copyright:
-        Copyright (C) 1997-2010 Stanford University. All rights reserved.
+        Copyright (C) 2008 The Board of Trustees of The Leland Stanford Junior University. All Rights Reserved.
 
     Other copyright holders:
         Copyright (C) 2005 Arachi Inc. All rights reserved.
