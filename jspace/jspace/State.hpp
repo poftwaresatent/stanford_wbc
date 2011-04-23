@@ -64,6 +64,11 @@ namespace jspace {
     */
     void resizeAndPadWithZeros(size_t npos, size_t nvel, size_t nforce);
     
+    /**
+       Compares two states for equality. You can specify which aspects
+       of the state should be considered relevant, and also a
+       precision for comparing floating point values.
+    */
     bool equal(State const & rhs,
 	       int flags = COMPARE_POSITION | COMPARE_VELOCITY,
 	       double precision = 1e-3) const;

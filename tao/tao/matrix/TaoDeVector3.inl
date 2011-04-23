@@ -39,7 +39,7 @@ DE_MATH_API void deVector3::zero() { deZeroV3(_data); }
 DE_MATH_API void deVector3::normalize() { deNormalizeV3(_data); }
 DE_MATH_API void deVector3::set(const deFloat x, const deFloat y, const deFloat z) { deSetV3S3(_data, x, y, z); }
 DE_MATH_API void deVector3::set(const deFloat* v) { deSetV3V3(_data, v); }
-DE_MATH_API void deVector3::get(deFloat* v) { deSetV3V3(v, _data); }
+DE_MATH_API void deVector3::get(deFloat* v) const { deSetV3V3(v, _data); }
 DE_MATH_API void deVector3::minimum(const deVector3& v) { deMinV3V3(_data, v); }
 DE_MATH_API void deVector3::maximum(const deVector3& v) { deMaxV3V3(_data, v); }
 DE_MATH_API void deVector3::negate(const deVector3& v) { deNegateV3V3(_data, v); }

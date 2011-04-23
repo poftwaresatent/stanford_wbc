@@ -64,6 +64,7 @@ public:
 	virtual deFrame const * frameGlobal() const { return &_frameGlobal; }
 	virtual deFloat* mass() { return &_mass; }
 	virtual deVector3* center() { return &_center; }
+	virtual deVector3 const * center() const { return &_center; }
 	virtual deMatrix3* inertia() { return &_inertia; }
 	/*!
 	 *	\remarks	expressed in local frame
@@ -161,6 +162,7 @@ public:
 	virtual deFrame const * frameGlobal() const { return &_frameGlobal; }
 	virtual deFloat* mass() { return &_zero; } // YYY
 	virtual deVector3* center() { return NULL; }
+	virtual deVector3 const * center() const { return NULL; }
 	virtual deMatrix3* inertia() { return NULL; }
 	virtual deVector6* force() { return NULL; }
 	virtual void zeroForce() {}

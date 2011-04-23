@@ -62,6 +62,8 @@ namespace jspace {
   
   
   struct tao_tree_info_s {
+    tao_tree_info_s();
+    
     /** deletes the taoNodeRoot. */
     virtual ~tao_tree_info_s();
     

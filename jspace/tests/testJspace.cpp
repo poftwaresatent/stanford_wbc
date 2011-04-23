@@ -312,6 +312,7 @@ TEST (jspaceModel, Jacobian_R)
       jspace::Vector const ee_gpos(ee_gframe.translation());
       {
 	jspace::Vector ee_gpos_check(3);
+	ee_gpos_check.coeffRef(0) = 0;
 	ee_gpos_check.coeffRef(1) = c1;
 	ee_gpos_check.coeffRef(2) = s1;
 	std::ostringstream msg;
@@ -374,6 +375,7 @@ TEST (jspaceModel, Jacobian_RR)
 	jspace::Vector const ee_gpos(ee_gframe.translation());
 	{
 	  jspace::Vector ee_gpos_check(3);
+	  ee_gpos_check.coeffRef(0) = 0;
 	  ee_gpos_check.coeffRef(1) = c1 + c12;
 	  ee_gpos_check.coeffRef(2) = s1 + s12;
 	  std::ostringstream msg;
@@ -413,6 +415,66 @@ TEST (jspaceModel, Jacobian_RR)
 }
 
 
+TEST (jspaceModel, com_RR)
+{
+  jspace::Model * model(0);
+  try {
+    model = create_unit_mass_RR_model();
+    jspace::State state(2, 2, 0);
+    
+    for (double q1(-M_PI); q1 <= M_PI; q1 += 2 * M_PI / 7) {
+      for (double q2(-M_PI); q2 <= M_PI; q2 += 2 * M_PI / 7) {
+ 	state.position_[0] = q1;
+ 	state.position_[1] = q2;
+	model->update(state);
+	
+	double const c1(cos(q1));
+	double const c12(cos(q1+q2));
+	double const s1(sin(q1));
+	double const s12(sin(q1+q2));
+	
+	jspace::Vector com;
+	jspace::Matrix jcom;
+	ASSERT_TRUE (model->computeCOM(com, &jcom)) << "failed to computeCOM()";
+	
+	// remember, it's a double-pendulum in the YZ plane, and
+	// coincides with the Y axis at q=0... so, YZ looks like the
+	// X'Y' you get when sketching it out on a piece of paper, and
+	// X===0
+	{
+	  jspace::Vector com_check(3);
+	  com_check.coeffRef(0) = 0;
+	  com_check.coeffRef(1) = c1 + 0.5 * c12;
+	  com_check.coeffRef(2) = s1 + 0.5 * s12;
+	  std::ostringstream msg;
+	  msg << "Verifying COM position for q = " << state.position_ << "\n";
+	  pretty_print(com_check, msg, "  want", "    ");
+	  pretty_print(com, msg, "  have", "    ");
+	  EXPECT_TRUE (check_vector("com", com_check, com, 1e-3, msg)) << msg.str();
+	}
+	
+	{
+	  jspace::Matrix jcom_check(jspace::Matrix::Zero(3, 2));
+	  jcom_check.coeffRef(1, 0) = -s1 - 0.5 * s12;
+	  jcom_check.coeffRef(2, 0) =  c1 + 0.5 * c12;
+	  jcom_check.coeffRef(1, 1) = -0.5 * s12;
+	  jcom_check.coeffRef(2, 1) =  0.5 * c12;
+	  std::ostringstream msg;
+	  msg << "Checking Jacobian COM for q = " << state.position_ << "\n";
+	  pretty_print(jcom_check, msg, "  want", "    ");
+	  pretty_print(jcom, msg, "  have", "    ");
+	  EXPECT_TRUE (check_matrix("Jacobian COM", jcom_check, jcom, 1e-3, msg)) << msg.str();
+	}
+      }
+    }
+  }
+  catch (std::exception const & ee) {
+    ADD_FAILURE () << "exception " << ee.what();
+  }
+  delete model;
+}
+
+
 TEST (jspaceModel, Jacobian_RP)
 {
   jspace::Model * model(0);
@@ -436,6 +498,7 @@ TEST (jspaceModel, Jacobian_RP)
 	  ASSERT_TRUE (model->getGlobalFrame(ee, ee_gframe));
 	  jspace::Vector const ee_gpos(ee_gframe.translation());
 	  jspace::Vector ee_gpos_check(3);
+	  ee_gpos_check.coeffRef(0) = 0;
 	  ee_gpos_check.coeffRef(1) = c1 - s1 * q2;
 	  ee_gpos_check.coeffRef(2) = s1 + c1 * q2;
 	  std::ostringstream msg;
@@ -464,6 +527,64 @@ TEST (jspaceModel, Jacobian_RP)
 	  pretty_print(Jg_check, msg, "  want", "    ");
 	  pretty_print(Jg, msg, "  have", "    ");
 	  EXPECT_TRUE (check_matrix("Jacobian", Jg_check, Jg, 1e-3, msg)) << msg.str();
+	}
+      }
+    }
+  }
+  catch (std::exception const & ee) {
+    ADD_FAILURE () << "exception " << ee.what();
+  }
+  delete model;
+}
+
+
+TEST (jspaceModel, com_RP)
+{
+  jspace::Model * model(0);
+  try {
+    model = create_unit_mass_RP_model();
+    jspace::State state(2, 2, 0);
+    
+    for (double q1(-M_PI); q1 <= M_PI; q1 += 2 * M_PI / 7) {
+      for (double q2(-1); q2 <= 1; q2 += 2.0 / 7) {
+ 	state.position_[0] = q1;
+ 	state.position_[1] = q2;
+	model->update(state);
+	
+	double const c1(cos(q1));
+	double const s1(sin(q1));
+	
+	jspace::Vector com;
+	jspace::Matrix jcom;
+	ASSERT_TRUE (model->computeCOM(com, &jcom)) << "failed to computeCOM()";
+	
+	// remember, it's a pendulum-piston in the YZ plane, and
+	// coincides with the Y axis at q=0... so, YZ looks like the
+	// X'Y' you get when sketching it out on a piece of paper, and
+	// X===0
+	{
+	  jspace::Vector com_check(3);
+	  com_check.coeffRef(0) = 0;
+	  com_check.coeffRef(1) = c1 - 0.5 * s1 * q2;
+	  com_check.coeffRef(2) = s1 + 0.5 * c1 * q2;
+	  std::ostringstream msg;
+	  msg << "Verifying COM position only for q = " << state.position_ << "\n";
+	  pretty_print(com_check, msg, "  want", "    ");
+	  pretty_print(com, msg, "  have", "    ");
+	  EXPECT_TRUE (check_vector("ee_pos", com_check, com, 1e-3, msg)) << msg.str();
+	}
+	
+	{
+	  jspace::Matrix jcom_check(jspace::Matrix::Zero(3, 2));
+	  jcom_check.coeffRef(1, 0) = -s1 - 0.5 * c1 * q2;
+	  jcom_check.coeffRef(2, 0) =  c1 - 0.5 * s1 * q2;
+	  jcom_check.coeffRef(1, 1) = -0.5 * s1;
+	  jcom_check.coeffRef(2, 1) =  0.5 * c1;
+	  std::ostringstream msg;
+	  msg << "Checking Jacobian COM for q = " << state.position_ << "\n";
+	  pretty_print(jcom_check, msg, "  want", "    ");
+	  pretty_print(jcom, msg, "  have", "    ");
+	  EXPECT_TRUE (check_matrix("Jacobian", jcom_check, jcom, 1e-3, msg)) << msg.str();
 	}
       }
     }

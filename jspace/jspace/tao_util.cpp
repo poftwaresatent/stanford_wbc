@@ -149,6 +149,13 @@ namespace jspace {
   
   
   tao_tree_info_s::
+  tao_tree_info_s()
+    : root(0)
+  {
+  }
+  
+  
+  tao_tree_info_s::
   ~tao_tree_info_s()
   {
     delete root;

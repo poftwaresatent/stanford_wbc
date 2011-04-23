@@ -84,6 +84,7 @@ public:
 	virtual deFloat* mass() = 0;
 	//! \return	center of gravity in local frame
 	virtual deVector3* center() = 0;
+	virtual deVector3 const * center() const = 0;
 	//!	\return	inertia tensor at the origin of local frame
 	virtual deMatrix3* inertia() = 0;
 	//!	\retval	fext	accumulate all external forces

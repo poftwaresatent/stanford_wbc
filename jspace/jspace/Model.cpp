@@ -446,6 +446,40 @@ namespace jspace {
   }
   
   
+  bool Model::
+  computeCOM(Vector & com, Matrix * opt_jcom) const
+  {
+    com = Vector::Zero(3);
+    if (opt_jcom) {
+      *opt_jcom = Matrix::Zero(3, ndof_);
+    }
+    double mtotal(0);
+    for (size_t ii(0); ii < ndof_; ++ii) {
+      taoDNode * const node(kgm_tree_->info[ii].node);
+      deVector3 wpos;
+      wpos.multiply(node->frameGlobal()->rotation(), *(node->center()));
+      wpos += node->frameGlobal()->translation();
+      if (opt_jcom) {
+	Matrix wjcom;
+	if ( ! computeJacobian(node, wpos[0], wpos[1], wpos[2], wjcom)) {
+	  return false;
+	}
+	*opt_jcom += *(node->mass()) * wjcom.block(0, 0, 3, wjcom.cols());
+      }
+      wpos *= *(node->mass());
+      mtotal += *(node->mass());
+      com += Vector::Map(&wpos[0], 3);
+    }
+    if (fabs(mtotal) > 1e-3) {
+      com /= mtotal;
+      if (opt_jcom) {
+	*opt_jcom /= mtotal;
+      }
+    }
+    return true;
+  }
+  
+  
   void Model::
   computeGravity()
   {

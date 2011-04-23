@@ -86,7 +86,7 @@ public:
 	//! this = [x y z]
 	DE_MATH_API void set(const deFloat* v);
 	//! [x y z] = this
-	DE_MATH_API void get(deFloat* v);
+	DE_MATH_API void get(deFloat* v) const;
 
 	//! this[i] = min(this[i], v[i])
 	DE_MATH_API void minimum(const deVector3& v);

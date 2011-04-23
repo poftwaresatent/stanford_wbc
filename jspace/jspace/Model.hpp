@@ -290,6 +290,13 @@ namespace jspace {
 	computeMassInertia(), and computeInverseMassInertia(). */
     void updateDynamics();
     
+    /** Computes the location of the center of gravity, and optionally
+	also its Jacobian. Pass opt_jcom=0 if you are not interested
+	in the Jacobian. Failures can only be due to calls of
+	computeJacobian() that happens for each node's contribution to
+	the Jacobian of the COM. */
+    bool computeCOM(Vector & com, Matrix * opt_jcom) const;
+    
     /** Compute the gravity joint-torque vector. */
     void computeGravity();
     

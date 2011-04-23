@@ -49,6 +49,7 @@ public:
 
 	virtual void setDVar(taoDVar* var) { _var = var; }
 	virtual taoDVar* getDVar() { return _var; }
+	virtual taoDVar const * getDVar() const { return _var; }
 
 	void setType(taoJointType t) { _type = t; }
 	taoJointType getType() const { return _type; }
@@ -96,17 +97,17 @@ public:
 	virtual void zeroQ() = 0;
   
   /** \note pointer semantics to support more than one DOF */
-	virtual void getTau(deFloat* v) = 0;
+	virtual void getTau(deFloat* v) const = 0;
   
   /** \note pointer semantics to support more than one DOF */
-	virtual void getDDQ(deFloat* v) = 0;
+	virtual void getDDQ(deFloat* v) const = 0;
   
   /** \note pointer semantics to support more than one DOF */
-	virtual void getDQ(deFloat* v) = 0;
+	virtual void getDQ(deFloat* v) const = 0;
   
   /** \note pointer semantics to support more than one DOF */
-	virtual void getQ(deFloat* v) = 0;
-
+	virtual void getQ(deFloat* v) const = 0;
+  
   /** Retrieve the column(s) of the global Jacobian due to this
       joint. You have to pass in an array of deVector6 instances, the
       number of instances must be at least getDOF(), and each of them
@@ -151,6 +152,7 @@ public:
 	virtual void reset();
 
 	virtual taoVarSpherical* getVarSpherical() { return (taoVarSpherical*)getDVar(); }
+	virtual taoVarSpherical const * getVarSpherical() const { return (taoVarSpherical*)getDVar(); }
 
 	virtual void addQdelta();
 	virtual void addDQdelta();
@@ -162,10 +164,10 @@ public:
 	virtual void setDDQ(const deFloat* v) { getVarSpherical()->_ddQ.set(v); }
 	virtual void setDQ(const deFloat* v) { getVarSpherical()->_dQ.set(v); }
 	virtual void setQ(const deFloat* v) { getVarSpherical()->_Q.set(v); }
-	virtual void getTau(deFloat* v) { getVarSpherical()->_Tau.get(v); }
-	virtual void getDDQ(deFloat* v) { getVarSpherical()->_ddQ.get(v); }
-	virtual void getDQ(deFloat* v) { getVarSpherical()->_dQ.get(v); }
-	virtual void getQ(deFloat* v) { deQuaternion& q = getVarSpherical()->_Q; v[0] = q[0]; v[1] = q[1]; v[2] = q[2]; v[3] = q[3]; }
+	virtual void getTau(deFloat* v) const { getVarSpherical()->_Tau.get(v); }
+	virtual void getDDQ(deFloat* v) const { getVarSpherical()->_ddQ.get(v); }
+	virtual void getDQ(deFloat* v) const { getVarSpherical()->_dQ.get(v); }
+	virtual void getQ(deFloat* v) const { deQuaternion const & q = getVarSpherical()->_Q; v[0] = q[0]; v[1] = q[1]; v[2] = q[2]; v[3] = q[3]; }
 
 	virtual void clampDQ();
 	virtual void integrate(const deFloat dt);
@@ -245,6 +247,7 @@ public:
 	}
 
 	virtual taoVarDOF1* getVarDOF1() { return (taoVarDOF1*)getDVar(); }
+	virtual taoVarDOF1 const * getVarDOF1() const { return (taoVarDOF1*)getDVar(); }
 
 	virtual void addQdelta() { getVarDOF1()->_Q += getVarDOF1()->_ddQ; }
 	virtual void addDQdelta() { getVarDOF1()->_dQ += getVarDOF1()->_ddQ; if (getDQclamp()) clampDQ(); }
@@ -257,10 +260,10 @@ public:
 	virtual void setDDQ(const deFloat* v) { getVarDOF1()->_ddQ = *v; }
 	virtual void setDQ(const deFloat* v) { getVarDOF1()->_dQ = *v; }
 	virtual void setQ(const deFloat* v) { getVarDOF1()->_Q = *v; }
-	virtual void getTau(deFloat* v) { *v = getVarDOF1()->_Tau; }
-	virtual void getDDQ(deFloat* v) { *v = getVarDOF1()->_ddQ; }
-	virtual void getDQ(deFloat* v) { *v = getVarDOF1()->_dQ; }
-	virtual void getQ(deFloat* v) { *v = getVarDOF1()->_Q; }
+	virtual void getTau(deFloat* v) const { *v = getVarDOF1()->_Tau; }
+	virtual void getDDQ(deFloat* v) const { *v = getVarDOF1()->_ddQ; }
+	virtual void getDQ(deFloat* v) const { *v = getVarDOF1()->_dQ; }
+	virtual void getQ(deFloat* v) const { *v = getVarDOF1()->_Q; }
 
 	virtual void clampDQ();
 	virtual void integrate(const deFloat dt);

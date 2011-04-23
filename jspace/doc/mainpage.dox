@@ -132,5 +132,10 @@
 
    \image html ex2joint1.png "example 2 output for joint 1"
    \image html ex2joint2.png "example 2 output for joint 2"
+
+   This shows that the influence of gravity is quite significant and
+   produces a dependence between the joints. There also is dynamic
+   coupling, but this is not evident in these plots because the
+   accelerations are too low (gravity effects dominate).
    
 */
