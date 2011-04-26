@@ -1,0 +1,61 @@
+<?xml version="1.0" ?>
+<dynworld>
+  <baseNode>
+    <gravity>0, 0, -9.81</gravity>
+    <pos>0, 0, 0</pos>
+    <rot>1, 0, 0, 0</rot>
+
+    <jointNode>
+      <ID>0</ID>
+      <jointName>joint1</jointName>
+      <linkName>link1</linkName>
+      <type>R</type>
+      <axis>X</axis>
+      <mass>1</mass>
+      <inertia>1, 1, 1</inertia>
+      <com>0, 0, -1</com>
+      <pos>0, 0, 0</pos>
+      <rot>0, 0, 1, 0</rot>
+
+      <jointNode>
+        <ID>1</ID>
+	<jointName>joint2</jointName>
+	<linkName>link2</linkName>
+        <type>R</type>
+        <axis>X</axis>
+        <mass>1</mass>
+        <inertia>1, 1, 1</inertia>
+        <com>0, 0, -1</com>
+        <pos>0, 0, -1</pos>
+        <rot>0, 0, 1, 0</rot>
+	
+	<jointNode>
+	  <ID>2</ID>
+	  <jointName>joint3</jointName>
+	  <linkName>link3</linkName>
+	  <type>R</type>
+	  <axis>X</axis>
+	  <mass>1</mass>
+	  <inertia>1, 1, 1</inertia>
+	  <com>0, 0, -1</com>
+	  <pos>0, 0, -1</pos>
+	  <rot>0, 0, 1, 0</rot>
+	  
+	  <jointNode>
+	    <ID>3</ID>
+	    <jointName>joint4</jointName>
+	    <linkName>link4</linkName>
+	    <type>R</type>
+	    <axis>X</axis>
+	    <mass>1</mass>
+	    <inertia>1, 1, 1</inertia>
+	    <com>0, 0, -1</com>
+	    <pos>0, 0, -1</pos>
+	    <rot>0, 0, 1, 0</rot>
+	    
+	  </jointNode>
+	</jointNode>
+      </jointNode>
+    </jointNode>
+  </baseNode>
+</dynworld>

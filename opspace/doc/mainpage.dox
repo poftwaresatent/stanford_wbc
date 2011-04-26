@@ -1,0 +1,58 @@
+/**
+   \namespace opspace Contains the operational-space tasks and related classes.
+   \namespace jspace Contains the joint-space dynamics model and related classes.
+   \namespace sfl For code copy-pasted from the Sunflower mobile robot library.
+   \namespace wbcnet For code copy-pasted from the WBC networking library.
+   \namespace std Standard C++ library and STL.
+   
+   \mainpage Documentation: UT Austin Whole-Body Operational Space Control
+   
+   The Whole-Body Operational Space Control project at the University
+   of Texas at Austin provides an extensible framework for controlling
+   robots interacting physically with everyday environments. We rely
+   on the joint-space dynamics library from the Stanford Whole-Body
+   Control Framework to provide a model of rigid-body
+   branching-structure dynamics, and employ it to dynamically decouple
+   tasks which control different aspects of the robot motion.
+   
+   - http://www.me.utexas.edu/~hcrl/
+   - http://cs.stanford.edu/groups/manips/
+   - https://github.com/poftwaresatent/utaustin-wbc/
+   - http://stanford-wbc.sf.net/
+   
+   The best place to start reading the API documentation is probably
+   opspace::Task, opspace::Skill, and opspace::Controller. We are working on a tutorial
+   etc, but it's not ready yet. Also note that the whole_body_control
+   stack for ROS contains an operational-space
+   controller for PR2, based on the code here. So maybe chcek
+   that out instead.
+   
+   - https://github.com/poftwaresatent/whole_body_control
+   
+   \section fineprint The Fine Print
+   
+   All of this is free and open source software. Most of the
+   utaustin-wbc code is released under a BSD license. Most of the
+   stanford-wbc code is released under the LGPLv3 license. Some of the
+   third-party and utility code in both projects is released under
+   other open-source licenses. Copyright holders are mentioned in the
+   files and third-party subdirectories. The core code in the
+   utaustin-wbc project is Copyright University of Austin at Texas,
+   and the core code in the stanford-wbc project is Copyright Stanford
+   University. All rights are reserved by the respective copyright
+   holders.
+   
+   THIS SOFTWARE IS PROVIDED BY THE AUTHORS AND CONTRIBUTORS ``AS IS''
+   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+   TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+   PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT
+   HOLDER OR THE CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY
+   DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+   DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+   GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+   WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+   
+*/

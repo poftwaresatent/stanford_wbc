@@ -1,0 +1,19 @@
+<package>
+  <description brief="Reflexxes Type I online trajectory generator.">
+    The Type I online trajectory generator is a real-time compatible
+    library for computing acceleration-bounded trajectories for
+    multiple degrees of freedom. It is distributed by Reflexxes GmbH,
+    Sandknoell 7, D-24805 Hamdorf, GERMANY.
+  </description>
+  <author>Torsten Kroeger</author>
+  <license>GPLv3</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://www.reflexxes.net/</url>
+  <export>
+    <cpp cflags="-I${prefix}/include"
+	 lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lreflexxes_otg" />
+  </export>
+  <platform os="ubuntu" version="9.04"/>
+  <platform os="ubuntu" version="9.10"/>
+  <platform os="ubuntu" version="10.04"/>
+</package>

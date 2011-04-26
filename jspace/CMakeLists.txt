@@ -15,7 +15,7 @@ list (APPEND SRCS
 include_directories (
   .
   ../tao
-  ../wbc_tinyxml
+  ../3rdparty/wbc_tinyxml
   )
 
 add_library (jspace SHARED ${SRCS})
