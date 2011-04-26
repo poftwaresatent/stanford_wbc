@@ -5,54 +5,37 @@
    \namespace wbcnet For code copy-pasted from the WBC networking library.
    \namespace std Standard C++ library and STL.
    
-   \mainpage Documentation: UT Austin Whole-Body Operational Space Control
+   \mainpage Documentation: Stanford_WBC operational-space control utility library
    
-   The Whole-Body Operational Space Control project at the University
-   of Texas at Austin provides an extensible framework for controlling
-   robots interacting physically with everyday environments. We rely
-   on the joint-space dynamics library from the Stanford Whole-Body
-   Control Framework to provide a model of rigid-body
-   branching-structure dynamics, and employ it to dynamically decouple
-   tasks which control different aspects of the robot motion.
-   
-   - http://www.me.utexas.edu/~hcrl/
-   - http://cs.stanford.edu/groups/manips/
-   - https://github.com/poftwaresatent/utaustin-wbc/
-   - http://stanford-wbc.sf.net/
-   
+   The operational-space utility library uses the joint-space dynamics
+   provided by the jspace library and adds a few abstractions and
+   utilities to do operational-space control. Most importantly, there
+   are facilities for inspecting and setting various parameters at
+   runtime, and to create tasks and skills a startup time.
+
    The best place to start reading the API documentation is probably
-   opspace::Task, opspace::Skill, and opspace::Controller. We are working on a tutorial
-   etc, but it's not ready yet. Also note that the whole_body_control
-   stack for ROS contains an operational-space
-   controller for PR2, based on the code here. So maybe chcek
-   that out instead.
+   opspace::Task, opspace::Skill, and opspace::Controller. There also
+   are some tutorials in the tutorials/ directory (you'll need FLTK to
+   compile and run the tutorials, but even without that you can read
+   the source code).
    
-   - https://github.com/poftwaresatent/whole_body_control
+   - http://cs.stanford.edu/groups/manips/
+   - http://stanford-wbc.sf.net/
    
    \section fineprint The Fine Print
    
-   All of this is free and open source software. Most of the
-   utaustin-wbc code is released under a BSD license. Most of the
-   stanford-wbc code is released under the LGPLv3 license. Some of the
-   third-party and utility code in both projects is released under
-   other open-source licenses. Copyright holders are mentioned in the
-   files and third-party subdirectories. The core code in the
-   utaustin-wbc project is Copyright University of Austin at Texas,
-   and the core code in the stanford-wbc project is Copyright Stanford
-   University. All rights are reserved by the respective copyright
-   holders.
+   \code
+   Copyright (C) 2010-2011 The Board of Trustees of The Leland Stanford Junior University. All Rights Reserved.
    
-   THIS SOFTWARE IS PROVIDED BY THE AUTHORS AND CONTRIBUTORS ``AS IS''
-   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
-   TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
-   PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT
-   HOLDER OR THE CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY
-   DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-   DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
-   GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-   WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+   This program is free software: you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public License
+   as published by the Free Software Foundation, either version 3 of
+   the License, or (at your option) any later version.
+   
+   This program is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+   \endcode
    
 */

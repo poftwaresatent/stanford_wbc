@@ -4,7 +4,7 @@
 # Project related configuration options
 #---------------------------------------------------------------------------
 DOXYFILE_ENCODING      = UTF-8
-PROJECT_NAME           = "UT Austin Whole-Body Operational Space Control"
+PROJECT_NAME           = "Stanford_WBC operational-space control utility library"
 PROJECT_NUMBER         = "@REVISION@"
 OUTPUT_DIRECTORY       =
 CREATE_SUBDIRS         = NO
