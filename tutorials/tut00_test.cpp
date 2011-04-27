@@ -19,6 +19,18 @@
  * <http://www.gnu.org/licenses/>
  */
 
+/**
+   \file tut00_test.cpp
+   \author Roland Philippsen
+   
+   A quick test to see whether the planar simulator works as
+   expected. It starts by re-initializing the joint state to a swining
+   motion, and when you press Toggle it sends zeroed-out torque
+   commands to the robot. This makes the robot fall according to
+   gravity from whichever position it was in when you press
+   Toggle. Pressing Toggle again goes back to the initial mode.
+*/
+
 #include "tutsim.hpp"
 #include <jspace/test/sai_util.hpp>
 #include <boost/shared_ptr.hpp>

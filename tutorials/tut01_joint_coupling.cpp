@@ -19,6 +19,20 @@
  * <http://www.gnu.org/licenses/>
  */
 
+/**
+   \file tut01_joint_coupling.cpp
+   \author Roland Philippsen
+   
+   A tutorial which illustrates the dynamic coupling between joints of
+   a kinematic chain. The simulation starts out as a PD control to the
+   zero position. When you press Toggle, it sends a torque command
+   which is zero everyhere except for the last joint, which receives a
+   sinusoidal open-loop torque. The resulting motion shows that even
+   though only one joint has non-zero torque, the entire chain starts
+   to move. Clicking Toggle again switches back to the initial mode
+   and then the cycle repeats.
+*/
+
 #include "tutsim.hpp"
 
 
