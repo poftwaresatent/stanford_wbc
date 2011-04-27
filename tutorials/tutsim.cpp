@@ -374,7 +374,7 @@ namespace {
   void Window::
   resize(int x, int y, int w, int h)
   {
-    Fl_Window::resize(x, y, w, h);
+    Fl_Double_Window::resize(x, y, w, h);
     simulator->resize(0, 0, w, h - 40);
     toggle->resize(5, h-35, 100, 30);
     pause->resize(w/2-50, h-35, 100, 30);
