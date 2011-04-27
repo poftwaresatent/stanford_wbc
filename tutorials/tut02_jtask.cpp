@@ -19,6 +19,28 @@
  * <http://www.gnu.org/licenses/>
  */
 
+/**
+   \file tut02_jtask.cpp
+   \author Roland Philippsen
+   
+   Example of how to create and use a custom subclass of
+   opspace::Task. The tut02::JTask class performs joint-space PD
+   control without compensating for either gravity or inertial
+   coupling. It is a straightforward simplsitic implementation which
+   serves to show the minimal implementation work required to create
+   an opspace::Task, and it also demonstrates that without gravity and
+   mass-inertia compensation you will get rather low performance.
+   
+   When you start the simulation, it is initially in a mode where it
+   bypasses the tut02::JTask by simply sending a sinusoidal torque to
+   the first joint and adding damping to all joints. This makes the
+   arm sway around somewhat erratically. When you press Toggle, it
+   sets the tut02::JTask goal to a position that is a zig-zag shape of
+   +/- 45deg added to the current joint state, and it starts servoing
+   to it. You'll see the arm converge more or less to the desired
+   position. Pressing Toggle again goes back to the swaying mode.
+*/
+
 #include "tutsim.hpp"
 #include <opspace/Task.hpp>
 #include <jspace/test/sai_util.hpp>
@@ -130,9 +152,6 @@ static bool servo_cb(size_t toggle_count,
     
     if (prev_toggle != toggle_count) {
       jtask->init(*model);
-      if (3 == (toggle_count % 4)) {
-	jtask->goal_ = jspace::Vector::Zero(state.position_.rows());
-      }
     }
     jtask->update(*model);
     command = jtask->getCommand();
