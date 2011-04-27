@@ -19,6 +19,30 @@
  * <http://www.gnu.org/licenses/>
  */
 
+/**
+   \file tut03_gravity_compensation.cpp
+   \author Roland Philippsen
+   
+   This tutorial demonstrates the effect of gravity compensation. It
+   is very similar to the tutorial number 2 in that it uses a custom
+   opspace::Task subclass that is just a simple joint-position PD
+   servo. However, the tut03::JTask class contains a flag to switch
+   gravity compensation on or off.
+   
+   When the tutorial starts, it is in a mode where the robot position
+   and velocity gets constantly re-initialized to a swaying
+   motion. When you press Toggle, it switches to joint-space position
+   control with gravity compensation, using the current joint position
+   as goal. The robot will thus overshoot due to its current velocity,
+   and then converge back to the position it had when you clicked
+   Toggle. Then, when you press Toggle again, it will keep servoing
+   but switch off gravity compensation. This will make the robot "sag"
+   with respect to its desired position, illustrating the effect of
+   gravity. Clicking Toggle again goes back to the swaying motion and
+   the cycle repeats.
+   
+*/
+
 #include "tutsim.hpp"
 #include <opspace/Task.hpp>
 #include <jspace/test/sai_util.hpp>
