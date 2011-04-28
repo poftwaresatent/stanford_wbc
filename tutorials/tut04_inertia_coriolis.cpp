@@ -19,6 +19,23 @@
  * <http://www.gnu.org/licenses/>
  */
 
+/**
+   \file tut04_inertia_coriolis.cpp
+   \author Roland Philippsen
+   
+   Demonstration of inertial decoupling and Coriolis/centrifugal
+   compensation. This tutorial uses a joint-space task which always
+   uses gravity compensation, but the terms for inertial decoupling
+   and Coriolis/centrifugal compensation can be switched on and off at
+   runtime. When you start the demo, it tries to track a joint-space
+   trajectory using a PD controller. When you hit Toggle, it switches
+   on the inertia decoupling (desired torques get pre-multiplied by
+   the joint-space mass-inertia matrix). After clicking Toggle a
+   second time, it also adds the predicted Coriolis/centrifugal
+   terms. As usual, after that the Toggle cycle repeats.
+   
+*/
+
 #include "tutsim.hpp"
 #include <opspace/Task.hpp>
 #include <jspace/test/sai_util.hpp>
@@ -30,16 +47,13 @@ namespace tut04 {
   
   class JTask : public opspace::Task {
   public:
-    typedef enum {
-      COMPENSATION_FULL,
-      COMPENSATION_DIAGONAL,
-      COMPENSATION_OFF
-    } compensation_mode_t;
-    
     JTask()
       : opspace::Task("tut04::JTask"),
 	initialized_(false),
-	compensation_mode_(COMPENSATION_FULL) {}
+	inertia_compensation_(true),
+	coriolis_compensation_(true)
+    {
+    }
     
     virtual jspace::Status init(jspace::Model const & model)
     {
@@ -96,23 +110,23 @@ namespace tut04 {
       jspace::Vector gamma;
       gamma = kp_ * (goalpos_ - actual_) + kd_ * (goalvel_ - model.getState().velocity_);
       
-      if (COMPENSATION_OFF == compensation_mode_) {
-	command_ = gamma;
-      }
-      else {
+      if (inertia_compensation_) {
 	jspace::Matrix aa;
 	if ( ! model.getMassInertia(aa)) {
 	  return jspace::Status(false, "failed to retrieve inertia");
 	}
-	if (COMPENSATION_FULL == compensation_mode_) {
-	  command_ = aa * gamma;
+	command_ = aa * gamma;
+      }
+      else {
+	command_ = gamma;
+      }
+      
+      if (coriolis_compensation_) {
+	jspace::Vector cc;
+	if ( ! model.getCoriolisCentrifugal(cc)) {
+	  return jspace::Status(false, "failed to retrieve coriolis");
 	}
-	else {
-	  command_.resize(gamma.rows());
-	  for (int ii(0); ii < gamma.rows(); ++ii) {
-	    command_[ii] = aa.coeff(ii, ii) * gamma[ii];
-	  }
-	}
+	command_ += cc;
       }
       
       jspace::Vector gg;
@@ -126,7 +140,8 @@ namespace tut04 {
     }
 
     bool initialized_;    
-    compensation_mode_t compensation_mode_;    
+    bool inertia_compensation_;
+    bool coriolis_compensation_;
     double kp_, kd_;
     jspace::Vector goalpos_, goalvel_;
   };
@@ -145,8 +160,11 @@ static bool servo_cb(size_t toggle_count,
 		     jspace::State & state,
 		     jspace::Vector & command)
 {
-  size_t const mode(toggle_count % 4);
+  //////////////////////////////////////////////////
+  // Update the model to reflect the current robot state.
   
+  model->update(state);
+
   //////////////////////////////////////////////////
   // Compute goal position and velocity to follow a sinusoidal joint
   // space motion.
@@ -161,44 +179,22 @@ static bool servo_cb(size_t toggle_count,
     jtask->goalvel_[ii] = omega * amplitude * cos(phase);
   }
   
-  static size_t iteration(0);
-  
-  if (0 == mode) {
-    
-    //////////////////////////////////////////////////
-    // Re-initialize simulator to current goal position and velocity.
-    
-    state.position_ = jtask->goalpos_;
-    state.velocity_ = jtask->goalvel_;
-    
-    if (0 == (iteration % 100)) {
-      std::cerr << "re-init simulation to:\n";
-      jspace::pretty_print(state.position_, std::cerr, "  jpos", "    ");
-      jspace::pretty_print(state.velocity_, std::cerr, "  jvel", "    ");
-    }
-    
-    ++iteration;
-    return false;
-    
-  }
-  
   //////////////////////////////////////////////////
-  // Update the model to reflect the current robot state.
+  // Cycle through inertia/coriolis compensation modes.
   
-  model->update(state);
-  
-  //////////////////////////////////////////////////
-  // Cycle through the various inertia compensation modes.
-  
-  switch (mode) {
+  switch (toggle_count % 3) {
+  case 0:
+    jtask->inertia_compensation_ = false;
+    jtask->coriolis_compensation_ = false;
+    break;
   case 1:
-    jtask->compensation_mode_ = tut04::JTask::COMPENSATION_FULL;
+    jtask->inertia_compensation_ = true;
+    jtask->coriolis_compensation_ = false;
     break;
   case 2:
-    jtask->compensation_mode_ = tut04::JTask::COMPENSATION_DIAGONAL;
-    break;
   default:
-    jtask->compensation_mode_ = tut04::JTask::COMPENSATION_OFF;
+    jtask->inertia_compensation_ = true;
+    jtask->coriolis_compensation_ = true;
   }
   
   //////////////////////////////////////////////////
@@ -210,17 +206,22 @@ static bool servo_cb(size_t toggle_count,
   //////////////////////////////////////////////////
   // Print debug info from time to time.
   
+  static size_t iteration(0);
   if (0 == (iteration % 100)) {
-    switch (jtask->compensation_mode_) {
-    case tut04::JTask::COMPENSATION_FULL:
-      std::cerr << "full inertia compensation\n";
-      break;
-    case tut04::JTask::COMPENSATION_DIAGONAL:
-      std::cerr << "diagonal-only inertia compensation\n";
-      break;
-    default:
+    if (jtask->inertia_compensation_) {
+      std::cerr << "inertia compensation is ON\n";
+    }
+    else {
       std::cerr << "inertia compensation is off\n";
-      break;
+    }
+    if (jtask->coriolis_compensation_) {
+      std::cerr << "coriolis compensation is ON\n";
+      jspace::Vector cc;
+      model->getCoriolisCentrifugal(cc);
+      jspace::pretty_print(cc, std::cerr, "  Coriolis/centrifugal torques", "    ");
+    }
+    else {
+      std::cerr << "coriolis compensation is off\n";
     }
     jspace::pretty_print(jtask->goalpos_, std::cerr, "  goalpos", "    ");
     jspace::pretty_print(state.position_, std::cerr, "  jpos", "    ");
@@ -238,7 +239,6 @@ static void draw_cb(double x0, double y0, double scale)
 {
   if (0 != jtask->goalpos_.rows()) {
     tutsim::draw_robot(jtask->goalpos_, 1, 100, 255, 100, x0, y0, scale);
-    tutsim::draw_delta_jpos(jtask->goalpos_, 1, 100, 255, 255, x0, y0, scale);
   }
 }
 

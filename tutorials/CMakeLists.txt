@@ -26,8 +26,8 @@ target_link_libraries (tut02_jtask tut opspace jspace_test yaml-cpp ${FLTK_LIBRA
 add_executable (tut03_gravity_compensation tut03_gravity_compensation.cpp)
 target_link_libraries (tut03_gravity_compensation tut opspace jspace_test yaml-cpp ${FLTK_LIBRARIES})
 
-add_executable (tut04_inertia_compensation tut04_inertia_compensation.cpp)
-target_link_libraries (tut04_inertia_compensation tut opspace jspace_test yaml-cpp ${FLTK_LIBRARIES})
+add_executable (tut04_inertia_coriolis tut04_inertia_coriolis.cpp)
+target_link_libraries (tut04_inertia_coriolis tut opspace jspace_test yaml-cpp ${FLTK_LIBRARIES})
 
 add_executable (tut05_eepos_no_posture tut05_eepos_no_posture.cpp)
 target_link_libraries (tut05_eepos_no_posture tut opspace jspace_test yaml-cpp ${FLTK_LIBRARIES})
