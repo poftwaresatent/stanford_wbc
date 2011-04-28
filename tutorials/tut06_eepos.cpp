@@ -19,6 +19,34 @@
  * <http://www.gnu.org/licenses/>
  */
 
+/**
+   \file tut06_eepos.cpp
+   \author Roland Philippsen
+   
+   This tutorial shows Cartesian trajectory tracking task with a
+   controller joint posture in the nullspace of the task. It shows how
+   to implement this behavior with opspace::Task subclasses from the
+   provided task library, and by relying on the provided
+   opspace::ClassicTaskPostureController to perform the dynamically
+   consistent nullspace projection. It also introduces the concept of
+   opspace::Skill, which provides a container for task
+   hierarchies. For this example, we simply use the
+   opspace::GenericSkill.
+   
+   As usual, when the simulation starts, it is in
+   swaying-reinitialization mode. After clicking Toggle once, the
+   robot holds the current position in Cartesian as well as joint
+   space.  Clicking Toggle a second time starts a swaying joint-space
+   motion in the nullspace of the task: the robot will attempt to
+   minimize the difference between the actual and desired joint
+   angles, without moving the position of the end-effector
+   point. Clicking Toggle again enters Cartesian trajectory tracking
+   mode with a constant joint posture, and clicking Toggle a fourth
+   time makes the posture change continously while tracking the
+   trajectory.
+   
+*/
+
 #include "tutsim.hpp"
 #include <opspace/task_library.hpp>
 #include <opspace/skill_library.hpp>
