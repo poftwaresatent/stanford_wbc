@@ -1,21 +1,26 @@
 /**
    \page opspace-page Stanford WBC Operational-Space Library
    
-   The opspace library provides infrastructure for two things:
-   \li Assembling robot skills from hierarchies of dynamically decoupled
-       operational-space tasks;
-   \li and a software infrastructure to easily reflect parameters
-       defined by the skills and tasks, and to easily configure the
-       assigment of task instances to slots in their respective skills..
+   The operational-space utility library uses the joint-space dynamics
+   provided by the jspace library and adds a few abstractions and
+   utilities to do operational-space control. Most importantly, there
+   are facilities for inspecting and setting various parameters at
+   runtime, and to create tasks and skills a startup time.
    
-   The \ref tutorials-page "tutorials" are intended as a gentle
-   introduction to the most fundamental of these capabilities. In
-   order to learn about the classes that support the creation of
-   skills, it is probably best to read through opspace::Task,
-   opspace::Skill, opspace::Controller, and the collection of classes
-   in opspace/task_library.hpp and opspace/skill_library.hpp. The best
-   places to begin reading about parameter reflection are probably
-   opspace::ParameterReflection, opspace::TaskSlotAPI, and
-   opspace::Factory.
-   
+   So, opspace actually contains two things:
+
+   \li Assembling robot skills from hierarchies of dynamically
+       decoupled operational-space tasks. In order to learn about the
+       classes that support the creation of skills, it is probably
+       best to read through opspace::Task, opspace::Skill,
+       opspace::Controller, and the collection of classes in
+       opspace/task_library.hpp and opspace/skill_library.hpp.
+
+   \li Software infrastructure to easily reflect parameters defined by
+       the skills and tasks, and to easily configure the assigment of
+       task instances to slots in their respective skills. The best
+       places to begin reading about parameter reflection are probably
+       opspace::ParameterReflection, opspace::TaskSlotAPI, and
+       opspace::Factory.
+       
 */
