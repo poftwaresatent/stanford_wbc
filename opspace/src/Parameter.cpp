@@ -154,6 +154,11 @@ namespace opspace {
   set(int integer)
   {
     Status st;
+    if (flags_ & PARAMETER_FLAG_READONLY) {
+      st.ok = false;
+      st.errstr = "read-only parameter";
+      return st;
+    }
     if (checker_) {
       st = checker_->check(integer_, integer);
       if ( ! st) {
@@ -187,6 +192,11 @@ namespace opspace {
   set(std::string const & value)
   {
     Status st;
+    if (flags_ & PARAMETER_FLAG_READONLY) {
+      st.ok = false;
+      st.errstr = "read-only parameter";
+      return st;
+    }
     if (checker_) {
       st = checker_->check(string_, value);
       if ( ! st) {
@@ -220,6 +230,11 @@ namespace opspace {
   set(double real)
   {
     Status st;
+    if (flags_ & PARAMETER_FLAG_READONLY) {
+      st.ok = false;
+      st.errstr = "read-only parameter";
+      return st;
+    }
     if (checker_) {
       st = checker_->check(real_, real);
       if ( ! st) {
@@ -253,6 +268,11 @@ namespace opspace {
   set(Vector const & vector)
   {
     Status st;
+    if (flags_ & PARAMETER_FLAG_READONLY) {
+      st.ok = false;
+      st.errstr = "read-only parameter";
+      return st;
+    }
     if (checker_) {
       st = checker_->check(vector_, vector);
       if ( ! st) {
@@ -287,6 +307,11 @@ namespace opspace {
   set(Matrix const & matrix)
   {
     Status st;
+    if (flags_ & PARAMETER_FLAG_READONLY) {
+      st.ok = false;
+      st.errstr = "read-only parameter";
+      return st;
+    }
     if (checker_) {
       st = checker_->check(matrix_, matrix);
       if ( ! st) {

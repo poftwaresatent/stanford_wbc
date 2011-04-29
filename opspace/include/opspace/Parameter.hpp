@@ -51,7 +51,8 @@ namespace opspace {
 
   typedef enum {
     PARAMETER_FLAG_DEFAULT = 0,
-    PARAMETER_FLAG_NOLOG = 1
+    PARAMETER_FLAG_NOLOG = 1,
+    PARAMETER_FLAG_READONLY = 2
   } parameter_flags_t;
   
   
