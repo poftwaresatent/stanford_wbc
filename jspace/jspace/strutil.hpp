@@ -90,9 +90,9 @@ namespace sfl {
   bool string_to<bool>(const std::string & str, bool & foo);
   
   /** very useful for booleans that are encoded as char, int, short,
-      ... sets them to 1 if string_to<bool> yields true, or to 0 if
-      string_to<bool> yields false, but doesn't touch foo if
-      string_to<bool> failed. */
+      or other integer formats. It sets them to 1 if string_to<bool>
+      yields true, or to 0 if string_to<bool> yields false, but
+      doesn't touch foo if string_to<bool> failed. */
   template<typename Foo>
   bool string_to_bool(const std::string & str, Foo & foo) {
     bool bar;

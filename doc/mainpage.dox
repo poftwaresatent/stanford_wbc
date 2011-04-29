@@ -1,0 +1,127 @@
+/**
+   \mainpage Stanford Whole-Body Control Framework
+   
+   \verbatim
+   Copyright (C) 2008-2011 The Board of Trustees of The Leland Stanford Junior University. All Rights Reserved.
+
+   This program is free software: you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public License
+   as published by the Free Software Foundation, either version 3 of
+   the License, or (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+   \endverbatim
+   
+   The Whole-Body Control framework developed at the Stanford Robotics
+   and AI Lab provides advanced control for human-centered robotics
+   and mobile manipulation. This project provides a framework for
+   developing robot behaviors that use operational-space hierarchical
+   task decompositions, based on the work of many contributors over
+   many years, under the guidance of and in collaboration with Oussama
+   Khatib: most notably Jaeheung Park, K. C. Chang, Diego Ruspini, Roy
+   Featherstone, Bob Holmberg, Francois Conti, Roland Philippsen and
+   Luis Sentis.
+   
+   \section getting_started Getting Started
+   
+   \li Read about \ref jspace-page "joint-space dynamics"
+   \li \ref tutorials-page "Run the tutorials"
+   \li Read about \ref opspace-page "operational-space" whole-body control
+   
+   \section references Bibliography
+   
+   Here is a list of some publications from the Stanford Robotics and
+   AI Lab which are the most relevant in the context of this
+   software. <b>Please cite our papers if you use our software.</b>
+   
+   Note that several of the listed publications are about advanced
+   control approaches which are \b not included in the \c stanford_wbc
+   software framework. In particular, it does not contain any code for
+   free-floating bases, collision detection, supporting contacts, or
+   virtual linkages.
+   
+   \li L. Sentis and O. Khatib. <em>Synthesis of Whole-Body Behaviors
+       Through Hierarchical Control of Behavioral Primitives.</em>
+       International Journal of Humanoid Robotics. Vol. 2, No. 4,
+       pp. 505-518, December 2005.
+   
+   \li O. Khatib, L. Sentis, J. Park, and J. Warren. <em>Whole Body
+       Dynamic Behavior and Control of Human-Like Robots.</em>
+       International Journal of Humanoid Robotics. Vol. 1, No. 1,
+       pp. 29-44, March 2004.
+   
+   \li K.-S. Chang and O. Khatib. <em>Efficient Recursive Algorithm
+       for the Operational Space Inertia Matrix of Branching
+       Mechanisms.</em> Advanced Robotics. Vol. 14, No. 8,
+       pp. 703-715, 2001.
+
+   \li O. Khatib. <em>Mobile Manipulation: The Robotic Assistant.</em>
+       Journal of Robotics and Autonomous Systems. Vol. 26,
+       pp. 175-183, February 1999.
+       
+   \li O. Khatib. <em>A Unified Approach for Motion and Force Control
+       of Robot Manipulators: The Operational Space Formulation.</em>
+       IEEE Journal of Robotics and Automation. Vol. RA-3, No. 1,
+       pp. 43-53, February 1987.
+
+   \subsection bibtex Bibtex entries for the publication list
+   
+   \verbatim
+   @article{Sentis:05a,
+	author = {L.~Sentis and O.~Khatib},
+	title = {Synthesis of Whole-Body Behaviors Through Hierarchical Control of Behavioral Primitives},
+	journal = {International Journal of Humanoid Robotics},
+	volume = {2},
+	number = {4},
+	month = {dec},
+	pages = {505--518},
+	year = {2005}
+   }
+   
+   @article{Khatib:04b,
+	author = {O.~Khatib and L.~Sentis and J.~Park and J.~Warren},
+	title = {Whole Body Dynamic Behavior and Control of Human-Like Robots},
+	journal = {International Journal of Humanoid Robotics},
+	volume = {1},
+	number = {1},
+	month = {mar},
+	pages = {29--44},
+	year = {2004}
+   }
+   
+   @article{Chang:01,
+	author = {K.-S.~Chang and O.~Khatib},
+	title = {Efficient Recursive Algorithm for the Operational Space Inertia Matrix of Branching Mechanisms},
+	journal = {Advanced Robotics},
+	volume = {14},
+	number = {8},
+	pages = {703--715},
+	year = {2001}
+   }
+
+   @article{Khatib:99c,
+	author = {O.~Khatib},
+	title = {Mobile Manipulation: {T}he Robotic Assistant},
+	journal = {Journal of Robotics and Autonomous Systems},
+	month = {feb},
+	volume = {26},
+	pages = {175--183},
+	year = {1999}
+   }
+
+   @article{Khatib:87b,
+	author = {O.~Khatib},
+	title = {A Unified Approach for Motion and Force Control of Robot Manipulators: {T}he Operational Space Formulation},
+	journal = {{I}{E}{E}{E} Journal of Robotics and Automation},
+	volume = {RA-3},
+	number = {1},
+	pages = {43--53},
+	month = {feb},
+	year = {1987}
+   }
+   \endverbatim
+
+*/

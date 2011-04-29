@@ -1,0 +1,6 @@
+/**
+   \namespace jspace Contains the joint-space dynamics model and related classes.
+   \namespace sfl For code copy-pasted from the Sunflower mobile robot library.
+   \namespace wbcnet For code copy-pasted from the WBC networking library.
+   \namespace std Standard C++ library and STL.
+*/

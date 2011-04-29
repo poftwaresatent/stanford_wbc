@@ -49,7 +49,7 @@ static double servo_rate_hz(400.0);
 static double sim_rate_hz(1600.0);
 static int win_width(300);
 static int win_height(200);
-static char const * win_title("utaustin-wbc tutorial");
+static char const * win_title("Stanford WBC Tutorial");
 static boost::shared_ptr<jspace::tao_tree_info_s> sim_tree;
 static boost::shared_ptr<jspace::tao_tree_info_s> scratch_tree;
 static int id1(-1);

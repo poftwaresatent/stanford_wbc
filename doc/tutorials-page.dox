@@ -1,0 +1,36 @@
+/**
+   \page tutorials-page Stanford WBC Tutorials
+   
+   The tutorials directory contains a simulator that provides a
+   four-link planar robot which we can use to illustrate some basic
+   concepts of joint-space dynamics and operational-space control. The
+   tutorials themselves are small programs that use the simulator to
+   illustrate basic concepts and gradually introduce more advanced
+   control techniques as well as provide an overview of how to use and
+   extend the Stanford Whole-Body Control framework.
+   
+   \image html tut06_eepos.png "running tutorial #6"
+   
+   The tutorial simulator lives in namespace tutsim which contains
+   several functions, most of which can be safely ignored at
+   first. The most important function is tutsim::run(), which takes as
+   single argument the pointer of a user-supplied function which will
+   be called at each simulated control cycle. The
+   tutsim::set_draw_cb() function is a useful addition in case you
+   need to do some custom drawing on top of the graphic output of the
+   simulator.
+   
+   The tutorial GUI has three buttons, two of which have really
+   obvious meanings. Each time you press \b Toggle an internal counter
+   is incremented and passed back into the user-supplied \c servo_cb()
+   function. This allows tutorials to implement several modes.
+   
+   \li tutorials/tut00_test.cpp
+   \li tutorials/tut01_joint_coupling.cpp
+   \li tutorials/tut02_jtask.cpp
+   \li tutorials/tut03_gravity_compensation.cpp
+   \li tutorials/tut04_inertia_coriolis.cpp
+   \li tutorials/tut05_opspace_and_parameters.cpp
+   \li tutorials/tut06_eepos.cpp
+   
+*/

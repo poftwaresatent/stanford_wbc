@@ -1,24 +1,14 @@
 /**
-   \namespace jspace Contains the joint-space dynamics model and related classes.
-   \namespace sfl For code copy-pasted from the Sunflower mobile robot library.
-   \namespace wbcnet For code copy-pasted from the WBC networking library.
-   \namespace std Standard C++ library and STL.
+   \page jspace-page Joint-space Dynamics Library
    
-   \mainpage Documentation: Stanford-WBC Joint-Space Dynamics Model
+   The jspace library is an easy-to-use model for joint-space
+   dynamics. It is built on the TAO dynamics engine which allows to
+   compute forward kinematics as well as forward and inverse dynamics
+   of branching structures mode of rigid bodies connected via revolute
+   or prismatic joints.
    
-   \verbinclude README
-   
-   The jspace library is (intended to be) an easy-to-use model for
-   joint-space dynamics. It is built on the TAO dynamics engine which
-   allows to compute forward kinematics as well as forward and inverse
-   dynamics of branching structures mode of rigid bodies connected via
-   revolute or prismatic joints (spherical joints seem to be also
-   supported by TAO, but this has not been tested in quite a while and
-   the jspace code assumes at several places that there is one degree
-   of freedom per joint, which is not the case for spherical joints).
-   
-   The best place to start browsing the documentation is \ref
-   jspace::Model which is the high-level facade that ties it all
+   The best place to start browsing the joint-space documentation is
+   \ref jspace::Model which is the high-level facade that ties it all
    together.
    
    \section trjsim Trajectory Simulation Application
