@@ -47,8 +47,8 @@ static char const * robot_filename(TUTROB_XML_PATH_STR);
 static double gfx_rate_hz(20.0);
 static double servo_rate_hz(400.0);
 static double sim_rate_hz(1600.0);
-static int win_width(300);
-static int win_height(200);
+static int win_width(800);
+static int win_height(500);
 static char const * win_title("Stanford WBC Tutorial");
 static boost::shared_ptr<jspace::tao_tree_info_s> sim_tree;
 static boost::shared_ptr<jspace::tao_tree_info_s> scratch_tree;
@@ -253,7 +253,7 @@ namespace {
     fl_rectf(x(), y(), w(), h());
     
     fl_color(FL_WHITE);
-    fl_line_style(FL_SOLID, 3, 0);
+    fl_line_style(FL_SOLID, 5, 0);
     raw_draw_tree(*sim_tree, x0, y0, scale);
     
     fl_color(FL_GREEN);
