@@ -293,11 +293,11 @@ static void draw_cb(double x0, double y0, double scale)
     // account.
     
     fl_color(255, 100, 100);
-    fl_line_style(FL_SOLID, 1, 0);
+    fl_line_style(FL_SOLID, 3, 0);
     
     double const gx(goalpos->getVector()->x());
     double const gy(goalpos->getVector()->y());
-    int const rr(ceil(0.15 * scale));
+    int const rr(ceil(0.2 * scale));
     int const dd(2 * rr);
     fl_arc(int(x0 + gx * scale) - rr, int(y0 - gy * scale) - rr, dd, dd, 0.0, 360.0);
     
@@ -305,10 +305,10 @@ static void draw_cb(double x0, double y0, double scale)
     double const vy(goalvel->getVector()->y());
     double const px(gx + vx * 0.1);
     double const py(gy + vy * 0.1);
-    fl_line(x0 + (gx + 0.2) * scale, y0 - gy * scale,
-	    x0 + (gx - 0.2) * scale, y0 - gy * scale);
-    fl_line(x0 + gx * scale, y0 - (gy + 0.2) * scale,
-	    x0 + gx * scale, y0 - (gy - 0.2) * scale);
+    // fl_line(x0 + (gx + 0.2) * scale, y0 - gy * scale,
+    // 	    x0 + (gx - 0.2) * scale, y0 - gy * scale);
+    // fl_line(x0 + gx * scale, y0 - (gy + 0.2) * scale,
+    // 	    x0 + gx * scale, y0 - (gy - 0.2) * scale);
     fl_color(255, 255, 100);
     fl_line(x0 + gx * scale, y0 - gy * scale,
 	    x0 + px * scale, y0 - py * scale);
