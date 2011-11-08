@@ -23,13 +23,13 @@
    \file tut05_opspace_and_parameters.cpp
    \author Roland Philippsen
    
-   This tutorial, shows how to create an operational space task with
+   This tutorial shows how to create an operational space task with
    reflected parameters. The task space is the plane, and the two
    parameters are the planar position and velocity of the
-   end-effector, and the task-space servo is implemented in
+   end-effector. The task-space servo is implemented in
    tut05::PTask by subclassing opspace::Task. The two parameters that
    get reflected are tut05::PTask::goalpos_ and
-   tut05::PTask::goalvel_, and the reflection is achieved with calls
+   tut05::PTask::goalvel_. The reflection is achieved with calls
    to opspace::ParameterReflection::declareParameter() within the
    constructor of tut05::PTask.
    
