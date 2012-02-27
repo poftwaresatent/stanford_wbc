@@ -541,6 +541,6 @@ run(bool (*_servo_cb)(size_t toggle_count,
   state.init(ndof, ndof, ndof);
   write_state_to_tree(*sim_tree);
   
-  Window win(win_width, win_height, win_title);
+  ::Window win(win_width, win_height, win_title);
   return Fl::run();
 }
