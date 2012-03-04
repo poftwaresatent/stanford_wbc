@@ -63,6 +63,14 @@
 #include <FL/fl_draw.H>
 #include <err.h>
 
+// Workaround for Fedora 16 (and maybe others) where /usr/X11/Xlib.h
+// defines Status to be int.  Beats me why they don't use a typedef,
+// and I also don't get why other systems such as OS X, Debian, and
+// Ubuntu do not need this workaround in spite of having the same
+// preprocessor define in Xlib.h --- maybe FLTK somehow undefines it
+// on those?
+#undef Status
+
 
 namespace tut05 {
   
