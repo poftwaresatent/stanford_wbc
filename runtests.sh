@@ -1,6 +1,10 @@
 #!/bin/sh
 
+
 ##################################################
+#
+# BEGIN old instructions (for recycling...)
+#
 # HOW TO CREATE COVERAGE REPORTS WITH THIS SCRIPT
 # 
 #  cd build
@@ -12,48 +16,60 @@
 #  cd ..
 #  lcov --directory build --capture --output-file wbc.info
 #  genhtml wbc.info -o stanford-wbc-lcov/
-
+#
 ## to do: make these standalone?
 # wbcnet/testStreamBufMgr
 # wbcnet/testMQSpeed
 # wbcnet/testSockWrapMuldex
 # wbc/tests/testDirectoryServer
 # wbc/tests/testBehaviorParser
-
+#
 ## to do: needs to find the test module's .so
 # wbcnet/testTestModule
-
+#
 ## segfaults on purpose
 # wbc/tests/testDtorCheck
-
+#
 ## segfaults
 # wbc_plugins/wbc_plugins/robotlog/test
-
+#
 ## lcov did not like these (truncated output files?)
 #    wbcnet/testLogWithoutLog4cxx \
 #    wbcnet/testDelayHistogram \
 #    wbcnet/testLogDisabled \
 #    wbcnet/testLogWithLog4cxx \
 #    saimatrix/test_SAILapack \
+#
+# END old instructions
+#
+# BEGIN old test list
+#
+#    jspace/tests/testServoProxy \
+#    wbcnet/testPack \
+#    wbcnet/testTaskAtomizer \
+#    wbcnet/testMQWrap \
+#    wbcnet/testMuldex \
+#    wbcnet/testEndian \
+#    wbcnet/testID \
+#    wbcnet/testProxy \
+#    wbcnet/testFactory \
+#    jspace/tests/testJspace \
+#    tao/testTAO \
+#    wbc/tests/testProcess \
+#    wbc_tinyxml/xmltest; do
+#
+# END old test list
+##################################################
 
 MSG=""
 FAIL=""
 NOTFOUND=""
 
 for test in \
-    jspace/tests/testServoProxy \
-    wbcnet/testPack \
-    wbcnet/testTaskAtomizer \
-    wbcnet/testMQWrap \
-    wbcnet/testMuldex \
-    wbcnet/testEndian \
-    wbcnet/testID \
-    wbcnet/testProxy \
-    wbcnet/testFactory \
-    jspace/tests/testJspace \
     tao/testTAO \
-    wbc/tests/testProcess \
-    wbc_tinyxml/xmltest; do
+    jspace/tests/testJspace \
+    opspace/testTask \
+    opspace/testFactory; do
     if [ -x $test ]; then
 	$test 2>&1
 	if [ $? -eq 0 ]; then

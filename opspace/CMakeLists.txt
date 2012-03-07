@@ -3,6 +3,7 @@ include_directories (
   ../tao
   ../3rdparty/reflexxes_otg/include
   ../3rdparty/yaml-cpp/include
+  ../3rdparty/gtest-1.6.0/include
   include
   )
 
@@ -21,12 +22,8 @@ add_library (opspace SHARED
   )
 target_link_libraries (opspace jspace reflexxes_otg yaml-cpp)
 
-if (HAVE_GTEST)
+add_executable (testTask src/testTask.cpp)
+target_link_libraries (testTask opspace jspace_test gtest pthread)
 
-  add_executable (testTask src/testTask.cpp)
-  target_link_libraries (testTask opspace jspace_test gtest pthread)
-
-  add_executable (testFactory src/testFactory.cpp)
-  target_link_libraries (testFactory opspace gtest pthread)
-
-endif (HAVE_GTEST)
+add_executable (testFactory src/testFactory.cpp)
+target_link_libraries (testFactory opspace gtest pthread)

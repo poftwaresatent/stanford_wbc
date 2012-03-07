@@ -41,7 +41,6 @@ else (WIN32)
     # workaround for limited fltk-1.3 in macports, 2011-05-08
     #    set (CMAKE_OSX_ARCHITECTURES "ppc;i386;ppc64;x86_64")
     set (CMAKE_OSX_ARCHITECTURES "i386")
-    set (GTEST_SKIP ON)
   endif (APPLE)
   if (CMAKE_SYSTEM_NAME MATCHES Linux)
     add_definitions (-DLINUX)
@@ -135,35 +134,6 @@ else (HAVE_BOOST)
   message (FATAL_ERROR "Please install the Boost smart_ptr library, and/or tell me where to find it by passing -DBOOST_DIR:path=/path/to/boost to cmake next time (you probably need to clear its cache first).")
 endif (HAVE_BOOST)
 
-# gtest (optional)
-
-if (GTEST_SKIP)
-  message ("+++ skipping gtest")
-else (GTEST_SKIP)
-  if (GTEST_DIR)
-    list (APPEND CMAKE_REQUIRED_INCLUDES ${GTEST_DIR}/include ${GTEST_DIR})
-    include_directories (${GTEST_DIR}/include ${GTEST_DIR})
-    link_directories (${GTEST_DIR}/lib ${GTEST_DIR})
-  endif (GTEST_DIR)
-  check_include_file_cxx (gtest/gtest.h HAVE_GTEST_HEADER)
-  if (${HAVE_GTEST_HEADER})
-    if (GTEST_DIR)
-      find_library (HAVE_GTEST_LIB gtest PATHS ${GTEST_DIR} ${GTEST_DIR}/lib)
-    else (GTEST_DIR)
-      find_library (HAVE_GTEST_LIB gtest)
-    endif (GTEST_DIR)
-    if (HAVE_GTEST_LIB MATCHES "NOTFOUND")
-      message (FATAL_ERROR "gtest library not found, although the header gtest/gtest.h was found")
-    else (HAVE_GTEST_LIB MATCHES "NOTFOUND")
-      message ("*** enabling gtest")
-      set (HAVE_GTEST TRUE)
-      add_definitions (-DHAVE_GTEST)
-    endif (HAVE_GTEST_LIB MATCHES "NOTFOUND")
-  else (${HAVE_GTEST_HEADER})
-    message ("--- gtest not found (optional)")
-  endif (${HAVE_GTEST_HEADER})
-endif (GTEST_SKIP)
-
 # fltk (optional, for tutorials)
 
 check_include_file_cxx (FL/Fl.H HAVE_FLTK)
@@ -180,6 +150,7 @@ subdirs (
   3rdparty/wbc_tinyxml
   3rdparty/yaml-cpp
   3rdparty/reflexxes_otg
+  3rdparty/gtest-1.6.0
   tao
   jspace
   opspace

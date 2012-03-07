@@ -19,12 +19,13 @@ add_library (
 
 target_link_libraries (tao-de ${MAYBE_GCOV})
 
-if (HAVE_GTEST)
-  add_executable (testTAO tests/testTAO.cpp)
-  target_link_libraries (testTAO tao-de gtest pthread ${MAYBE_GCOV})
-endif (HAVE_GTEST)
+add_executable (testTAO tests/testTAO.cpp)
+target_link_libraries (testTAO tao-de gtest pthread ${MAYBE_GCOV})
 
-include_directories (.)
+include_directories (
+  .
+  ../3rdparty/gtest-1.6.0/include
+  )
 
 install (DIRECTORY tao/
   DESTINATION include/tao
