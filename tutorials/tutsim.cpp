@@ -47,8 +47,8 @@ static char const * robot_filename(TUTROB_XML_PATH_STR);
 static double gfx_rate_hz(20.0);
 static double servo_rate_hz(400.0);
 static double sim_rate_hz(1600.0);
-static int win_width(300);
-static int win_height(200);
+static int win_width(800);
+static int win_height(500);
 static char const * win_title("Stanford WBC Tutorial");
 static boost::shared_ptr<jspace::tao_tree_info_s> sim_tree;
 static boost::shared_ptr<jspace::tao_tree_info_s> scratch_tree;
@@ -87,9 +87,9 @@ namespace {
   };
   
   
-  class Window : public Fl_Double_Window {
+  class TSWindow : public Fl_Double_Window {
   public:
-    Window(int width, int height, const char * title);
+    TSWindow(int width, int height, const char * title);
     
     virtual void resize(int x, int y, int w, int h);
     
@@ -253,7 +253,7 @@ namespace {
     fl_rectf(x(), y(), w(), h());
     
     fl_color(FL_WHITE);
-    fl_line_style(FL_SOLID, 3, 0);
+    fl_line_style(FL_SOLID, 5, 0);
     raw_draw_tree(*sim_tree, x0, y0, scale);
     
     fl_color(FL_GREEN);
@@ -352,8 +352,8 @@ namespace {
   }
   
   
-  Window::
-  Window(int width, int height, const char * title)
+  TSWindow::
+  TSWindow(int width, int height, const char * title)
     : Fl_Double_Window(width, height, title)
   {
     Fl::visual(FL_DOUBLE|FL_INDEX);
@@ -371,7 +371,7 @@ namespace {
   }
   
   
-  void Window::
+  void TSWindow::
   resize(int x, int y, int w, int h)
   {
     Fl_Double_Window::resize(x, y, w, h);
@@ -382,14 +382,14 @@ namespace {
   }
   
   
-  void Window::
+  void TSWindow::
   cb_toggle(Fl_Widget * widget, void * param)
   {
     ++toggle_count;
   }
   
   
-  void Window::
+  void TSWindow::
   cb_pause(Fl_Widget * widget, void * param)
   {
     if (paused) {
@@ -401,10 +401,10 @@ namespace {
   }
   
   
-  void Window::
+  void TSWindow::
   cb_quit(Fl_Widget * widget, void * param)
   {
-    reinterpret_cast<Window*>(param)->hide();
+    reinterpret_cast<TSWindow*>(param)->hide();
   }
   
 }
@@ -541,6 +541,6 @@ run(bool (*_servo_cb)(size_t toggle_count,
   state.init(ndof, ndof, ndof);
   write_state_to_tree(*sim_tree);
   
-  Window win(win_width, win_height, win_title);
+  TSWindow win(win_width, win_height, win_title);
   return Fl::run();
 }

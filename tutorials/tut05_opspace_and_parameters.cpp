@@ -23,13 +23,13 @@
    \file tut05_opspace_and_parameters.cpp
    \author Roland Philippsen
    
-   This tutorial, shows how to create an operational space task with
+   This tutorial shows how to create an operational space task with
    reflected parameters. The task space is the plane, and the two
    parameters are the planar position and velocity of the
-   end-effector, and the task-space servo is implemented in
+   end-effector. The task-space servo is implemented in
    tut05::PTask by subclassing opspace::Task. The two parameters that
    get reflected are tut05::PTask::goalpos_ and
-   tut05::PTask::goalvel_, and the reflection is achieved with calls
+   tut05::PTask::goalvel_. The reflection is achieved with calls
    to opspace::ParameterReflection::declareParameter() within the
    constructor of tut05::PTask.
    
@@ -62,6 +62,14 @@
 #include <boost/shared_ptr.hpp>
 #include <FL/fl_draw.H>
 #include <err.h>
+
+// Workaround for Fedora 16 (and maybe others) where /usr/X11/Xlib.h
+// defines Status to be int.  Beats me why they don't use a typedef,
+// and I also don't get why other systems such as OS X, Debian, and
+// Ubuntu do not need this workaround in spite of having the same
+// preprocessor define in Xlib.h --- maybe FLTK somehow undefines it
+// on those?
+#undef Status
 
 
 namespace tut05 {
@@ -293,11 +301,11 @@ static void draw_cb(double x0, double y0, double scale)
     // account.
     
     fl_color(255, 100, 100);
-    fl_line_style(FL_SOLID, 1, 0);
+    fl_line_style(FL_SOLID, 3, 0);
     
     double const gx(goalpos->getVector()->x());
     double const gy(goalpos->getVector()->y());
-    int const rr(ceil(0.15 * scale));
+    int const rr(ceil(0.2 * scale));
     int const dd(2 * rr);
     fl_arc(int(x0 + gx * scale) - rr, int(y0 - gy * scale) - rr, dd, dd, 0.0, 360.0);
     
@@ -305,10 +313,10 @@ static void draw_cb(double x0, double y0, double scale)
     double const vy(goalvel->getVector()->y());
     double const px(gx + vx * 0.1);
     double const py(gy + vy * 0.1);
-    fl_line(x0 + (gx + 0.2) * scale, y0 - gy * scale,
-	    x0 + (gx - 0.2) * scale, y0 - gy * scale);
-    fl_line(x0 + gx * scale, y0 - (gy + 0.2) * scale,
-	    x0 + gx * scale, y0 - (gy - 0.2) * scale);
+    // fl_line(x0 + (gx + 0.2) * scale, y0 - gy * scale,
+    // 	    x0 + (gx - 0.2) * scale, y0 - gy * scale);
+    // fl_line(x0 + gx * scale, y0 - (gy + 0.2) * scale,
+    // 	    x0 + gx * scale, y0 - (gy - 0.2) * scale);
     fl_color(255, 255, 100);
     fl_line(x0 + gx * scale, y0 - gy * scale,
 	    x0 + px * scale, y0 - py * scale);

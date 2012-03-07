@@ -24,7 +24,7 @@
    \author Roland Philippsen
    
    This tutorial shows Cartesian trajectory tracking task with a
-   controller joint posture in the nullspace of the task. It shows how
+   controlled joint posture in the nullspace of the task. It shows how
    to implement this behavior with opspace::Task subclasses from the
    provided task library, and by relying on the provided
    opspace::ClassicTaskPostureController to perform the dynamically
@@ -55,6 +55,14 @@
 #include <boost/shared_ptr.hpp>
 #include <FL/fl_draw.H>
 #include <err.h>
+
+// Workaround for Fedora 16 (and maybe others) where /usr/X11/Xlib.h
+// defines Status to be int.  Beats me why they don't use a typedef,
+// and I also don't get why other systems such as OS X, Debian, and
+// Ubuntu do not need this workaround in spite of having the same
+// preprocessor define in Xlib.h --- maybe FLTK somehow undefines it
+// on those?
+#undef Status
 
 
 static std::string model_filename(TUTROB_XML_PATH_STR);
@@ -108,7 +116,7 @@ static bool servo_cb(size_t toggle_count,
   
   model->update(state);
   
-  if (1 != prevmode) {
+  if ((1 == mode) && (1 != prevmode)) {
     jspace::Status st(skill->init(*model));
     if ( ! st) {
       errx(EXIT_FAILURE, "skill->init() failed: %s", st.errstr.c_str());
@@ -168,18 +176,18 @@ static void draw_cb(double x0, double y0, double scale)
 {
   if (0 != mode) {
     
-    tutsim::draw_delta_jpos(*jgoalpos->getVector(), 1, 100, 80, 80, x0, y0, scale);
+    tutsim::draw_delta_jpos(*jgoalpos->getVector(), 3, 100, 80, 80, x0, y0, scale);
     
     //////////////////////////////////////////////////
     // Remember: we plot the YZ plane, X is sticking out of the screen
     // but the robot is planar anyway.
     
     fl_color(255, 100, 100);
-    fl_line_style(FL_SOLID, 1, 0);
+    fl_line_style(FL_SOLID, 3, 0);
     
     double const gx(eegoalpos->getVector()->y());
     double const gy(eegoalpos->getVector()->z());
-    int const rr(ceil(0.15 * scale));
+    int const rr(ceil(0.2 * scale));
     int const dd(2 * rr);
     fl_arc(int(x0 + gx * scale) - rr, int(y0 - gy * scale) - rr, dd, dd, 0.0, 360.0);
     
@@ -187,10 +195,10 @@ static void draw_cb(double x0, double y0, double scale)
     double const vy(eegoalvel->getVector()->z());
     double const px(gx + vx * 0.2);
     double const py(gy + vy * 0.2);
-    fl_line(x0 + (gx + 0.2) * scale, y0 - gy * scale,
-	    x0 + (gx - 0.2) * scale, y0 - gy * scale);
-    fl_line(x0 + gx * scale, y0 - (gy + 0.2) * scale,
-	    x0 + gx * scale, y0 - (gy - 0.2) * scale);
+    // fl_line(x0 + (gx + 0.2) * scale, y0 - gy * scale,
+    // 	    x0 + (gx - 0.2) * scale, y0 - gy * scale);
+    // fl_line(x0 + gx * scale, y0 - (gy + 0.2) * scale,
+    // 	    x0 + gx * scale, y0 - (gy - 0.2) * scale);
     fl_color(255, 255, 100);
     fl_line(x0 + gx * scale, y0 - gy * scale,
 	    x0 + px * scale, y0 - py * scale);
