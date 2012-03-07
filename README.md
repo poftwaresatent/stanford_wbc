@@ -29,7 +29,7 @@ Philippsen][] and [Luis Sentis][].
 [Jaeheung Park]: http://plaza4.snu.ac.kr/~park73/wiki/index.php5/People
 [Roy Featherstone]: http://users.cecs.anu.edu.au/~roy/
 [François Conti]: http://cs.stanford.edu/groups/manips/people/francois-conti
-[Roland Philippsen]: http://cs.stanford.edu/groups/manips/people/roland-philippsen
+[Roland Philippsen]: http://poftwaresatent.net/r/
 [Luis Sentis]: http://www.me.utexas.edu/directory/faculty/sentis/luis/
 
 
@@ -55,13 +55,11 @@ The dependencis are:
 * [CMake][] cross-platform build system version 2.6 (or higher)
 * [Eigen][] matrix library version 2 
 * [Fast Light Toolkit][fltk] version 1.1.x _(optional but required for tutorials)_
-* [Google Testing][gtest] Framework _(optional but highly recommended)_
 
 [gcc]: http://gcc.gnu.org/
 [cmake]: http://www.cmake.org/
 [eigen]: http://eigen.tuxfamily.org/
 [fltk]: http://www.fltk.org/
-[gtest]: http://code.google.com/p/googletest/
 
 After you cloned our repos, or downloaded and unpacked a release, go
 into the top-level source directory and build it:
@@ -95,46 +93,21 @@ them.
       then you have to pass <code>-DEIGEN2_DIR=/home/toto/eigen2</code>
       to the CMake command.</td>
  </tr>
- <tr>
-  <td valign="top"><code>GTEST_DIR</code></td>
-  <td valign="top">Path where the Google Testing Framework is installed. This will
-      end up adding two directories to the header search path, and two
-      directories to the library search path: <code>GTEST_DIR</code>
-      itself is added to the header and library path,
-      <code>GTEST_DIR/include</code> is added to the header path, and
-      <code>GTEST_DIR/lib</code> is added to the library path.  CMake
-      will not fail when Gtest is not found (even if you explicitly
-      pass <code>GTEST_DIR</code>), although a warning is issued. Again,
-      if you add or change <code>GTEST_DIR</code> after a CMake run, you
-      should wipe its cache (e.g. the entire <code>build</code>
-      directory) before re-running CMake. Note that CMake will fail
-      with an error if the Gtest headers are found but the library is
-      not.</td>
-  <td valign="top">Suppose you have ROS cturtle installed underneath
-      <code>/opt/ros/cturtle</code>, then all you have to do is pass
-      <code>-DGTEST_DIR=/opt/ros/cturtle/ros/3rdparty/gtest/gtest</code>
-      to the CMake command for Stanford-WBC.</td>
- </tr>
- <tr>
-  <td valign="top"><code>GTEST_SKIP</code></td>
-  <td valign="top">If set to true, this will skip the unit tests even
-      if gtest is installed.  Useful mainly as a workaround for
-      macports, where the fltk and gtest packages have incompatible
-      build flags (which means that on OS X, unless you build fltk
-      and/or gtest from source on your own, you can either have the
-      tutorials or the unit tests, but not both... very
-      annoying).</td>
-  <td valign="top">&nbsp;</td>
- </tr>
 </table>
 
 
 Test
 ----
 
-If you have Gtest (and CMake found it) then you will be able to run
-unit tests after building. At the time of writing, there are two test
-programs:
+We use the [Google Testing][gtest] Framework (included in the
+_3rdparty_ subdirectory). At the time of writing, we provide the
+following test programs.  Also note that there is a `runtests.sh`
+script in the top-level project directory, which you can run from
+within the build directory by issuing `../runtests.sh` _(assuming that
+your build directory is one level below the top-level source
+directory, as implied in this README)_.
+
+[gtest]: http://code.google.com/p/googletest/
 
 * Basic (very basic) tests for the TAO dynamics engine are available
   by running:
@@ -151,10 +124,16 @@ programs:
 
         ./opspace/tests/testTask
 
-If any of these tests fail (well... the opspace tests are a tad
-fragile at the time of writing (April 2011)), there is a regression
-that should be fixed. Please let us know by sending an email to
-`stanford-wbc-users@lists.sourceforge.net`
+* A quick test of the mechanism that builds controllers from YAML
+  files:
+
+        ./opspace/tests/testFactory
+
+If any of these tests fail, there is a regression that should be
+fixed. Please let us know via our [Issue Tracker][github_issues] or
+sending an email to `stanford-wbc-users@lists.sourceforge.net`
+
+[github_issues]: https://github.com/poftwaresatent/stanford_wbc/issues
 
 
 Documentation
