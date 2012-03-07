@@ -86,17 +86,22 @@ done
 
 echo $MSG
 if [ -n "$NOTFOUND" ]; then
-    echo "\nNot found:$NOTFOUND"
+    echo
+    echo "Not found:$NOTFOUND"
 else
-    echo "\nAll tests were found."
+    echo
+    echo "All tests were found."
 fi
 if [ -n "$FAIL" ]; then
-    echo "\nFailures in:$FAIL"
+    echo
+    echo "Failures in:$FAIL"
     exit 1
 else
     if [ -n "$MSG" ]; then
-	echo "\nAll tests passed."
+	echo
+	echo "All tests passed."
     else
-	echo "\nNo tests were run."
+	echo
+	echo "No tests were run."
     fi
 fi
