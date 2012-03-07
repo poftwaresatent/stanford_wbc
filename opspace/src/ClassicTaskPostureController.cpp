@@ -93,7 +93,13 @@ namespace opspace {
     }
     
     size_t const ndof(model.getNDOF());
+    
     Matrix const & jac(task->getJacobian());
+    if (jac.cols() != ainv.rows()) {
+      st.ok = false;
+      st.errstr = "invalid Jacobian dimension (did you initialize and update the model?)";
+      return st;
+    }
     
     pseudoInverse(jac * ainv * jac.transpose(),
 		  task->getSigmaThreshold(),

@@ -84,19 +84,19 @@ for test in \
     fi
 done
 
-echo -e $MSG
+echo $MSG
 if [ -n "$NOTFOUND" ]; then
-    echo -e "\nNot found:$NOTFOUND"
+    echo "\nNot found:$NOTFOUND"
 else
-    echo -e "\nAll tests were found."
+    echo "\nAll tests were found."
 fi
 if [ -n "$FAIL" ]; then
-    echo -e "\nFailures in:$FAIL"
+    echo "\nFailures in:$FAIL"
     exit 1
 else
     if [ -n "$MSG" ]; then
-	echo -e "\nAll tests passed."
+	echo "\nAll tests passed."
     else
-	echo -e "\nNo tests were run."
+	echo "\nNo tests were run."
     fi
 fi

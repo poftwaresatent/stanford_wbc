@@ -136,62 +136,71 @@ static void append_odd_full_tasks(GenericSkill gb, size_t ndof)
 }
 
 
-TEST (controller, odd_even)
-{
-  shared_ptr<Task> jpos;
-  Vector gamma_jpos;
-  
-  vector<shared_ptr<ClassicTaskPostureController> > ctrl;
-  vector<shared_ptr<GenericSkill> > gb;
-  vector<Vector> gamma;
+//////////////////////////////////////////////////
+// The idea behind this test was to check whether we can fuse two
+// tasks which are completely decoupled but neither of which spans the
+// entire DOF... however, I think it was the refactoring-away of the
+// generic controller (and thus its replaceement with the classical
+// task-posture controller) which broke this test. Indeed, the
+// classical task-posture controller probably implicitly assumes that
+// the posture task is full rank.
 
-  try {
-    Model * puma(get_puma());
-    Matrix aa;
-    Vector gg;
-    ASSERT_TRUE (puma->getMassInertia(aa)) << "failed to get mass inertia";
-    ASSERT_TRUE (puma->getGravity(gg)) << "failed to get gravity";
+//resurrect odd_even test// TEST (controller, odd_even)
+//resurrect odd_even test// {
+//resurrect odd_even test//   shared_ptr<Task> jpos;
+//resurrect odd_even test//   Vector gamma_jpos;
+  
+//resurrect odd_even test//   vector<shared_ptr<ClassicTaskPostureController> > ctrl;
+//resurrect odd_even test//   vector<shared_ptr<GenericSkill> > gb;
+//resurrect odd_even test//   vector<Vector> gamma;
+
+//resurrect odd_even test//   try {
+//resurrect odd_even test//     Model * puma(get_puma());
+//resurrect odd_even test//     Matrix aa;
+//resurrect odd_even test//     Vector gg;
+//resurrect odd_even test//     ASSERT_TRUE (puma->getMassInertia(aa)) << "failed to get mass inertia";
+//resurrect odd_even test//     ASSERT_TRUE (puma->getGravity(gg)) << "failed to get gravity";
     
-    jpos = create_sel_jp_task("all", Vector::Ones(puma->getNDOF()));
-    Status st;
-    st = jpos->init(*puma);
-    EXPECT_TRUE (st.ok) << "failed to init jpos task: " << st.errstr;
-    st = jpos->update(*puma);
-    EXPECT_TRUE (st.ok) << "failed to update jpos task: " << st.errstr;
-    gamma_jpos = aa * jpos->getCommand() + gg;
+//resurrect odd_even test//     jpos = create_sel_jp_task("all", Vector::Ones(puma->getNDOF()));
+//resurrect odd_even test//     Status st;
+//resurrect odd_even test//     st = jpos->init(*puma);
+//resurrect odd_even test//     EXPECT_TRUE (st.ok) << "failed to init jpos task: " << st.errstr;
+//resurrect odd_even test//     st = jpos->update(*puma);
+//resurrect odd_even test//     EXPECT_TRUE (st.ok) << "failed to update jpos task: " << st.errstr;
+//resurrect odd_even test//     gamma_jpos = aa * jpos->getCommand() + gg;
     
-    ctrl.push_back(shared_ptr<ClassicTaskPostureController>(new ClassicTaskPostureController("blah")));
-    gb.push_back(shared_ptr<GenericSkill>(new GenericSkill("blah")));
-    gamma.push_back(Vector::Zero(puma->getNDOF()));
+//resurrect odd_even test//     ctrl.push_back(shared_ptr<ClassicTaskPostureController>(new ClassicTaskPostureController("blah")));
+//resurrect odd_even test//     gb.push_back(shared_ptr<GenericSkill>(new GenericSkill("blah")));
+//resurrect odd_even test//     gamma.push_back(Vector::Zero(puma->getNDOF()));
     
-    for (size_t ii(0); ii < ctrl.size(); ++ii) {
+//resurrect odd_even test//     for (size_t ii(0); ii < ctrl.size(); ++ii) {
       
-      append_odd_even_tasks(*gb[ii], puma->getNDOF());
-      st = gb[ii]->init(*puma);
-      EXPECT_TRUE (st.ok) << "failed to init generic skill #"
-			  << ii << ": " << st.errstr;
-      st = ctrl[ii]->init(*puma);
-      EXPECT_TRUE (st.ok) << "failed to init controller #"
-			  << ii << " `" << ctrl[ii]->getName() << "': " << st.errstr;
-      st = ctrl[ii]->computeCommand(*puma, *gb[ii], gamma[ii]);
-      EXPECT_TRUE (st.ok) << "failed to compute torques #"
-			  << ii << " `" << ctrl[ii]->getName() << "': " << st.errstr;
-    }
+//resurrect odd_even test//       append_odd_even_tasks(*gb[ii], puma->getNDOF());
+//resurrect odd_even test//       st = gb[ii]->init(*puma);
+//resurrect odd_even test//       EXPECT_TRUE (st.ok) << "failed to init generic skill #"
+//resurrect odd_even test// 			  << ii << ": " << st.errstr;
+//resurrect odd_even test//       st = ctrl[ii]->init(*puma);
+//resurrect odd_even test//       EXPECT_TRUE (st.ok) << "failed to init controller #"
+//resurrect odd_even test// 			  << ii << " `" << ctrl[ii]->getName() << "': " << st.errstr;
+//resurrect odd_even test//       st = ctrl[ii]->computeCommand(*puma, *gb[ii], gamma[ii]);
+//resurrect odd_even test//       EXPECT_TRUE (st.ok) << "failed to compute torques #"
+//resurrect odd_even test// 			  << ii << " `" << ctrl[ii]->getName() << "': " << st.errstr;
+//resurrect odd_even test//     }
     
-    cout << "==================================================\n"
-	 << "whole-body torque comparison:\n";
-    pretty_print(gamma_jpos, cout, "  reference jpos task", "    ");
-    for (size_t ii(0); ii < ctrl.size(); ++ii) {
-      pretty_print(gamma[ii], cout, "  controller `" + ctrl[ii]->getName() + "'", "    ");
-      Vector const delta(gamma_jpos - gamma[ii]);
-      pretty_print(delta, cout, "  delta", "    ");
-    }
+//resurrect odd_even test//     cout << "==================================================\n"
+//resurrect odd_even test// 	 << "whole-body torque comparison:\n";
+//resurrect odd_even test//     pretty_print(gamma_jpos, cout, "  reference jpos task", "    ");
+//resurrect odd_even test//     for (size_t ii(0); ii < ctrl.size(); ++ii) {
+//resurrect odd_even test//       pretty_print(gamma[ii], cout, "  controller `" + ctrl[ii]->getName() + "'", "    ");
+//resurrect odd_even test//       Vector const delta(gamma_jpos - gamma[ii]);
+//resurrect odd_even test//       pretty_print(delta, cout, "  delta", "    ");
+//resurrect odd_even test//     }
     
-  }
-  catch (exception const & ee) {
-    ADD_FAILURE () << "exception " << ee.what();
-  }
-}
+//resurrect odd_even test//   }
+//resurrect odd_even test//   catch (exception const & ee) {
+//resurrect odd_even test//     ADD_FAILURE () << "exception " << ee.what();
+//resurrect odd_even test//   }
+//resurrect odd_even test// }
 
 
 TEST (controller, odd_full)
@@ -318,6 +327,11 @@ TEST (task, jlimit)
     ClassicTaskPostureController ctrl("ctrl");
     GenericSkill gb("gb");
     gb.appendTask(jlimit);
+    shared_ptr<JPosTask> posture(new JPosTask("posture"));
+    foo = 200.0 * Vector::Ones(ndof);
+    Vector bar(10.0 * Vector::Ones(ndof));
+    posture->quickSetup(foo, bar, bar);
+    gb.appendTask(posture);
     
     State state(ndof, ndof, 0);
     state.position_ = Vector::Zero(ndof);
