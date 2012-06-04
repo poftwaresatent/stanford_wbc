@@ -38,9 +38,9 @@ else (WIN32)
       /opt/local/include/eigen2
       )
     link_directories (/opt/local/lib)
-    # workaround for limited fltk-1.3 in macports, 2011-05-08
-    #    set (CMAKE_OSX_ARCHITECTURES "ppc;i386;ppc64;x86_64")
-    set (CMAKE_OSX_ARCHITECTURES "i386")
+#    # workaround for limited fltk-1.3 in macports, 2011-05-08
+#    #    set (CMAKE_OSX_ARCHITECTURES "ppc;i386;ppc64;x86_64")
+#    set (CMAKE_OSX_ARCHITECTURES "i386")
   endif (APPLE)
   if (CMAKE_SYSTEM_NAME MATCHES Linux)
     add_definitions (-DLINUX)
