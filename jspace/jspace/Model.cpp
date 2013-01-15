@@ -24,20 +24,17 @@
 */
 
 #include "Model.hpp"
-#include "tao_util.hpp"
-#include <tao/dynamics/taoNode.h>
-#include <tao/dynamics/taoJoint.h>
-#include <tao/dynamics/taoDynamics.h>
+#include <rbdl.h>
 
 #undef DEBUG
 
 
-static deVector3 const zero_gravity(0, 0, 0);
-static deVector3 const earth_gravity(0, 0, -9.81);
+static RigidBodyDynamics::Math::Vector3d const zero_gravity(0, 0, 0);
+static RigidBodyDynamics::Math::Vector3d const earth_gravity(0, 0, -9.81);
 
 
 // Beware: no bound checks!
-size_t squareToTriangularIndex(size_t irow, size_t icol, size_t dim)
+static inline size_t squareToTriangularIndex(size_t irow, size_t icol, size_t dim)
 {
   if (0 == irow) {
     return icol;
@@ -56,83 +53,20 @@ size_t squareToTriangularIndex(size_t irow, size_t icol, size_t dim)
 namespace jspace {
   
   
+  size_t const Model::INVALID_NODE(std::limits<size_t>::max());
+  
+  
   Model::
   Model()
-    : ndof_(0),
-      kgm_tree_(0),
-      cc_tree_(0)
+    : rbdl_model_(0)
   {
   }
   
   
   int Model::
-  init(tao_tree_info_s * kgm_tree,
-       tao_tree_info_s * cc_tree,
-       std::ostream * msg)
+  init(RigidBodyDynamics * rbdl_model)
   {
-    int const status(tao_consistency_check(kgm_tree->root, msg));
-    if (0 != status) {
-      return status;
-    }
-    
-    if (kgm_tree_) {
-      if (msg) {
-	*msg << "jspace::Model::init(): already initialized\n";
-      }
-      return -1;
-    }
-    
-    if ( ! kgm_tree->sort()) {
-      if (msg) {
-	*msg << "jspace::Model::init(): could not sort KGM nodes according to IDs\n";
-      }
-      return -2;
-    }
-    
-    if ((0 != cc_tree) && ( ! cc_tree->sort())) {
-      if (msg) {
-	*msg << "jspace::Model::init(): could not sort CC nodes according to IDs\n";
-      }
-      return -3;
-    }
-    
-    // Create ancestry table of all nodes in the KGM tree, for correct
-    // (and slightly more efficient) computation of the Jacobian.
-    ancestry_table_.clear();	// just paranoid...
-    typedef tao_tree_info_s::node_info_t::const_iterator cit_t;
-    cit_t in(kgm_tree->info.begin());
-    cit_t iend(kgm_tree->info.end());
-    for (/**/; in != iend; ++in) {
-      // ...paranoid checks...
-      if ( ! in->node) {
-	if (msg) {
-	  *msg << "jspace::Model::init(): NULL node at entry #" << in->id << "\n";
-	}
-	return -4;
-      }
-      if (in->id != in->node->getID()) {
-	if (msg) {
-	  *msg << "jspace::Model::init(): node ID of entry #" << in->id << " is " << in->node->getID() << "\n";
-	}
-	return -5;
-      }
-      ancestry_list_t & alist(ancestry_table_[in->node]); // first reference creates the instance
-      // walk up the ancestry, append each parent to the list of
-      // ancestors of this node
-      for (taoDNode * node(in->node); 0 != node; node = node->getDParent()) {
-	ancestry_entry_s entry;
-	entry.id = node->getID();
-	entry.joint = node->getJointList();
-	if (0 != entry.joint) {
-	  alist.push_back(entry);
-	}
-      }
-    }
-    
-    kgm_tree_ = kgm_tree;
-    cc_tree_ = cc_tree;
-    ndof_ = kgm_tree->info.size();
-    
+    rbdl_model_ = rbdl_model;
     return 0;
   }
   
@@ -140,8 +74,7 @@ namespace jspace {
   Model::
   ~Model()
   {
-    delete kgm_tree_;
-    delete cc_tree_;
+    delete rbdl_model_;
   }
   
   

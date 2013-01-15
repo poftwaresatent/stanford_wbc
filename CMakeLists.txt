@@ -79,9 +79,6 @@ if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
   endif (CXX_FLAG_O0)
 endif (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 
-# we should probably just hardcode this in our snapshot of tinyxml...
-add_definitions (-DTIXML_USE_STL)
-
 ##################################################
 # configure-time checks
 
@@ -147,15 +144,15 @@ endif (HAVE_FLTK)
 ### go into subdirs
 
 subdirs (
-  3rdparty/wbc_tinyxml
+  3rdparty/rbdl
   3rdparty/yaml-cpp
   3rdparty/reflexxes_otg
   3rdparty/gtest-1.6.0
-  tao
   jspace
   opspace
   )
 
 if (HAVE_FLTK)
-  subdirs (tutorials)
+  message ("*** REFACTORING for RBDL: tutorials temporarily out of service")
+  ###  subdirs (tutorials)
 endif (HAVE_FLTK)

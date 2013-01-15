@@ -34,20 +34,36 @@
 #include <map>
 #include <set>
 
-// Clients of Model never really need to worry about what exactly lies
-// behind TAO, they can treat this as an opaque pointer type.
-class taoDNode;
-class taoJoint;
+
+namespace RigidBodyDynamics {
+  class Model;
+}
+
 
 namespace jspace {
   
   
-  // declared in <jspace/tao_util.hpp>
-  struct tao_tree_info_s;
-  
+  /**
+     \todo Now that we have RBDL, maybe we should make the
+     jspace;:Model stateless? After all, that was just a hack imposed
+     by TAO's horrible way of storing state dispersed throughout its
+     tree structure...
+     
+     \todo While TAO was computing Jacobians for points specified in
+     global coordinates, RBDL uses body-local coordinates. For now,
+     the jspace::Model interface keeps using the global frame, but
+     probably a more sensible way would be to provide both explicitly
+     with appropriately named methods.
+  */
   class Model
   {
   public:
+    /**
+       Value returned by getNodeByName and friends when no matching
+       node can be found.
+    */
+    static size_t const INVALID_NODE;
+    
     /** Please use the init() method in order to initialize your
 	jspace::Model. It does some sanity checking, and error
 	handling from within a constructor is just not so great.
@@ -56,38 +72,16 @@ namespace jspace {
     
     ~Model();
     
-    /** Initialize the model with a TAO tree. Actually, it needs two
-	copies of the same tree if you want to estimate centrifugal
-	and Coriolis effects, but that is optional.
+    /** Initialize with an existing RigidBodyDynamics::Model instance.
 	
-	This method also does some sanity checks and will return a
-	non-zero error code if something is amiss. In order to get
-	human-readable error strings, just pass a non-NULL msg pointer
-	in as well. For instance, &std::cout will do nicely in most
-	cases.
-	
-	\note Transfers ownership of the given TAO trees. They will be
-	deleted when this jspace::Model instance is destructed. Also
-	note that their info vector might get reordered in order to
-	ensure that each node sits at the index that corresponds to
-	its ID.
-	
-	\return 0 on success.
+	\note Transfers ownership of the given
+	RigidBodyDynamics::Model. It will be deleted when this
+	jspace::Model instance is destructed.
+
+	\return 0 on success (always returns 0 since switching from
+	TAO to RBDL).
     */
-    int init(/** TAO tree info used for computing kinematics, the
-		 gravity torque vector, the mass-inertia matrix, and
-		 its inverse. This tree will be deleted in the
-		 jspace::Model destructor. */
-	     tao_tree_info_s * kgm_tree,
-	     /** Optional TAO tree info for computing Coriolis and
-		 centrifugal torques. If you set this to NULL, then
-		 the Coriolis and centrifugal forces won't be
-		 computed. This tree will be deleted in the
-		 jspace::Model destructor. */
-	     tao_tree_info_s * cc_tree,
-	     /** Optional stream that will receive error messages from
-		 the consistency checks. */
-	     std::ostream * msg);
+    int init(RigidBodyDynamics::Model * rbdl_model);
     
     //////////////////////////////////////////////////
     // fire-and-forget facet
@@ -105,17 +99,22 @@ namespace jspace {
     */
     void update(State const & state);
     
-    /** Inform the model about the joint state. We have to separate
-	the state update from the computation of the various
+    /** Inform the model about the joint state. We used to have to
+	separate the state update from the computation of the various
 	quantities in order to efficiently use the TAO tree
-	representation, which forces us to distribute the state over
-	its nodes before computing the model.
+	representation, which forced us to distribute the state over
+	its nodes before computing the model. With RBDL, that is not
+	necessary anymore, but kept in the API for now to avoid
+	breaking too much existing code.
 	
 	\note The given state has to have the correct dimensions, but
 	this is not checked by the implementation. If the given state
 	has too few dimensions, then some positions and velocities of
 	the model will remain at their old values. If there are too
 	many dimensions, they will be ignored.
+	
+	\todo We do not use TAO anymore, should be able to make
+	jspace::Model stateless now.
     */
     void setState(State const & state);
     
@@ -133,7 +132,12 @@ namespace jspace {
 	- the root node is NOT included in this count.
 	- in principle, each node can have any number of joints, and
 	  each joint can have any number of degrees of freedom, which
-	  is why getNJoints() and getNDOF() might come in handy, too. */
+	  is why getNJoints() and getNDOF() might come in handy, too.
+
+	\todo Not sure whether RBDL would be able to support multi-DOF
+	joints, so the proliferation of getNNodes, getNJoints, and
+	getNDOF may be reduced to just one number.
+    */
     size_t getNNodes() const;
     
     /** Compute or retrieve the cached number of joints in the
@@ -161,8 +165,12 @@ namespace jspace {
 	only support exactly one 1-DOF joints per node. */
     std::string getJointName(size_t id) const;
     
-    /** Retrieve a node by ID. */
-    taoDNode * getNode(size_t id) const;
+    /** Retrieve a node by ID.
+	
+	\todo RBDL support in progress: this is a no-op kept to avoid
+	too much code breakage.
+    */
+    size_t getNode(size_t id) const { return id; }
     
     /** Retrieve a node by its name.
 	
@@ -170,22 +178,21 @@ namespace jspace {
 	"end-effector" or "End_Effector", which might correspond to
 	"right-gripper" or so depending on the robot.
     */
-    taoDNode * getNodeByName(std::string const & name) const;
+    size_t getNodeByName(std::string const & name) const;
     
     /** Retrieve a node by joint name.  This will find and retrieve
 	the node to which the joint is attached (see also
 	getNodeByName()), which allows you to retrieve the taoJoint
 	instance itself.
 	
-	\note In principle, a taoDNode can have any number of joints,
-	so you might have to search through them to find the exact one
-	you're looking for. However, all use cases so far seem to be
-	limited to exactly one joint per node (and each node having
-	exactly one joint).
+	\todo RBDL support in progress: RBDL has no joint names
+	(yet... I may add them and send a pull request to the author)
+	so I will use node names for now.
 	
-	\todo Add support for registering aliases, just as for getNodeByName().
+	\todo Add support for registering aliases, just as for
+	getNodeByName().
     */
-    taoDNode * getNodeByJointName(std::string const & name) const;
+    size_t getNodeByJointName(std::string const & name) const { return getNodeByName(name); /* XXXX tmp refactoring */ }
     
     /** Retrieve joint limit information. This method fills the
 	provided vectors with the lower and upper joint limits. In
@@ -207,7 +214,7 @@ namespace jspace {
 	\return True on success. The only possible failure stems from
 	an invalid node, so if you got that using getNode() or one of
 	the related methods you can safely ignore the return value. */
-    bool getGlobalFrame(taoDNode const * node,
+    bool getGlobalFrame(size_t node,
 			Transform & global_transform) const;
     
     /** Compute the global frame (translation and rotation)
@@ -217,7 +224,7 @@ namespace jspace {
 	\return True on success. The only possible failure stems from
 	an invalid node, so if you got that using getNode() or one of
 	the related methods you can safely ignore the return value. */
-    bool computeGlobalFrame(taoDNode const * node,
+    bool computeGlobalFrame(size_t node,
 			    Transform const & local_transform,
 			    Transform & global_transform) const;
     
@@ -229,7 +236,7 @@ namespace jspace {
 	\return True on success. The only possible failure stems from
 	an invalid node, so if you got that using getNode() or one of
 	the related methods you can safely ignore the return value. */
-    bool computeGlobalFrame(taoDNode const * node,
+    bool computeGlobalFrame(size_t node,
 			    double local_x, double local_y, double local_z,
 			    Transform & global_transform) const;
     
@@ -241,11 +248,11 @@ namespace jspace {
 	\return True on success. The only possible failure stems from
 	an invalid node, so if you got that using getNode() or one of
 	the related methods you can safely ignore the return value. */
-    bool computeGlobalFrame(taoDNode const * node,
+    bool computeGlobalFrame(size_t node,
 			    Vector const & local_translation,
 			    Transform & global_transform) const;
     
-    bool computeGlobalCOMFrame(taoDNode const * node,
+    bool computeGlobalCOMFrame(size_t node,
 			       Transform & global_com_transform) const;
     
     /** Compute the Jacobian (J_v over J_omega) at the origin of a
@@ -259,7 +266,7 @@ namespace jspace {
 	invalid node, or an unsupported joint type. If you got the
 	node using getNode() or one of the related methods, then you
 	need to extend this implementation when it returns false. */
-    bool computeJacobian(taoDNode const * node,
+    bool computeJacobian(size_t node,
 			 Matrix & jacobian) const;
     
     /** Compute the Jacobian (J_v over J_omega) for a given node, at a
@@ -272,13 +279,13 @@ namespace jspace {
 	invalid node, or an unsupported joint type. If you got the
 	node using getNode() or one of the related methods, then you
 	need to extend this implementation when it returns false. */
-    bool computeJacobian(taoDNode const * node,
+    bool computeJacobian(size_t node,
 			 double gx, double gy, double gz,
 			 Matrix & jacobian) const;
     
     /** Convenience method in case you are holding the global position
 	in a three-dimensional vector. */
-    inline bool computeJacobian(taoDNode const * node,
+    inline bool computeJacobian(size_t node,
 				Vector const & global_point,
 				Matrix & jacobian) const
     { return computeJacobian(node, global_point[0], global_point[1], global_point[2], jacobian); }
@@ -305,8 +312,11 @@ namespace jspace {
 	then getGravity() will knock out (set to zero) the
 	corresponding entry of the gravity joint-torque vector.
 	
-	\note Invalid indices are silently ignore, and \c true is
+	\note Invalid indices are silently ignored, and \c true is
 	returned. Valid indices are \c 0<=index<getNDOF().
+	
+	\todo Double check on the range of indices employed by RBDL,
+	conceivably it is 1<=index<=ndof instead.
 	
 	\return The previous value of \c disable for this joint. */
     bool disableGravityCompensation(size_t index, bool disable);
@@ -355,37 +365,17 @@ namespace jspace {
     bool getInverseMassInertia(Matrix & inverse_mass_inertia) const;
     
     
-    /** For debugging only, access to the
-	kinematics-gravity-mass-inertia tree. */
-    tao_tree_info_s * _getKGMTree() { return kgm_tree_; }
-    
-    /** For debugging only, access to the optional
-	Coriolis-centrifugal tree. Can NULL if the user is not
-	interested in Coriolis-centrifugal effects. */
-    tao_tree_info_s * _getCCTree() { return cc_tree_; }
-    
-    
   private:
     typedef std::set<size_t> dof_set_t;
     dof_set_t gravity_disabled_;
     
-    std::size_t ndof_;
-    tao_tree_info_s * kgm_tree_;
-    tao_tree_info_s * cc_tree_;
+    RigidBodyDynamics::Model * rbdl_model_;
     
     State state_;
     Vector g_torque_;
     Vector cc_torque_;
     std::vector<double> a_upper_triangular_;
     std::vector<double> ainv_upper_triangular_;
-    
-    struct ancestry_entry_s {
-      int id;
-      taoJoint * joint;
-    };
-    typedef std::list<ancestry_entry_s> ancestry_list_t;
-    typedef std::map<taoDNode *, ancestry_list_t> ancestry_table_t;
-    ancestry_table_t ancestry_table_;
   };
   
 }

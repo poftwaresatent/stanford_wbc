@@ -25,8 +25,6 @@
 
 #include "Controller.hpp"
 #include "Model.hpp"
-#include <tao/dynamics/taoDNode.h>
-#include <tao/dynamics/taoJoint.h>
 
 namespace jspace {
   
