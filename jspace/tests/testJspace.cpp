@@ -939,17 +939,32 @@ TEST (jspaceModel, mass_inertia_RR)
 	  
 	  jspace::Matrix MMinv(2, 2);
 	  model->getInverseMassInertia(MMinv);
-	  Eigen::FullPivLU<jspace::Matrix> fplu(MMinv);
-	  EXPECT_TRUE (fplu.isInvertible()) << "weird: mass-inertia should always be invertible";
-	  jspace::Matrix MMinv_check = fplu.inverse();
+	  
+	  jspace::Matrix MMinv_check_simple = MM * MMinv;
 	  {
 	    std::ostringstream msg;
-	    msg << "Checking inv_mass_inertia for test_index " << test_index
+	    msg << "Checking MM * MMinv against identity for test_index " << test_index
 		<< " q = " << state.position_ << "\n";
-	    pretty_print(MMinv_check, msg, "  want", "    ");
-	    pretty_print(MMinv, msg, "  have", "    ");
-	    EXPECT_TRUE (check_matrix("inv_mass_inertia", MMinv_check, MMinv, 1e-3, msg)) << msg.str();
+	    pretty_print(MMinv_check_simple, msg, "  want", "    ");
+	    EXPECT_TRUE (check_matrix("identity", MMinv_check_simple, jspace::Matrix::Identity(2, 2), 1e-3, msg)) << msg.str();
 	  }
+	  
+	  //// Interestingly, using FullPivLU fails the test. And here
+	  //// I was naively assuming that the inverse mass-inertia
+	  //// could be computed by inverting the mass-inertia, silly
+	  //// me.
+	  // Eigen::FullPivLU<jspace::Matrix> fplu(MMinv);
+	  // EXPECT_TRUE (fplu.isInvertible()) << "weird: mass-inertia should always be invertible";
+	  // jspace::Matrix MMinv_check = fplu.inverse();
+	  // {
+	  //   std::ostringstream msg;
+	  //   msg << "Checking inv_mass_inertia for test_index " << test_index
+	  // 	<< " q = " << state.position_ << "\n";
+	  //   pretty_print(MMinv_check, msg, "  want", "    ");
+	  //   pretty_print(MMinv, msg, "  have", "    ");
+	  //   EXPECT_TRUE (check_matrix("inv_mass_inertia", MMinv_check, MMinv, 1e-3, msg)) << msg.str();
+	  // }
+	  
 	}
       }
     }
