@@ -25,6 +25,10 @@
 
 #include "Controller.hpp"
 #include "Model.hpp"
+#include <rbdl.h>
+
+using namespace RigidBodyDynamics;
+
 
 namespace jspace {
   
@@ -40,24 +44,20 @@ namespace jspace {
   }
   
   
-  /** \todo XXXX yet another place where we hardcode a one-to-one
-      relationship between joints and links, although TAO can express
-      many-to-one relationships here. */
   void jspace_controller_info_getter_s::
   getDOFUnits(Model const & model, std::vector<std::string> & names) const
   {
-    int const njoints(model.getNJoints());
-    names.resize(njoints);
-    for (int ii(0); ii < njoints; ++ii) {
-      taoDNode const * node(model.getNode(ii));
-      taoJoint const * joint(node->getJointList());
-      if (0 != dynamic_cast<taoJointRevolute const *>(joint)) {
+    RigidBodyDynamics::Model const * rbdl(model.getRBDL());
+    names.resize(rbdl->mJoints.size());
+    for (size_t ii(0); ii < names.size(); ++ii) {
+      switch (rbdl->mJoints[ii].mJointType) {
+      case JointTypeRevolute:
 	names[ii] = "rad";
-      }
-      else if (0 != dynamic_cast<taoJointPrismatic const *>(joint)) {
+	break;
+      case JointTypePrismatic:
 	names[ii] = "m";
-      }
-      else {
+	break;
+      default:
 	names[ii] = "void";
       }
     }

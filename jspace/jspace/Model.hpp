@@ -364,6 +364,11 @@ namespace jspace {
 	called by updateDynamics(), which gets called by update(). */
     bool getInverseMassInertia(Matrix & inverse_mass_inertia) const;
     
+    /**
+       \todo remove this as soon as you're done with migrating to RBDL...
+    */
+    RigidBodyDynamics::Model const * getRBDL() const { return rbdl_model_; }
+    
     
   private:
     typedef std::set<size_t> dof_set_t;
