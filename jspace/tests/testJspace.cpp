@@ -743,8 +743,8 @@ TEST (jspaceModel, kinematics_fork_4R)
     jspace::State state(4, 4, 0);
     
     struct kinematics_s {
-      jspace::Vector origin;
-      jspace::Vector com;
+      Eigen::Vector3d origin;
+      Eigen::Vector3d com;
       jspace::Matrix Jacobian;
     };
     
@@ -939,8 +939,9 @@ TEST (jspaceModel, mass_inertia_RR)
 	  
 	  jspace::Matrix MMinv(2, 2);
 	  model->getInverseMassInertia(MMinv);
-	  jspace::Matrix MMinv_check(2, 2);
-	  MM_check.computeInverse(&MMinv_check);
+	  Eigen::FullPivLU<jspace::Matrix> fplu(MMinv);
+	  EXPECT_TRUE (fplu.isInvertible()) << "weird: mass-inertia should always be invertible";
+	  jspace::Matrix MMinv_check = fplu.inverse();
 	  {
 	    std::ostringstream msg;
 	    msg << "Checking inv_mass_inertia for test_index " << test_index

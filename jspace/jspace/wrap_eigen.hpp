@@ -31,7 +31,7 @@
 
 namespace jspace {
 
-  typedef Eigen::Transform3d Transform;
+  typedef Eigen::Isometry3d Transform;
   typedef Eigen::Translation3d Translation;
   typedef Eigen::Quaternion<double> Quaternion;
   typedef Eigen::VectorXd Vector;

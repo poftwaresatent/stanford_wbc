@@ -26,6 +26,7 @@
 #include <jspace/test/sai_brep.hpp>
 #include <jspace/test/sai_brep_parser.hpp>
 #include <jspace/tao_dump.hpp>
+#include <iostream>
 #include <err.h>
 #include <stdlib.h>
 

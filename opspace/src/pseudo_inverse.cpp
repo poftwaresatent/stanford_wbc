@@ -52,8 +52,9 @@ namespace opspace {
       return;
     }
     
-    Eigen::SVD<Matrix> svd(matrix);
+    Eigen::JacobiSVD<Matrix> svd(matrix, Eigen::ComputeFullU);
     // not sure if we need to svd.sort()... probably not
+    // also not sure if (in Eigen3) we could use ComputeThinU instead of ComputeFullU
     int const nrows(svd.singularValues().rows());
     Matrix invS;
     invS = Matrix::Zero(nrows, nrows);

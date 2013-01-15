@@ -165,7 +165,7 @@ namespace opspace {
       return st;
     }    
     
-    command = kp_.cwise() * errpos_;
+    command = kp_.array() * errpos_.array();
     
     if (SATURATION_COMPONENT_WISE == saturation_policy_) {
       for (int ii(0); ii < command.rows(); ++ii) {
@@ -197,7 +197,7 @@ namespace opspace {
     // we silently assume that any other value of saturation_policy
     // means SATURATION_OFF.
     
-    command += kd_.cwise() * errvel_;
+    command.array() += kd_.array() * errvel_.array();
     
     return st;
   }

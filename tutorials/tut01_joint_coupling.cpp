@@ -34,6 +34,7 @@
 */
 
 #include "tutsim.hpp"
+#include <iostream>
 
 
 static bool servo_cb(size_t toggle_count,

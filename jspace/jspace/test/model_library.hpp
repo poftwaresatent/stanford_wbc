@@ -45,9 +45,9 @@ namespace jspace {
 	global frame. J1...J4 are the Jacobians at the node
 	origins. */
     void compute_fork_4R_kinematics(double q1, double q2, double q3, double q4,
-				    jspace::Vector & o1, jspace::Vector & o2, jspace::Vector & o3, jspace::Vector & o4,
-				    jspace::Vector & com1, jspace::Vector & com2,
-				    jspace::Vector & com3, jspace::Vector & com4,
+				    Eigen::Vector3d & o1, Eigen::Vector3d & o2, Eigen::Vector3d & o3, Eigen::Vector3d & o4,
+				    Eigen::Vector3d & com1, Eigen::Vector3d & com2,
+				    Eigen::Vector3d & com3, Eigen::Vector3d & com4,
 				    jspace::Matrix & J1, jspace::Matrix & J2, jspace::Matrix & J3, jspace::Matrix & J4);
     
     void compute_unit_mass_RR_mass_inertia(double q1, double q2, jspace::Matrix & AA);

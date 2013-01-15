@@ -31,11 +31,11 @@ else (WIN32)
     add_definitions (-DOSX)
     include_directories (
       /opt/local/include
-      /opt/local/include/eigen2
+      /opt/local/include/eigen3
       )
     list (APPEND CMAKE_REQUIRED_INCLUDES
       /opt/local/include
-      /opt/local/include/eigen2
+      /opt/local/include/eigen3
       )
     link_directories (/opt/local/lib)
 #    # workaround for limited fltk-1.3 in macports, 2011-05-08
@@ -44,16 +44,16 @@ else (WIN32)
   endif (APPLE)
   if (CMAKE_SYSTEM_NAME MATCHES Linux)
     add_definitions (-DLINUX)
-    include_directories (/usr/include/eigen2)
-    list (APPEND CMAKE_REQUIRED_INCLUDES /usr/include/eigen2)
+    include_directories (/usr/include/eigen3)
+    list (APPEND CMAKE_REQUIRED_INCLUDES /usr/include/eigen3)
   endif (CMAKE_SYSTEM_NAME MATCHES Linux)
   if (CMAKE_SYSTEM_NAME MATCHES OpenBSD)
     add_definitions (-DOPENBSD)
     include_directories (
       /usr/local/include
-      /usr/local/include/eigen2
+      /usr/local/include/eigen3
       )
-    list (APPEND CMAKE_REQUIRED_INCLUDES /usr/include/eigen2)
+    list (APPEND CMAKE_REQUIRED_INCLUDES /usr/include/eigen3)
     link_directories (/usr/local/lib)
   endif (CMAKE_SYSTEM_NAME MATCHES OpenBSD)
 endif(WIN32)
@@ -87,29 +87,29 @@ add_definitions (-DTIXML_USE_STL)
 
 include (CheckIncludeFileCXX)
 
-# Eigen2 (required)
+# Eigen3 (required)
 
-if (EIGEN2_DIR)
+if (EIGEN3_DIR)
   list (APPEND CMAKE_REQUIRED_INCLUDES
-    ${EIGEN2_DIR}/include
-    ${EIGEN2_DIR}
-    ${EIGEN2_DIR}/include/eigen2
-    ${EIGEN2_DIR}/eigen2
+    ${EIGEN3_DIR}/include
+    ${EIGEN3_DIR}
+    ${EIGEN3_DIR}/include/eigen3
+    ${EIGEN3_DIR}/eigen3
     )
   include_directories (
-    ${EIGEN2_DIR}/include
-    ${EIGEN2_DIR}
-    ${EIGEN2_DIR}/include/eigen2
-    ${EIGEN2_DIR}/
-    eigen2
+    ${EIGEN3_DIR}/include
+    ${EIGEN3_DIR}
+    ${EIGEN3_DIR}/include/eigen3
+    ${EIGEN3_DIR}/
+    eigen3
     )
-endif (EIGEN2_DIR)
-check_include_file_cxx (Eigen/Core HAVE_EIGEN2)
-if (HAVE_EIGEN2)
-  message ("*** found Eigen2 (required)")
-else (HAVE_EIGEN2)
-  message (FATAL_ERROR "Please install Eigen2, e.g. `sudo apt-get install libeigen2-dev' or from http://eigen.tuxfamily.org/ and pass -DEIGEN2_DIR:path=/path/to/eigen2 to cmake next time you call it.")
-endif (HAVE_EIGEN2)
+endif (EIGEN3_DIR)
+check_include_file_cxx (Eigen/Core HAVE_EIGEN3)
+if (HAVE_EIGEN3)
+  message ("*** found Eigen3 (required)")
+else (HAVE_EIGEN3)
+  message (FATAL_ERROR "Please install Eigen3, e.g. `sudo apt-get install libeigen3-dev' or from http://eigen.tuxfamily.org/ and pass -DEIGEN3_DIR:path=/path/to/eigen3 to cmake next time you call it.")
+endif (HAVE_EIGEN3)
 
 # find Boost (required, just the smart pointers though)
 
