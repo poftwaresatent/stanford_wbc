@@ -43,7 +43,7 @@ bool LinSolveGaussElimPivot (MatrixNd A, VectorNd b, VectorNd &x);
 
 /// \brief Creates the skew symmetric matrix of the cross product of a given 3D vector
 inline Matrix3d VectorCrossMatrix (const Vector3d &vector) {
-	return Matrix3d (
+	return mkMatrix3d (
 			0., -vector[2], vector[1],
 			vector[2], 0., -vector[0],
 			-vector[1], vector[0], 0.

@@ -110,7 +110,7 @@ struct Joint {
 
 		if (joint_type == JointTypeRevolute) {
 			// make sure we have a unit axis
-			mJointAxes[0].set (
+			Math::set(mJointAxes[0],
 					joint_axis[0],
 					joint_axis[1], 
 					joint_axis[2], 
@@ -121,7 +121,7 @@ struct Joint {
 			// make sure we have a unit axis
 			assert (joint_axis.squaredNorm() == 1.);
 
-			mJointAxes[0].set (
+			Math::set(mJointAxes[0],
 					0., 0., 0.,
 					joint_axis[0],
 					joint_axis[1],

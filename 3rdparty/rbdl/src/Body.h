@@ -67,7 +67,7 @@ struct Body {
 			const Math::Vector3d &gyration_radii) :
 		mMass (mass),
 		mCenterOfMass(com) {
-			Math::Matrix3d com_cross (
+			Math::Matrix3d com_cross = Math::mkMatrix3d(
 					0., -com[2],  com[1],
 					com[2],      0., -com[0],
 					-com[1],  com[0],      0.
@@ -80,7 +80,7 @@ struct Body {
 			Math::Matrix3d mcc = mass * com_cross;
 			Math::Matrix3d mccT = mcc.transpose();
 
-			mSpatialInertia.set (
+			Math::set(mSpatialInertia,
 					gr[0] + pa(0, 0), pa(0, 1), pa(0, 2), mcc(0, 0), mcc(0, 1), mcc(0, 2),
 					pa(1, 0), gr[1] + pa(1, 1), pa(1, 2), mcc(1, 0), mcc(1, 1), mcc(1, 2),
 					pa(2, 0), pa(2, 1), gr[2] + pa(2, 2), mcc(2, 0), mcc(2, 1), mcc(2, 2),
@@ -109,7 +109,7 @@ struct Body {
 		mMass (mass),
 		mCenterOfMass(com),
 		mInertia (inertia_C) {
-			Math::Matrix3d com_cross (
+			Math::Matrix3d com_cross = Math::mkMatrix3d(
 					0., -com[2],  com[1],
 					com[2],      0., -com[0],
 					-com[1],  com[0],      0.
@@ -122,7 +122,7 @@ struct Body {
 			Math::Matrix3d mcc = mass * com_cross;
 			Math::Matrix3d mccT = mcc.transpose();
 
-			mSpatialInertia.set (
+			Math::set(mSpatialInertia,
 					inertia_C(0,0) + pa(0, 0), inertia_C(0,1) + pa(0, 1), inertia_C(0,2) + pa(0, 2), mcc(0, 0), mcc(0, 1), mcc(0, 2),
 					inertia_C(1,0) + pa(1, 0), inertia_C(1,1) + pa(1, 1), inertia_C(1,2) + pa(1, 2), mcc(1, 0), mcc(1, 1), mcc(1, 2),
 					inertia_C(2,0) + pa(2, 0), inertia_C(2,1) + pa(2, 1), inertia_C(2,2) + pa(2, 2), mcc(2, 0), mcc(2, 1), mcc(2, 2),
@@ -150,7 +150,7 @@ struct Body {
 			const Math::Vector3d &gyration_radii) :
 		mMass (mass),
 		mCenterOfMass(com) {
-			Math::Matrix3d com_cross (
+			Math::Matrix3d com_cross = Math::mkMatrix3d(
 					0., -com[2],  com[1],
 					com[2],      0., -com[0],
 					-com[1],  com[0],      0.
@@ -169,13 +169,13 @@ struct Body {
 			Math::Matrix3d mcc = mass * com_cross;
 			Math::Matrix3d mccT = mcc.transpose();
 
-			mInertia.set (
+			Math::set(mInertia,
 					gr[0], 0., 0.,
 					0., gr[1], 0.,
 					0., 0., gr[2]
 					);
 
-			mSpatialInertia.set (
+			Math::set(mSpatialInertia,
 					gr[0] + pa(0, 0), pa(0, 1), pa(0, 2), mcc(0, 0), mcc(0, 1), mcc(0, 2),
 					pa(1, 0), gr[1] + pa(1, 1), pa(1, 2), mcc(1, 0), mcc(1, 1), mcc(1, 2),
 					pa(2, 0), pa(2, 1), gr[2] + pa(2, 2), mcc(2, 0), mcc(2, 1), mcc(2, 2),

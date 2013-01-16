@@ -29,7 +29,7 @@ struct SpatialRigidBodyInertia {
 	{ }
 
 	inline Matrix3d VectorCrossMatrix (const Vector3d &vector) const {
-		return Matrix3d (
+	  return mkMatrix3d (
 				0., -vector[2], vector[1],
 				vector[2], 0., -vector[0],
 				-vector[1], vector[0], 0.
@@ -43,7 +43,7 @@ struct SpatialRigidBodyInertia {
 		Vector3d res_upper = I * Vector3d (mv[0], mv[1], mv[2]) + h.cross(mv_lower);
 		Vector3d res_lower = m * mv_lower - h.cross (mv_upper);
 			
-		return SpatialVector (
+		return mkSpatialVector (
 				res_upper[0], res_upper[1], res_upper[2],
 				res_lower[0], res_lower[1], res_lower[2]
 				);
@@ -59,7 +59,7 @@ struct SpatialRigidBodyInertia {
 
 	void createFromMatrix (const SpatialMatrix &Ic) {
 		m = Ic(3,3);
-		h.set (-Ic(1,5), Ic(0,5), -Ic(0,4));
+		set (h, -Ic(1,5), Ic(0,5), -Ic(0,4));
 		I = Ic.block<3,3>(0,0);
 	}
 
@@ -105,7 +105,7 @@ struct SpatialTransform {
 				v_sp[4] - r[2]*v_sp[0] + r[0]*v_sp[2],
 				v_sp[5] - r[0]*v_sp[1] + r[1]*v_sp[0]
 				);
-		return SpatialVector (
+		return mkSpatialVector (
 				E(0,0) * v_sp[0] + E(0,1) * v_sp[1] + E(0,2) * v_sp[2],
 				E(1,0) * v_sp[0] + E(1,1) * v_sp[1] + E(1,2) * v_sp[2],
 				E(2,0) * v_sp[0] + E(2,1) * v_sp[1] + E(2,2) * v_sp[2],
@@ -116,7 +116,7 @@ struct SpatialTransform {
 	}
 
 	inline Matrix3d VectorCrossMatrix (const Vector3d &vector) {
-		return Matrix3d (
+	  return mkMatrix3d (
 				0., -vector[2], vector[1],
 				vector[2], 0., -vector[0],
 				-vector[1], vector[0], 0.
@@ -143,7 +143,7 @@ struct SpatialTransform {
 				E(0,2) * f_sp[3] + E(1,2) * f_sp[4] + E(2,2) * f_sp[5]
 				);
 
-		return SpatialVector (
+		return mkSpatialVector (
 				E(0,0) * f_sp[0] + E(1,0) * f_sp[1] + E(2,0) * f_sp[2] - r[2] * E_T_f[1] + r[1] * E_T_f[2],
 				E(0,1) * f_sp[0] + E(1,1) * f_sp[1] + E(2,1) * f_sp[2] + r[2] * E_T_f[0] - r[0] * E_T_f[2],
 				E(0,2) * f_sp[0] + E(1,2) * f_sp[1] + E(2,2) * f_sp[2] - r[1] * E_T_f[0] + r[0] * E_T_f[1],
@@ -157,7 +157,7 @@ struct SpatialTransform {
 		Vector3d En_rxf = E * (Vector3d (f_sp[0], f_sp[1], f_sp[2]) - r.cross(Vector3d (f_sp[3], f_sp[4], f_sp[5])));
 //		Vector3d En_rxf = E * (Vector3d (f_sp[0], f_sp[1], f_sp[2]) - r.cross(Eigen::Map<Vector3d> (&(f_sp[3]))));
 
-		return SpatialVector (
+		return mkSpatialVector (
 				En_rxf[0],
 				En_rxf[1],
 				En_rxf[2],
@@ -169,7 +169,7 @@ struct SpatialTransform {
 
 	SpatialMatrix toMatrix () const {
 		Matrix3d _Erx =
-			E * Matrix3d (
+			E * mkMatrix3d (
 					0., -r[2], r[1],
 					r[2], 0., -r[0],
 					-r[1], r[0], 0.
@@ -185,7 +185,7 @@ struct SpatialTransform {
 
 	SpatialMatrix toMatrixAdjoint () const {
 		Matrix3d _Erx =
-			E * Matrix3d (
+			E * mkMatrix3d (
 					0., -r[2], r[1],
 					r[2], 0., -r[0],
 					-r[1], r[0], 0.
@@ -201,7 +201,7 @@ struct SpatialTransform {
 
 	SpatialMatrix toMatrixTranspose () const {
 		Matrix3d _Erx =
-			E * Matrix3d (
+			E * mkMatrix3d (
 					0., -r[2], r[1],
 					r[2], 0., -r[0],
 					-r[1], r[0], 0.
@@ -247,7 +247,7 @@ inline SpatialTransform Xrot (double angle_rad, const Vector3d &axis) {
 	c = cos(angle_rad);
 
 	return SpatialTransform (
-			Matrix3d (
+			mkMatrix3d (
 				axis[0] * axis[0] * (1.0f - c) + c,
 				axis[1] * axis[0] * (1.0f - c) + axis[2] * s,
 				axis[0] * axis[2] * (1.0f - c) - axis[1] * s,
@@ -270,7 +270,7 @@ inline SpatialTransform Xrotx (const double &xrot) {
 	s = sin (xrot);
 	c = cos (xrot);
 	return SpatialTransform (
-			Matrix3d (
+			mkMatrix3d (
 				1., 0., 0.,
 				0., c, s,
 				0., -s, c
@@ -284,7 +284,7 @@ inline SpatialTransform Xroty (const double &yrot) {
 	s = sin (yrot);
 	c = cos (yrot);
 	return SpatialTransform (
-			Matrix3d (
+			mkMatrix3d (
 				c, 0., -s,
 				0., 1., 0.,
 				s, 0., c
@@ -298,7 +298,7 @@ inline SpatialTransform Xrotz (const double &zrot) {
 	s = sin (zrot);
 	c = cos (zrot);
 	return SpatialTransform (
-			Matrix3d (
+			mkMatrix3d (
 				c, s, 0.,
 				-s, c, 0.,
 				0., 0., 1.
@@ -315,7 +315,7 @@ inline SpatialTransform Xtrans (const Vector3d &r) {
 }
 
 inline SpatialMatrix crossm (const SpatialVector &v) {
-	return SpatialMatrix (
+	return mkSpatialMatrix (
 			0,  -v[2],  v[1],         0,          0,         0,
 			v[2],          0, -v[0],         0,          0,         0, 
 			-v[1],   v[0],         0,         0,          0,         0,
@@ -326,7 +326,7 @@ inline SpatialMatrix crossm (const SpatialVector &v) {
 }
 
 inline SpatialVector crossm (const SpatialVector &v1, const SpatialVector &v2) {
-	return SpatialVector (
+	return mkSpatialVector (
 			-v1[2] * v2[1] + v1[1] * v2[2],
 			v1[2] * v2[0] - v1[0] * v2[2],
 			-v1[1] * v2[0] + v1[0] * v2[1],
@@ -337,7 +337,7 @@ inline SpatialVector crossm (const SpatialVector &v1, const SpatialVector &v2) {
 }
 
 inline SpatialMatrix crossf (const SpatialVector &v) {
-	return SpatialMatrix (
+	return mkSpatialMatrix (
 			0,  -v[2],  v[1],         0,  -v[5],  v[4],
 			v[2],          0, -v[0],  v[5],          0, -v[3],
 			-v[1],   v[0],         0, -v[4],   v[3],         0,
@@ -348,7 +348,7 @@ inline SpatialMatrix crossf (const SpatialVector &v) {
 }
 
 inline SpatialVector crossf (const SpatialVector &v1, const SpatialVector &v2) {
-	return SpatialVector (
+	return mkSpatialVector (
 			-v1[2] * v2[1] + v1[1] * v2[2] - v1[5] * v2[4] + v1[4] * v2[5],
 			v1[2] * v2[0] - v1[0] * v2[2] + v1[5] * v2[3] - v1[3] * v2[5],
 			-v1[1] * v2[0] + v1[0] * v2[1] - v1[4] * v2[3] + v1[3] * v2[4],
