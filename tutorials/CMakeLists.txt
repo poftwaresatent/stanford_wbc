@@ -34,3 +34,6 @@ target_link_libraries (tut05_opspace_and_parameters tut opspace jspace_test yaml
 
 add_executable (tut06_eepos tut06_eepos.cpp)
 target_link_libraries (tut06_eepos tut opspace jspace_test yaml-cpp ${FLTK_LIBRARIES})
+
+add_executable (tut07_obstavoid tut07_obstavoid.cpp uta_opspace/ControllerNG.cpp)
+target_link_libraries (tut07_obstavoid tut opspace jspace_test yaml-cpp ${FLTK_LIBRARIES})
