@@ -160,10 +160,9 @@ namespace jspace {
 	the id is invalid. Use getNJoints() to find out how many
 	joints there are.
 	
-	\todo A joint can have any number of DOF, which means there
-	should be a way to get at them individually, but currently we
-	only support exactly one 1-DOF joints per node. */
-    std::string getJointName(size_t id) const;
+	\todo Currently this just calls getNodeName because RBDL does
+	not support joint names (yet). */
+    std::string getJointName(size_t id) const { return getNodeName(id); }
     
     /** Retrieve a node by ID.
 	
@@ -198,7 +197,10 @@ namespace jspace {
 	provided vectors with the lower and upper joint limits. In
 	case no joint limit information is available, it sets the
 	lower limit to \c std::numeric_limits<double>::min() and the
-	upper limit to \c std::numeric_limits<double>::max(). */
+	upper limit to \c std::numeric_limits<double>::max().
+	
+	\todo RBDL has no support for joint limits (yet).
+    */
     void getJointLimits(Vector & joint_limits_lower,
 			Vector & joint_limits_upper) const;
     

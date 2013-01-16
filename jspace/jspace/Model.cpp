@@ -25,6 +25,7 @@
 
 #include "Model.hpp"
 #include <rbdl.h>
+#include <limits>
 
 #undef DEBUG
 
@@ -53,7 +54,7 @@ static inline size_t squareToTriangularIndex(size_t irow, size_t icol, size_t di
 namespace jspace {
   
   
-  size_t const Model::INVALID_NODE(std::limits<size_t>::max());
+  size_t const Model::INVALID_NODE = std::numeric_limits<size_t>::max();
   
   
   Model::
@@ -64,7 +65,7 @@ namespace jspace {
   
   
   int Model::
-  init(RigidBodyDynamics * rbdl_model)
+  init(RigidBodyDynamics::Model * rbdl_model)
   {
     rbdl_model_ = rbdl_model;
     return 0;
@@ -91,45 +92,29 @@ namespace jspace {
   setState(State const & state)
   {
     state_ = state;
-    for (size_t ii(0); ii < ndof_; ++ii) {
-      taoJoint * joint(kgm_tree_->info[ii].joint);
-      joint->setQ(&const_cast<State&>(state).position_.coeffRef(ii));
-      joint->zeroDQ();
-      joint->zeroDDQ();
-      joint->zeroTau();
-    }
-    if (cc_tree_) {
-      for (size_t ii(0); ii < ndof_; ++ii) {
-	taoJoint * joint(cc_tree_->info[ii].joint);
-	joint->setQ(&const_cast<State&>(state).position_.coeffRef(ii));
-	joint->setDQ(&const_cast<State&>(state).velocity_.coeffRef(ii));
-	joint->zeroDDQ();
-	joint->zeroTau();
-      }
-    }
   }
   
   
   size_t Model::
   getNNodes() const
   {
-    return ndof_;
+    return rbdl_model_->dof_count;
   }
   
   
   size_t Model::
   getNJoints() const
   {
-    // one day this will be different...
-    return ndof_;
+    // one day this could be different...
+    return rbdl_model_->dof_count;
   }
   
   
   size_t Model::
   getNDOF() const
   {
-    // one day this will be different...
-    return ndof_;
+    // one day this could be different...
+    return rbdl_model_->dof_count;
   }
   
   
@@ -137,55 +122,28 @@ namespace jspace {
   getNodeName(size_t id) const
   {
     std::string name("");
-    if (ndof_ > id) {
-      name = kgm_tree_->info[id].link_name;
+    // XXX would be nice if RBDL's Model would maintainthe reverse
+    // lookup (simple vector<string>) as well. That could easily be
+    // added.
+    for (std::map<std::string, unsigned int>::const_iterator ii(rbdl_model_->mBodyNameMap.begin());
+	 ii != rbdl_model_->mBodyNameMap.end(); ++ii) {
+      if (ii->second == id) {
+	name = ii->first;
+	break;
+      }
     }
     return name;
   }
   
   
-  std::string Model::
-  getJointName(size_t id) const
-  {
-    std::string name("");
-    if (ndof_ > id) {
-      name = kgm_tree_->info[id].joint_name;
-    }
-    return name;
-  }
-  
-  
-  taoDNode * Model::
-  getNode(size_t id) const
-  {
-    if (ndof_ > id) {
-      return kgm_tree_->info[id].node;
-    }
-    return 0;
-  }
-  
-  
-  taoDNode * Model::
+  size_t Model::
   getNodeByName(std::string const & name) const
   {
-    for (size_t ii(0); ii < ndof_; ++ii) {
-      if (name == kgm_tree_->info[ii].link_name) {
-	return  kgm_tree_->info[ii].node;
-      }
+    std::map<std::string, unsigned int>::const_iterator ii(rbdl_model_->mBodyNameMap.find(name));
+    if (rbdl_model_->mBodyNameMap.end() != ii) {
+      return ii->second;
     }
-    return 0;
-  }
-  
-  
-  taoDNode * Model::
-  getNodeByJointName(std::string const & name) const
-  {
-    for (size_t ii(0); ii < ndof_; ++ii) {
-      if (name == kgm_tree_->info[ii].joint_name) {
-	return  kgm_tree_->info[ii].node;
-      }
-    }
-    return 0;
+    return INVALID_NODE;
   }
   
   
@@ -193,11 +151,11 @@ namespace jspace {
   getJointLimits(Vector & joint_limits_lower,
 		 Vector & joint_limits_upper) const
   {
-    joint_limits_lower.resize(ndof_);
-    joint_limits_upper.resize(ndof_);
-    for (size_t ii(0); ii < ndof_; ++ii) {
-      joint_limits_lower[ii] = kgm_tree_->info[ii].limit_lower;
-      joint_limits_upper[ii] = kgm_tree_->info[ii].limit_upper;
+    joint_limits_lower.resize(rbdl_model_->dof_count);
+    joint_limits_upper.resize(rbdl_model_->dof_count);
+    for (size_t ii(0); ii < rbdl_model_->dof_count; ++ii) {
+      joint_limits_lower[ii] = std::numeric_limits<double>::min();
+      joint_limits_upper[ii] = std::numeric_limits<double>::max();
     }
   }
   
@@ -327,7 +285,7 @@ namespace jspace {
     
     // \todo Implement support for more than one joint per node, and
     // 	more than one DOF per joint.
-    jacobian = Matrix::Zero(6, ndof_);
+    jacobian = Matrix::Zero(6, rbdl_model_->dof_count);
     ancestry_list_t::const_iterator ia(alist.begin());
     ancestry_list_t::const_iterator iend(alist.end());
     for (/**/; ia != iend; ++ia) {
@@ -384,10 +342,10 @@ namespace jspace {
   {
     com = Vector::Zero(3);
     if (opt_jcom) {
-      *opt_jcom = Matrix::Zero(3, ndof_);
+      *opt_jcom = Matrix::Zero(3, rbdl_model_->dof_count);
     }
     double mtotal(0);
-    for (size_t ii(0); ii < ndof_; ++ii) {
+    for (size_t ii(0); ii < rbdl_model_->dof_count; ++ii) {
       taoDNode * const node(kgm_tree_->info[ii].node);
       deVector3 wpos;
       wpos.multiply(node->frameGlobal()->rotation(), *(node->center()));
@@ -416,9 +374,9 @@ namespace jspace {
   void Model::
   computeGravity()
   {
-    g_torque_.resize(ndof_);
+    g_torque_.resize(rbdl_model_->dof_count);
     taoDynamics::invDynamics(kgm_tree_->root, &earth_gravity);
-    for (size_t ii(0); ii < ndof_; ++ii) {
+    for (size_t ii(0); ii < rbdl_model_->dof_count; ++ii) {
       kgm_tree_->info[ii].joint->getTau(&g_torque_[ii]);
     }
   }
@@ -427,7 +385,7 @@ namespace jspace {
   bool Model::
   disableGravityCompensation(size_t index, bool disable)
   {
-    if (ndof_ <= index) {
+    if (rbdl_model_->dof_count <= index) {
       return true;
     }
     
@@ -469,9 +427,9 @@ namespace jspace {
   computeCoriolisCentrifugal()
   {
     if (cc_tree_) {
-      cc_torque_.resize(ndof_);
+      cc_torque_.resize(rbdl_model_->dof_count);
       taoDynamics::invDynamics(cc_tree_->root, &zero_gravity);
-      for (size_t ii(0); ii < ndof_; ++ii) {
+      for (size_t ii(0); ii < rbdl_model_->dof_count; ++ii) {
 	cc_tree_->info[ii].joint->getTau(&cc_torque_[ii]);
       }
     }
@@ -496,11 +454,11 @@ namespace jspace {
   computeMassInertia()
   {
     if (a_upper_triangular_.empty()) {
-      a_upper_triangular_.resize(ndof_ * (ndof_ + 1) / 2);
+      a_upper_triangular_.resize(rbdl_model_->dof_count * (rbdl_model_->dof_count + 1) / 2);
     }
     
     deFloat const one(1);
-    for (size_t irow(0); irow < ndof_; ++irow) {
+    for (size_t irow(0); irow < rbdl_model_->dof_count; ++irow) {
       taoJoint * joint(kgm_tree_->info[irow].joint);
       
       // Compute one column of A by solving inverse dynamics of the
@@ -518,12 +476,12 @@ namespace jspace {
       // flattened upper triangular matrix).
       
       for (size_t icol(0); icol <= irow; ++icol) {
-	kgm_tree_->info[icol].joint->getTau(&a_upper_triangular_[squareToTriangularIndex(irow, icol, ndof_)]);
+	kgm_tree_->info[icol].joint->getTau(&a_upper_triangular_[squareToTriangularIndex(irow, icol, rbdl_model_->dof_count)]);
       }
     }
     
     // Reset all the torques.
-    for (size_t ii(0); ii < ndof_; ++ii) {
+    for (size_t ii(0); ii < rbdl_model_->dof_count; ++ii) {
       kgm_tree_->info[ii].joint->zeroTau();
     }
   }
@@ -536,10 +494,10 @@ namespace jspace {
       return false;
     }
     
-    mass_inertia.resize(ndof_, ndof_);
-    for (size_t irow(0); irow < ndof_; ++irow) {
+    mass_inertia.resize(rbdl_model_->dof_count, rbdl_model_->dof_count);
+    for (size_t irow(0); irow < rbdl_model_->dof_count; ++irow) {
       for (size_t icol(0); icol <= irow; ++icol) {
-	mass_inertia.coeffRef(irow, icol) = a_upper_triangular_[squareToTriangularIndex(irow, icol, ndof_)];
+	mass_inertia.coeffRef(irow, icol) = a_upper_triangular_[squareToTriangularIndex(irow, icol, rbdl_model_->dof_count)];
 	if (irow != icol) {
 	  mass_inertia.coeffRef(icol, irow) = mass_inertia.coeff(irow, icol);
 	}
@@ -554,11 +512,11 @@ namespace jspace {
   computeInverseMassInertia()
   {
     if (ainv_upper_triangular_.empty()) {
-      ainv_upper_triangular_.resize(ndof_ * (ndof_ + 1) / 2);
+      ainv_upper_triangular_.resize(rbdl_model_->dof_count * (rbdl_model_->dof_count + 1) / 2);
     }
     
     deFloat const one(1);
-    for (size_t irow(0); irow < ndof_; ++irow) {
+    for (size_t irow(0); irow < rbdl_model_->dof_count; ++irow) {
       taoJoint * joint(kgm_tree_->info[irow].joint);
       
       // Compute one column of Ainv by solving forward dynamics of the
@@ -575,12 +533,12 @@ namespace jspace {
       // accelerations generated by the column-selecting unit torque
       // (into a flattened upper triangular matrix).
       for (size_t icol(0); icol <= irow; ++icol) {
-	kgm_tree_->info[icol].joint->getDDQ(&ainv_upper_triangular_[squareToTriangularIndex(irow, icol, ndof_)]);
+	kgm_tree_->info[icol].joint->getDDQ(&ainv_upper_triangular_[squareToTriangularIndex(irow, icol, rbdl_model_->dof_count)]);
       }
     }
     
     // Reset all the accelerations.
-    for (size_t ii(0); ii < ndof_; ++ii) {
+    for (size_t ii(0); ii < rbdl_model_->dof_count; ++ii) {
       kgm_tree_->info[ii].joint->zeroDDQ();
     }
   }
@@ -593,10 +551,10 @@ namespace jspace {
       return false;
     }
     
-    inverse_mass_inertia.resize(ndof_, ndof_);
-    for (size_t irow(0); irow < ndof_; ++irow) {
+    inverse_mass_inertia.resize(rbdl_model_->dof_count, rbdl_model_->dof_count);
+    for (size_t irow(0); irow < rbdl_model_->dof_count; ++irow) {
       for (size_t icol(0); icol <= irow; ++icol) {
-	inverse_mass_inertia.coeffRef(irow, icol) = ainv_upper_triangular_[squareToTriangularIndex(irow, icol, ndof_)];
+	inverse_mass_inertia.coeffRef(irow, icol) = ainv_upper_triangular_[squareToTriangularIndex(irow, icol, rbdl_model_->dof_count)];
 	if (irow != icol) {
 	  inverse_mass_inertia.coeffRef(icol, irow) = inverse_mass_inertia.coeff(irow, icol);
 	}
