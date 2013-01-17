@@ -64,7 +64,7 @@ namespace opspace {
     
     inline void quickSetup(Vector const & kp, Vector const & kd, Vector const & maxvel)
     {
-      kp_ = kd;
+      kp_ = kp;
       kd_ = kd;
       maxvel_ = maxvel;
     }
