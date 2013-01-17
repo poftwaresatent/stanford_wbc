@@ -42,13 +42,15 @@ namespace pws {
     virtual Status check(std::string const * param, std::string const & value) const;
     
     inline void quickSetup(double kp, double kd, double maxvel,
-			   double dsafe, std::string const & link_name)
+			   double dsafe, jspace::Vector const & local_control_point,
+			   std::string const & link_name)
     {
       PDTask::quickSetup(Vector::Ones(1) * kp,
 			 Vector::Ones(1) * kd,
 			 Vector::Ones(1) * maxvel);
       dsafe_ = dsafe;
       link_name_ = link_name;
+      local_control_point_ = local_control_point;
     }
     
   protected:

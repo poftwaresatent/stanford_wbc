@@ -194,7 +194,10 @@ static void draw_cb(double x0, double y0, double scale)
 
 int main(int argc, char ** argv)
 {
-  char const * links[] = { "link4", "link3", "link2" };
+  char const * links[] = { "link4", "link3", "link2", "link1" };
+  jspace::Vector ctrlpt(3);
+  ctrlpt << 0.0, 0.0, -0.5;
+  
   try {
     
     model.reset(jspace::test::parse_sai_xml_file(model_filename, true));
@@ -204,7 +207,7 @@ int main(int argc, char ** argv)
       std::ostringstream str;
       str << "tut07-oa-" << links[ii];
       oa.reset(new pws::ObstAvoidTask(str.str()));
-      oa->quickSetup(400.0, 40.0, 1.0, 2.0, links[ii]);
+      oa->quickSetup(400.0, 40.0, 1.0, 2.0, ctrlpt, links[ii]);
       opspace::Parameter * parm
 	= oa->lookupParameter("global_obstacle", opspace::PARAMETER_TYPE_VECTOR);
       if ( ! parm) {
