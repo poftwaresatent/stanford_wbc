@@ -86,6 +86,19 @@ namespace opspace {
   }
   
   
+  void GenericSkill::
+  dump(std::ostream & os,
+       std::string const & title,
+       std::string const & prefix)
+    const
+  {
+    Skill::dump(os, title, prefix);
+    for (size_t ii(0); ii < task_table_.size(); ++ii) {
+      task_table_[ii]->dump(os, "", prefix + "  ");
+    }
+  }
+  
+  
   TaskPostureSkill::
   TaskPostureSkill(std::string const & name)
     : Skill(name)

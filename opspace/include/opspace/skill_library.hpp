@@ -38,6 +38,10 @@ namespace opspace {
     virtual Status update(Model const & model);
     virtual task_table_t const * getTaskTable();
     
+    virtual void dump(std::ostream & os,
+		      std::string const & title,
+		      std::string const & prefix) const;
+    
     void appendTask(boost::shared_ptr<Task> task);
     
   protected:
