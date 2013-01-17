@@ -41,11 +41,13 @@ namespace pws {
     virtual Status update(Model const & model);
     virtual Status check(std::string const * param, std::string const & value) const;
     
-    inline void quickSetup(double kp, double kd, double maxvel, std::string const & link_name)
+    inline void quickSetup(double kp, double kd, double maxvel,
+			   double dsafe, std::string const & link_name)
     {
       PDTask::quickSetup(Vector::Ones(1) * kp,
 			 Vector::Ones(1) * kd,
 			 Vector::Ones(1) * maxvel);
+      dsafe_ = dsafe;
       link_name_ = link_name;
     }
     
@@ -58,7 +60,7 @@ namespace pws {
     Vector local_control_point_;
     Matrix jac_x_;
     double dsafe_;
-    int active_;
+    double activation_;
     
     mutable taoDNode const * node_;
     

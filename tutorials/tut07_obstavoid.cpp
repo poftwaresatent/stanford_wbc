@@ -49,6 +49,9 @@ static std::vector<boost::shared_ptr<pws::ObstAvoidTask> > oatask;
 static opspace::Parameter * jgoalpos;
 static opspace::Parameter * jgoalvel;
 static std::vector<opspace::Parameter *> global_obstacle;
+static std::vector<opspace::Parameter *> global_delta;
+static std::vector<opspace::Parameter *> global_control_point;
+static std::vector<opspace::Parameter *> activation;
 static size_t mode;
 
 
@@ -150,28 +153,42 @@ static bool servo_cb(size_t toggle_count,
 
 static void draw_cb(double x0, double y0, double scale)
 {
-  if (0 != mode) {
-    
-    tutsim::draw_delta_jpos(*jgoalpos->getVector(), 3, 100, 80, 80, x0, y0, scale);
-    
-  }
-  
-  if (global_obstacle.empty()) {
-    return;
-  }
-  
   //////////////////////////////////////////////////
   // Remember: we plot the YZ plane, X is sticking out of the screen
   // but the robot is planar anyway.
   
-  fl_color(255, 100, 100);
-  fl_line_style(FL_SOLID, 3, 0);
+  if ( ! global_obstacle.empty()) {
+    fl_color(255, 100, 100);
+    fl_line_style(FL_SOLID, 3, 0);
+    
+    double const gx(global_obstacle[0]->getVector()->y());
+    double const gy(global_obstacle[0]->getVector()->z());
+    int const rr(ceil(0.2 * scale));
+    int const dd(2 * rr);
+    fl_arc(int(x0 + gx * scale) - rr, int(y0 - gy * scale) - rr, dd, dd, 0.0, 360.0);
+  }
   
-  double const gx(global_obstacle[0]->getVector()->y());
-  double const gy(global_obstacle[0]->getVector()->z());
-  int const rr(ceil(0.2 * scale));
-  int const dd(2 * rr);
-  fl_arc(int(x0 + gx * scale) - rr, int(y0 - gy * scale) - rr, dd, dd, 0.0, 360.0);
+  if (0 != mode) {
+    
+    tutsim::draw_delta_jpos(*jgoalpos->getVector(), 3, 100, 80, 80, x0, y0, scale);
+    
+    for (size_t ii(0); ii < global_delta.size(); ++ii) {
+      double const gx(global_control_point[ii]->getVector()->y());
+      double const gy(global_control_point[ii]->getVector()->z());
+      double const px(gx + global_delta[ii]->getVector()->y());
+      double const py(gy + global_delta[ii]->getVector()->z());
+      if (*(activation[ii]->getReal()) > 0.0) {
+	fl_color(255, 100, 255);
+	fl_line_style(FL_SOLID, 3, 0);
+      }
+      else {
+	fl_color(100, 255, 100);
+	fl_line_style(FL_SOLID, 1, 0);
+      }
+      fl_line(x0 + gx * scale, y0 - gy * scale,
+	      x0 + px * scale, y0 - py * scale);
+    }
+  }
 }
 
 
@@ -187,17 +204,32 @@ int main(int argc, char ** argv)
       std::ostringstream str;
       str << "tut07-oa-" << links[ii];
       oa.reset(new pws::ObstAvoidTask(str.str()));
-      oa->quickSetup(400.0, 40.0, 1.0, links[ii]);
-      opspace::Parameter * gobst
+      oa->quickSetup(400.0, 40.0, 1.0, 2.0, links[ii]);
+      opspace::Parameter * parm
 	= oa->lookupParameter("global_obstacle", opspace::PARAMETER_TYPE_VECTOR);
-      if ( ! gobst) {
-	errx(EXIT_FAILURE, "no global_obstacle parameter in ObstAvoidTask for link %s", links[ii]);
+      if ( ! parm) {
+	errx(EXIT_FAILURE, "no global_obstacle parameter in link %s", links[ii]);
       }
       jspace::Vector foo = jspace::Vector::Ones(3) * 123.4;
-      if ( ! gobst->set(foo)) {
+      if ( ! parm->set(foo)) {
 	errx(EXIT_FAILURE, "failed to initialize global obstacle position for link %s", links[ii]);
       }
-      global_obstacle.push_back(gobst);
+      global_obstacle.push_back(parm);
+      parm = oa->lookupParameter("global_control_point", opspace::PARAMETER_TYPE_VECTOR);
+      if ( ! parm) {
+        errx(EXIT_FAILURE, "no global_control_point parameter in link %s", links[ii]);
+      }
+      global_control_point.push_back(parm);
+      parm = oa->lookupParameter("global_delta", opspace::PARAMETER_TYPE_VECTOR);
+      if ( ! parm) {
+        errx(EXIT_FAILURE, "no global_delta parameter in link %s", links[ii]);
+      }
+      global_delta.push_back(parm);
+      parm = oa->lookupParameter("activation", opspace::PARAMETER_TYPE_REAL);
+      if ( ! parm) {
+        errx(EXIT_FAILURE, "no activation parameter in link %s", links[ii]);
+      }
+      activation.push_back(parm);
       oatask.push_back(oa);
     }
     

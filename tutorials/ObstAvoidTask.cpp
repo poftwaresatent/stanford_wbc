@@ -32,11 +32,11 @@ namespace pws {
       link_name_(""),
       local_control_point_(Vector::Zero(3)),
       dsafe_(0.5),
-      active_(0),
+      activation_(-1),
       node_(0)
   {
     declareParameter("link", &link_name_, PARAMETER_FLAG_NOLOG);
-    declareParameter("active", &active_, PARAMETER_FLAG_READONLY);
+    declareParameter("activation", &activation_, PARAMETER_FLAG_READONLY);
     declareParameter("dsafe", &dsafe_, PARAMETER_FLAG_NOLOG);
     declareParameter("global_delta", &global_delta_, PARAMETER_FLAG_READONLY);
     declareParameter("global_unit", &global_unit_, PARAMETER_FLAG_READONLY);
@@ -71,15 +71,22 @@ namespace pws {
       return Status(false, "invalid link or unsupported joint type");
     }
     
-    if (0 == active_) {
+    if (0 > activation_) {
       jacobian_ = Matrix::Zero(0, 0);
       command_ = Vector::Zero(1);
       return Status();
     }
     
-    return computePDCommand(actual_,
-			    jacobian_ * model.getState().velocity_,
-			    command_);
+    Status st(computePDCommand(actual_,
+			       jacobian_ * model.getState().velocity_,
+			       command_));
+    if (st) {
+      command_ *= activation_;
+    }
+    else {
+      command_ = Vector::Zero(1);
+    }
+    return st;
   }
   
   
@@ -147,15 +154,23 @@ namespace pws {
     // jspace::pretty_print(jacobian_, std::cout,
     // 			 "obstavoid update jacobian_", "  ");
     
-    if ((1 == active_) && (dd > 1.5 * dsafe_)) {
-      active_ = 0;
+    if ((0 <= activation_) && (dd > 1.5 * dsafe_)) {
+      activation_ = -1;
     }
-    else if ((1 != active_) && (dd <= dsafe_)) {
-      active_ = 1;
+    if ((0 <= activation_) || (dd <= dsafe_)) {
+      if (dd > dsafe_) {
+	activation_ = 0.1;
+      }
+      else if (dd <= 0.5 * dsafe_) {
+	activation_ = 1.0;
+      }
+      else {
+	activation_ = 1.9 - dd * 1.8 / dsafe_;
+      }
     }
     
     actual_ = Vector::Ones(1) * dd;
-    goalpos_ = Vector::Ones(1) * 2 * dsafe_; // XXXX to do: never changes
+    goalpos_ = Vector::Ones(1) * 3 * dsafe_; // XXXX to do: never changes
     goalvel_ = Vector::Zero(1);	// XXXX to do: never changes
     
     return node_;
