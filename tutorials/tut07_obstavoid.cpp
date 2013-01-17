@@ -72,6 +72,25 @@ static bool servo_cb(size_t toggle_count,
     jvel[ii] = omega * amplitude * cos(phase);
   }
   
+  {
+    static jspace::Vector pos(3);
+    static double const oy(0.2);
+    static double const oz(0.37);
+    static double const amp(2.5);
+    double const py(oy * 1e-3 * wall_time_ms);
+    double const pz(oz * 1e-3 * wall_time_ms);
+    pos << 0.0,	     amp * sin(py),      amp * sin(pz);
+    if (global_obstacle.empty()) {
+      errx(EXIT_FAILURE, "no global obstacle parameters to write to...");
+    }
+    for (size_t ii(0); ii < global_obstacle.size(); ++ii) {
+      if ( ! global_obstacle[ii]->set(pos)) {
+	errx(EXIT_FAILURE, "failed to set global obstacle position");
+      }
+      std::cerr << "DBG " << pos << "\n";
+    }
+  }
+  
   if (0 == mode) {
     
     //////////////////////////////////////////////////
@@ -98,21 +117,6 @@ static bool servo_cb(size_t toggle_count,
     st = controller->init(*model);
     if ( ! st) {
       errx(EXIT_FAILURE, "controller->init() failed: %s", st.errstr.c_str());
-    }
-  }
-  
-  if ((3 == mode) || (4 == mode)) {
-    static jspace::Vector pos(3);
-    static double const oy(0.2);
-    static double const oz(0.37);
-    static double const amp(2.5);
-    double const py(oy * 1e-3 * wall_time_ms);
-    double const pz(oz * 1e-3 * wall_time_ms);
-    pos << 0.0,	     amp * sin(py),      amp * sin(pz);
-    for (size_t ii(0); ii < global_obstacle.size(); ++ii) {
-      if ( ! global_obstacle[ii]->set(pos)) {
-	errx(EXIT_FAILURE, "failed to set global obstacle position for link %zu", ii);
-      }
     }
   }
   
@@ -183,6 +187,7 @@ int main(int argc, char ** argv)
     if ( ! gobst) {
       errx(EXIT_FAILURE, "no global_obstacle parameter in ObstAvoidTask");
     }
+    global_obstacle.push_back(gobst);
     oatask.push_back(oa);
     
     jtask.reset(new opspace::JPosTask("tut07-jtask"));
