@@ -31,6 +31,7 @@ namespace pws {
     : PDTask(name, PDTask::SATURATION_NORM),
       link_name_(""),
       local_control_point_(Vector::Zero(3)),
+      global_obstacle_(Vector::Ones(3) * std::numeric_limits<double>::max()),
       dsafe_(0.5),
       activation_(-1),
       node_(0)

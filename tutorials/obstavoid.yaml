@@ -1,0 +1,48 @@
+- tasks:
+  - type: pws::ObstAvoidTask
+    name: oa_link1
+    link: link1
+    local_control_point: [ 0.0, 0.0, -0.5 ]
+    dsafe: 0.5
+    kp: [ 400.0 ]
+    kd: [  40.0 ]
+    maxvel: [ 1.0 ]
+  - type: pws::ObstAvoidTask
+    name: oa_link2
+    link: link2
+    local_control_point: [ 0.0, 0.0, -0.5 ]
+    dsafe: 0.5
+    kp: [ 400.0 ]
+    kd: [  40.0 ]
+    maxvel: [ 1.0 ]
+  - type: pws::ObstAvoidTask
+    name: oa_link3
+    link: link3
+    local_control_point: [ 0.0, 0.0, -0.5 ]
+    dsafe: 0.5
+    kp: [ 400.0 ]
+    kd: [  40.0 ]
+    maxvel: [ 1.0 ]
+  - type: pws::ObstAvoidTask
+    name: oa_link4
+    link: link4
+    local_control_point: [ 0.0, 0.0, -0.5 ]
+    dsafe: 0.5
+    kp: [ 400.0 ]
+    kd: [  40.0 ]
+    maxvel: [ 1.0 ]
+  - type: opspace::JPosTask
+    name: jpos
+    kp: [ 100.0 ]
+    kd: [  20.0 ]
+    maxvel: [ 3.141 ]
+
+- skills:
+  - type: opspace::GenericSkill
+    name: tut07
+    slots:
+      - task: oa_link4
+      - task: oa_link3
+      - task: oa_link2
+      - task: oa_link1
+      - task: jpos
