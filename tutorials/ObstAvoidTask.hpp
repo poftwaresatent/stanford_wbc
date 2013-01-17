@@ -53,6 +53,7 @@ namespace pws {
     std::string link_name_;
     Vector global_obstacle_;
     Vector global_delta_;
+    Vector global_unit_;
     Vector global_control_point_;
     Vector local_control_point_;
     Matrix jac_x_;

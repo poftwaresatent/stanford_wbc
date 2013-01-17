@@ -39,6 +39,7 @@ namespace pws {
     declareParameter("active", &active_, PARAMETER_FLAG_READONLY);
     declareParameter("dsafe", &dsafe_, PARAMETER_FLAG_NOLOG);
     declareParameter("global_delta", &global_delta_, PARAMETER_FLAG_READONLY);
+    declareParameter("global_unit", &global_unit_, PARAMETER_FLAG_READONLY);
     declareParameter("global_obstacle", &global_obstacle_);
     declareParameter("local_control_point", &local_control_point_);
     declareParameter("global_control_point", &global_control_point_, PARAMETER_FLAG_READONLY);
@@ -103,6 +104,9 @@ namespace pws {
       return 0;
     }
     
+    // jspace::pretty_print(global_obstacle_, std::cout,
+    // 			 "obstavoid update global_obstacle_", "  ");
+
     jspace::Transform ee_transform;
     model.computeGlobalFrame(node_,
 			     local_control_point_[0],
@@ -110,18 +114,39 @@ namespace pws {
 			     local_control_point_[2],
 			     ee_transform);
     global_control_point_ = ee_transform.translation();
-    global_delta_ = global_obstacle_ - global_control_point_;
+
+    // jspace::pretty_print(global_control_point_, std::cout,
+    // 			 "obstavoid update global_control_point_", "  ");
     
+    global_delta_ = global_obstacle_ - global_control_point_;
+
+    // jspace::pretty_print(global_delta_, std::cout,
+    // 			 "obstavoid update global_delta_", "  ");
+
+    double const dd(global_delta_.norm());
+    global_unit_ = global_delta_ / dd;
+
+    // jspace::pretty_print(global_unit_, std::cout,
+    // 			 "obstavoid update global_unit_", "  ");
+    
+    jspace::Matrix jfull;
     if ( ! model.computeJacobian(node_,
 				 global_control_point_[0],
 				 global_control_point_[1],
 				 global_control_point_[2],
-				 jac_x_)) {
+				 jfull)) {
       return 0;
     }
-    jacobian_ = - global_delta_ * jac_x_;
+    jac_x_ = jfull.block(0, 0, 3, jfull.cols());
+
+    // jspace::pretty_print(jac_x_, std::cout,
+    // 			 "obstavoid update jac_x_", "  ");
     
-    double const dd(global_delta_.norm());
+    jacobian_ = - global_unit_.transpose() * jac_x_;
+
+    // jspace::pretty_print(jacobian_, std::cout,
+    // 			 "obstavoid update jacobian_", "  ");
+    
     if ((1 == active_) && (dd > 1.5 * dsafe_)) {
       active_ = 0;
     }

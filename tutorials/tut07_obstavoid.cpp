@@ -87,7 +87,6 @@ static bool servo_cb(size_t toggle_count,
       if ( ! global_obstacle[ii]->set(pos)) {
 	errx(EXIT_FAILURE, "failed to set global obstacle position");
       }
-      std::cerr << "DBG " << pos[0] << "   " << pos[1] << "   " << pos[2] << "\n";
     }
   }
   
@@ -172,9 +171,6 @@ static void draw_cb(double x0, double y0, double scale)
   int const rr(ceil(0.2 * scale));
   int const dd(2 * rr);
   fl_arc(int(x0 + gx * scale) - rr, int(y0 - gy * scale) - rr, dd, dd, 0.0, 360.0);
-  
-  std::cerr << "DBG " << gx << "   " << gy << "\n";
-
 }
 
 
