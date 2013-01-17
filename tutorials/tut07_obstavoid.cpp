@@ -65,7 +65,7 @@ static bool servo_cb(size_t toggle_count,
 		     State & state,
 		     Vector & command)
 {
-  mode = toggle_count % 5;
+  mode = toggle_count % 3;
   static size_t prevmode(42);
   static size_t iteration(0);
   
@@ -126,7 +126,7 @@ static bool servo_cb(size_t toggle_count,
     }
   }
   
-  if ((2 == mode) || (4 == mode)) {
+  if (2 == mode) {
     if ( ! jgoalpos->set(jpos)) {
       errx(EXIT_FAILURE, "failed to set joint goal position");
     }

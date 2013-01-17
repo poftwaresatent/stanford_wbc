@@ -32,13 +32,14 @@ namespace pws {
       link_name_(""),
       local_control_point_(Vector::Zero(3)),
       global_obstacle_(Vector::Ones(3) * std::numeric_limits<double>::max()),
-      dsafe_(0.5),
+      distance_(2),
       activation_(-1),
       node_(0)
   {
+    distance_ << 0.5, 1.5;
     declareParameter("link", &link_name_, PARAMETER_FLAG_NOLOG);
     declareParameter("activation", &activation_, PARAMETER_FLAG_READONLY);
-    declareParameter("dsafe", &dsafe_, PARAMETER_FLAG_NOLOG);
+    declareParameter("distance", &distance_, PARAMETER_FLAG_NOLOG);
     declareParameter("global_delta", &global_delta_, PARAMETER_FLAG_READONLY);
     declareParameter("global_unit", &global_unit_, PARAMETER_FLAG_READONLY);
     declareParameter("global_obstacle", &global_obstacle_);
@@ -155,23 +156,18 @@ namespace pws {
     // jspace::pretty_print(jacobian_, std::cout,
     // 			 "obstavoid update jacobian_", "  ");
     
-    if ((0 <= activation_) && (dd > 1.5 * dsafe_)) {
+    if (dd <= distance_[0]) {
+      activation_ = 1.0;
+    }
+    else if (dd > distance_[1]) {
       activation_ = -1;
     }
-    if ((0 <= activation_) || (dd <= dsafe_)) {
-      if (dd > dsafe_) {
-	activation_ = 0.1;
-      }
-      else if (dd <= 0.5 * dsafe_) {
-	activation_ = 1.0;
-      }
-      else {
-	activation_ = 1.9 - dd * 1.8 / dsafe_;
-      }
+    else {
+      activation_ = pow((dd - distance_[1]) / (distance_[1] - distance_[0]), 2.0);
     }
     
     actual_ = Vector::Ones(1) * dd;
-    goalpos_ = Vector::Ones(1) * 3 * dsafe_; // XXXX to do: never changes
+    goalpos_ = Vector::Ones(1) * (dd + distance_[1]); // XXXX to do: never changes
     goalvel_ = Vector::Zero(1);	// XXXX to do: never changes
     
     return node_;

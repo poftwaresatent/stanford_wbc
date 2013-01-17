@@ -42,13 +42,14 @@ namespace pws {
     virtual Status check(std::string const * param, std::string const & value) const;
     
     inline void quickSetup(double kp, double kd, double maxvel,
-			   double dsafe, jspace::Vector const & local_control_point,
+			   jspace::Vector const & distance,
+			   jspace::Vector const & local_control_point,
 			   std::string const & link_name)
     {
       PDTask::quickSetup(Vector::Ones(1) * kp,
 			 Vector::Ones(1) * kd,
 			 Vector::Ones(1) * maxvel);
-      dsafe_ = dsafe;
+      distance_ = distance;
       link_name_ = link_name;
       local_control_point_ = local_control_point;
     }
@@ -61,7 +62,7 @@ namespace pws {
     Vector global_control_point_;
     Vector local_control_point_;
     Matrix jac_x_;
-    double dsafe_;
+    Vector distance_;
     double activation_;
     
     mutable taoDNode const * node_;
