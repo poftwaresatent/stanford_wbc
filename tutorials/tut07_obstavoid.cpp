@@ -25,6 +25,7 @@
 #include <opspace/task_library.hpp>
 #include <opspace/skill_library.hpp>
 #include "uta_opspace/ControllerNG.hpp"
+#include "ObstAvoidTask.hpp"
 #include <jspace/test/sai_util.hpp>
 #include <boost/shared_ptr.hpp>
 #include <FL/fl_draw.H>
@@ -43,12 +44,11 @@ static std::string model_filename(TUTROB_XML_PATH_STR);
 static boost::shared_ptr<jspace::Model> model;
 static boost::shared_ptr<uta_opspace::ControllerNG> controller;
 static boost::shared_ptr<opspace::GenericSkill> skill;
-static boost::shared_ptr<opspace::CartPosTask> eetask;
 static boost::shared_ptr<opspace::JPosTask> jtask;
-static opspace::Parameter * eegoalpos;
-static opspace::Parameter * eegoalvel;
+static std::vector<boost::shared_ptr<pws::ObstAvoidTask> > oatask;
 static opspace::Parameter * jgoalpos;
 static opspace::Parameter * jgoalvel;
+static std::vector<opspace::Parameter *> global_obstacle;
 static size_t mode;
 
 
@@ -102,19 +102,17 @@ static bool servo_cb(size_t toggle_count,
   }
   
   if ((3 == mode) || (4 == mode)) {
-    static jspace::Vector pos(3), vel(3);
+    static jspace::Vector pos(3);
     static double const oy(0.2);
     static double const oz(0.37);
     static double const amp(2.5);
     double const py(oy * 1e-3 * wall_time_ms);
     double const pz(oz * 1e-3 * wall_time_ms);
     pos << 0.0,	     amp * sin(py),      amp * sin(pz);
-    vel << 0.0,	oy * amp * cos(py), oz * amp * cos(pz);
-    if ( ! eegoalpos->set(pos)) {
-      errx(EXIT_FAILURE, "failed to set end-effector goal position");
-    }
-    if ( ! eegoalvel->set(vel)) {
-      errx(EXIT_FAILURE, "failed to set end-effector goal velocity");
+    for (size_t ii(0); ii < global_obstacle.size(); ++ii) {
+      if ( ! global_obstacle[ii]->set(pos)) {
+	errx(EXIT_FAILURE, "failed to set global obstacle position for link %zu", ii);
+      }
     }
   }
   
@@ -152,6 +150,10 @@ static void draw_cb(double x0, double y0, double scale)
     
     tutsim::draw_delta_jpos(*jgoalpos->getVector(), 3, 100, 80, 80, x0, y0, scale);
     
+    if (global_obstacle.empty()) {
+      return;
+    }
+    
     //////////////////////////////////////////////////
     // Remember: we plot the YZ plane, X is sticking out of the screen
     // but the robot is planar anyway.
@@ -159,23 +161,11 @@ static void draw_cb(double x0, double y0, double scale)
     fl_color(255, 100, 100);
     fl_line_style(FL_SOLID, 3, 0);
     
-    double const gx(eegoalpos->getVector()->y());
-    double const gy(eegoalpos->getVector()->z());
+    double const gx(global_obstacle[0]->getVector()->y());
+    double const gy(global_obstacle[0]->getVector()->z());
     int const rr(ceil(0.2 * scale));
     int const dd(2 * rr);
     fl_arc(int(x0 + gx * scale) - rr, int(y0 - gy * scale) - rr, dd, dd, 0.0, 360.0);
-    
-    double const vx(eegoalvel->getVector()->y());
-    double const vy(eegoalvel->getVector()->z());
-    double const px(gx + vx * 0.2);
-    double const py(gy + vy * 0.2);
-    // fl_line(x0 + (gx + 0.2) * scale, y0 - gy * scale,
-    // 	    x0 + (gx - 0.2) * scale, y0 - gy * scale);
-    // fl_line(x0 + gx * scale, y0 - (gy + 0.2) * scale,
-    // 	    x0 + gx * scale, y0 - (gy - 0.2) * scale);
-    fl_color(255, 255, 100);
-    fl_line(x0 + gx * scale, y0 - gy * scale,
-	    x0 + px * scale, y0 - py * scale);
   }
 }
 
@@ -186,23 +176,17 @@ int main(int argc, char ** argv)
     
     model.reset(jspace::test::parse_sai_xml_file(model_filename, true));
     
-    eetask.reset(new opspace::CartPosTask("tut07-eepos"));
-    jspace::Vector kp(1), kd(1), maxvel(1), ctrlpt(3);
-    kp << 400.0;
-    kd << 40.0;
-    maxvel << 1.0;
-    ctrlpt << 0.0, 0.0, -1.0;
-    eetask->quickSetup(kp, kd, maxvel, "link4", ctrlpt);
-    eegoalpos = eetask->lookupParameter("goalpos", opspace::PARAMETER_TYPE_VECTOR);
-    if ( ! eegoalpos) {
-      errx(EXIT_FAILURE, "failed to find appropriate end-effector goalpos parameter");
+    boost::shared_ptr<pws::ObstAvoidTask> oa;
+    oa.reset(new pws::ObstAvoidTask("tut07-oa-link4"));
+    oa->quickSetup(400.0, 40.0, 1.0, "link4");
+    opspace::Parameter * gobst = oa->lookupParameter("global_obstacle", opspace::PARAMETER_TYPE_VECTOR);
+    if ( ! gobst) {
+      errx(EXIT_FAILURE, "no global_obstacle parameter in ObstAvoidTask");
     }
-    eegoalvel = eetask->lookupParameter("goalvel", opspace::PARAMETER_TYPE_VECTOR);
-    if ( ! eegoalvel) {
-      errx(EXIT_FAILURE, "failed to find appropriate end-effector goalvel parameter");
-    }
+    oatask.push_back(oa);
     
     jtask.reset(new opspace::JPosTask("tut07-jtask"));
+    jspace::Vector kp, kd, maxvel;
     kp << 100.0;
     kd << 20.0;
     maxvel << M_PI;
@@ -217,9 +201,11 @@ int main(int argc, char ** argv)
     }
 
     skill.reset(new opspace::GenericSkill("tut07-skill"));
-    skill->appendTask(eetask);
+    for (size_t ii(0); ii < oatask.size(); ++ii) {
+      skill->appendTask(oatask[ii]);
+    }
     skill->appendTask(jtask);
-
+    
     controller.reset(new uta_opspace::ControllerNG("tut07-ctrl"));
     
   }
