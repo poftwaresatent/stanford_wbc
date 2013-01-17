@@ -87,7 +87,7 @@ static bool servo_cb(size_t toggle_count,
       if ( ! global_obstacle[ii]->set(pos)) {
 	errx(EXIT_FAILURE, "failed to set global obstacle position");
       }
-      std::cerr << "DBG " << pos << "\n";
+      std::cerr << "DBG " << pos[0] << "   " << pos[1] << "   " << pos[2] << "\n";
     }
   }
   
@@ -154,23 +154,27 @@ static void draw_cb(double x0, double y0, double scale)
     
     tutsim::draw_delta_jpos(*jgoalpos->getVector(), 3, 100, 80, 80, x0, y0, scale);
     
-    if (global_obstacle.empty()) {
-      return;
-    }
-    
-    //////////////////////////////////////////////////
-    // Remember: we plot the YZ plane, X is sticking out of the screen
-    // but the robot is planar anyway.
-    
-    fl_color(255, 100, 100);
-    fl_line_style(FL_SOLID, 3, 0);
-    
-    double const gx(global_obstacle[0]->getVector()->y());
-    double const gy(global_obstacle[0]->getVector()->z());
-    int const rr(ceil(0.2 * scale));
-    int const dd(2 * rr);
-    fl_arc(int(x0 + gx * scale) - rr, int(y0 - gy * scale) - rr, dd, dd, 0.0, 360.0);
   }
+  
+  if (global_obstacle.empty()) {
+    return;
+  }
+  
+  //////////////////////////////////////////////////
+  // Remember: we plot the YZ plane, X is sticking out of the screen
+  // but the robot is planar anyway.
+  
+  fl_color(255, 100, 100);
+  fl_line_style(FL_SOLID, 3, 0);
+  
+  double const gx(global_obstacle[0]->getVector()->y());
+  double const gy(global_obstacle[0]->getVector()->z());
+  int const rr(ceil(0.2 * scale));
+  int const dd(2 * rr);
+  fl_arc(int(x0 + gx * scale) - rr, int(y0 - gy * scale) - rr, dd, dd, 0.0, 360.0);
+  
+  std::cerr << "DBG " << gx << "   " << gy << "\n";
+
 }
 
 
@@ -186,6 +190,10 @@ int main(int argc, char ** argv)
     opspace::Parameter * gobst = oa->lookupParameter("global_obstacle", opspace::PARAMETER_TYPE_VECTOR);
     if ( ! gobst) {
       errx(EXIT_FAILURE, "no global_obstacle parameter in ObstAvoidTask");
+    }
+    jspace::Vector foo = jspace::Vector::Ones(3) * 123.4;
+    if ( ! gobst->set(foo)) {
+      errx(EXIT_FAILURE, "failed to initialize global obstacle position");
     }
     global_obstacle.push_back(gobst);
     oatask.push_back(oa);
