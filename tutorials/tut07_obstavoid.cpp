@@ -186,7 +186,7 @@ int main(int argc, char ** argv)
     oatask.push_back(oa);
     
     jtask.reset(new opspace::JPosTask("tut07-jtask"));
-    jspace::Vector kp, kd, maxvel;
+    jspace::Vector kp(1), kd(1), maxvel(1);
     kp << 100.0;
     kd << 20.0;
     maxvel << M_PI;
