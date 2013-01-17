@@ -137,7 +137,8 @@ static bool servo_cb(size_t toggle_count,
   }
   
   if (0 == (iteration % 100)) {
-    controller->dbg(std::cerr, "**************************************************", "");
+    skill->dump(std::cerr, "**************************************************", "");
+    controller->dbg(std::cerr, "==================================================", "");
   }
   
   ++iteration;
@@ -176,23 +177,29 @@ static void draw_cb(double x0, double y0, double scale)
 
 int main(int argc, char ** argv)
 {
+  char const * links[] = { "link4", "link3", "link2" };
   try {
     
     model.reset(jspace::test::parse_sai_xml_file(model_filename, true));
     
     boost::shared_ptr<pws::ObstAvoidTask> oa;
-    oa.reset(new pws::ObstAvoidTask("tut07-oa-link4"));
-    oa->quickSetup(400.0, 40.0, 1.0, "link4");
-    opspace::Parameter * gobst = oa->lookupParameter("global_obstacle", opspace::PARAMETER_TYPE_VECTOR);
-    if ( ! gobst) {
-      errx(EXIT_FAILURE, "no global_obstacle parameter in ObstAvoidTask");
+    for (size_t ii(0); ii < sizeof(links) / sizeof(*links); ++ii) {
+      std::ostringstream str;
+      str << "tut07-oa-" << links[ii];
+      oa.reset(new pws::ObstAvoidTask(str.str()));
+      oa->quickSetup(400.0, 40.0, 1.0, links[ii]);
+      opspace::Parameter * gobst
+	= oa->lookupParameter("global_obstacle", opspace::PARAMETER_TYPE_VECTOR);
+      if ( ! gobst) {
+	errx(EXIT_FAILURE, "no global_obstacle parameter in ObstAvoidTask for link %s", links[ii]);
+      }
+      jspace::Vector foo = jspace::Vector::Ones(3) * 123.4;
+      if ( ! gobst->set(foo)) {
+	errx(EXIT_FAILURE, "failed to initialize global obstacle position for link %s", links[ii]);
+      }
+      global_obstacle.push_back(gobst);
+      oatask.push_back(oa);
     }
-    jspace::Vector foo = jspace::Vector::Ones(3) * 123.4;
-    if ( ! gobst->set(foo)) {
-      errx(EXIT_FAILURE, "failed to initialize global obstacle position");
-    }
-    global_obstacle.push_back(gobst);
-    oatask.push_back(oa);
     
     jtask.reset(new opspace::JPosTask("tut07-jtask"));
     jspace::Vector kp(1), kd(1), maxvel(1);
