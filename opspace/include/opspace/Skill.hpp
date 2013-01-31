@@ -114,6 +114,20 @@ namespace opspace {
     
     boost::shared_ptr<TaskSlotAPI> lookupSlot(std::string const & name);
     
+    template<typename task_subtype>
+    task_subtype * lookupTask(std::string const & name, size_t slot_index = 0)
+    {
+      boost::shared_ptr<TaskSlotAPI> slot(lookupSlot(name));
+      if ( ! slot) {
+	return 0;
+      }
+      boost::shared_ptr<Task> task(slot->getInstance(slot_index));
+      if ( ! task) {
+	return 0;
+      }
+      return dynamic_cast<task_subtype *>(task.get());
+    }
+    
     virtual void dump(std::ostream & os,
 		      std::string const & title,
 		      std::string const & prefix) const;

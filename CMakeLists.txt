@@ -154,6 +154,7 @@ subdirs (
   tao
   jspace
   opspace
+  elastic
   )
 
 if (HAVE_FLTK)

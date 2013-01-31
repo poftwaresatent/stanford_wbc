@@ -60,7 +60,7 @@ static jspace::State state;
 static size_t ndof;
 static size_t toggle_count(0);
 static double servo_dt_ms;
-static bool paused(false);
+static bool paused(false); // must be false initially because of lazy-init dependency between timer_cb and servo_dt_ms
 
 
 static bool (*servo_cb)(size_t toggle_count,

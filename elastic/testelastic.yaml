@@ -1,0 +1,31 @@
+- tasks:
+  - type: opspace::CartPosTask
+    name: eepos
+    end_effector: arm_b
+    control_point: [ 0.6, 0.0, 0.0 ]
+    kp:     [ 400.0 ]
+    kd:     [  40.0 ]
+    maxvel: [   1.0 ]
+  - type: opspace::CartPosTask
+    name: basepos
+    end_effector: base_y
+    control_point: [ 0.0, 0.0, 0.0 ]
+    kp:     [ 400.0 ]
+    kd:     [  40.0 ]
+    maxvel: [   1.0 ]
+  - type: opspace::JPosTask
+    name: jpos
+    kp:     [ 100.0 ]
+    kd:     [  20.0 ]
+    maxvel: [   3.141 ]
+
+- skills:
+  - type: testelastic::WaypointSkill
+    name: waypoint
+    radius: [ 0.5 ]
+    len_a:  [ 0.8 ]
+    len_b:  [ 0.6 ]
+    slots:
+      - task: eepos
+      - task: basepos
+      - task: jpos
