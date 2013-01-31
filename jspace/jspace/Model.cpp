@@ -163,110 +163,102 @@ namespace jspace {
   void Model::
   updateKinematics()
   {
-    taoDynamics::updateTransformation(kgm_tree_->root);
-    taoDynamics::globalJacobian(kgm_tree_->root);
-    if (cc_tree_) {
-      taoDynamics::updateTransformation(cc_tree_->root);
-      taoDynamics::globalJacobian(cc_tree_->root);
-    }
+    // XXXX should at least cache the zero qddot vector, or possibly
+    // always use UpdateKinematicsCustom(), or maybe accelerations do
+    // not even matter because we'll override them for mass-inertia
+    // computations.
+    RigidBodyDynamics::UpdateKinematics(*rbdl_model_,
+					state_.position_,
+					state_.velocity_,
+					Vector::Zero(state_.position_.size()));
   }
   
   
-  bool Model::
-  getGlobalFrame(taoDNode const * node,
+  void Model::
+  getGlobalFrame(size_t node,
 		 Transform & global_transform) const
   {
-    if ( ! node) {
-      return false;
+    // XXXX test this! copy-paste-adapted from
+    // RigidBodyDynamic::CalcBodyToBaseCoordinates(), but it would be
+    // better to submit a patch to RBDL for providing this method in
+    // the Knematics module.
+    
+    if (node >= rbdl_model_->fixed_body_discriminator) {
+      unsigned int fnode = node - rbdl_model_->fixed_body_discriminator;
+      unsigned int parent_id = rbdl_model_->mFixedBodies[fnode].mMovableParent;
+      global_transform.linear()
+	= rbdl_model_->X_base[parent_id].E.transpose()                     // parent_body_rotation
+	* rbdl_model_->mFixedBodies[fnode].mParentTransform.E.transpose(); // fixed_rotation
+      global_transform.translation()
+	= rbdl_model_->X_base[parent_id].r // parent_body_position
+	+ rbdl_model_->X_base[parent_id].E.transpose() // parent_body_rotation
+	* rbdl_model_->mFixedBodies[fnode].mParentTransform.r; // fixed_position
     }
-    
-    deFrame const * tao_frame(node->frameGlobal());
-    deQuaternion const & tao_quat(tao_frame->rotation());
-    deVector3 const & tao_trans(tao_frame->translation());
-    
-#warning "TO DO: maybe the other way around..."
-    // beware: Eigen::Quaternion(w, x, y, z) puts w first, whereas
-    // deQuaternion(qx, qy, qz, qw) puts w last. Of course.
-    global_transform = Translation(tao_trans[0], tao_trans[1], tao_trans[2]);
-    global_transform *= Quaternion(tao_quat[3], tao_quat[0], tao_quat[1], tao_quat[2]);
-    
-    return true;
+    else {
+      global_transform.linear()
+        = rbdl_model_->X_base[node].E.transpose();
+      global_transform.translation()
+        = rbdl_model_->X_base[node].r;
+    }
   }
   
   
-  bool Model::
-  computeGlobalFrame(taoDNode const * node,
+  void Model::
+  computeGlobalFrame(size_t node,
 		     Transform const & local_transform,
 		     Transform & global_transform) const
   {
-    if ( ! getGlobalFrame(node, global_transform)) {
-      return false;
-    }
+    getGlobalFrame(node, global_transform);
     global_transform = global_transform * local_transform;
-    return true;
   }
   
   
-  bool Model::
-  computeGlobalFrame(taoDNode const * node,
+  void Model::
+  computeGlobalFrame(size_t node,
 		     Vector const & local_translation,
 		     Transform & global_transform) const
   {
-    if ( ! getGlobalFrame(node, global_transform)) {
-      return false;
-    }
+    getGlobalFrame(node, global_transform);
     global_transform.translation() += global_transform.linear() * local_translation;
-    return true;
   }
   
   
-  bool Model::
-  computeGlobalFrame(taoDNode const * node,
+  void Model::
+  computeGlobalFrame(size_t node,
 		     double local_x, double local_y, double local_z,
 		     Transform & global_transform) const
   {
-    if ( ! getGlobalFrame(node, global_transform)) {
-      return false;
-    }
+    getGlobalFrame(node, global_transform);
     global_transform.translation() += global_transform.linear() * Eigen::Vector3d(local_x, local_y, local_z);
-    return true;
   }
-
-    
-  bool Model::
-  computeGlobalCOMFrame(taoDNode const * node,
+  
+  
+  void Model::
+  computeGlobalCOMFrame(size_t node,
 			Transform & global_com_transform) const
   {
-    if ( ! node) {
-      return false;
-    }
-    
-    deVector3 const * com(const_cast<taoDNode*>(node)->center());
-    if ( ! com) {
-      return getGlobalFrame(node, global_com_transform);
-    }
-    
-    //// AAARGHHHL!!! Do NOT use "*com[0], *com[1], *com[2]" because
-    //// deVector3 somehow gives garbage if you do that. Yet another
-    //// case where hours were wasted because of TAO weirdness...
-    return computeGlobalFrame(node, com->elementAt(0), com->elementAt(1), com->elementAt(2), global_com_transform);
+    computeGlobalFrame(node, rbdl_model_->mBodies[node].mCenterOfMass, global_com_transform);
   }
   
   
-  bool Model::
-  computeJacobian(taoDNode const * node,
+  void Model::
+  computeJacobian(size_t node,
 		  Matrix & jacobian) const
   {
-    if ( ! node) {
-      return false;
-    }
-    deVector3 const & gpos(node->frameGlobal()->translation());
-    return computeJacobian(node, gpos[0], gpos[1], gpos[2], jacobian);
+    RigidBodyDynamics::Kinematics::CalcPointJacobian(*rbdl_model_,
+						     state_.position_,
+						     node,
+						     Vector3::Zero(),
+						     jacobian,
+						     false);
+    
+#warning XXXX to do: for some reason RBDL does not compute the rotational part of the Jacobian
+    
   }
   
   
   bool Model::
-  computeJacobian(taoDNode const * node,
+  computeJacobian(size_t node,
 		  double gx, double gy, double gz,
 		  Matrix & jacobian) const
   {

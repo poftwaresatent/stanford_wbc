@@ -44,8 +44,8 @@ namespace jspace {
   
   
   /**
-     \todo Now that we have RBDL, maybe we should make the
-     jspace;:Model stateless? After all, that was just a hack imposed
+     \todo Now that we have RBDL, maybe we could make the
+     jspace::Model stateless. After all, that was just a hack imposed
      by TAO's horrible way of storing state dispersed throughout its
      tree structure...
      
@@ -181,8 +181,7 @@ namespace jspace {
     
     /** Retrieve a node by joint name.  This will find and retrieve
 	the node to which the joint is attached (see also
-	getNodeByName()), which allows you to retrieve the taoJoint
-	instance itself.
+	getNodeByName()).
 	
 	\todo RBDL support in progress: RBDL has no joint names
 	(yet... I may add them and send a pull request to the author)
@@ -211,83 +210,53 @@ namespace jspace {
     void updateKinematics();
     
     /** Retrieve the frame (translation and rotation) of a node
-	origin.
-	
-	\return True on success. The only possible failure stems from
-	an invalid node, so if you got that using getNode() or one of
-	the related methods you can safely ignore the return value. */
-    bool getGlobalFrame(size_t node,
+	origin. */
+    void getGlobalFrame(size_t node,
 			Transform & global_transform) const;
     
     /** Compute the global frame (translation and rotation)
 	corresponding to a local frame expressed wrt the origin of a
-	given node.
-	
-	\return True on success. The only possible failure stems from
-	an invalid node, so if you got that using getNode() or one of
-	the related methods you can safely ignore the return value. */
-    bool computeGlobalFrame(size_t node,
+	given node. */
+    void computeGlobalFrame(size_t node,
 			    Transform const & local_transform,
 			    Transform & global_transform) const;
     
     /** Convenience method in case you are only interested in the
 	translational part and hold the local point in three
-	doubles. The copmuted global_transform will have the same
-	rotational component as the node's origin.
-	
-	\return True on success. The only possible failure stems from
-	an invalid node, so if you got that using getNode() or one of
-	the related methods you can safely ignore the return value. */
-    bool computeGlobalFrame(size_t node,
+	doubles. The computed global_transform will have the same
+	rotational component as the node's origin. */
+    void computeGlobalFrame(size_t node,
 			    double local_x, double local_y, double local_z,
 			    Transform & global_transform) const;
     
     /** Convenience method in case you are only interested in the
 	translational part and hold the local point in a
 	three-dimensional vector. The copmuted global_transform will
-	have the same rotational component as the node's origin.
-	
-	\return True on success. The only possible failure stems from
-	an invalid node, so if you got that using getNode() or one of
-	the related methods you can safely ignore the return value. */
-    bool computeGlobalFrame(size_t node,
+	have the same rotational component as the node's origin. */
+    void computeGlobalFrame(size_t node,
 			    Vector const & local_translation,
 			    Transform & global_transform) const;
     
-    bool computeGlobalCOMFrame(size_t node,
+    void computeGlobalCOMFrame(size_t node,
 			       Transform & global_com_transform) const;
     
     /** Compute the Jacobian (J_v over J_omega) at the origin of a
-	given node.
-	
-	\note This just ends up calling the other computeJacobian()
-	which takes a global point as argument, passing in the origin
-	of the given node.
-	
-	\return True on success. There are two possible failures: an
-	invalid node, or an unsupported joint type. If you got the
-	node using getNode() or one of the related methods, then you
-	need to extend this implementation when it returns false. */
-    bool computeJacobian(size_t node,
+	given node. */
+    void computeJacobian(size_t node,
 			 Matrix & jacobian) const;
     
     /** Compute the Jacobian (J_v over J_omega) for a given node, at a
 	point expressed wrt to the global frame.
 	
 	\todo Implement support for more than one joint per node, and
-	more than one DOF per joint.
-	
-	\return True on success. There are two possible failures: an
-	invalid node, or an unsupported joint type. If you got the
-	node using getNode() or one of the related methods, then you
-	need to extend this implementation when it returns false. */
-    bool computeJacobian(size_t node,
+	more than one DOF per joint. */
+    void computeJacobian(size_t node,
 			 double gx, double gy, double gz,
 			 Matrix & jacobian) const;
     
     /** Convenience method in case you are holding the global position
 	in a three-dimensional vector. */
-    inline bool computeJacobian(size_t node,
+    inline void computeJacobian(size_t node,
 				Vector const & global_point,
 				Matrix & jacobian) const
     { return computeJacobian(node, global_point[0], global_point[1], global_point[2], jacobian); }
@@ -304,7 +273,7 @@ namespace jspace {
 	in the Jacobian. Failures can only be due to calls of
 	computeJacobian() that happens for each node's contribution to
 	the Jacobian of the COM. */
-    bool computeCOM(Vector & com, Matrix * opt_jcom) const;
+    void computeCOM(Vector & com, Matrix * opt_jcom) const;
     
     /** Compute the gravity joint-torque vector. */
     void computeGravity();
@@ -325,10 +294,9 @@ namespace jspace {
     
     /** Retrieve the gravity joint-torque vector.
 	
-	\return True on success. The only possibility of receiving
-	false is if you never called updateDynamics(), which gets
-	called by updateDynamics(), which gets called by update(). */
-    bool getGravity(Vector & gravity) const;
+	\pre You need to have called updateDynamics() (which gets
+	called by update() too). */
+    void getGravity(Vector & gravity) const;
     
     /** Compute the Coriolis and contrifugal joint-torque vector. If
 	you set cc_tree=NULL in the constructor, then this is a
@@ -337,12 +305,8 @@ namespace jspace {
     
     /** Retrieve the Coriolis and contrifugal joint-torque vector.
 	
-	\return True on success. There are two possibility of
-	receiving false: (i) you set cc_tree=NULL in the constructor,
-	or (ii) you never called computeCoriolisCentrifugal(), which
-	gets called by updateDynamics(), which gets called by
-	update(). */
-    bool getCoriolisCentrifugal(Vector & coriolis_centrifugal) const;
+	\pre You need to have called updateDynamics() (which gets                                          called by update() too). */
+    void getCoriolisCentrifugal(Vector & coriolis_centrifugal) const;
     
     /** Compute the joint-space mass-inertia matrix, a.k.a. the
 	kinetic energy matrix. */
@@ -351,24 +315,21 @@ namespace jspace {
     /** Retrieve the joint-space mass-inertia matrix, a.k.a. the
 	kinetic energy matrix.
 	
-	\return True on success. The only possibility of receiving
-	false is if you never called computeMassInertia(), which gets
-	called by updateDynamics(), which gets called by update(). */
-    bool getMassInertia(Matrix & mass_inertia) const;
+	\pre You need to have called computeMassInertia(), or update()
+	which calls updateDynamics() and that calls
+	computeMassInertia() for you. */
+    void getMassInertia(Matrix & mass_inertia) const;
     
     /** Compute the inverse joint-space mass-inertia matrix. */
     void computeInverseMassInertia();
     
     /** Retrieve the inverse joint-space mass-inertia matrix. 
 	
-	\return True on success. The only possibility of receiving
-	false is if you never called computeMassInertia(), which gets
-	called by updateDynamics(), which gets called by update(). */
-    bool getInverseMassInertia(Matrix & inverse_mass_inertia) const;
+	\pre You need to have called computeMassInertia(), or update()
+	which calls updateDynamics() and that calls
+	computeMassInertia() for you. */
+    void getInverseMassInertia(Matrix & inverse_mass_inertia) const;
     
-    /**
-       \todo remove this as soon as you're done with migrating to RBDL...
-    */
     RigidBodyDynamics::Model const * getRBDL() const { return rbdl_model_; }
     
     
