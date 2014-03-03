@@ -131,7 +131,7 @@ check_include_file_cxx (boost/shared_ptr.hpp HAVE_BOOST)
 if (HAVE_BOOST)
   message ("*** found Boost (required)")
 else (HAVE_BOOST)
-  message (FATAL_ERROR "Please install the Boost smart_ptr library, and/or tell me where to find it by passing -DBOOST_DIR:path=/path/to/boost to cmake next time (you probably need to clear its cache first).")
+  message (FATAL_ERROR "Please install the Boost smart_ptr library (e.g. `sudo apt-get install libboost-dev') and/or tell me where to find it by passing -DBOOST_DIR:path=/path/to/boost to cmake next time (you probably need to clear its cache first).")
 endif (HAVE_BOOST)
 
 # fltk (optional, for tutorials)
